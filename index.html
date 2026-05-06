@@ -346,14 +346,14 @@ class Coin {
     this.life = 480;
     this.r = 8;
     this.attracted = false;
-    this.settled = false;
+    this.falling = true;
   }
   update() {
     this.phase += 0.1;
     const dx = player.x - this.x;
     const dy = player.y - this.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
-    if (this.life < 360 && dist < 250) {
+    if (dist < 250) {
       this.attracted = true;
     }
     if (this.attracted) {
@@ -367,17 +367,18 @@ class Coin {
       this.life = Math.max(this.life, 60);
       return;
     }
-    if (!this.settled) {
+    if (this.falling) {
       this.vy += this.gravity;
       this.y += this.vy;
       this.x += Math.sin(this.phase) * 0.3;
       if (this.vy > 0) this.vy = Math.min(this.vy, 1.5);
-      if (this.vy >= 0 && this.y > 50) {
-        this.settled = true;
-        this.vy = 0;
+      if (this.vy >= 0) {
+        this.falling = false;
+        this.vy = 0.8;
       }
     } else {
-      this.y += Math.sin(this.phase) * 0.15;
+      this.y += this.vy;
+      this.x += Math.sin(this.phase) * 0.5;
     }
     this.life--;
     if (this.life <= 0 || this.y > H + 20) this.alive = false;
