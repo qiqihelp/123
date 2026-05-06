@@ -286,7 +286,7 @@ let selectedFighter = 'laser';
 
 const saveData = JSON.parse(localStorage.getItem('spaceHunterSave') || 'null') || {
   laser: { weapon: 0, health: 0 },
-  missile: { weapon: 0, health: 0 },
+  missile: { weapon: 0, health: 0, reload: 0 },
   missileUnlocked: false
 };
 
@@ -301,7 +301,8 @@ const UPGRADE_COSTS = {
   },
   missile: {
     weapon: [400, 800],
-    health: [300, 600]
+    health: [300, 600],
+    reload: [300, 500, 700, 900, 1100, 1300, 1500]
   }
 };
 const MISSILE_UNLOCK_COST = 800;
@@ -502,7 +503,8 @@ class MissilePlayer {
     this.state = 'locking';
     this.reloadTimer = 0;
     this.lockDuration = 30;
-    this.reloadDuration = 120;
+    this.reloadLevel = saveData.missile.reload;
+    this.reloadDuration = Math.max(30, 120 - this.reloadLevel * 12);
   }
   update() {
     let dx = 0, dy = 0;
@@ -553,16 +555,9 @@ class MissilePlayer {
   fireMissiles() {
     const targets = this.lockedTargets.filter(e => e.alive);
     const count = 2 + this.weaponLevel;
-    for (let i = 0; i < Math.min(count, targets.length); i++) {
-      missiles.push(new Missile(this.x, this.y - this.h / 2, targets[i]));
-    }
-    if (targets.length < count) {
-      for (let i = targets.length; i < count; i++) {
-        if (enemies.length > 0) {
-          const t = enemies.filter(e => e.alive && !targets.includes(e))[0];
-          if (t) missiles.push(new Missile(this.x, this.y - this.h / 2, t));
-        }
-      }
+    if (targets.length === 0) return;
+    for (let i = 0; i < count; i++) {
+      missiles.push(new Missile(this.x, this.y - this.h / 2, targets[i % targets.length]));
     }
   }
   draw() {
@@ -1295,6 +1290,18 @@ function refreshLobby() {
         : '<span style="color:#556;font-size:12px">已满级</span>'
       }
     </div>`;
+    const reloadSec = (120 - data.reload * 12) / 60;
+    const reloadMax = 7;
+    html += `<div class="upgrade-row">
+      <div class="upgrade-info">
+        <div class="upgrade-name" style="color:#ffcc00">快速装填</div>
+        <div class="upgrade-level">${renderUpgradeLevel(data.reload, reloadMax)} &nbsp;${reloadSec.toFixed(1)}秒装填</div>
+      </div>
+      ${data.reload < reloadMax
+        ? `<button class="upgrade-btn" data-type="missile" data-stat="reload" ${gold < costs.reload[data.reload] ? 'disabled' : ''}>${costs.reload[data.reload]}金</button>`
+        : '<span style="color:#556;font-size:12px">已满级</span>'
+      }
+    </div>`;
   }
 
   html += `<div class="upgrade-row">
@@ -1315,7 +1322,8 @@ function refreshLobby() {
       const type = btn.dataset.type;
       const stat = btn.dataset.stat;
       const cost = UPGRADE_COSTS[type][stat][saveData[type][stat]];
-      if (gold >= cost && saveData[type][stat] < 2) {
+      const maxLevel = stat === 'reload' ? 7 : 2;
+      if (gold >= cost && saveData[type][stat] < maxLevel) {
         gold -= cost;
         saveData[type][stat]++;
         localStorage.setItem('spaceHunterGold', gold);
