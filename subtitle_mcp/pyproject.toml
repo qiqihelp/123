@@ -1,0 +1,16 @@
+{
+  "name": "subtitle-mcp",
+  "version": "0.1.0",
+  "description": "MCP Server for video subtitle generation using OpenAI Whisper",
+  "main": "server.py",
+  "type": "module",
+  "dependencies": {
+    "mcp": ">=1.0.0",
+    "pydantic": ">=2.0.0",
+    "openai-whisper": ">=20231117"
+  },
+  "scripts": {
+    "start": "python server.py",
+    "dev": "mcp dev server.py"
+  }
+}
