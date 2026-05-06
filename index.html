@@ -340,48 +340,33 @@ class Coin {
     this.y = y;
     this.value = value;
     this.alive = true;
-    this.vy = -2;
-    this.gravity = 0.06;
+    this.vx = (Math.random() - 0.5) * 2;
+    this.vy = -3;
     this.phase = Math.random() * Math.PI * 2;
-    this.life = 480;
+    this.life = 600;
     this.r = 8;
-    this.attracted = false;
-    this.falling = true;
+    this.age = 0;
   }
   update() {
     this.phase += 0.1;
+    this.age++;
     const dx = player.x - this.x;
     const dy = player.y - this.y;
     const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist < 250) {
-      this.attracted = true;
-    }
-    if (this.attracted) {
-      const speed = Math.max(6, 12 - dist * 0.02);
-      this.x += dx / dist * speed;
-      this.y += dy / dist * speed;
-      if (dist < 25) {
-        this.alive = false;
-        sessionGold += this.value;
-      }
-      this.life = Math.max(this.life, 60);
-      return;
-    }
-    if (this.falling) {
-      this.vy += this.gravity;
+    if (this.age < 10) {
+      this.vy += 0.2;
+      this.x += this.vx;
       this.y += this.vy;
-      this.x += Math.sin(this.phase) * 0.3;
-      if (this.vy > 0) this.vy = Math.min(this.vy, 1.5);
-      if (this.vy >= 0) {
-        this.falling = false;
-        this.vy = 0.8;
-      }
+    } else if (dist < 40) {
+      this.alive = false;
+      sessionGold += this.value;
     } else {
-      this.y += this.vy;
-      this.x += Math.sin(this.phase) * 0.5;
+      const pull = dist < 150 ? 8 : 2;
+      this.x += dx / dist * pull;
+      this.y += dy / dist * pull;
     }
     this.life--;
-    if (this.life <= 0 || this.y > H + 20) this.alive = false;
+    if (this.life <= 0) this.alive = false;
   }
   draw() {
     const alpha = this.life < 60 ? this.life / 60 : 1;
