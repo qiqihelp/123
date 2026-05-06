@@ -286,10 +286,11 @@ let selectedFighter = 'laser';
 
 const saveData = JSON.parse(localStorage.getItem('spaceHunterSave') || 'null') || {
   laser: { weapon: 0, health: 0 },
-  missile: { weapon: 0, health: 0, reload: 0 },
+  missile: { weapon: 0, health: 0, reload: 0, precision: 0 },
   missileUnlocked: false
 };
 if (saveData.missile.reload === undefined) saveData.missile.reload = 0;
+if (saveData.missile.precision === undefined) saveData.missile.precision = 0;
 
 function saveSaveData() {
   localStorage.setItem('spaceHunterSave', JSON.stringify(saveData));
@@ -303,7 +304,8 @@ const UPGRADE_COSTS = {
   missile: {
     weapon: [400, 800],
     health: [300, 600],
-    reload: [300, 500, 700, 900, 1100, 1300, 1500]
+    reload: [300, 500, 700, 900, 1100, 1300, 1500],
+    precision: [2000]
   }
 };
 const MISSILE_UNLOCK_COST = 800;
@@ -506,6 +508,7 @@ class MissilePlayer {
     this.lockDuration = 30;
     this.reloadLevel = saveData.missile.reload;
     this.reloadDuration = Math.max(30, 120 - this.reloadLevel * 12);
+    this.precision = saveData.missile.precision;
   }
   update() {
     let dx = 0, dy = 0;
@@ -530,7 +533,8 @@ class MissilePlayer {
     if (this.state === 'locking') {
       this.lockTimer++;
       this.lockedTargets = this.findTargets();
-      if (this.lockTimer >= this.lockDuration) {
+      const lockDone = this.precision ? true : this.lockTimer >= this.lockDuration;
+      if (lockDone && this.lockedTargets.length > 0) {
         this.fireMissiles();
         this.state = 'reloading';
         this.reloadTimer = this.reloadDuration;
@@ -1303,6 +1307,16 @@ function refreshLobby() {
         : '<span style="color:#556;font-size:12px">已满级</span>'
       }
     </div>`;
+    html += `<div class="upgrade-row">
+      <div class="upgrade-info">
+        <div class="upgrade-name" style="color:#ff44ff">精准打击</div>
+        <div class="upgrade-level">${data.precision ? '<span class="filled">◆</span> 已激活' : '<span class="empty">◇</span> 未激活'} &nbsp;无需锁定直接发射</div>
+      </div>
+      ${data.precision < 1
+        ? `<button class="upgrade-btn" data-type="missile" data-stat="precision" ${gold < costs.precision[0] ? 'disabled' : ''}>${costs.precision[0]}金</button>`
+        : '<span style="color:#556;font-size:12px">已满级</span>'
+      }
+    </div>`;
   }
 
   html += `<div class="upgrade-row">
@@ -1323,7 +1337,7 @@ function refreshLobby() {
       const type = btn.dataset.type;
       const stat = btn.dataset.stat;
       const cost = UPGRADE_COSTS[type][stat][saveData[type][stat]];
-      const maxLevel = stat === 'reload' ? 7 : 2;
+      const maxLevel = stat === 'reload' ? 7 : (stat === 'precision' ? 1 : 2);
       if (gold >= cost && saveData[type][stat] < maxLevel) {
         gold -= cost;
         saveData[type][stat]++;
