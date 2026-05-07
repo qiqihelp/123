@@ -1,0 +1,2 @@
+rootProject.name='MCCommandHelper'
+include ':app'
