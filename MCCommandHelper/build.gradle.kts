@@ -1,7 +1,8 @@
 buildscript {
     repositories {
-        mavenCentral()
+        maven { url = uri("https://repo.huaweicloud.com/repository/maven/") }
         google()
+        mavenCentral()
     }
     dependencies {
         classpath("com.android.tools.build:gradle:8.1.4")
@@ -11,8 +12,9 @@ buildscript {
 
 allprojects {
     repositories {
-        mavenCentral()
+        maven { url = uri("https://repo.huaweicloud.com/repository/maven/") }
         google()
+        mavenCentral()
     }
 }
 
