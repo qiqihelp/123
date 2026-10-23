@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>ECHOFALL · 回声之谷</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: #08080d;
+    color: #e8e8f2;
+    font-family: "Courier New", "Noto Sans Mono CJK SC", "Microsoft YaHei", monospace;
+    overflow: hidden;
+  }
+  #wrap {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+  canvas {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    width: min(96vw, 170.6vh);
+    height: auto;
+    background: #000;
+    outline: none;
+    box-shadow: 0 0 0 2px #23232e, 0 18px 60px rgba(0, 0, 0, 0.8);
+  }
+  #hint {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    opacity: 0.6;
+    text-align: center;
+  }
+  #hint b { color: #ffe15a; }
+</style>
+</head>
+<body>
+  <div id="wrap">
+    <canvas id="game" width="960" height="540" tabindex="0"></canvas>
+    <div id="hint">
+      <b>方向键</b> 移动 / 闪避 &nbsp;·&nbsp; <b>Z</b> 确认 &nbsp;·&nbsp; <b>Shift</b> 精准移动
+    </div>
+  </div>
+{{{ SCRIPT }}}
+</body>
+</html>

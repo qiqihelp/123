@@ -1,0 +1,17 @@
+# Build output
+build/
+build-web/
+cmake-build-*/
+.cache/
+
+# Compiled artefacts
+*.o
+*.a
+*.so
+*.wasm
+*.js.map
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
