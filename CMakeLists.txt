@@ -62,6 +62,7 @@ if(ECHOFALL_BUILD_WEB)
     src/web/web_platform.cpp
   )
   target_link_libraries(echofall_web PRIVATE echofall_core)
+  target_include_directories(echofall_web PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/core)
   set_target_properties(echofall_web PROPERTIES
     OUTPUT_NAME "echofall"
     SUFFIX ".js"
