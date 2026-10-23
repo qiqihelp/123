@@ -278,6 +278,54 @@ void test_ending_routing() {
   (void)st;
 }
 
+// Checks that the dialogue really renders its text and not only the speaker
+// name, and that the "Z: talk" hint shows up when the player is close.
+void test_dialogue_rendering() {
+  Game game;
+  InputState in;
+  Canvas canvas(480, 270);
+
+  tap(in, Key::Z);
+  for (int i = 0; i < 120; ++i) step(game, in);
+  CHECK(game.scene() == Scene::Overworld);
+
+  const Vec2 npc{300.0f, 120.0f};
+  for (int i = 0; i < 800; ++i) {
+    Vec2 p = game.player_pos();
+    float dx = npc.x - p.x;
+    float dy = npc.y - p.y;
+    in.held[static_cast<int>(Key::Right)] = dx > 3.0f;
+    in.held[static_cast<int>(Key::Left)] = dx < -3.0f;
+    in.held[static_cast<int>(Key::Up)] = dy < -3.0f;
+    in.held[static_cast<int>(Key::Down)] = dy > 3.0f;
+    step(game, in);
+    if (dx * dx + dy * dy < 900.0f) break;
+  }
+  for (int i = 0; i < 4; ++i) in.held[i] = false;
+
+  game.draw(canvas);
+  bool has_hint = false;
+  for (const auto& t : canvas.texts()) {
+    if (t.s == "Z: talk") has_hint = true;
+  }
+  CHECK(has_hint);
+
+  tap(in, Key::Z);
+  step(game, in);
+  // Let the typewriter run.
+  for (int i = 0; i < 60; ++i) step(game, in);
+
+  game.draw(canvas);
+  bool has_speaker = false;
+  bool has_body = false;
+  for (const auto& t : canvas.texts()) {
+    if (t.s == "* NOVA") has_speaker = true;
+    if (t.s.find("Hey!") != std::string::npos) has_body = true;
+  }
+  CHECK(has_speaker);
+  CHECK(has_body);
+}
+
 // Walks the whole game: title, three pacifist battles and the ending.
 void test_full_pacifist_run() {
   Game game;
@@ -389,6 +437,7 @@ int main() {
   test_battle_spare_outcome();
   test_battle_kill_outcome();
   test_game_flow_to_battle();
+  test_dialogue_rendering();
   test_ending_routing();
   test_full_pacifist_run();
 

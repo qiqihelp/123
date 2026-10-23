@@ -10,7 +10,7 @@ namespace {
 constexpr int kWidth = 480;
 constexpr int kHeight = 270;
 constexpr int kScale = 2;
-constexpr float kStep = 1.0f / 60.0f;
+constexpr float kMaxStep = 0.1f;
 
 ek::Game g_game(kWidth, kHeight);
 ek::Canvas g_canvas(kWidth, kHeight);
@@ -77,8 +77,18 @@ void poll_input() {
 }
 
 void frame() {
+  // Use the real elapsed time instead of a fixed step so that the game keeps
+  // the right speed even when the browser throttles requestAnimationFrame
+  // (background tabs, low power mode, ...).
+  static double last = emscripten_get_now();
+  const double now = emscripten_get_now();
+  float dt = static_cast<float>((now - last) / 1000.0);
+  last = now;
+  if (dt < 0.0f) dt = 0.0f;
+  if (dt > kMaxStep) dt = kMaxStep;
+
   poll_input();
-  g_game.update(g_input, kStep);
+  g_game.update(g_input, dt);
   g_game.draw(g_canvas);
   ek::web::present(g_canvas.data(), g_canvas.texts());
 }

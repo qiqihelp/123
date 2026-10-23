@@ -534,20 +534,27 @@ void Battle::update_bullets(const InputState& in, float dt) {
   const float soul_r = in.is_held(Key::Shift) ? 3.0f : 5.0f;
   for (Bullet& b : bullets_) {
     if (!b.active) continue;
-    b.x += b.vx * dt;
-    b.y += b.vy * dt;
-    if (b.x < kArenaX - 40.0f || b.x > kArenaX + kArenaW + 40.0f ||
-        b.y < kArenaY - 40.0f || b.y > kArenaY + kArenaH + 40.0f) {
-      b.active = false;
-      continue;
-    }
-    float ddx = b.x - soul_x_;
-    float ddy = b.y - soul_y_;
-    if (std::sqrt(ddx * ddx + ddy * ddy) < b.r + soul_r) {
-      b.active = false;
-      if (invuln_ <= 0.0f) {
-        int dmg = std::max(1, enemy_.atk - stats_->def);
-        damage_player(dmg);
+    // Move in small steps so that fast bullets cannot tunnel through the
+    // soul when the frame time is long.
+    const float mx = b.vx * dt;
+    const float my = b.vy * dt;
+    const int steps = std::max(1, static_cast<int>(std::ceil(std::sqrt(mx * mx + my * my) / 3.0f)));
+    for (int s = 0; s < steps && b.active; ++s) {
+      b.x += mx / static_cast<float>(steps);
+      b.y += my / static_cast<float>(steps);
+      if (b.x < kArenaX - 40.0f || b.x > kArenaX + kArenaW + 40.0f ||
+          b.y < kArenaY - 40.0f || b.y > kArenaY + kArenaH + 40.0f) {
+        b.active = false;
+        break;
+      }
+      const float ddx = b.x - soul_x_;
+      const float ddy = b.y - soul_y_;
+      if (std::sqrt(ddx * ddx + ddy * ddy) < b.r + soul_r) {
+        b.active = false;
+        if (invuln_ <= 0.0f) {
+          const int dmg = std::max(1, enemy_.atk - stats_->def);
+          damage_player(dmg);
+        }
       }
     }
   }
