@@ -31,6 +31,8 @@ class Canvas {
   // Draws a sprite whose pixels are replaced by a flat colour (used for
   // flashing / silhouettes).
   void blit_solid(const Sprite& s, float x, float y, float scale, Color c, bool flip_x = false);
+  // Shifts the pixel buffer, used for the screen shake on hit.
+  void scroll(int dx, int dy);
   // Queues a text run; text is rendered on top of the framebuffer by the
   // platform layer.
   void text(const std::string& s, float x, float y, float size, Color c,

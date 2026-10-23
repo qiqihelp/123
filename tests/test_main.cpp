@@ -278,6 +278,104 @@ void test_ending_routing() {
   (void)st;
 }
 
+// Walks the whole game: title, three pacifist battles and the ending.
+void test_full_pacifist_run() {
+  Game game;
+  InputState in;
+
+  tap(in, Key::Z);
+  for (int i = 0; i < 120; ++i) step(game, in);
+  CHECK(game.scene() == Scene::Overworld);
+
+  // The test never dodges, so give the player enough health to survive the
+  // three bullet phases.
+  game.stats().hp = 100000;
+  game.stats().max_hp = 100000;
+
+  const Vec2 npc_positions[3] = {{300.0f, 120.0f}, {250.0f, 110.0f}, {300.0f, 118.0f}};
+
+  for (int stage = 0; stage < 3; ++stage) {
+    const Vec2 npc = npc_positions[stage];
+    for (int i = 0; i < 800; ++i) {
+      Vec2 p = game.player_pos();
+      float dx = npc.x - p.x;
+      float dy = npc.y - p.y;
+      in.held[static_cast<int>(Key::Right)] = dx > 3.0f;
+      in.held[static_cast<int>(Key::Left)] = dx < -3.0f;
+      in.held[static_cast<int>(Key::Up)] = dy < -3.0f;
+      in.held[static_cast<int>(Key::Down)] = dy > 3.0f;
+      step(game, in);
+      if (dx * dx + dy * dy < 900.0f) break;
+    }
+    for (int i = 0; i < 4; ++i) in.held[i] = false;
+
+    tap(in, Key::Z);
+    for (int i = 0; i < 1200; ++i) {
+      if (i % 6 == 0) tap(in, Key::Z);
+      step(game, in);
+      if (game.scene() == Scene::Battle) break;
+    }
+    CHECK(game.scene() == Scene::Battle);
+
+    // Skip the introduction.
+    for (int i = 0; i < 900 && game.battle().phase() != BattlePhase::Menu; ++i) {
+      tap(in, Key::Z);
+      step(game, in);
+    }
+    CHECK(game.battle().phase() == BattlePhase::Menu);
+
+    // ACT -> the third option (a kind one).
+    tap(in, Key::Right);
+    step(game, in);
+    tap(in, Key::Z);
+    step(game, in);
+    CHECK(game.battle().phase() == BattlePhase::ActMenu);
+    tap(in, Key::Down);
+    step(game, in);
+    tap(in, Key::Down);
+    step(game, in);
+    tap(in, Key::Z);
+    step(game, in);
+    CHECK(game.battle().phase() == BattlePhase::EnemyTurn);
+    CHECK(game.stats().kindness == stage + 1);
+
+    // Let the enemy talk and shoot.
+    for (int i = 0; i < 1200 && game.battle().phase() != BattlePhase::Bullets; ++i) {
+      tap(in, Key::Z);
+      step(game, in);
+    }
+    CHECK(game.battle().phase() == BattlePhase::Bullets);
+    for (int i = 0; i < 1800 && game.battle().phase() == BattlePhase::Bullets; ++i) {
+      step(game, in);
+    }
+    CHECK(game.battle().phase() == BattlePhase::Menu);
+
+    // MERCY -> SPARE.
+    tap(in, Key::Down);
+    step(game, in);
+    tap(in, Key::Right);
+    step(game, in);
+    tap(in, Key::Z);
+    step(game, in);
+    CHECK(game.battle().phase() == BattlePhase::MercyMenu);
+    tap(in, Key::Z);
+    step(game, in);
+    for (int i = 0; i < 900 && game.scene() == Scene::Battle; ++i) {
+      tap(in, Key::Z);
+      step(game, in);
+    }
+    CHECK(game.stats().spares == stage + 1);
+    CHECK(game.stats().kills == 0);
+  }
+
+  for (int i = 0; i < 300 && game.scene() != Scene::Ending; ++i) step(game, in);
+  CHECK(game.scene() == Scene::Ending);
+  CHECK(!game.ending_title().empty());
+  if (!game.ending_title().empty()) {
+    CHECK(game.ending_title()[0] == "TRUE PACIFIST ENDING");
+  }
+}
+
 }  // namespace
 
 int main() {
@@ -292,6 +390,7 @@ int main() {
   test_battle_kill_outcome();
   test_game_flow_to_battle();
   test_ending_routing();
+  test_full_pacifist_run();
 
   std::printf("%d checks, %d failures\n", g_checks, g_failures);
   return g_failures == 0 ? 0 : 1;

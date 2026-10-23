@@ -21,6 +21,7 @@ EM_JS(void, ek_js_init, (int width, int height, int scale), {
   off.height = height;
   const octx = off.getContext('2d');
   window.__ek = { ctx: ctx, off: off, octx: octx, w: width, h: height, scale: scale };
+  window.__ekDecoder = new TextDecoder('utf-8');
   window.__ekFont =
       '"Courier New", "Noto Sans Mono CJK SC", "Microsoft YaHei", "PingFang SC", ' +
       '"WenQuanYi Micro Hei", monospace';
@@ -37,15 +38,16 @@ EM_JS(void, ek_js_present, (const unsigned int* pixels), {
   e.ctx.drawImage(e.off, 0, 0, e.w * e.scale, e.h * e.scale);
 });
 
-EM_JS(float, ek_js_measure, (const char* text, float size), {
+EM_JS(float, ek_js_measure, (const char* text, int len, float size), {
   const e = window.__ek;
   if (!e) return 0;
+  const s = window.__ekDecoder.decode(HEAPU8.subarray(text, text + len));
   e.ctx.font = 'bold ' + (size * e.scale) + 'px ' + window.__ekFont;
-  return e.ctx.measureText(UTF8ToString(text)).width / e.scale;
+  return e.ctx.measureText(s).width / e.scale;
 });
 
-EM_JS(void, ek_js_text, (const char* text, float x, float y, float size, int r, int g, int b,
-                         int align, int bold), {
+EM_JS(void, ek_js_text, (const char* text, int len, float x, float y, float size, int r, int g,
+                         int b, int align, int bold), {
   const e = window.__ek;
   if (!e) return;
   const ctx = e.ctx;
@@ -53,7 +55,7 @@ EM_JS(void, ek_js_text, (const char* text, float x, float y, float size, int r, 
   ctx.font = (bold ? 'bold ' : '') + (size * e.scale) + 'px ' + window.__ekFont;
   ctx.fillStyle = 'rgb(' + r + ',' + g + ',' + b + ')';
   ctx.textBaseline = 'top';
-  const s = UTF8ToString(text);
+  const s = window.__ekDecoder.decode(HEAPU8.subarray(text, text + len));
   const w = ctx.measureText(s).width;
   let px = x * e.scale;
   if (align === 1) px -= w * 0.5;
@@ -77,8 +79,8 @@ void present(const uint32_t* pixels, const std::vector<TextCmd>& cmds) {
     int align = 0;
     if (cmd.align == TextAlign::Center) align = 1;
     else if (cmd.align == TextAlign::Right) align = 2;
-    ek_js_text(cmd.s.c_str(), cmd.x, cmd.y, cmd.size, cmd.color.r, cmd.color.g, cmd.color.b,
-               align, cmd.bold ? 1 : 0);
+    ek_js_text(cmd.s.c_str(), static_cast<int>(cmd.s.size()), cmd.x, cmd.y, cmd.size, cmd.color.r,
+               cmd.color.g, cmd.color.b, align, cmd.bold ? 1 : 0);
   }
 }
 
@@ -87,7 +89,7 @@ void present(const uint32_t* pixels, const std::vector<TextCmd>& cmds) {
 namespace platform {
 
 float text_width(const std::string& utf8, float size) {
-  return ek_js_measure(utf8.c_str(), size);
+  return ek_js_measure(utf8.c_str(), static_cast<int>(utf8.size()), size);
 }
 
 void draw_texts(const std::vector<TextCmd>& cmds) {

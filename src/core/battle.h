@@ -111,6 +111,7 @@ class Battle {
   void draw_submenu(Canvas& c);
   void draw_soul(Canvas& c);
   void draw_player_status(Canvas& c);
+  void apply_hit_effects(Canvas& c);
 
   std::vector<std::string> current_items() const;
   std::vector<std::string> current_mercy() const;

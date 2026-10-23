@@ -108,7 +108,16 @@ bool Overworld::blocked(float cx, float cy) const {
 }
 
 void Overworld::start_dialogue() {
-  dialogue_.start(stage_dialogue(stage_));
+  std::vector<DialogueLine> lines;
+  // The residents notice how the player treats the others.
+  if (stats_.kills >= 2) {
+    lines.push_back({npc_name(stage_), "You killed them. Both of them."});
+    lines.push_back({npc_name(stage_), "Please... don't do that."});
+  } else if (stats_.kills == 1) {
+    lines.push_back({npc_name(stage_), "You smell like blood."});
+  }
+  for (const DialogueLine& line : stage_dialogue(stage_)) lines.push_back(line);
+  dialogue_.start(lines);
 }
 
 void Overworld::update(const InputState& in, float dt) {

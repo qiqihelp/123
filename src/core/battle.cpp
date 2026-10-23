@@ -208,10 +208,12 @@ void Battle::update_menu(const InputState& in, float dt) {
   (void)dt;
   int col = menu_index_ % 2;
   int row = menu_index_ / 2;
-  if (in.is_pressed(Key::Left)) col = 1 - col;
-  if (in.is_pressed(Key::Right)) col = 1 - col;
-  if (in.is_pressed(Key::Up)) row = 1 - row;
-  if (in.is_pressed(Key::Down)) row = 1 - row;
+  // The menu is a 2x2 grid; the cursor moves to the neighbouring cell and
+  // stops at the border.
+  if (in.is_pressed(Key::Left)) col = std::max(0, col - 1);
+  if (in.is_pressed(Key::Right)) col = std::min(1, col + 1);
+  if (in.is_pressed(Key::Up)) row = std::max(0, row - 1);
+  if (in.is_pressed(Key::Down)) row = std::min(1, row + 1);
   menu_index_ = row * 2 + col;
 
   if (!in.is_pressed(Key::Z)) return;
@@ -612,6 +614,7 @@ void Battle::draw(Canvas& c) {
   if (phase_ == BattlePhase::Bullets) {
     draw_message_box(c);
     draw_soul(c);
+    apply_hit_effects(c);
     return;
   }
 
@@ -620,6 +623,21 @@ void Battle::draw(Canvas& c) {
   if (phase_ == BattlePhase::ActMenu || phase_ == BattlePhase::ItemMenu ||
       phase_ == BattlePhase::MercyMenu) {
     draw_submenu(c);
+  }
+  apply_hit_effects(c);
+}
+
+// Screen shake and the red flash that follow a hit.
+void Battle::apply_hit_effects(Canvas& c) {
+  if (flash_ > 0.0f) {
+    const uint8_t alpha = static_cast<uint8_t>(120.0f * flash_ / 0.18f);
+    c.fill_rect(0.0f, 0.0f, 480.0f, 270.0f, Color{255, 40, 50, alpha});
+  }
+  if (shake_ > 0.0f) {
+    const float amount = shake_ * 16.0f;
+    const int dx = static_cast<int>((rand01(rng_) - 0.5f) * amount);
+    const int dy = static_cast<int>((rand01(rng_) - 0.5f) * amount);
+    c.scroll(dx, dy);
   }
 }
 

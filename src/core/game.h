@@ -28,10 +28,13 @@ class Game {
   const PlayerStats& stats() const { return stats_; }
   Vec2 player_pos() const { return overworld_.player_pos(); }
   const std::vector<std::string>& ending_title() const { return ending_title_; }
+  Battle& battle() { return battle_; }
+  const Battle& battle() const { return battle_; }
 
   // Test helpers.
   void skip_to_battle(int enemy_index);
   void skip_to_overworld(int stage);
+  void skip_to_ending();
 
  private:
   void update_title(const InputState& in, float dt);

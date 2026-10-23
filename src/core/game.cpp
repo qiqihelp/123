@@ -294,4 +294,10 @@ void Game::skip_to_overworld(int stage) {
   has_pending_ = false;
 }
 
+void Game::skip_to_ending() {
+  build_ending();
+  scene_ = Scene::Ending;
+  has_pending_ = false;
+}
+
 }  // namespace ek

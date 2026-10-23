@@ -22,6 +22,21 @@ void Canvas::clear(Color c) {
   texts_.clear();
 }
 
+void Canvas::scroll(int dx, int dy) {
+  if (dx == 0 && dy == 0) return;
+  const std::vector<uint32_t> copy = px_;
+  for (int y = 0; y < h_; ++y) {
+    for (int x = 0; x < w_; ++x) {
+      const int sx = x - dx;
+      const int sy = y - dy;
+      px_[static_cast<size_t>(y) * w_ + x] =
+          (sx >= 0 && sx < w_ && sy >= 0 && sy < h_)
+              ? copy[static_cast<size_t>(sy) * w_ + sx]
+              : 0u;
+    }
+  }
+}
+
 void Canvas::text(const std::string& s, float x, float y, float size, Color c,
                   TextAlign align, bool bold) {
   TextCmd cmd;
