@@ -13,6 +13,9 @@ concurrency:
   group: pages-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  EMSDK_VERSION: "4.0.23"
+
 jobs:
   native:
     name: Native build & tests
@@ -37,20 +40,33 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Emscripten
-        uses: mymindstorm/setup-emsdk@v2
+      - name: Cache Emscripten
+        uses: actions/cache@v4
         with:
-          version: 4.0.23
+          path: emsdk
+          key: emsdk-${{ runner.os }}-${{ env.EMSDK_VERSION }}
+
+      - name: Install Emscripten
+        run: |
+          if [ ! -x emsdk/emsdk ]; then
+            git clone --depth 1 https://github.com/emscripten-core/emsdk.git emsdk
+          fi
+          ./emsdk/emsdk install "$EMSDK_VERSION"
+          ./emsdk/emsdk activate "$EMSDK_VERSION"
 
       - name: Configure
         run: |
+          source emsdk/emsdk_env.sh > /dev/null 2>&1
           emcmake cmake -S . -B build-web \
             -DCMAKE_BUILD_TYPE=Release \
             -DECHOFALL_BUILD_WEB=ON \
             -DECHOFALL_BUILD_TESTS=OFF
 
       - name: Build
-        run: cmake --build build-web -j2 --target echofall_web
+        run: |
+          source emsdk/emsdk_env.sh > /dev/null 2>&1
+          cmake --build build-web -j2 --target echofall_web
+          ls -la build-web
 
       - name: Package for GitHub Pages
         uses: actions/upload-pages-artifact@v3
