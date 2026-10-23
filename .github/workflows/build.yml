@@ -68,6 +68,18 @@ jobs:
           cmake --build build-web -j2 --target echofall_web
           ls -la build-web
 
+      - name: Build single file bundle
+        continue-on-error: true
+        run: |
+          source emsdk/emsdk_env.sh > /dev/null 2>&1
+          emcmake cmake -S . -B build-web-single \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DECHOFALL_BUILD_WEB=OFF \
+            -DECHOFALL_BUILD_WEB_SINGLE=ON \
+            -DECHOFALL_BUILD_TESTS=OFF
+          cmake --build build-web-single -j2 --target echofall_web_single
+          ls -la build-web-single
+
       - name: Package for GitHub Pages
         uses: actions/upload-pages-artifact@v3
         continue-on-error: true
@@ -84,3 +96,11 @@ jobs:
           name: echofall-web
           path: build-web
           if-no-files-found: error
+
+      - name: Upload single file artifact
+        uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: echofall-single-file
+          path: build-web-single
+          if-no-files-found: warn

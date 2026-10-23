@@ -54,20 +54,26 @@ endif()
 
 # ---------------------------------------------------------------------------
 # WebAssembly front end (built with emcmake).
+#
+# The output is named *.html on purpose: emscripten only writes the page
+# shell when the output file is an html file. The page then loads the
+# matching .js and .wasm files next to it.
 # ---------------------------------------------------------------------------
 option(ECHOFALL_BUILD_WEB "Build the WebAssembly front end" OFF)
-if(ECHOFALL_BUILD_WEB)
-  add_executable(echofall_web
+option(ECHOFALL_BUILD_WEB_SINGLE "Build a self contained single file bundle" OFF)
+
+function(echofall_add_web_target target output single_file)
+  add_executable(${target}
     src/web/web_main.cpp
     src/web/web_platform.cpp
   )
-  target_link_libraries(echofall_web PRIVATE echofall_core)
-  target_include_directories(echofall_web PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/core)
-  set_target_properties(echofall_web PROPERTIES
-    OUTPUT_NAME "echofall"
-    SUFFIX ".js"
+  target_link_libraries(${target} PRIVATE echofall_core)
+  target_include_directories(${target} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/core)
+  set_target_properties(${target} PROPERTIES
+    OUTPUT_NAME "${output}"
+    SUFFIX ".html"
   )
-  target_link_options(echofall_web PRIVATE
+  target_link_options(${target} PRIVATE
     -O3
     --shell-file ${CMAKE_CURRENT_SOURCE_DIR}/src/web/shell.html
     -sALLOW_MEMORY_GROWTH=1
@@ -77,4 +83,17 @@ if(ECHOFALL_BUILD_WEB)
     -sMODULARIZE=0
     -sENVIRONMENT=web
   )
+  if(single_file)
+    # Everything (js + wasm) is embedded into the html file, so the game can
+    # be played by opening it straight from the file system.
+    target_link_options(${target} PRIVATE -sSINGLE_FILE=1)
+  endif()
+endfunction()
+
+if(ECHOFALL_BUILD_WEB)
+  echofall_add_web_target(echofall_web index OFF)
+endif()
+
+if(ECHOFALL_BUILD_WEB_SINGLE)
+  echofall_add_web_target(echofall_web_single echofall-single ON)
 endif()
