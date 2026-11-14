@@ -15,7 +15,7 @@ const AIR = 0, DIRT = 1, GRASS = 2, STONE = 3, LOG = 4, LEAVES = 5, COPPER = 6, 
       URANIUM = 59, DRONE_MINE = 60, DRONE_ORE = 61, DRONE_GUARD = 62, DRONE_TRANS = 63, SOLAR = 64, COALGEN = 65, BATTERY = 66,
       REACTOR = 67, CENTRIFUGE = 68, RTG = 69,
       TITANIUM = 70, PLATINUM = 71, LITHIUM = 72, THORIUM = 73, AMETHYST = 74, SULFUR = 75,
-      DRONE_SCAN = 76, DRONE_LUMBER = 77, DRONE_MEDIC = 78, DRONE_LAMP = 79, FUSION = 80, TESLA = 81, NT = 82;
+      DRONE_SCAN = 76, DRONE_LUMBER = 77, DRONE_MEDIC = 78, DRONE_LAMP = 79, FUSION = 80, TESLA = 81, REGEN = 82, NT = 83;
 
 // solid, 挖掘耗时(秒), 掉落物品, 碎屑颜色
 const TILE = [
@@ -62,7 +62,7 @@ const TILE = [
  [1, 2.4, 'titanium', '#8fb8c8'], [1, 2.0, 'platinum', '#e8f0f0'], [1, 1.4, 'lithium', '#ff9ad0'], [1, 2.2, 'thorium', '#ff8a2a'],
  [1, 2.0, 'amethyst', '#b05aff'], [1, 1.0, 'sulfur', '#e8e03a'],
  [0, 1.0, 'drone_scan', '#b05aff'], [0, 1.0, 'drone_lumber', '#b5834a'], [0, 1.0, 'drone_medic', '#ff8ab0'], [0, 1.0, 'drone_lamp', '#fff6b0'],
- [0, 1.0, 'fusion', '#3a6ad0'], [0, 1.0, 'tesla', '#7ad0ff'],
+ [0, 1.0, 'fusion', '#3a6ad0'], [0, 1.0, 'tesla', '#7ad0ff'], [0, 1.0, 'regen', '#5fd6a0'],
 ].forEach(([solid, hard, drop, col]) => TILE.push({ solid, hard, drop, col }));
 const SOLID = TILE.map(t => t.solid);
 const OPAQUE = TILE.map((t, i) => (t.solid && i !== GLASS && !(i >= GLASS_R && i <= GLASS_G)) ? 1 : 0);
@@ -76,7 +76,8 @@ EMIT[URANIUM] = 5; EMIT[REACTOR] = 10; EMIT[RTG] = 6; GLOW[REACTOR] = '90,255,90
 const NEEDS_FLOOR = new Uint8Array(NT);
 [BENCH, FURNACE, CHEST, MUSHROOM, FLOWER, CRYSTAL, CAMPFIRE, CANDLE, CHAIR, TABLE, BOOKSHELF, BED, ANVIL, SAPLING, FLOWER_B, FLOWER_Y, POT, STATUE, GLOWSHROOM,
  DRONE_MINE, DRONE_ORE, DRONE_GUARD, DRONE_TRANS, SOLAR, COALGEN, BATTERY, REACTOR, CENTRIFUGE, RTG,
- DRONE_SCAN, DRONE_LUMBER, DRONE_MEDIC, DRONE_LAMP, FUSION, TESLA].forEach(t => { NEEDS_FLOOR[t] = 1; });
+ DRONE_SCAN, DRONE_LUMBER, DRONE_MEDIC, DRONE_LAMP, FUSION, TESLA, REGEN].forEach(t => { NEEDS_FLOOR[t] = 1; });
+EMIT[REGEN] = 7;
 // v5 新矿脉：[矿, 数量, 最小深度, 大小]
 const OLD_VEINS = [[COAL, 120, 3, 8], [COPPER, 110, 5, 7], [IRON, 80, 18, 6], [GOLD, 50, 42, 5], [DIAMOND, 26, 66, 4], [URANIUM, 24, 62, 5], [SILVER, 60, 30, 6], [EMERALD, 26, 52, 4], [RUBY, 20, 78, 4]];
 const NEW_VEINS = [[SULFUR, 60, 12, 6], [LITHIUM, 50, 26, 5], [AMETHYST, 26, 40, 4], [TITANIUM, 40, 48, 5], [PLATINUM, 30, 58, 4], [THORIUM, 22, 68, 5]];
@@ -371,12 +372,20 @@ const ITEMS = {
   drone_lamp:   { n: '照明无人机', k: 'block', tile: DRONE_LAMP,   d: '跟着你飞，把周围照得很亮' },
   fusion:      { n: '聚变反应堆', k: 'block', tile: FUSION, d: '烧聚变燃料发电 100/秒，终极电源' },
   tesla:       { n: '特斯拉线圈', k: 'block', tile: TESLA,  d: '耗电电击 7 格内的敌人' },
+  // ── v6：区块再生 ──
+  regen:       { n: '区块再生机', k: 'block', tile: REGEN, d: '地下按 16×8=128 格分成区块。选附近的区块让它重新长满岩石和随机矿物，非常耗电' },
+  core_rich:   { n: '矿物增生核心', k: 'res', d: '再生机专属：再生出的矿物 +60%（最多 3 个）' },
+  core_fast:   { n: '再生之力核心', k: 'res', d: '再生机专属：再生速度 +60%（最多 3 个）' },
+  core_wide:   { n: '扩张之力核心', k: 'res', d: '再生机专属：可多选 1 个区块排队再生，可选范围也更大（最多 2 个）' },
+  core_rare:   { n: '稀有之力核心', k: 'res', d: '再生机专属：更容易长出稀有矿物（最多 2 个）' },
+  core_eco:    { n: '节能核心',     k: 'res', d: '再生机专属：耗电 -30%（最多 2 个）' },
 };
 // 商店：[物品, 数量, 价格]
 const SHOP = [['torch', 10, 5], ['rope', 10, 12], ['arrow', 20, 10], ['potion', 1, 15], ['bomb', 3, 25],
   ['solar', 1, 60], ['coalgen', 1, 90], ['battery', 1, 120], ['drone_mine', 1, 150], ['drone_ore', 1, 240], ['drone_guard', 1, 200], ['drone_trans', 1, 220],
   ['mod_range', 1, 150], ['mod_speed', 1, 150], ['centrifuge', 1, 350], ['reactor', 1, 700], ['jetpack', 1, 900], ['pick_laser', 1, 1200],
-  ['stim', 1, 20], ['drone_lamp', 1, 160], ['drone_lumber', 1, 180], ['drone_scan', 1, 260], ['drone_medic', 1, 300], ['hazmat', 1, 350], ['tesla', 1, 380], ['core_up', 1, 400], ['gun_laser', 1, 800]];
+  ['stim', 1, 20], ['drone_lamp', 1, 160], ['drone_lumber', 1, 180], ['drone_scan', 1, 260], ['drone_medic', 1, 300], ['hazmat', 1, 350], ['tesla', 1, 380], ['core_up', 1, 400], ['gun_laser', 1, 800],
+  ['regen', 1, 600], ['core_eco', 1, 300], ['core_fast', 1, 350], ['core_rich', 1, 350], ['core_rare', 1, 450], ['core_wide', 1, 500]];
 // 可卖出的物品单价
 const SELL = { coal: 1, gel: 1, bone: 2, cloth: 2, wing: 3, copper: 2, iron: 3, silver: 5, gold: 8, bar_copper: 7, bar_iron: 10, bar_silver: 16, bar_gold: 25,
   emerald: 30, diamond: 40, ruby: 60, uranium: 25, fuel_rod: 110, plutonium: 150, obsidian: 3, crystal: 30, glowshroom: 2, apple: 1, mushroom: 1,
@@ -892,6 +901,11 @@ function buildArt() {
   spr('cell_fusion', ['.dddd.', '.suud.', '.swud.', '.suud.', '.suud.', '.suud.', '.suud.', '.dddd.']);
   bombI('bomb_h', '#4aa0ff', '#d0f0ff', '#2060c0'); { const i = ICON.bomb_h; ir(i, 6, 8, 4, 1, '#1a1208'); ir(i, 7, 10, 2, 2, '#1a1208'); ir(i, 5, 11, 1, 1, '#1a1208'); ir(i, 10, 11, 1, 1, '#1a1208'); }
   spr('core_up', ['..dddd..', '.dmmmmd.', 'dmMwwMmd', 'dmwyywmd', 'dmwyywmd', 'dmMwwMmd', '.dmmmmd.', '..dddd..']);
+  rect(REGEN, 1, 4, 14, 12, '#2a5a4a'); rect(REGEN, 1, 4, 14, 1, '#7fe0b8'); rect(REGEN, 1, 4, 1, 12, '#4a9a80'); rect(REGEN, 4, 7, 8, 6, '#0c2a20'); rect(REGEN, 5, 8, 2, 2, '#787c85'); rect(REGEN, 7, 8, 2, 2, '#ffd84a'); rect(REGEN, 9, 8, 2, 2, '#787c85'); rect(REGEN, 5, 10, 2, 2, '#3ad0e0'); rect(REGEN, 7, 10, 2, 2, '#787c85'); rect(REGEN, 9, 10, 2, 2, '#e03a4a');
+  rect(REGEN, 6, 1, 4, 3, '#9aa0aa'); rect(REGEN, 7, 0, 2, 1, '#7fe0b8'); for (let x = 1; x < 15; x++) px(REGEN * T + x, 15, x % 4 < 2 ? '#7fe0b8' : '#1a1208');
+  const coreI = (id, a, b, c) => { const i = reg(id); ir(i, 5, 3, 6, 10, '#5c5f66'); ir(i, 3, 5, 10, 6, '#5c5f66'); ir(i, 4, 4, 8, 8, '#5c5f66'); ir(i, 5, 5, 6, 6, a); ir(i, 6, 4, 4, 8, a); ir(i, 4, 6, 8, 4, a); ir(i, 6, 6, 4, 4, b); ir(i, 7, 7, 2, 2, c); };
+  coreI('core_rich', '#c8703a', '#ffd84a', '#ffffff'); coreI('core_fast', '#1f8f6a', '#7fe0b8', '#ffffff'); coreI('core_wide', '#2060c0', '#7ad0ff', '#ffffff');
+  coreI('core_rare', '#8a1424', '#ff8ab0', '#ffffff'); coreI('core_eco', '#6a707a', '#e8e03a', '#1a1208');
   spr('core_nuke', ['..dddd..', '.dffffd.', 'dfFkkFfd', 'dfkwwkfd', 'dfkwwkfd', 'dfFkkFfd', '.dffffd.', '..dddd..']);
 }
 
@@ -1183,7 +1197,6 @@ function regrowOre() {
   }
 }
 function slowTick() {
-  if (++regrowT >= 15) { regrowT = 0; regrowOre(); }
   nearFire = nearStation(CAMPFIRE);
   const act = Object.keys(buffs).filter(b => buffs[b] > 0).map(b => BUFF_NAME[b] + Math.ceil(buffs[b]) + 's');
   if (nearFire) act.push('篝火');
@@ -1410,6 +1423,63 @@ MACH[DRONE_MEDIC]  = { n: '医疗无人机基座', cap: 150, drone: 'medic', col
 MACH[DRONE_LAMP]   = { n: '照明无人机基座', cap: 150, drone: 'lamp', col: '#fff6b0' };
 MACH[FUSION]       = { n: '聚变反应堆', gen: 100 };
 MACH[TESLA]        = { n: '特斯拉线圈', cap: 150 };
+MACH[REGEN]        = { n: '区块再生机', cap: 400 };
+// 区块：16×8 = 128 格
+const CKW = 16, CKH = 8, CKCOLS = Math.ceil(W / CKW), CKROWS = Math.ceil(H / CKH);
+const RCORES = [['rich', 'core_rich', 3], ['fast', 'core_fast', 3], ['wide', 'core_wide', 2], ['rare', 'core_rare', 2], ['eco', 'core_eco', 2]];
+function chunkInfo(c) { // [矿物数, 空洞数, 可再生的地下格数]
+  const x0 = (c % CKCOLS) * CKW, y0 = ((c / CKCOLS) | 0) * CKH; let ore = 0, air = 0, tot = 0;
+  for (let y = y0; y < Math.min(H - 2, y0 + CKH); y++) for (let x = Math.max(1, x0); x < Math.min(W - 1, x0 + CKW); x++) {
+    const i = y * W + x; if (!walls[i]) continue; tot++;
+    if (ORE_SET[tiles[i]]) ore++; else if (tiles[i] === AIR) air++;
+  }
+  return [ore, air, tot];
+}
+// 让一个区块重新长满岩石，并随机生成矿物。玩家放置的东西不会被动
+function regenChunk(c, m) {
+  const k = m.k || {}, cx = c % CKCOLS, cy = (c / CKCOLS) | 0, x0 = cx * CKW, y0 = cy * CKH, x1 = Math.min(W - 1, x0 + CKW), y1 = Math.min(H - 2, y0 + CKH);
+  const pcx = player.x + player.w / 2, pcy = player.y + player.h / 2;
+  for (let y = y0; y < y1; y++) for (let x = Math.max(1, x0); x < x1; x++) {
+    const i = y * W + x, t = tiles[i];
+    if (!walls[i] || !(t === AIR || t === STONE || t === DIRT || ORE_SET[t])) continue;
+    if (t === AIR && ((Math.abs(x + 0.5 - pcx) < 2.5 && Math.abs(y + 0.5 - pcy) < 3) || (Math.abs(x - m.x) <= 3 && y <= m.y && y >= m.y - 3))) continue; // 给玩家和机器留出空间
+    tiles[i] = Math.random() < 0.1 ? DIRT : STONE;
+  }
+  const depth = y0 + CKH / 2 - surf[clamp(x0 + CKW / 2, 0, W - 1)];
+  const specs = OLD_VEINS.concat(NEW_VEINS).filter(v => v[2] <= depth);
+  let made = 0;
+  if (specs.length) {
+    const wt = specs.map(v => Math.pow(v[1], 1 - 0.45 * (k.rare || 0)) * (1 + (k.rare || 0) * v[2] / 40)), sum = wt.reduce((a, b) => a + b, 0);
+    const veins = Math.round((2.5 + Math.random() * 1.5) * (1 + 0.6 * (k.rich || 0)));
+    for (let n = 0; n < veins; n++) {
+      let r = Math.random() * sum, q = 0; while (q < specs.length - 1 && (r -= wt[q]) > 0) q++;
+      let x = x0 + Math.floor(Math.random() * CKW), y = y0 + Math.floor(Math.random() * CKH);
+      for (let st = 0; st < specs[q][3]; st++) {
+        if (x >= Math.max(1, x0) && x < x1 && y >= y0 && y < y1 && tiles[y * W + x] === STONE && walls[y * W + x]) { tiles[y * W + x] = specs[q][0]; made++; }
+        x += Math.floor(Math.random() * 3) - 1; y += Math.floor(Math.random() * 3) - 1;
+      }
+    }
+  }
+  enemies = enemies.filter(e => !(e.x >= x0 && e.x < x1 && e.y >= y0 && e.y < y1));
+  lightVer++;
+  return made;
+}
+function ckOf(m) { return ((m.y / CKH) | 0) * CKCOLS + ((m.x / CKW) | 0); }
+// 再生机可选的区块：以所在区块为中心的 3 列 × 3 行（装扩张核心后 5 行），-1 表示超出地图
+function regenNear(m) {
+  const cx = (m.x / CKW) | 0, cy = (m.y / CKH) | 0, out = [], ry = (m.k && m.k.wide) ? 2 : 1;
+  for (let dy = -ry; dy <= ry; dy++) for (let dx = -1; dx <= 1; dx++) {
+    const x = cx + dx, y = cy + dy; out.push(x < 0 || x >= CKCOLS || y < 0 || y >= CKROWS ? -1 : y * CKCOLS + x);
+  }
+  return out;
+}
+function chunkToggle(m, c) {
+  m.q = m.q || [];
+  const at = m.q.indexOf(c), lim = 1 + ((m.k && m.k.wide) || 0);
+  if (at >= 0) { m.q.splice(at, 1); if (at === 0) m.p = 0; return; }
+  if (m.q.length >= lim) return toast(lim > 1 ? '最多同时选 ' + lim + ' 个区块' : '一次只能选 1 个区块（装「扩张之力核心」可以多选）', 2500);
+  m.q.push(c);
+}
 let lampLv = 0, machTouch = false;
 const ORE_SET = new Uint8Array(NT);
 [COPPER, IRON, GOLD, COAL, DIAMOND, SILVER, RUBY, EMERALD, URANIUM, TITANIUM, PLATINUM, LITHIUM, THORIUM, AMETHYST, SULFUR].forEach(t => { ORE_SET[t] = 1; });
@@ -1418,12 +1488,14 @@ let machines = {}, selMode = null, selDrag = null, lift = null, machOpen = -1, p
 
 function newMachine(t, i) {
   const m = { t, e: 0, i, x: i % W, y: (i / W) | 0 };
+  if (t === REGEN) { m.k = {}; m.q = []; }
   if (MACH[t].drone) { m.e = 40; m.r = 0; m.s = 0; m.c = 0; m.on = /guard|lumber|medic|lamp/.test(MACH[t].drone); }
   return m;
 }
 function removeMachine(i) {
   const m = machines[i]; if (!m) return;
   if (m.r) give('mod_range', m.r); if (m.s) give('mod_speed', m.s); if (m.c) give('core_up', m.c); if (m.nk) give('core_nuke', 1); if (m.cells) give('cell_fusion', m.cells);
+  if (m.k) RCORES.forEach(([key, id]) => { if (m.k[key]) give(id, m.k[key]); });
   if (m.pu) give('plutonium', m.pu); if (m.rod) give('fuel_rod', m.rod); if (m.rods) give('fuel_rod', m.rods); if (m.u) give('uranium', m.u);
   delete machines[i];
   if (machOpen === i) closeMach();
@@ -1463,6 +1535,15 @@ function powerTick(dt) {
       if (m.fuel > 0) {
         m.out = feed(m, def.gen * dt, true) / dt; m.fuel -= dt;
         if (m.fuel <= 0) { m.pu = (m.pu || 0) + 1; toast('核反应堆烧完了一根燃料棒，产出 1 钚', 2500); }
+      }
+    } else if (m.t === REGEN) {
+      m.busy = false;
+      if (m.q && m.q.length) {
+        const k = m.k || {}, use = 10 * Math.pow(0.7, k.eco || 0) * dt;
+        if (m.e >= use) {
+          m.e -= use; m.busy = true; m.p = (m.p || 0) + dt * (1 + 0.6 * (k.fast || 0)) / 40;
+          if (m.p >= 1) { m.p = 0; const made = regenChunk(m.q.shift(), m); toast('区块再生完成：长出了 ' + made + ' 块矿物' + (m.q.length ? '，继续下一个区块' : ''), 3000); sfx(880, 0.3, 'triangle', 0.07); shake = 0.2; }
+        }
       }
     } else if (m.t === FUSION) {
       m.out = 0;
@@ -1692,6 +1773,15 @@ function drawMachines(z, ox, oy, now) {
       ctx.strokeStyle = def.col; ctx.globalAlpha = m.ping; ctx.lineWidth = 2 * z; ctx.beginPath(); ctx.arc(bx + 8 * z, by + 8 * z, R, 0, 6.283); ctx.stroke(); ctx.globalAlpha = 1;
     }
     if (m.nk) { ctx.fillStyle = '#5fff5f'; ctx.fillRect(bx + 7 * z, by - 6 * z, 2 * z, 2 * z); }
+    if (m.t === REGEN) { // 区块框
+      const box = (c, col, a, fill) => {
+        const rx = (c % CKCOLS) * CKW * TS - ox, ry = ((c / CKCOLS) | 0) * CKH * TS - oy;
+        if (fill > 0) { ctx.fillStyle = 'rgba(95,214,160,.22)'; ctx.fillRect(rx, ry + CKH * TS * (1 - fill), CKW * TS, CKH * TS * fill); }
+        ctx.globalAlpha = a; ctx.strokeStyle = col; ctx.lineWidth = z; ctx.strokeRect(rx + z / 2, ry + z / 2, CKW * TS - z, CKH * TS - z); ctx.globalAlpha = 1;
+      };
+      if (machOpen === m.i) regenNear(m).forEach(c => { if (c >= 0) box(c, '#ffffff', 0.25, 0); });
+      (m.q || []).forEach((c, n) => box(c, '#5fd6a0', 0.6 + 0.3 * Math.sin(now * 4), n === 0 ? m.p || 0 : 0));
+    }
     if (!def.drone || m.dx === undefined) continue;
     const ar = m.job || (m.on && m.area);
     if (ar && (def.drone === 'mine' || def.drone === 'ore')) {
@@ -1771,6 +1861,19 @@ function renderMach() {
   } else if (def.drone === 'lamp') {
     add('small', '跟着你飞并照亮周围（离基座 ' + (60 + 20 * (m.c || 0)) + ' 格内有效），跟随时缓慢耗电。');
     btn(m.on ? '⏸ 关闭' : '▶ 开启', () => { m.on = !m.on; }, false, 'alt');
+  } else if (m.t === REGEN) {
+    const k = m.k || (m.k = {}), q = m.q || (m.q = []), lim = 1 + (k.wide || 0);
+    const use = 10 * Math.pow(0.7, k.eco || 0), secs = Math.round(40 / (1 + 0.6 * (k.fast || 0)));
+    add('div', q.length ? (m.busy ? '再生中 ' + Math.floor((m.p || 0) * 100) + '%' : '电不够，等待供电…') + (q.length > 1 ? ' · 排队 ' + (q.length - 1) + ' 个' : '') : '待机：在下面选区块', q.length && !m.busy ? 'no' : 'ok');
+    add('small', '每个区块 16×8=128 格，约 ' + secs + ' 秒、耗电 ' + Math.round(use) + '/秒（共约 ' + Math.round(use * secs) + '）。可同时选 ' + lim + ' 个；格子按实际方位排列。');
+    regenNear(m).forEach(c => {
+      if (c < 0) { const b = add('button', '—', 'alt ck'); b.disabled = true; return; }
+      const [ore, air, tot] = chunkInfo(c), n = q.indexOf(c);
+      const b = add('button', (n >= 0 ? '✔' + (n + 1) + ' ' : '') + (c === ckOf(m) ? '机 ' : '') + (tot ? '矿' + ore + ' 空' + Math.round(air / tot * 100) + '%' : '地表'), (n >= 0 ? '' : 'alt') + ' ck');
+      b.disabled = !tot; b.addEventListener('click', () => { chunkToggle(m, c); renderMach(); });
+    });
+    add('small', '专属核心：' + RCORES.map(([key, id, mx]) => ITEMS[id].n.replace('核心', '') + ' ' + (k[key] || 0) + '/' + mx).join(' · '));
+    RCORES.forEach(([key, id, mx]) => btn('装' + ITEMS[id].n.replace('核心', '') + '（有 ' + inv[id] + '）', () => { inv[id]--; k[key] = (k[key] || 0) + 1; sfx(990, 0.12, 'square', 0.06); }, inv[id] < 1 || (k[key] || 0) >= mx, 'alt ck'));
   } else if (m.t === TESLA) {
     add('small', '自动电击 7 格内的敌人，每次 30 伤害、耗电 3');
   } else if (m.t === FUSION) {
@@ -2404,7 +2507,7 @@ function boot() {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { genWorld, newGame, tiles, walls, surf, player, respawn, update, render, boot, input, ptr, inv, breakTile, tryPlace, explode, craft, useItem, give,
-    getT, W, H, T, ITEMS, RECIPES, TILE, buffs, SHOP, SELL, MACH, powerTick, droneUpdate, requestLift, handleSelect, openMach, scanOres, dispatchMarks, regrowOre, caveMob, enemies: () => enemies, drawMob, lampLv: () => lampLv, NEW_VEINS, renderMach, mach: () => machines, lift: () => lift, selStart: i => { selMode = { i }; selDrag = null; }, addCoins: n => { coins += n; }, autoTarget, growTree, slowTick, saveGame, loadGame, renderBag, refreshHUD,
+    getT, W, H, T, ITEMS, RECIPES, TILE, buffs, SHOP, SELL, MACH, powerTick, droneUpdate, requestLift, handleSelect, openMach, scanOres, dispatchMarks, regrowOre, regenChunk, chunkToggle, chunkInfo, regenNear, ckOf, caveMob, enemies: () => enemies, drawMob, lampLv: () => lampLv, NEW_VEINS, renderMach, mach: () => machines, lift: () => lift, selStart: i => { selMode = { i }; selDrag = null; }, addCoins: n => { coins += n; }, autoTarget, growTree, slowTick, saveGame, loadGame, renderBag, refreshHUD,
     set: o => { if (o.sel !== undefined) sel = o.sel; if (o.hotbar) hotbar = o.hotbar; if (o.dayT !== undefined) dayT = o.dayT; if (o.running !== undefined) running = o.running; if (o.tab) bagTab = o.tab; },
     state: () => ({ enemies, shots, spawnX, spawnY, hotbar, sel, coins, icons, atlas, ICON }) };
 } else {
