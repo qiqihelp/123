@@ -78,6 +78,7 @@ const NEEDS_FLOOR = new Uint8Array(NT);
  DRONE_MINE, DRONE_ORE, DRONE_GUARD, DRONE_TRANS, SOLAR, COALGEN, BATTERY, REACTOR, CENTRIFUGE, RTG,
  DRONE_SCAN, DRONE_LUMBER, DRONE_MEDIC, DRONE_LAMP, FUSION, TESLA].forEach(t => { NEEDS_FLOOR[t] = 1; });
 // v5 新矿脉：[矿, 数量, 最小深度, 大小]
+const OLD_VEINS = [[COAL, 120, 3, 8], [COPPER, 110, 5, 7], [IRON, 80, 18, 6], [GOLD, 50, 42, 5], [DIAMOND, 26, 66, 4], [URANIUM, 24, 62, 5], [SILVER, 60, 30, 6], [EMERALD, 26, 52, 4], [RUBY, 20, 78, 4]];
 const NEW_VEINS = [[SULFUR, 60, 12, 6], [LITHIUM, 50, 26, 5], [AMETHYST, 26, 40, 4], [TITANIUM, 40, 48, 5], [PLATINUM, 30, 58, 4], [THORIUM, 22, 68, 5]];
 
 function mulberry32(a) {
@@ -1162,7 +1163,27 @@ function growTree(x, y) {
   lightVer++;
 }
 // 每秒一次的慢速逻辑：增益倒计时显示、篝火检测、树苗生长
+let regrowT = 0;
+// 矿脉再生：每 15 秒在远离玩家的石头里长出一小簇矿，矿物不会被挖光
+function regrowOre() {
+  const all = OLD_VEINS.concat(NEW_VEINS), cnt = new Int32Array(NT);
+  for (let i = 0; i < tiles.length; i++) cnt[tiles[i]]++;
+  const low = all.filter(v => cnt[v[0]] < v[1] * v[3] * 0.55); if (!low.length) return;
+  const [ore, , minD, size] = low[Math.floor(Math.random() * low.length)];
+  for (let k = 0; k < 20; k++) {
+    let x = 2 + Math.floor(Math.random() * (W - 4));
+    const top = surf[x] + minD; if (top > H - 5) continue;
+    let y = top + Math.floor(Math.random() * (H - top - 3));
+    if (Math.hypot(x - player.x, y - player.y) < 28 || tiles[y * W + x] !== STONE) continue;
+    for (let q = 0; q < size; q++) {
+      if (x > 0 && x < W - 1 && y > 0 && y < H - 2 && tiles[y * W + x] === STONE) tiles[y * W + x] = ore;
+      x += Math.floor(Math.random() * 3) - 1; y += Math.floor(Math.random() * 3) - 1;
+    }
+    lightVer++; return;
+  }
+}
 function slowTick() {
+  if (++regrowT >= 15) { regrowT = 0; regrowOre(); }
   nearFire = nearStation(CAMPFIRE);
   const act = Object.keys(buffs).filter(b => buffs[b] > 0).map(b => BUFF_NAME[b] + Math.ceil(buffs[b]) + 's');
   if (nearFire) act.push('篝火');
@@ -1389,7 +1410,7 @@ MACH[DRONE_MEDIC]  = { n: '医疗无人机基座', cap: 150, drone: 'medic', col
 MACH[DRONE_LAMP]   = { n: '照明无人机基座', cap: 150, drone: 'lamp', col: '#fff6b0' };
 MACH[FUSION]       = { n: '聚变反应堆', gen: 100 };
 MACH[TESLA]        = { n: '特斯拉线圈', cap: 150 };
-let lampLv = 0;
+let lampLv = 0, machTouch = false;
 const ORE_SET = new Uint8Array(NT);
 [COPPER, IRON, GOLD, COAL, DIAMOND, SILVER, RUBY, EMERALD, URANIUM, TITANIUM, PLATINUM, LITHIUM, THORIUM, AMETHYST, SULFUR].forEach(t => { ORE_SET[t] = 1; });
 const POWER_R = 12; // 无线供电范围
@@ -1452,7 +1473,7 @@ function powerTick(dt) {
     }
   }
   for (const b of bats) if (b.e > 0) b.e -= feed(b, Math.min(b.e, 10 * dt), false);
-  if (machOpen >= 0) renderMach();
+  if (machOpen >= 0 && !machTouch) renderMach(); // 手指按着时不刷新面板，否则按钮被重建、点击会丢
 }
 
 function flyTo(m, x, y, sp, dt) {
@@ -1502,10 +1523,10 @@ function dispatchMarks(m, type) {
   if (!tg.length) return toast('没有可采的标记，先扫描一下');
   const bases = Object.keys(machines).map(k => machines[k]).filter(b => (b.t === DRONE_MINE || b.t === DRONE_ORE) && Math.hypot(b.x - m.x, b.y - m.y) <= 60)
     .sort((a, b) => (b.e > 5) - (a.e > 5) || (a.list ? a.list.length : 0) - (b.list ? b.list.length : 0) || Math.hypot(a.x - m.x, a.y - m.y) - Math.hypot(b.x - m.x, b.y - m.y));
-  if (!bases.length) return toast('60 格内没有采矿/探矿无人机基座，先放一台', 3500);
-  const b = bases[0], set = new Set(b.list || []); tg.forEach(i => set.add(i));
+  const b = bases.length ? bases[0] : m, // 附近没有采矿机：探矿机自己的小无人机去采（慢一些）
+        set = new Set(b.list || []); tg.forEach(i => set.add(i));
   b.list = Array.from(set); b.tg = null;
-  closeMach(); toast('已派' + MACH[b.t].n.replace('基座', '') + '前往开采 ' + tg.length + ' 块矿物' + (b.e > 5 ? '' : '（它现在没电，充上电就出发）'), 3500); sfx(880, 0.1, 'square', 0.06);
+  closeMach(); toast((b === m ? '附近没有采矿无人机，探矿机亲自去采 ' : '已派' + MACH[b.t].n.replace('基座', '') + '前往开采 ') + tg.length + ' 块矿物' + (b.e > 5 ? '' : '（现在没电，充上电就出发）'), 3500); sfx(880, 0.1, 'square', 0.06);
 }
 function teslaTick(m, dt) {
   m.cd = (m.cd || 0) - dt;
@@ -1528,7 +1549,7 @@ function droneUpdate(dt) {
     const hx = m.x + 0.5, hy = m.y - 0.7;
     if (m.dx === undefined) { m.dx = hx; m.dy = hy; }
     m.lz = false;
-    if (def.drone === 'mine' || def.drone === 'ore') {
+    if (def.drone === 'mine' || def.drone === 'ore' || (def.drone === 'scan' && m.list && m.list.length)) {
       const viaList = !m.job && !!m.list && m.list.length > 0, job = m.job || (viaList ? m.list : m.on ? m.area : null);
       if (job && m.e > 0.5) {
         if (!m.tg || !droneCan(m, m.tg.x, m.tg.y, viaList)) {
@@ -1542,7 +1563,7 @@ function droneUpdate(dt) {
         if (m.tg) {
           if (flyTo(m, m.tg.x + 0.5, m.tg.y + 0.5, (10 + 3 * m.s) * K, dt)) {
             m.lz = true; m.e -= 1.2 * dt / K;
-            m.p += dt * 2.5 * (1 + 0.7 * m.s) * K / TILE[getT(m.tg.x, m.tg.y)].hard;
+            m.p += dt * (def.drone === 'scan' ? 1.2 : 2.5) * (1 + 0.7 * m.s) * K / TILE[getT(m.tg.x, m.tg.y)].hard;
             if (m.p >= 1) { quietBreak = Math.abs(m.tg.x - player.x) > 22 || Math.abs(m.tg.y - player.y) > 14; breakTile(m.tg.x, m.tg.y); quietBreak = false; m.tg = null; }
           }
           continue;
@@ -1700,13 +1721,13 @@ function drawMachines(z, ox, oy, now) {
   }
 }
 // ── 机器面板 ──
-function openMach(i) { machOpen = i; ptr.down = false; $('mach').classList.add('show'); renderMach(); sfx(700, 0.04, 'square', 0.04); }
+function openMach(i) { machOpen = i; ptr.down = false; $('mach').classList.add('show'); machTouch = false; renderMach(); $('machBox').scrollTop = 0; sfx(700, 0.04, 'square', 0.04); }
 function closeMach() { machOpen = -1; $('mach').classList.remove('show'); }
 function renderMach() {
   const m = machines[machOpen]; if (!m) { closeMach(); return; }
-  const def = MACH[m.t], box = $('machBox'); box.innerHTML = '';
+  const def = MACH[m.t], box = $('machBox'), keepScroll = box.scrollTop; box.innerHTML = '';
   const add = (tag, txt, cls) => { const el = document.createElement(tag); el.textContent = txt; if (cls) el.className = cls; box.appendChild(el); return el; };
-  const btn = (txt, fn, dis, cls) => { const b = add('button', txt, cls); b.disabled = !!dis; b.addEventListener('click', () => { fn(); if (machOpen >= 0) renderMach(); refreshHUD(); }); };
+  const btn = (txt, fn, dis, cls) => { const b = add('button', txt, cls || ''); b.disabled = !!dis; b.addEventListener('click', () => { fn(); if (machOpen >= 0) renderMach(); refreshHUD(); }); };
   add('h3', def.n);
   if (def.cap) add('div', '电量 ' + Math.floor(m.e) + ' / ' + def.cap, m.e > def.cap * 0.2 ? 'ok' : 'no');
   if (def.gen) add('div', '当前发电 ' + (m.out || 0).toFixed(1) + ' / 秒（上限 ' + def.gen + '）', m.out > 0 ? 'ok' : 'no');
@@ -1714,7 +1735,7 @@ function renderMach() {
   else add('small', '需要 ' + POWER_R + ' 格内有发电设备或蓄电池');
   if (def.drone === 'mine' || def.drone === 'ore') {
     const N = 8 + 4 * m.r + 2 * (m.c || 0);
-    add('div', '状态：' + (m.job ? '正在开辟运输通道' : m.on && m.area ? (m.e > 0.5 ? '作业中' : '没电了，等待充电') : '待机'));
+    add('div', '状态：' + (m.job ? '正在开辟运输通道' : m.list && m.list.length ? '正在采探矿机标记的矿，剩 ' + m.list.length + ' 块' : m.on && m.area ? (m.e > 0.5 ? '作业中' : '没电了，等待充电') : '待机'));
     add('small', (m.area ? '区域 ' + (m.area.x1 - m.area.x0 + 1) + '×' + (m.area.y1 - m.area.y0 + 1) + ' · ' : '') + '框选上限 ' + N + '×' + N + ' · 范围模块 ' + m.r + '/2 · 速度模块 ' + m.s + '/3');
     btn('▣ 框选开采区域', () => { selMode = { i: m.i }; selDrag = null; closeMach(); toast('在画面上拖动手指框选（最大 ' + N + '×' + N + '）', 3500); });
     if (m.area) btn(m.on ? '⏸ 暂停' : '▶ 继续', () => { m.on = !m.on; }, false, 'alt');
@@ -1731,14 +1752,16 @@ function renderMach() {
     const R = 14 + 6 * (m.c || 0), cnt = {};
     (m.marks || []).forEach(i => { cnt[tiles[i]] = (cnt[tiles[i]] || 0) + 1; });
     const types = Object.keys(cnt).map(Number).sort((a, b) => (SELL[TILE[b].drop] || 0) - (SELL[TILE[a].drop] || 0));
-    add('small', '扫描半径 ' + R + ' 格（每个升级核心 +6），每次耗电 25。标记的矿在黑暗里也会闪烁显示。');
+    add('small', '扫描半径 ' + R + ' 格，每次耗电 25');
     btn('📡 扫描周围矿物', () => scanOres(m), m.e < 25);
     if (types.length) {
-      add('div', '已标记 ' + m.marks.length + ' 块，点下面的按钮派机器人去采：', 'ok');
+      const nb = Object.keys(machines).map(k => machines[k]).filter(b => (b.t === DRONE_MINE || b.t === DRONE_ORE) && Math.hypot(b.x - m.x, b.y - m.y) <= 60).length;
       btn('⛏ 全部开采（' + m.marks.length + ' 块）', () => dispatchMarks(m, -1));
-      types.forEach(t => btn(ITEMS[TILE[t].drop].n + ' ×' + cnt[t] + ' → 派去开采', () => dispatchMarks(m, t), false, 'alt'));
-      btn('清除标记', () => { m.marks = []; }, false, 'alt');
-    } else add('small', '还没有标记。需要 60 格内有一台采矿或探矿无人机来执行开采。');
+      add('small', (nb ? '60 格内有 ' + nb + ' 台采矿机器人可派。' : '附近没有采矿机器人，探矿机会自己去采（较慢）。') + '也可以只采一种：', nb ? 'ok' : 'no');
+      types.forEach(t => btn(ITEMS[TILE[t].drop].n + '×' + cnt[t], () => dispatchMarks(m, t), false, 'alt ore'));
+      btn('清除标记', () => { m.marks = []; }, false, 'alt ore');
+    } else add('small', '还没有标记，先扫描。');
+    if (m.list && m.list.length) add('div', '探矿机正在亲自开采，剩 ' + m.list.length + ' 块', 'ok');
   } else if (def.drone === 'lumber') {
     add('small', '自动砍 ' + (14 + 4 * (m.c || 0)) + ' 格内长在地上的树，木头直接进背包；背包里有橡果会自动补种（现有 ' + inv.acorn + '）。');
     btn(m.on ? '⏸ 关闭' : '▶ 开启', () => { m.on = !m.on; }, false, 'alt');
@@ -1779,6 +1802,7 @@ function renderMach() {
   }
   btn('拆除回收', () => { breakTile(m.x, m.y); }, false, 'red');
   btn('关闭', closeMach, false, 'alt');
+  box.scrollTop = keepScroll;
 }
 
 // ───────────────────────── 存档 ─────────────────────────
@@ -2320,7 +2344,20 @@ function bindInput() {
   window.addEventListener('pagehide', saveGame);
   document.addEventListener('visibilitychange', () => { if (document.hidden) saveGame(); });
   ['contextmenu', 'gesturestart', 'dblclick'].forEach(n => document.addEventListener(n, ev => ev.preventDefault()));
-  document.addEventListener('touchmove', ev => { if (rotated || !ev.target.closest || !ev.target.closest('#bagBox')) ev.preventDefault(); }, { passive: false });
+  document.addEventListener('touchmove', ev => { ev.preventDefault(); }, { passive: false });
+  // 面板内容超出时：手指上下拖动滚动（自己实现，横屏旋转后方向也正确）
+  ['bagBox', 'machBox'].forEach(id => {
+    const el = $(id); let y0 = 0, s0 = 0, pid = -1, moved = false;
+    el.addEventListener('pointerdown', ev => { pid = ev.pointerId; y0 = toStage(ev)[1]; s0 = el.scrollTop; moved = false; if (id === 'machBox') machTouch = true; });
+    el.addEventListener('pointermove', ev => {
+      if (ev.pointerId !== pid) return;
+      const dy = toStage(ev)[1] - y0; if (Math.abs(dy) > 8) moved = true;
+      if (moved) el.scrollTop = s0 - dy;
+    });
+    const end = ev => { if (ev.pointerId === pid) pid = -1; if (id === 'machBox') setTimeout(() => { machTouch = false; }, 120); };
+    el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+    el.addEventListener('click', ev => { if (moved) { ev.stopPropagation(); ev.preventDefault(); moved = false; } }, true); // 拖动后不算点击
+  });
 }
 
 // ───────────────────────── 主循环 ─────────────────────────
@@ -2367,7 +2404,7 @@ function boot() {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { genWorld, newGame, tiles, walls, surf, player, respawn, update, render, boot, input, ptr, inv, breakTile, tryPlace, explode, craft, useItem, give,
-    getT, W, H, T, ITEMS, RECIPES, TILE, buffs, SHOP, SELL, MACH, powerTick, droneUpdate, requestLift, handleSelect, openMach, scanOres, dispatchMarks, caveMob, enemies: () => enemies, drawMob, lampLv: () => lampLv, NEW_VEINS, renderMach, mach: () => machines, lift: () => lift, selStart: i => { selMode = { i }; selDrag = null; }, addCoins: n => { coins += n; }, autoTarget, growTree, slowTick, saveGame, loadGame, renderBag, refreshHUD,
+    getT, W, H, T, ITEMS, RECIPES, TILE, buffs, SHOP, SELL, MACH, powerTick, droneUpdate, requestLift, handleSelect, openMach, scanOres, dispatchMarks, regrowOre, caveMob, enemies: () => enemies, drawMob, lampLv: () => lampLv, NEW_VEINS, renderMach, mach: () => machines, lift: () => lift, selStart: i => { selMode = { i }; selDrag = null; }, addCoins: n => { coins += n; }, autoTarget, growTree, slowTick, saveGame, loadGame, renderBag, refreshHUD,
     set: o => { if (o.sel !== undefined) sel = o.sel; if (o.hotbar) hotbar = o.hotbar; if (o.dayT !== undefined) dayT = o.dayT; if (o.running !== undefined) running = o.running; if (o.tab) bagTab = o.tab; },
     state: () => ({ enemies, shots, spawnX, spawnY, hotbar, sel, coins, icons, atlas, ICON }) };
 } else {
