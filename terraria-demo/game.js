@@ -11,7 +11,9 @@ const AIR = 0, DIRT = 1, GRASS = 2, STONE = 3, LOG = 4, LEAVES = 5, COPPER = 6, 
       SANDSTONE = 32, BRICK_OBS = 33, GLASS_R = 34, GLASS_B = 35, GLASS_G = 36, THATCH = 37, CLOUD = 38, GEMBLOCK = 39,
       TORCH_B = 40, LANTERN = 41, CAMPFIRE = 42, CANDLE = 43, CHANDELIER = 44, CHAIR = 45, TABLE = 46, BOOKSHELF = 47,
       BED = 48, ANVIL = 49, SAPLING = 50, ROPE = 51, FLOWER_B = 52, FLOWER_Y = 53, BANNER = 54, POT = 55, PAINTING = 56,
-      STATUE = 57, GLOWSHROOM = 58, NT = 59;
+      STATUE = 57, GLOWSHROOM = 58,
+      URANIUM = 59, DRONE_MINE = 60, DRONE_ORE = 61, DRONE_GUARD = 62, DRONE_TRANS = 63, SOLAR = 64, COALGEN = 65, BATTERY = 66,
+      REACTOR = 67, CENTRIFUGE = 68, RTG = 69, NT = 70;
 
 // solid, 挖掘耗时(秒), 掉落物品, 碎屑颜色
 const TILE = [
@@ -50,6 +52,10 @@ const TILE = [
  [0, 0.3, 'bed', '#d42a3a'], [0, 0.6, 'anvil', '#5c5f66'], [0, 0.05, 'acorn', '#3fb83f'], [0, 0.08, 'rope', '#c7965a'],
  [0, 0.05, 'flower_blue', '#6aa0ff'], [0, 0.05, 'flower_yellow', '#ffd84a'], [0, 0.2, 'banner', '#d42a3a'], [0, 0.2, 'pot', '#b8622e'],
  [0, 0.2, 'painting', '#c89a1a'], [0, 0.6, 'statue', '#9a9da6'], [0, 0.05, 'glowshroom', '#3ad0e0'],
+ // 科技：铀矿 + 机器（id 59 起）
+ [1, 2.0, 'uranium', '#5fff5f'], [0, 1.0, 'drone_mine', '#ffd84a'], [0, 1.0, 'drone_ore', '#3ad0e0'], [0, 1.0, 'drone_guard', '#ff5a5a'],
+ [0, 1.0, 'drone_trans', '#5fd65f'], [0, 1.0, 'solar', '#1a3a8a'], [0, 1.0, 'coalgen', '#5a4a3a'], [0, 1.0, 'battery', '#2a2e38'],
+ [0, 1.0, 'reactor', '#6a707a'], [0, 1.0, 'centrifuge', '#8a8d96'], [0, 1.0, 'rtg', '#4a3a6a'],
 ].forEach(([solid, hard, drop, col]) => TILE.push({ solid, hard, drop, col }));
 const SOLID = TILE.map(t => t.solid);
 const OPAQUE = TILE.map((t, i) => (t.solid && i !== GLASS && !(i >= GLASS_R && i <= GLASS_G)) ? 1 : 0);
@@ -58,8 +64,10 @@ EMIT[TORCH_B] = 14; EMIT[LANTERN] = 15; EMIT[CAMPFIRE] = 14; EMIT[CANDLE] = 11; 
 const GLOW = {}; // 泛光颜色
 [TORCH, FURNACE, CAMPFIRE, LANTERN, CANDLE, CHANDELIER].forEach(t => { GLOW[t] = '255,170,60'; });
 GLOW[TORCH_B] = '80,160,255'; GLOW[GLOWSHROOM] = '60,220,230';
+EMIT[URANIUM] = 5; EMIT[REACTOR] = 10; EMIT[RTG] = 6; GLOW[REACTOR] = '90,255,90'; GLOW[URANIUM] = '90,255,90';
 const NEEDS_FLOOR = new Uint8Array(NT);
-[BENCH, FURNACE, CHEST, MUSHROOM, FLOWER, CRYSTAL, CAMPFIRE, CANDLE, CHAIR, TABLE, BOOKSHELF, BED, ANVIL, SAPLING, FLOWER_B, FLOWER_Y, POT, STATUE, GLOWSHROOM].forEach(t => { NEEDS_FLOOR[t] = 1; });
+[BENCH, FURNACE, CHEST, MUSHROOM, FLOWER, CRYSTAL, CAMPFIRE, CANDLE, CHAIR, TABLE, BOOKSHELF, BED, ANVIL, SAPLING, FLOWER_B, FLOWER_Y, POT, STATUE, GLOWSHROOM,
+ DRONE_MINE, DRONE_ORE, DRONE_GUARD, DRONE_TRANS, SOLAR, COALGEN, BATTERY, REACTOR, CENTRIFUGE, RTG].forEach(t => { NEEDS_FLOOR[t] = 1; });
 
 function mulberry32(a) {
   return function () {
@@ -110,8 +118,8 @@ function genWorld(seed) {
       if (d > 0) walls[i] = d < dirtD + 1 ? 1 : 2;
       if (d > 3) { // 洞穴：蠕虫状隧道 + 大空洞
         const c = n2(x / 22, y / 14) * 0.65 + n3(x / 9, y / 8) * 0.35;
-        if (Math.abs(c - 0.5) < 0.035 + Math.min(d, 40) * 0.0006) t = AIR;
-        if (d > 18 && n3(x / 26, y / 18) > 0.74) t = AIR;
+        if (Math.abs(c - 0.5) < 0.024 + Math.min(d, 40) * 0.0003) t = AIR; // 洞穴收窄了
+        if (d > 18 && n3(x / 26, y / 18) > 0.81) t = AIR;
       }
       tiles[i] = t;
     }
@@ -130,7 +138,7 @@ function genWorld(seed) {
     }
   };
   vein(COAL, 120, 3, 8); vein(COPPER, 110, 5, 7); vein(IRON, 80, 18, 6); vein(GOLD, 50, 42, 5); vein(DIAMOND, 26, 66, 4);
-  vein(SILVER, 60, 30, 6); vein(EMERALD, 26, 52, 4); vein(RUBY, 20, 78, 4); vein(OBSIDIAN, 30, 84, 12);
+  vein(URANIUM, 24, 62, 5); vein(SILVER, 60, 30, 6); vein(EMERALD, 26, 52, 4); vein(RUBY, 20, 78, 4); vein(OBSIDIAN, 30, 84, 12);
   // 树、花、蘑菇
   for (let x = 4; x < W - 4; x++) {
     const h = surf[x];
@@ -290,7 +298,33 @@ const ITEMS = {
   painting:       { n: '画',       k: 'block', tile: PAINTING,  d: '装饰' },
   statue:         { n: '雕像',     k: 'block', tile: STATUE,    d: '装饰' },
   glowshroom:     { n: '发光蘑菇', k: 'block', tile: GLOWSHROOM, d: '深层洞穴里发光的蘑菇，药水材料' },
+  // ── 科技 / 电力 / 核能 ──
+  uranium:     { n: '铀矿',   k: 'res', d: '深层的放射性矿石，放进离心机提炼燃料棒' },
+  fuel_rod:    { n: '铀燃料棒', k: 'res', d: '核反应堆的燃料，一根可烧 10 分钟' },
+  plutonium:   { n: '钚',     k: 'res', d: '反应堆烧完燃料棒的产物，可做钚电池和核弹' },
+  mod_range:   { n: '范围模块', k: 'res', d: '装进采矿/探矿无人机基座：框选上限 +4 格（最多 2 个，到 16×16）' },
+  mod_speed:   { n: '速度模块', k: 'res', d: '装进采矿/探矿无人机基座：采矿和飞行更快（最多 3 个）' },
+  drone_mine:  { n: '采矿无人机', k: 'block', tile: DRONE_MINE,  d: '放下后点一下基座：框选区域，它会把里面的方块全部采走' },
+  drone_ore:   { n: '探矿无人机', k: 'block', tile: DRONE_ORE,   d: '只采框选区域里的矿石，不破坏其他方块' },
+  drone_guard: { n: '护卫无人机', k: 'block', tile: DRONE_GUARD, d: '自动射击 12 格内的敌人' },
+  drone_trans: { n: '运输无人机', k: 'block', tile: DRONE_TRANS, d: '把你直接送回地表；通道被堵时会联络附近的采矿无人机开路' },
+  solar:       { n: '太阳能板', k: 'block', tile: SOLAR,   d: '白天露天时发电 1.5/秒，给 12 格内的机器无线供电' },
+  coalgen:     { n: '火力发电机', k: 'block', tile: COALGEN, d: '烧煤发电 5/秒，地下也能用' },
+  battery:     { n: '蓄电池',   k: 'block', tile: BATTERY, d: '储存 600 电量，没电时给附近机器放电' },
+  centrifuge:  { n: '离心机',   k: 'block', tile: CENTRIFUGE, d: '耗电把 4 个铀矿提炼成 1 根燃料棒' },
+  reactor:     { n: '核反应堆', k: 'block', tile: REACTOR, d: '烧燃料棒发电 30/秒，烧完产出钚' },
+  rtg:         { n: '钚电池',   k: 'block', tile: RTG,     d: '永久发电 3/秒，不需要燃料' },
+  nuke:        { n: '核弹',     k: 'throw', th: { bomb: { R: 9, fuse: 4 } }, d: '超大范围毁灭性爆炸。扔完赶紧跑！！' },
+  pick_laser:  { n: '激光钻',   k: 'pick', pow: 9, d: '高科技：挖掘速度 ×9' },
+  jetpack:     { n: '喷气背包', k: 'acc', d: '饰品：空中按住跳跃可以飞行约 2.5 秒，落地充能' },
 };
+// 商店：[物品, 数量, 价格]
+const SHOP = [['torch', 10, 5], ['rope', 10, 12], ['arrow', 20, 10], ['potion', 1, 15], ['bomb', 3, 25],
+  ['solar', 1, 60], ['coalgen', 1, 90], ['battery', 1, 120], ['drone_mine', 1, 150], ['drone_ore', 1, 240], ['drone_guard', 1, 200], ['drone_trans', 1, 220],
+  ['mod_range', 1, 150], ['mod_speed', 1, 150], ['centrifuge', 1, 350], ['reactor', 1, 700], ['jetpack', 1, 900], ['pick_laser', 1, 1200]];
+// 可卖出的物品单价
+const SELL = { coal: 1, gel: 1, bone: 2, cloth: 2, wing: 3, copper: 2, iron: 3, silver: 5, gold: 8, bar_copper: 7, bar_iron: 10, bar_silver: 16, bar_gold: 25,
+  emerald: 30, diamond: 40, ruby: 60, uranium: 25, fuel_rod: 110, plutonium: 150, obsidian: 3, crystal: 30, glowshroom: 2, apple: 1, mushroom: 1 };
 const ARC = { armor_copper: ['#c8703a', '#8a4a20'], armor_iron: ['#c8c0b8', '#8a8078'], armor_gold: ['#e8b82a', '#a87a10'] };
 const PASSIVE = k => k === 'res' || k === 'armor' || k === 'acc';
 const buffs = { speed: 0, iron: 0, miner: 0, shine: 0, regen: 0, jump: 0 };
@@ -406,6 +440,8 @@ const RECIPES = [
   { out: ['statue', 1], cost: { stone: 15 }, st: ANVIL },
   { out: ['chandelier', 1], cost: { bar_gold: 2, candle: 3 }, st: ANVIL },
   { out: ['gemblock', 1], cost: { diamond: 2, glass: 2 }, st: ANVIL },
+  { out: ['rtg', 1], cost: { plutonium: 2, bar_iron: 10 }, st: ANVIL },
+  { out: ['nuke', 1], cost: { plutonium: 3, dynamite: 2 }, st: ANVIL },
 ];
 const ST_NAME = { [BENCH]: '工作台', [FURNACE]: '熔炉', [ANVIL]: '铁砧', [CAMPFIRE]: '篝火' };
 
@@ -738,6 +774,28 @@ function buildArt() {
   spr('bone', ['ee.....', 'eee....', '.eeE...', '..eeE..', '...eeE.', '....eee', '.....ee']);
   spr('cloth', ['eeeeeeee', 'ewweeeeE', 'eeeewweE', 'eeeeeeeE', 'EeeeeeeE', 'EEEEEEEE']);
   spr('wing', ['....vvv', '..vvvvv', '.vvvvvV', 'vvvvVV.', 'vv.V...', 'v......']);
+
+  // ════════ 科技贴图 ════════
+  oreTile(URANIUM, '#5fff5f', '#d0ffd0', '#1f8f1f');
+  const baseT = (t, col) => {
+    rect(t, 1, 11, 14, 5, '#3a3e48'); rect(t, 1, 11, 14, 1, '#787c85'); rect(t, 3, 9, 10, 2, '#5c5f66'); rect(t, 6, 7, 4, 2, '#484b52');
+    rect(t, 2, 13, 2, 1, col); rect(t, 12, 13, 2, 1, col); rect(t, 6, 13, 4, 1, col); rect(t, 7, 8, 2, 1, col);
+  };
+  baseT(DRONE_MINE, '#ffd84a'); baseT(DRONE_ORE, '#3ad0e0'); baseT(DRONE_GUARD, '#ff5a5a'); baseT(DRONE_TRANS, '#5fd65f');
+  rect(SOLAR, 7, 11, 2, 5, '#5c5f66'); rect(SOLAR, 5, 15, 6, 1, '#484b52'); rect(SOLAR, 1, 6, 14, 5, '#1a3a8a'); rect(SOLAR, 1, 6, 14, 1, '#6a9aff'); rect(SOLAR, 1, 8, 14, 1, '#2a5ac0'); rect(SOLAR, 5, 6, 1, 5, '#4a6ad0'); rect(SOLAR, 10, 6, 1, 5, '#4a6ad0');
+  rect(COALGEN, 2, 6, 12, 10, '#5a4a3a'); rect(COALGEN, 2, 6, 12, 1, '#8a7a6a'); rect(COALGEN, 10, 1, 3, 5, '#3a3a44'); rect(COALGEN, 10, 1, 3, 1, '#5c5f66'); rect(COALGEN, 4, 10, 5, 4, '#1a0c04'); rect(COALGEN, 5, 11, 3, 3, '#ff7a1a'); rect(COALGEN, 6, 12, 1, 2, '#ffd84a'); rect(COALGEN, 11, 9, 1, 3, '#ffd84a');
+  rect(BATTERY, 3, 5, 10, 11, '#2a2e38'); rect(BATTERY, 3, 5, 10, 1, '#787c85'); rect(BATTERY, 6, 3, 4, 2, '#9aa0aa'); rect(BATTERY, 5, 7, 6, 2, '#5fd65f'); rect(BATTERY, 5, 10, 6, 2, '#5fd65f'); rect(BATTERY, 5, 13, 6, 2, '#3fb83f');
+  rect(REACTOR, 1, 2, 14, 14, '#6a707a'); rect(REACTOR, 1, 2, 14, 1, '#a8abb4'); rect(REACTOR, 1, 2, 1, 14, '#8e939c'); rect(REACTOR, 5, 5, 6, 8, '#0c2a0c'); rect(REACTOR, 6, 6, 4, 6, '#5fff5f'); rect(REACTOR, 7, 7, 2, 4, '#d0ffd0');
+  for (let x = 1; x < 15; x++) px(REACTOR * T + x, 15, x % 4 < 2 ? '#ffd84a' : '#1a1208');
+  rect(CENTRIFUGE, 4, 3, 8, 13, '#8a8d96'); rect(CENTRIFUGE, 4, 3, 2, 13, '#c0c3cc'); rect(CENTRIFUGE, 3, 15, 10, 1, '#484b52'); rect(CENTRIFUGE, 4, 6, 8, 1, '#484b52'); rect(CENTRIFUGE, 4, 11, 8, 1, '#484b52'); rect(CENTRIFUGE, 8, 8, 2, 2, '#5fff5f'); rect(CENTRIFUGE, 5, 2, 6, 1, '#5c5f66');
+  rect(RTG, 5, 4, 6, 12, '#4a3a6a'); rect(RTG, 5, 4, 6, 1, '#7a6a9a'); rect(RTG, 2, 6, 12, 1, '#2e2438'); rect(RTG, 2, 9, 12, 1, '#2e2438'); rect(RTG, 2, 12, 12, 1, '#2e2438'); rect(RTG, 7, 5, 2, 10, '#c07aff');
+  nug('uranium', '#5fff5f', '#d0ffd0', '#1f8f1f'); nug('plutonium', '#c07aff', '#f0d0ff', '#6a2aa8');
+  bombI('nuke', '#e8b82a', '#fff6b0', '#8a6410'); { const i = ICON.nuke; ir(i, 6, 8, 4, 1, '#1a1208'); ir(i, 7, 10, 2, 2, '#1a1208'); ir(i, 5, 11, 1, 1, '#1a1208'); ir(i, 10, 11, 1, 1, '#1a1208'); }
+  spr('fuel_rod', ['.dddd.', '.gGGd.', '.gGGd.', '.gGGd.', '.gGGd.', '.gGGd.', '.gGGd.', '.dddd.']);
+  spr('mod_range', ['dddddddd', 'dnnnnnnd', 'dnyGGynd', 'dnGyyGnd', 'dnGyyGnd', 'dnyGGynd', 'dnnnnnnd', 'dddddddd']);
+  spr('mod_speed', ['dddddddd', 'dRRRRRRd', 'dRoRoRRd', 'dRRoRoRd', 'dRRoRoRd', 'dRoRoRRd', 'dRRRRRRd', 'dddddddd']);
+  spr('pick_laser', ['.........c', 'ggggggddcw', 'gdddddgd.c', 'ggg..dd...', 'gg........', 'gg........']);
+  spr('jetpack', ['.gg.gg.', 'gwdgwdg', 'gddgddg', 'gddgddg', 'gddgddg', '.dd.dd.', '.o...o.', '.y...y.']);
 }
 
 function itemIcon(id) {
@@ -911,11 +969,12 @@ function breakTile(tx, ty) {
   if (tx < 0 || tx >= W || ty < 0 || ty >= H) return;
   const i = ty * W + tx, t = tiles[i];
   if (t === AIR || t === BEDROCK) return;
+  if (machines[i]) removeMachine(i);
   tiles[i] = AIR; lightVer++;
   burst(tx + 0.5, ty + 0.5, TILE[t].col, 7);
   if (t === CHEST) chestLoot(tx, ty);
   else if (TILE[t].drop) give(TILE[t].drop, 1, tx + 0.5, ty);
-  sfx(SOLID[t] && t !== DIRT && t !== GRASS && t !== SAND ? 180 : 300, 0.07, 'square', 0.07);
+  if (!quietBreak) sfx(SOLID[t] && t !== DIRT && t !== GRASS && t !== SAND ? 180 : 300, 0.07, 'square', 0.07);
   if (t === LOG) { // 整棵树倒下
     let y = ty - 1, n = 0;
     while (y > 0 && tiles[y * W + tx] === LOG) { tiles[y * W + tx] = AIR; burst(tx + 0.5, y + 0.5, TILE[LOG].col, 3); n++; y--; }
@@ -946,19 +1005,22 @@ function tryPlace(tx, ty, id) {
     if (hit(player) || enemies.some(hit)) return;
   }
   tiles[i] = t; inv[id]--; hudDirty = true; placeCd = 0.13; lightVer++;
+  if (MACH[t]) machines[i] = newMachine(t, i);
   if (t === BED) { spawnX = tx; spawnY = ty - 1; toast('出生点已设在床边', 1500); }
   sfx(400, 0.04, 'square', 0.05);
 }
 
 function explode(x, y, R) {
   R = R || 2.7;
+  quietBreak = true;
   for (let ty = Math.floor(y - R); ty <= y + R; ty++) for (let tx = Math.floor(x - R); tx <= x + R; tx++) {
     if (Math.hypot(tx + 0.5 - x, ty + 0.5 - y) <= R) breakTile(tx, ty);
   }
+  quietBreak = false;
   for (const e of enemies) if (Math.hypot(e.x + e.w / 2 - x, e.y + e.h / 2 - y) < R + 1.3) damageEnemy(e, 60, Math.sign(e.x - x) || 1);
-  if (Math.hypot(player.x + player.w / 2 - x, player.y + player.h / 2 - y) < R + 0.5) hurtPlayer(35, x);
+  if (Math.hypot(player.x + player.w / 2 - x, player.y + player.h / 2 - y) < R + 0.5) hurtPlayer(R > 6 ? 150 : 35, x);
   burst(x, y, '#ffd84a', 16); burst(x, y, '#ff7a1a', 16); burst(x, y, '#55555f', 12);
-  shake = 0.35; sfx(70, 0.4, 'sawtooth', 0.2); sfx(110, 0.25, 'square', 0.12);
+  shake = R > 6 ? 1 : 0.35; sfx(70, R > 6 ? 1.2 : 0.4, 'sawtooth', 0.2); sfx(110, 0.25, 'square', 0.12);
 }
 
 function burst(x, y, col, n) {
@@ -1027,6 +1089,8 @@ function update(dt) {
   const jump = input.j || input.ju, down = input.d || input.jd;
   for (const b in buffs) if (buffs[b] > 0) buffs[b] -= dt;
   tickT += dt; if (tickT >= 1) { tickT = 0; slowTick(); }
+  powT += dt; if (powT >= 0.5) { powT = 0; powerTick(0.5); }
+  droneUpdate(dt);
   const target = dir * 7.5 * (buffs.speed > 0 ? 1.3 : 1) * (inv.boots > 0 ? 1.2 : 1), acc = p.onG ? 60 : 35;
   if (p.vx < target) p.vx = Math.min(target, p.vx + acc * dt); else if (p.vx > target) p.vx = Math.max(target, p.vx - acc * dt);
   if (dir) p.face = dir > 0 ? 1 : -1;
@@ -1037,8 +1101,18 @@ function update(dt) {
     p.vy = -13; p.dj = true; burst(p.x + 0.4, p.y + p.h, '#f4f8ff', 8); sfx(480, 0.06, 'triangle', 0.05);
   }
   p.jPrev = jump;
+  if (p.onG) p.jet = 2.5;
+  if (inv.jetpack > 0 && jump && !p.onG && p.vy > -3 && p.jet > 0) { // 喷气背包
+    p.vy = Math.max(p.vy - 75 * dt, -8.5); p.jet -= dt;
+    if (Math.random() < 0.6) parts.push({ x: p.x + 0.2 + Math.random() * 0.3, y: p.y + 1.3, vx: (Math.random() - 0.5) * 2, vy: 5 + Math.random() * 3, life: 0.3, col: Math.random() < 0.5 ? '#ff7a1a' : '#ffd84a' });
+  }
   if (!jump && p.vy < -5) p.vy = -5;
   if (getT(Math.floor(p.x + p.w / 2), Math.floor(p.y + p.h / 2)) === ROPE) { p.vy = jump ? -7 : down ? 6 : -38 * dt; p.dj = false; } // 爬绳
+  if (lift) { // 运输无人机吊着玩家直线上升
+    lift.t += dt; p.vx = 0; p.x = lift.x; p.vy = -12; p.inv = 0.9; p.dj = false;
+    if (p.y + p.h < lift.land.y - 0.3) { p.x = lift.land.x + 0.125; p.y = lift.land.y - p.h - 0.02; p.vy = 0; lift = null; toast('已送达地表', 1500); sfx(660, 0.15, 'triangle', 0.07); }
+    else if (lift.t > 40) lift = null;
+  }
   p.drop = down;
   moveEnt(p, dt, true);
   if (p.onG && Math.abs(p.vx) > 0.5) p.walk += Math.abs(p.vx) * dt * 1.6; else if (p.onG) p.walk = 0;
@@ -1050,7 +1124,8 @@ function update(dt) {
   let mining = false;
   const id = hotbar[sel], it = id ? ITEMS[id] : null, k = it && inv[id] > 0 ? it.k : 'hand';
   const auto = !ptr.down && input.act, ranged = k === 'bow' || k === 'staff' || k === 'throw';
-  const aim = ptr.down ? ptrWorld() : auto ? autoTarget(k) : null, fresh = ptr.fresh || input.actFresh;
+  if (selMode) handleSelect();
+  const aim = selMode || selDrag || lift ? null : ptr.down ? ptrWorld() : auto ? autoTarget(k) : null, fresh = ptr.fresh || input.actFresh;
   if (aim) {
     const [wx, wy] = aim, tx = Math.floor(wx), ty = Math.floor(wy);
     const cx = p.x + p.w / 2, cy = p.y + p.h / 2;
@@ -1170,6 +1245,261 @@ function update(dt) {
   saveT += dt; if (saveT > 20) { saveT = 0; saveGame(); }
 }
 
+// ───────────────────────── 电力 / 机器 / 无人机 ─────────────────────────
+const MACH = {};
+MACH[DRONE_MINE]  = { n: '采矿无人机基座', cap: 200, drone: 'mine',  col: '#ffd84a' };
+MACH[DRONE_ORE]   = { n: '探矿无人机基座', cap: 200, drone: 'ore',   col: '#3ad0e0' };
+MACH[DRONE_GUARD] = { n: '护卫无人机基座', cap: 150, drone: 'guard', col: '#ff5a5a' };
+MACH[DRONE_TRANS] = { n: '运输无人机停机坪', cap: 150, drone: 'trans', col: '#5fd65f' };
+MACH[SOLAR]      = { n: '太阳能板', gen: 1.5 };
+MACH[COALGEN]    = { n: '火力发电机', gen: 5 };
+MACH[REACTOR]    = { n: '核反应堆', gen: 30 };
+MACH[RTG]        = { n: '钚电池', gen: 3 };
+MACH[BATTERY]    = { n: '蓄电池', cap: 600, bat: 1 };
+MACH[CENTRIFUGE] = { n: '离心机', cap: 100 };
+const ORE_SET = new Uint8Array(NT);
+[COPPER, IRON, GOLD, COAL, DIAMOND, SILVER, RUBY, EMERALD, URANIUM].forEach(t => { ORE_SET[t] = 1; });
+const POWER_R = 12; // 无线供电范围
+let machines = {}, selMode = null, selDrag = null, lift = null, machOpen = -1, powT = 0, quietBreak = false;
+
+function newMachine(t, i) {
+  const m = { t, e: 0, i, x: i % W, y: (i / W) | 0 };
+  if (MACH[t].drone) { m.e = 40; m.r = 0; m.s = 0; m.on = MACH[t].drone === 'guard'; }
+  return m;
+}
+function removeMachine(i) {
+  const m = machines[i]; if (!m) return;
+  if (m.r) give('mod_range', m.r); if (m.s) give('mod_speed', m.s);
+  if (m.pu) give('plutonium', m.pu); if (m.rod) give('fuel_rod', m.rod); if (m.rods) give('fuel_rod', m.rods); if (m.u) give('uranium', m.u);
+  delete machines[i];
+  if (machOpen === i) closeMach();
+  if (selMode && selMode.i === i) { selMode = null; selDrag = null; }
+  if (lift && lift.i === i) lift = null;
+}
+function skyOpen(m) {
+  if (walls[m.i]) return false;
+  for (let y = m.y - 1; y >= 0; y--) if (OPAQUE[getT(m.x, y)]) return false;
+  return true;
+}
+// 每 0.5 秒结算一次电力
+function powerTick(dt) {
+  const list = Object.keys(machines).map(k => machines[k]);
+  if (!list.length) return;
+  const near = (a, b) => Math.abs(a.x - b.x) <= POWER_R && Math.abs(a.y - b.y) <= POWER_R;
+  const cons = list.filter(m => MACH[m.t].cap && !MACH[m.t].bat), bats = list.filter(m => MACH[m.t].bat);
+  const feed = (src, amount, toBat) => {
+    let left = amount;
+    for (const c of cons) { if (left <= 0) break; if (!near(src, c)) continue; const g = Math.min(left, MACH[c.t].cap - c.e); if (g > 0) { c.e += g; left -= g; } }
+    if (toBat) for (const c of bats) { if (left <= 0) break; if (!near(src, c)) continue; const g = Math.min(left, MACH[c.t].cap - c.e); if (g > 0) { c.e += g; left -= g; } }
+    return amount - left;
+  };
+  for (const m of list) {
+    if (m.e < 0) m.e = 0;
+    const def = MACH[m.t];
+    if (m.t === SOLAR) { m.out = def.gen * daylight() * (skyOpen(m) ? 1 : 0); feed(m, m.out * dt, true); }
+    else if (m.t === RTG) { m.out = def.gen; feed(m, def.gen * dt, true); }
+    else if (m.t === COALGEN) {
+      m.out = 0;
+      if (m.fuel > 0) { const used = feed(m, def.gen * dt, true); if (used > 0) { m.fuel -= dt; m.out = used / dt; } }
+    } else if (m.t === REACTOR) {
+      m.out = 0;
+      if (!(m.fuel > 0) && m.rods > 0) { m.rods--; m.fuel = 600; }
+      if (m.fuel > 0) {
+        m.out = feed(m, def.gen * dt, true) / dt; m.fuel -= dt;
+        if (m.fuel <= 0) { m.pu = (m.pu || 0) + 1; toast('核反应堆烧完了一根燃料棒，产出 1 钚', 2500); }
+      }
+    } else if (m.t === CENTRIFUGE) {
+      if (m.u >= 4 && m.e >= 2 * dt) { m.e -= 2 * dt; m.p = (m.p || 0) + dt; if (m.p >= 20) { m.p = 0; m.u -= 4; m.rod = (m.rod || 0) + 1; toast('离心机提炼出 1 根铀燃料棒', 2500); } }
+    }
+  }
+  for (const b of bats) if (b.e > 0) b.e -= feed(b, Math.min(b.e, 10 * dt), false);
+  if (machOpen >= 0) renderMach();
+}
+
+function flyTo(m, x, y, sp, dt) {
+  const dx = x - m.dx, dy = y - m.dy, d = Math.hypot(dx, dy);
+  if (d <= sp * dt) { m.dx = x; m.dy = y; return true; }
+  m.dx += dx / d * sp * dt; m.dy += dy / d * sp * dt;
+  return d < 1.6;
+}
+function droneCan(m, x, y) {
+  const t = getT(x, y);
+  if (t === AIR || t === BEDROCK || MACH[t] || MACH[getT(x, y - 1)]) return false;
+  if (m.job) return SOLID[t] === 1;
+  return m.t === DRONE_ORE ? ORE_SET[t] === 1 : SOLID[t] === 1;
+}
+function nextTarget(m, a) {
+  for (let y = a.y0; y <= a.y1; y++) for (let x = a.x0; x <= a.x1; x++) if (droneCan(m, x, y)) return { x, y };
+  return null;
+}
+function droneUpdate(dt) {
+  for (const k in machines) {
+    const m = machines[k], def = MACH[m.t];
+    if (!def.drone) continue;
+    const hx = m.x + 0.5, hy = m.y - 0.7;
+    if (m.dx === undefined) { m.dx = hx; m.dy = hy; }
+    m.lz = false;
+    if (def.drone === 'mine' || def.drone === 'ore') {
+      const job = m.job || (m.on ? m.area : null);
+      if (job && m.e > 0.5) {
+        if (!m.tg || !droneCan(m, m.tg.x, m.tg.y)) {
+          m.tg = nextTarget(m, job); m.p = 0;
+          if (!m.tg) {
+            if (m.job) { m.job = null; toast('通道已打通！到停机坪点「送我回地表」', 3500); sfx(880, 0.2, 'square', 0.07); }
+            else { m.on = false; toast(def.n.replace('基座', '') + '：框选区域已采完', 2500); sfx(660, 0.2, 'square', 0.06); }
+          }
+        }
+        if (m.tg) {
+          if (flyTo(m, m.tg.x + 0.5, m.tg.y + 0.5, 10 + 3 * m.s, dt)) {
+            m.lz = true; m.e -= 1.2 * dt;
+            m.p += dt * 2.5 * (1 + 0.7 * m.s) / TILE[getT(m.tg.x, m.tg.y)].hard;
+            if (m.p >= 1) { quietBreak = Math.abs(m.tg.x - player.x) > 22 || Math.abs(m.tg.y - player.y) > 14; breakTile(m.tg.x, m.tg.y); quietBreak = false; m.tg = null; }
+          }
+          continue;
+        }
+      }
+      flyTo(m, hx, hy, 8, dt);
+    } else if (def.drone === 'guard') {
+      let best = null, bd = 12;
+      if (m.on && m.e >= 2) for (const e of enemies) { const d = Math.hypot(e.x - m.x, e.y - m.y); if (d < bd) { bd = d; best = e; } }
+      if (best) {
+        flyTo(m, best.x + (m.x > best.x ? 3 : -3), best.y - 2.5, 9, dt);
+        m.cd = (m.cd || 0) - dt;
+        if (m.cd <= 0) {
+          const a = Math.atan2(best.y + best.h / 2 - m.dy, best.x + best.w / 2 - m.dx);
+          shots.push({ draw: 'bolt', x: m.dx, y: m.dy, vx: Math.cos(a) * 26, vy: Math.sin(a) * 26, g: 0, life: 1, dmg: 22, col: '#ff5a5a', fire: true });
+          m.cd = 0.5; m.e -= 2; m.lz = false; sfx(1000, 0.05, 'sine', 0.04);
+        }
+      } else flyTo(m, hx, hy, 8, dt);
+    } else { // 运输
+      if (lift && lift.i === m.i) { m.dx = player.x + player.w / 2; m.dy = player.y - 0.5; }
+      else flyTo(m, hx, hy, 10, dt);
+    }
+  }
+}
+function requestLift(m) {
+  const p = player;
+  if (Math.abs(p.x - m.x) > 3.5 || Math.abs(p.y - m.y) > 4) return toast('请站到停机坪旁边再出发');
+  if (m.e < 30) return toast('电量不足（起飞需要 30）');
+  let top = -1;
+  for (let y = m.y - 1; y >= 0; y--) if (isSolid(m.x, y)) top = y;
+  if (top >= 0) { // 通道被堵：联络采矿无人机
+    const bases = Object.keys(machines).map(k => machines[k]).filter(b => b.t === DRONE_MINE && Math.hypot(b.x - m.x, b.y - m.y) <= 40)
+      .sort((a, b) => Math.hypot(a.x - m.x, a.y - m.y) - Math.hypot(b.x - m.x, b.y - m.y));
+    if (!bases.length) return toast('头顶被堵住了，附近 40 格内没有采矿无人机可以联络', 3500);
+    const b = bases.find(q => q.e > 5) || bases[0];
+    b.job = { x0: m.x, x1: m.x, y0: top, y1: m.y - 1 }; b.tg = null;
+    closeMach();
+    return toast('已联络采矿无人机开辟直上通道（约 ' + (m.y - top) + ' 格），打通后通知你', 4000);
+  }
+  let land = null;
+  for (const dx of [1, -1, 2, -2]) {
+    const gx = m.x + dx; if (gx < 1 || gx >= W - 1) continue;
+    let gy = 0; while (gy < H && !isSolid(gx, gy)) gy++;
+    if (gy < m.y - 2) { land = { x: gx, y: gy }; break; }
+  }
+  if (!land) return toast('上方没有可以降落的地面（你已经在地表了？）', 3000);
+  m.e -= 30; lift = { i: m.i, x: m.x + 0.125, land, t: 0 }; closeMach(); toast('运输无人机起飞！', 1500); sfx(500, 0.3, 'triangle', 0.07);
+}
+function handleSelect() {
+  const m = machines[selMode.i];
+  if (!m) { selMode = null; selDrag = null; return; }
+  if (ptr.down) {
+    const [wx, wy] = ptrWorld(), tx = clamp(Math.floor(wx), 1, W - 2), ty = clamp(Math.floor(wy), 1, H - 2), N = 8 + 4 * m.r;
+    if (!selDrag) selDrag = { sx: tx, sy: ty, ex: tx, ey: ty };
+    selDrag.ex = clamp(tx, selDrag.sx - N + 1, selDrag.sx + N - 1); selDrag.ey = clamp(ty, selDrag.sy - N + 1, selDrag.sy + N - 1);
+  } else if (selDrag) {
+    const a = { x0: Math.min(selDrag.sx, selDrag.ex), x1: Math.max(selDrag.sx, selDrag.ex), y0: Math.min(selDrag.sy, selDrag.ey), y1: Math.max(selDrag.sy, selDrag.ey) };
+    if (Math.abs((a.x0 + a.x1) / 2 - m.x) > 30 || Math.abs((a.y0 + a.y1) / 2 - m.y) > 30) toast('离基座太远了（要在 30 格以内）', 2500);
+    else { m.area = a; m.on = true; m.tg = null; toast('已框选 ' + (a.x1 - a.x0 + 1) + '×' + (a.y1 - a.y0 + 1) + ' 区域，无人机出发！', 2500); sfx(880, 0.1, 'square', 0.06); }
+    selDrag = null; selMode = null;
+  }
+}
+function drawMachines(z, ox, oy, now) {
+  const TS = T * z;
+  for (const k in machines) {
+    const m = machines[k], def = MACH[m.t], bx = m.x * TS - ox, by = m.y * TS - oy;
+    if (bx < -40 * TS || bx > cw + 40 * TS || by < -40 * TS || by > ch + 40 * TS) continue;
+    if (def.cap) { // 电量条
+      ctx.fillStyle = '#10141c'; ctx.fillRect(bx + 2 * z, by - 3 * z, 12 * z, 2 * z);
+      ctx.fillStyle = m.e > def.cap * 0.2 ? '#5fd65f' : '#ff5a5a'; ctx.fillRect(bx + 2 * z, by - 3 * z, Math.round(12 * z * clamp(m.e / def.cap, 0, 1)), 2 * z);
+    }
+    if (!def.drone || m.dx === undefined) continue;
+    const ar = m.job || (m.on && m.area);
+    if (ar && (def.drone === 'mine' || def.drone === 'ore')) {
+      ctx.strokeStyle = def.col; ctx.globalAlpha = 0.55; ctx.lineWidth = z;
+      ctx.strokeRect(ar.x0 * TS - ox + z / 2, ar.y0 * TS - oy + z / 2, (ar.x1 - ar.x0 + 1) * TS - z, (ar.y1 - ar.y0 + 1) * TS - z); ctx.globalAlpha = 1;
+    }
+    const dx = Math.floor(m.dx * TS) - ox, dy = Math.floor((m.dy + Math.sin(now * 4 + m.x) * 0.08) * TS) - oy;
+    if (m.lz && m.tg) {
+      ctx.strokeStyle = def.col; ctx.lineWidth = z; ctx.beginPath(); ctx.moveTo(dx, dy + 2 * z);
+      ctx.lineTo((m.tg.x + 0.5) * TS - ox, (m.tg.y + 0.5) * TS - oy); ctx.stroke();
+    }
+    const rot = Math.floor(now * 20) % 2;
+    ctx.fillStyle = '#3a3e48'; ctx.fillRect(dx - 5 * z, dy - 2 * z, 10 * z, 4 * z);
+    ctx.fillStyle = '#9aa0aa'; ctx.fillRect(dx - 5 * z, dy - 2 * z, 10 * z, z);
+    ctx.fillStyle = def.col; ctx.fillRect(dx - z, dy, 2 * z, 2 * z);
+    ctx.fillStyle = '#5c5f66'; ctx.fillRect(dx - 6 * z, dy - 3 * z, z, z); ctx.fillRect(dx + 5 * z, dy - 3 * z, z, z);
+    ctx.fillStyle = '#e8ecf2'; ctx.fillRect(dx - (rot ? 8 : 7) * z, dy - 4 * z, (rot ? 5 : 3) * z, z); ctx.fillRect(dx + (rot ? 3 : 4) * z, dy - 4 * z, (rot ? 5 : 3) * z, z);
+  }
+  if (selMode) {
+    if (selDrag) {
+      const x0 = Math.min(selDrag.sx, selDrag.ex), x1 = Math.max(selDrag.sx, selDrag.ex), y0 = Math.min(selDrag.sy, selDrag.ey), y1 = Math.max(selDrag.sy, selDrag.ey);
+      ctx.fillStyle = 'rgba(255,225,74,.22)'; ctx.fillRect(x0 * TS - ox, y0 * TS - oy, (x1 - x0 + 1) * TS, (y1 - y0 + 1) * TS);
+      ctx.strokeStyle = '#ffe14a'; ctx.lineWidth = z; ctx.strokeRect(x0 * TS - ox, y0 * TS - oy, (x1 - x0 + 1) * TS, (y1 - y0 + 1) * TS);
+      ctx.font = `bold ${7 * z}px "Courier New",monospace`; ctx.textAlign = 'center'; ctx.fillStyle = '#fff';
+      ctx.fillText((x1 - x0 + 1) + '×' + (y1 - y0 + 1), (x0 + x1 + 1) / 2 * TS - ox, y0 * TS - oy - 3 * z);
+    }
+  }
+}
+// ── 机器面板 ──
+function openMach(i) { machOpen = i; ptr.down = false; $('mach').classList.add('show'); renderMach(); sfx(700, 0.04, 'square', 0.04); }
+function closeMach() { machOpen = -1; $('mach').classList.remove('show'); }
+function renderMach() {
+  const m = machines[machOpen]; if (!m) { closeMach(); return; }
+  const def = MACH[m.t], box = $('machBox'); box.innerHTML = '';
+  const add = (tag, txt, cls) => { const el = document.createElement(tag); el.textContent = txt; if (cls) el.className = cls; box.appendChild(el); return el; };
+  const btn = (txt, fn, dis, cls) => { const b = add('button', txt, cls); b.disabled = !!dis; b.addEventListener('click', () => { fn(); if (machOpen >= 0) renderMach(); refreshHUD(); }); };
+  add('h3', def.n);
+  if (def.cap) add('div', '电量 ' + Math.floor(m.e) + ' / ' + def.cap, m.e > def.cap * 0.2 ? 'ok' : 'no');
+  if (def.gen) add('div', '当前发电 ' + (m.out || 0).toFixed(1) + ' / 秒（上限 ' + def.gen + '）', m.out > 0 ? 'ok' : 'no');
+  if (def.gen || def.bat) add('small', '自动给 ' + POWER_R + ' 格内的机器无线供电');
+  else add('small', '需要 ' + POWER_R + ' 格内有发电设备或蓄电池');
+  if (def.drone === 'mine' || def.drone === 'ore') {
+    const N = 8 + 4 * m.r;
+    add('div', '状态：' + (m.job ? '正在开辟运输通道' : m.on && m.area ? (m.e > 0.5 ? '作业中' : '没电了，等待充电') : '待机'));
+    add('small', (m.area ? '区域 ' + (m.area.x1 - m.area.x0 + 1) + '×' + (m.area.y1 - m.area.y0 + 1) + ' · ' : '') + '框选上限 ' + N + '×' + N + ' · 范围模块 ' + m.r + '/2 · 速度模块 ' + m.s + '/3');
+    btn('▣ 框选开采区域', () => { selMode = { i: m.i }; selDrag = null; closeMach(); toast('在画面上拖动手指框选（最大 ' + N + '×' + N + '）', 3500); });
+    if (m.area) btn(m.on ? '⏸ 暂停' : '▶ 继续', () => { m.on = !m.on; }, false, 'alt');
+    btn('安装范围模块（背包有 ' + inv.mod_range + '）', () => { inv.mod_range--; m.r++; }, inv.mod_range < 1 || m.r >= 2, 'alt');
+    btn('安装速度模块（背包有 ' + inv.mod_speed + '）', () => { inv.mod_speed--; m.s++; }, inv.mod_speed < 1 || m.s >= 3, 'alt');
+    add('small', def.drone === 'ore' ? '只采矿石，采到的东西直接传送进背包' : '采到的东西直接传送进背包');
+  } else if (def.drone === 'guard') {
+    add('small', '自动射击 12 格内的敌人，每发耗电 2');
+    btn(m.on ? '⏸ 关闭' : '▶ 开启', () => { m.on = !m.on; }, false, 'alt');
+  } else if (def.drone === 'trans') {
+    add('small', '站在旁边点出发：沿正上方直线把你送回地表（耗电 30）。头顶有方块时，会联络 40 格内的采矿无人机开路。');
+    btn('🚁 送我回地表', () => requestLift(m), !!lift);
+  } else if (m.t === COALGEN) {
+    add('div', '燃料还能烧 ' + Math.ceil(m.fuel || 0) + ' 秒', m.fuel > 0 ? 'ok' : 'no');
+    btn('加 1 个煤（+20 秒，背包有 ' + inv.coal + '）', () => { inv.coal--; m.fuel = (m.fuel || 0) + 20; }, inv.coal < 1);
+    btn('加 10 个煤', () => { inv.coal -= 10; m.fuel = (m.fuel || 0) + 200; }, inv.coal < 10, 'alt');
+  } else if (m.t === REACTOR) {
+    add('div', '当前燃料棒剩余 ' + Math.ceil(Math.max(0, m.fuel || 0)) + ' 秒 · 待用 ' + (m.rods || 0) + ' 根', m.fuel > 0 ? 'ok' : 'no');
+    btn('装入燃料棒（背包有 ' + inv.fuel_rod + '）', () => { inv.fuel_rod--; m.rods = (m.rods || 0) + 1; }, inv.fuel_rod < 1);
+    btn('取出钚 ×' + (m.pu || 0), () => { give('plutonium', m.pu); m.pu = 0; }, !(m.pu > 0), 'alt');
+  } else if (m.t === CENTRIFUGE) {
+    add('div', '铀矿 ' + (m.u || 0) + ' 个 · 进度 ' + Math.floor((m.p || 0) / 20 * 100) + '%', m.u >= 4 ? 'ok' : 'no');
+    add('small', '每 4 个铀矿提炼 1 根燃料棒，需 20 秒、耗电 40');
+    btn('放入 4 个铀矿（背包有 ' + inv.uranium + '）', () => { inv.uranium -= 4; m.u = (m.u || 0) + 4; }, inv.uranium < 4);
+    btn('取出燃料棒 ×' + (m.rod || 0), () => { give('fuel_rod', m.rod); m.rod = 0; }, !(m.rod > 0), 'alt');
+  } else if (m.t === SOLAR) {
+    add('small', skyOpen(m) ? (daylight() > 0.1 ? '阳光充足' : '现在是晚上，不发电') : '被遮挡了：必须放在露天、头顶没有方块的地方', skyOpen(m) ? 'ok' : 'no');
+  }
+  btn('拆除回收', () => { breakTile(m.x, m.y); }, false, 'red');
+  btn('关闭', closeMach, false, 'alt');
+}
+
 // ───────────────────────── 存档 ─────────────────────────
 const SAVE_KEY = 'pixel_frontier_save_v2';
 function saveGame() {
@@ -1178,7 +1508,7 @@ function saveGame() {
     let s = '';
     for (let i = 0; i < tiles.length; i += 8192) s += String.fromCharCode.apply(null, tiles.subarray(i, i + 8192));
     localStorage.setItem(SAVE_KEY, JSON.stringify({ seed: worldSeed, tiles: btoa(s), inv, hotbar, sel, coins, dayT,
-      hp: player.hp, maxHp: player.maxHp, x: player.x, y: player.y, spawnX, spawnY, buffs }));
+      hp: player.hp, maxHp: player.maxHp, x: player.x, y: player.y, spawnX, spawnY, buffs, machines }));
   } catch (e) { /* 存储不可用时忽略 */ }
 }
 function hasSave() { try { return !!localStorage.getItem(SAVE_KEY); } catch (e) { return false; } }
@@ -1197,6 +1527,11 @@ function loadGame() {
     for (const b in buffs) buffs[b] = (d.buffs && +d.buffs[b]) || 0;
     player.x = +d.x; player.y = +d.y; player.vx = player.vy = 0;
     if (!(player.x > 0 && player.y > -50) || boxHits(player.x, player.y, player.w, player.h)) respawn();
+    machines = {}; selMode = null; selDrag = null; lift = null;
+    if (d.machines) for (const k in d.machines) {
+      const m = d.machines[k], i = +k;
+      if (tiles[i] === m.t && MACH[m.t]) { m.i = i; m.x = i % W; m.y = (i / W) | 0; m.tg = null; machines[i] = m; }
+    }
     lightVer++; return true;
   } catch (e) { return false; }
 }
@@ -1204,6 +1539,7 @@ function newGame() {
   genWorld((Math.random() * 1e9) | 0); resetInventory();
   player.maxHp = 100; dayT = 0.04; enemies = []; shots = []; respawn(); player.inv = 0;
   for (const b in buffs) buffs[b] = 0;
+  machines = {}; selMode = null; selDrag = null; lift = null;
 }
 
 // ───────────────────────── 渲染 ─────────────────────────
@@ -1448,7 +1784,8 @@ function render(now) {
     ctx.fillRect((x - 1) * TS - ox, (y - 1) * TS - oy, TS * 3, TS * 3);
   }
 
-  if (ptr.down) {
+  drawMachines(z, ox, oy, now);
+  if (ptr.down && !selMode) {
     const [wx, wy] = ptrWorld(), tx = Math.floor(wx), ty = Math.floor(wy);
     const ok = Math.hypot(tx + 0.5 - player.x - player.w / 2, ty + 0.5 - player.y - player.h / 2) <= 5.5;
     ctx.strokeStyle = ok ? 'rgba(255,255,255,.85)' : 'rgba(255,80,80,.7)'; ctx.lineWidth = z;
@@ -1533,7 +1870,7 @@ function setTab(t) { bagTab = t; bagSel = null; bagPage = 0; renderBag(); }
 function toggleBag(show) { bagOpen = show; $('bag').classList.toggle('show', show); if (show) renderBag(); else ptr.down = false; }
 
 function renderBag() {
-  $('tabInv').className = bagTab === 'inv' ? 'on' : ''; $('tabCraft').className = bagTab === 'craft' ? 'on' : '';
+  $('tabInv').className = bagTab === 'inv' ? 'on' : ''; $('tabCraft').className = bagTab === 'craft' ? 'on' : ''; $('tabShop').className = bagTab === 'shop' ? 'on' : '';
   const sts = [BENCH, FURNACE, ANVIL, CAMPFIRE].filter(nearStation).map(s => ST_NAME[s]);
   $('stations').textContent = sts.length ? '附近: ' + sts.join(' ') : '';
   const grid = $('grid'), det = $('detail'); grid.innerHTML = ''; det.innerHTML = '';
@@ -1566,6 +1903,10 @@ function renderBag() {
     const it = ITEMS[bagSel], id = bagSel;
     head(id, it.n + (countLabel(id) !== '' ? ' ×' + inv[id] : ''));
     line(it.d);
+    if (SELL[id]) {
+      button('卖出 1 个（+' + SELL[id] + '◎）', () => { inv[id]--; coins += SELL[id]; sfx(990, 0.05, 'square', 0.05); refreshHUD(); }, 'alt');
+      if (inv[id] > 1) button('全部卖出（+' + SELL[id] * inv[id] + '◎）', () => { coins += SELL[id] * inv[id]; inv[id] = 0; sfx(990, 0.1, 'square', 0.05); refreshHUD(); }, 'alt');
+    }
     if (it.k === 'use') button('使用', () => { useItem(id); refreshHUD(); });
     if (it.k === 'acc' || it.k === 'armor') line('拥有即自动生效', 'ok');
     if (!PASSIVE(it.k)) {
@@ -1576,7 +1917,7 @@ function renderBag() {
         hotbar[sel] = id; refreshHUD();
       }, 'alt', at === sel);
     }
-  } else {
+  } else if (bagTab === 'craft') {
     if (typeof bagSel !== 'number') bagSel = 0;
     const can = RECIPES.map(canCraft); // 能做的排在前面
     const order = RECIPES.map((_, k) => k).sort((a, b) => (can[b] - can[a]) || a - b);
@@ -1593,6 +1934,21 @@ function renderBag() {
     Object.keys(rc.cost).forEach(k => line(ITEMS[k].n + ' ' + inv[k] + '/' + rc.cost[k], inv[k] >= rc.cost[k] ? 'ok' : 'no'));
     if (rc.st) line('需要靠近：' + ST_NAME[rc.st], nearStation(rc.st) ? 'ok' : 'no');
     button('制作', () => { craft(rc); refreshHUD(); }, '', !canCraft(rc));
+  } else { // 商店
+    if (typeof bagSel !== 'number' || bagSel >= SHOP.length) bagSel = 5;
+    pager(SHOP.length);
+    SHOP.slice(bagPage * PAGE, bagPage * PAGE + PAGE).forEach((g, k0) => {
+      const k = k0 + bagPage * PAGE;
+      const el = mkSlot(g[0], g[1] > 1 ? g[1] : '', (k === bagSel ? ' sel' : '') + (coins >= g[2] ? '' : ' dim'));
+      el.addEventListener('click', () => { bagSel = k; renderBag(); });
+      grid.appendChild(el);
+    });
+    const g = SHOP[bagSel], it = ITEMS[g[0]];
+    head(g[0], it.n + (g[1] > 1 ? ' ×' + g[1] : ''));
+    line(it.d); line('已拥有 ' + inv[g[0]]);
+    line('价格 ' + g[2] + '◎ · 你有 ' + coins + '◎', coins >= g[2] ? 'ok' : 'no');
+    button('购买', () => { if (coins < g[2]) return; coins -= g[2]; give(g[0], g[1]); sfx(990, 0.08, 'square', 0.06); refreshHUD(); }, '', coins < g[2]);
+    line('金币来源：打怪、开宝箱，或在「背包」页卖出矿石和宝石');
   }
 }
 
@@ -1627,9 +1983,16 @@ function bindInput() {
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(n => joy.addEventListener(n, up));
   }
 
-  canvas.addEventListener('pointerdown', ev => { ev.preventDefault(); const [x, y] = toStage(ev); ptr.down = true; ptr.fresh = true; ptr.id = ev.pointerId; ptr.x = x; ptr.y = y; });
+  canvas.addEventListener('pointerdown', ev => { ev.preventDefault(); const [x, y] = toStage(ev); ptr.down = true; ptr.fresh = true; ptr.id = ev.pointerId; ptr.x = x; ptr.y = y; ptr.t0 = Date.now(); });
   canvas.addEventListener('pointermove', ev => { if (ev.pointerId === ptr.id) { const [x, y] = toStage(ev); ptr.x = x; ptr.y = y; } });
-  const end = ev => { if (ev.pointerId === ptr.id) { ptr.down = false; ptr.id = -1; } };
+  const end = ev => {
+    if (ev.pointerId !== ptr.id) return;
+    ptr.down = false; ptr.id = -1;
+    if (ev.type === 'pointerup' && running && !selMode && !selDrag && Date.now() - ptr.t0 < 350) { // 轻点机器：打开面板
+      const [wx, wy] = ptrWorld(), i = Math.floor(wy) * W + Math.floor(wx);
+      if (machines[i] && Math.hypot(wx - player.x, wy - player.y) < 8) openMach(i);
+    }
+  };
   ['pointerup', 'pointercancel', 'pointerleave'].forEach(n => canvas.addEventListener(n, end));
 
   $('bagBtn').addEventListener('click', () => toggleBag(true));
@@ -1637,6 +2000,8 @@ function bindInput() {
   $('bag').addEventListener('click', ev => { if (ev.target === $('bag')) toggleBag(false); });
   $('tabInv').addEventListener('click', () => setTab('inv'));
   $('tabCraft').addEventListener('click', () => setTab('craft'));
+  $('tabShop').addEventListener('click', () => setTab('shop'));
+  $('mach').addEventListener('click', ev => { if (ev.target === $('mach')) closeMach(); });
 
   const km = { KeyA: 'l', ArrowLeft: 'l', KeyD: 'r', ArrowRight: 'r', Space: 'j', KeyW: 'j', ArrowUp: 'j', KeyS: 'd', ArrowDown: 'd', KeyF: 'act' };
   window.addEventListener('keydown', ev => {
@@ -1698,7 +2063,7 @@ function boot() {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { genWorld, newGame, tiles, walls, surf, player, respawn, update, render, boot, input, ptr, inv, breakTile, tryPlace, explode, craft, useItem, give,
-    getT, W, H, T, ITEMS, RECIPES, TILE, buffs, autoTarget, growTree, slowTick, saveGame, loadGame, renderBag, refreshHUD,
+    getT, W, H, T, ITEMS, RECIPES, TILE, buffs, SHOP, SELL, MACH, powerTick, droneUpdate, requestLift, handleSelect, openMach, renderMach, mach: () => machines, lift: () => lift, selStart: i => { selMode = { i }; selDrag = null; }, addCoins: n => { coins += n; }, autoTarget, growTree, slowTick, saveGame, loadGame, renderBag, refreshHUD,
     set: o => { if (o.sel !== undefined) sel = o.sel; if (o.hotbar) hotbar = o.hotbar; if (o.dayT !== undefined) dayT = o.dayT; if (o.running !== undefined) running = o.running; if (o.tab) bagTab = o.tab; },
     state: () => ({ enemies, shots, spawnX, spawnY, hotbar, sel, coins, icons, atlas, ICON }) };
 } else {

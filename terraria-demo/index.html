@@ -79,6 +79,17 @@ button{font:inherit;color:#fff;touch-action:none}
 #detail button:disabled{background:#555;box-shadow:inset 0 0 0 2px #777;color:#aaa}
 #detail button.alt{background:#34508c;box-shadow:inset 0 0 0 2px #6a8ad0}
 
+#mach{position:absolute;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:6}
+#mach.show{display:flex}
+#machBox{width:310px;max-width:94%;max-height:96%;overflow:auto;padding:10px;display:flex;flex-direction:column;gap:5px;font-size:12px;line-height:1.45}
+#machBox h3{margin:0;font-size:15px;color:#ffd84a}
+#machBox small{font-weight:400;color:#d8c7a0}
+#machBox .ok{color:#9f9}#machBox .no{color:#f88}
+#machBox button{padding:7px;background:#2f8f2f;border:3px solid #1a1208;box-shadow:inset 0 0 0 2px #5fd65f;font-size:12px}
+#machBox button.alt{background:#34508c;box-shadow:inset 0 0 0 2px #6a8ad0}
+#machBox button.red{background:#a33;box-shadow:inset 0 0 0 2px #e66}
+#machBox button:disabled{background:#555;box-shadow:inset 0 0 0 2px #777;color:#aaa}
+#tabs button{padding:6px 9px}
 #title{position:absolute;inset:0;z-index:10;background:#0b1030 url(title.jpg) center 38%/cover no-repeat;image-rendering:pixelated;
   display:flex;flex-direction:column;align-items:center;justify-content:space-around;padding:12px;text-align:center}
 #title h1{margin:0;font-size:clamp(36px,9vmax,76px);letter-spacing:4px;color:#ffe14a;
@@ -118,7 +129,7 @@ button{font:inherit;color:#fff;touch-action:none}
   <div id="bag">
     <div id="bagBox" class="px">
       <div id="bagL">
-        <div id="tabs"><button id="tabInv">背包</button><button id="tabCraft">合成</button><span id="stations"></span></div>
+        <div id="tabs"><button id="tabInv">背包</button><button id="tabCraft">合成</button><button id="tabShop">商店</button><span id="stations"></span></div>
         <div id="grid"></div>
         <div id="pager"></div>
       </div>
@@ -128,6 +139,8 @@ button{font:inherit;color:#fff;touch-action:none}
       </div>
     </div>
   </div>
+
+  <div id="mach"><div id="machBox" class="px"></div></div>
 
   <div id="title">
     <div><h1>像素边境</h1><p>PIXEL FRONTIER · DEMO</p></div>
