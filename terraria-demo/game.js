@@ -13,7 +13,9 @@ const AIR = 0, DIRT = 1, GRASS = 2, STONE = 3, LOG = 4, LEAVES = 5, COPPER = 6, 
       BED = 48, ANVIL = 49, SAPLING = 50, ROPE = 51, FLOWER_B = 52, FLOWER_Y = 53, BANNER = 54, POT = 55, PAINTING = 56,
       STATUE = 57, GLOWSHROOM = 58,
       URANIUM = 59, DRONE_MINE = 60, DRONE_ORE = 61, DRONE_GUARD = 62, DRONE_TRANS = 63, SOLAR = 64, COALGEN = 65, BATTERY = 66,
-      REACTOR = 67, CENTRIFUGE = 68, RTG = 69, NT = 70;
+      REACTOR = 67, CENTRIFUGE = 68, RTG = 69,
+      TITANIUM = 70, PLATINUM = 71, LITHIUM = 72, THORIUM = 73, AMETHYST = 74, SULFUR = 75,
+      DRONE_SCAN = 76, DRONE_LUMBER = 77, DRONE_MEDIC = 78, DRONE_LAMP = 79, FUSION = 80, TESLA = 81, NT = 82;
 
 // solid, 挖掘耗时(秒), 掉落物品, 碎屑颜色
 const TILE = [
@@ -56,6 +58,11 @@ const TILE = [
  [1, 2.0, 'uranium', '#5fff5f'], [0, 1.0, 'drone_mine', '#ffd84a'], [0, 1.0, 'drone_ore', '#3ad0e0'], [0, 1.0, 'drone_guard', '#ff5a5a'],
  [0, 1.0, 'drone_trans', '#5fd65f'], [0, 1.0, 'solar', '#1a3a8a'], [0, 1.0, 'coalgen', '#5a4a3a'], [0, 1.0, 'battery', '#2a2e38'],
  [0, 1.0, 'reactor', '#6a707a'], [0, 1.0, 'centrifuge', '#8a8d96'], [0, 1.0, 'rtg', '#4a3a6a'],
+ // v5：新矿物 + 新机器（id 70 起）
+ [1, 2.4, 'titanium', '#8fb8c8'], [1, 2.0, 'platinum', '#e8f0f0'], [1, 1.4, 'lithium', '#ff9ad0'], [1, 2.2, 'thorium', '#ff8a2a'],
+ [1, 2.0, 'amethyst', '#b05aff'], [1, 1.0, 'sulfur', '#e8e03a'],
+ [0, 1.0, 'drone_scan', '#b05aff'], [0, 1.0, 'drone_lumber', '#b5834a'], [0, 1.0, 'drone_medic', '#ff8ab0'], [0, 1.0, 'drone_lamp', '#fff6b0'],
+ [0, 1.0, 'fusion', '#3a6ad0'], [0, 1.0, 'tesla', '#7ad0ff'],
 ].forEach(([solid, hard, drop, col]) => TILE.push({ solid, hard, drop, col }));
 const SOLID = TILE.map(t => t.solid);
 const OPAQUE = TILE.map((t, i) => (t.solid && i !== GLASS && !(i >= GLASS_R && i <= GLASS_G)) ? 1 : 0);
@@ -64,10 +71,14 @@ EMIT[TORCH_B] = 14; EMIT[LANTERN] = 15; EMIT[CAMPFIRE] = 14; EMIT[CANDLE] = 11; 
 const GLOW = {}; // 泛光颜色
 [TORCH, FURNACE, CAMPFIRE, LANTERN, CANDLE, CHANDELIER].forEach(t => { GLOW[t] = '255,170,60'; });
 GLOW[TORCH_B] = '80,160,255'; GLOW[GLOWSHROOM] = '60,220,230';
+EMIT[THORIUM] = 4; EMIT[FUSION] = 12; GLOW[FUSION] = '90,160,255'; EMIT[TESLA] = 6; EMIT[AMETHYST] = 3;
 EMIT[URANIUM] = 5; EMIT[REACTOR] = 10; EMIT[RTG] = 6; GLOW[REACTOR] = '90,255,90'; GLOW[URANIUM] = '90,255,90';
 const NEEDS_FLOOR = new Uint8Array(NT);
 [BENCH, FURNACE, CHEST, MUSHROOM, FLOWER, CRYSTAL, CAMPFIRE, CANDLE, CHAIR, TABLE, BOOKSHELF, BED, ANVIL, SAPLING, FLOWER_B, FLOWER_Y, POT, STATUE, GLOWSHROOM,
- DRONE_MINE, DRONE_ORE, DRONE_GUARD, DRONE_TRANS, SOLAR, COALGEN, BATTERY, REACTOR, CENTRIFUGE, RTG].forEach(t => { NEEDS_FLOOR[t] = 1; });
+ DRONE_MINE, DRONE_ORE, DRONE_GUARD, DRONE_TRANS, SOLAR, COALGEN, BATTERY, REACTOR, CENTRIFUGE, RTG,
+ DRONE_SCAN, DRONE_LUMBER, DRONE_MEDIC, DRONE_LAMP, FUSION, TESLA].forEach(t => { NEEDS_FLOOR[t] = 1; });
+// v5 新矿脉：[矿, 数量, 最小深度, 大小]
+const NEW_VEINS = [[SULFUR, 60, 12, 6], [LITHIUM, 50, 26, 5], [AMETHYST, 26, 40, 4], [TITANIUM, 40, 48, 5], [PLATINUM, 30, 58, 4], [THORIUM, 22, 68, 5]];
 
 function mulberry32(a) {
   return function () {
@@ -101,6 +112,19 @@ const getT = (x, y) => (x < 0 || x >= W || y >= H) ? BEDROCK : y < 0 ? AIR : til
 const isSolid = (x, y) => SOLID[getT(x, y)] === 1;
 let spawnX = W / 2, spawnY = 0, worldSeed = 1, lightVer = 0;
 
+// 给旧存档补上新矿脉（只替换石头）
+function injectVeins(seed, list) {
+  const r = mulberry32(seed);
+  for (const [ore, count, minD, size] of list) for (let k = 0; k < count; k++) {
+    let x = 2 + Math.floor(r() * (W - 4));
+    const top = surf[x] + minD; if (top > H - 5) continue;
+    let y = top + Math.floor(r() * (H - top - 3));
+    for (let q = 0; q < size; q++) {
+      if (x > 0 && x < W - 1 && y > 0 && y < H - 2 && tiles[y * W + x] === STONE) tiles[y * W + x] = ore;
+      x += Math.floor(r() * 3) - 1; y += Math.floor(r() * 3) - 1;
+    }
+  }
+}
 function genWorld(seed) {
   worldSeed = seed;
   const r = mulberry32(seed), n1 = makeNoise(seed), n2 = makeNoise(seed + 7), n3 = makeNoise(seed + 13);
@@ -138,6 +162,7 @@ function genWorld(seed) {
     }
   };
   vein(COAL, 120, 3, 8); vein(COPPER, 110, 5, 7); vein(IRON, 80, 18, 6); vein(GOLD, 50, 42, 5); vein(DIAMOND, 26, 66, 4);
+  NEW_VEINS.forEach(v => vein(v[0], v[1], v[2], v[3]));
   vein(URANIUM, 24, 62, 5); vein(SILVER, 60, 30, 6); vein(EMERALD, 26, 52, 4); vein(RUBY, 20, 78, 4); vein(OBSIDIAN, 30, 84, 12);
   // 树、花、蘑菇
   for (let x = 4; x < W - 4; x++) {
@@ -317,18 +342,48 @@ const ITEMS = {
   nuke:        { n: '核弹',     k: 'throw', th: { bomb: { R: 9, fuse: 4 } }, d: '超大范围毁灭性爆炸。扔完赶紧跑！！' },
   pick_laser:  { n: '激光钻',   k: 'pick', pow: 9, d: '高科技：挖掘速度 ×9' },
   jetpack:     { n: '喷气背包', k: 'acc', d: '饰品：空中按住跳跃可以飞行约 2.5 秒，落地充能' },
+  // ── v5：新矿物 / 核能 / 机器人 ──
+  sulfur:      { n: '硫磺',   k: 'res', d: '浅层矿物，可以做炸弹和抗辐射药' },
+  lithium:     { n: '锂矿',   k: 'res', d: '做蓄电池、聚变燃料和照明无人机' },
+  amethyst:    { n: '紫晶',   k: 'res', d: '深层宝石，升级核心和等离子武器的材料' },
+  titanium:    { n: '钛矿',   k: 'res', d: '深层的坚硬金属矿，放进熔炉炼成钛锭' },
+  platinum:    { n: '铂矿',   k: 'res', d: '稀有贵金属，放进熔炉炼成铂锭' },
+  thorium:     { n: '钍矿',   k: 'res', d: '最深处的放射性矿石，离心机里 6 个可提炼 1 根燃料棒' },
+  bar_titanium: { n: '钛锭',  k: 'res', d: '制作钛制装备和高级机器' },
+  bar_platinum: { n: '铂锭',  k: 'res', d: '制作升级核心和聚变反应堆' },
+  ecto:        { n: '灵质',   k: 'res', d: '幽灵掉落，升级核心的材料' },
+  pick_titanium:  { n: '钛镐', k: 'pick', pow: 7.5, d: '挖掘速度 ×7.5' },
+  sword_titanium: { n: '钛剑', k: 'sword', dmg: 82, d: '伤害 82' },
+  armor_titanium: { n: '钛甲', k: 'armor', def: 0.72, c: ['#8fb8c8', '#4a7888'], d: '受到伤害 -72%' },
+  sword_plasma:   { n: '等离子剑', k: 'sword', dmg: 125, reach: 3.6, d: '伤害 125，核能驱动的光刃' },
+  gun_laser:   { n: '激光枪',   k: 'staff', dmg: 48, cd: 0.16, col: '#5fff5f', d: '高速连射激光，无需弹药' },
+  gun_plasma:  { n: '等离子炮', k: 'staff', dmg: 130, cd: 0.45, col: '#c07aff', pierce: 1, d: '贯穿敌人的等离子团' },
+  hazmat:      { n: '防辐射服', k: 'acc', d: '饰品：免疫辐射' },
+  stim:        { n: '抗辐射药', k: 'use', heal: 30, d: '清除辐射并回复 30 生命' },
+  cell_fusion: { n: '聚变燃料', k: 'res', d: '聚变反应堆的燃料，一份可烧 5 分钟' },
+  bomb_h:      { n: '氢弹',     k: 'throw', th: { bomb: { R: 14, fuse: 5 } }, d: '比核弹还大的爆炸。真的要跑远一点！！' },
+  core_up:     { n: '升级核心', k: 'res', d: '镶嵌进任意机器人基座：速度/威力/范围 +50%，耗电更低（每台最多 3 个）' },
+  core_nuke:   { n: '核能核心', k: 'res', d: '镶嵌进任意机器人基座：自带核能，不用再充电（每台 1 个）' },
+  drone_scan:   { n: '探矿机',     k: 'block', tile: DRONE_SCAN,   d: '扫描并标记周围的矿物，再一键派采矿机器人飞过去采' },
+  drone_lumber: { n: '伐木无人机', k: 'block', tile: DRONE_LUMBER, d: '自动砍伐附近的树，有橡果会顺手补种' },
+  drone_medic:  { n: '医疗无人机', k: 'block', tile: DRONE_MEDIC,  d: '你在基座附近受伤时飞过来治疗，并清除辐射' },
+  drone_lamp:   { n: '照明无人机', k: 'block', tile: DRONE_LAMP,   d: '跟着你飞，把周围照得很亮' },
+  fusion:      { n: '聚变反应堆', k: 'block', tile: FUSION, d: '烧聚变燃料发电 100/秒，终极电源' },
+  tesla:       { n: '特斯拉线圈', k: 'block', tile: TESLA,  d: '耗电电击 7 格内的敌人' },
 };
 // 商店：[物品, 数量, 价格]
 const SHOP = [['torch', 10, 5], ['rope', 10, 12], ['arrow', 20, 10], ['potion', 1, 15], ['bomb', 3, 25],
   ['solar', 1, 60], ['coalgen', 1, 90], ['battery', 1, 120], ['drone_mine', 1, 150], ['drone_ore', 1, 240], ['drone_guard', 1, 200], ['drone_trans', 1, 220],
-  ['mod_range', 1, 150], ['mod_speed', 1, 150], ['centrifuge', 1, 350], ['reactor', 1, 700], ['jetpack', 1, 900], ['pick_laser', 1, 1200]];
+  ['mod_range', 1, 150], ['mod_speed', 1, 150], ['centrifuge', 1, 350], ['reactor', 1, 700], ['jetpack', 1, 900], ['pick_laser', 1, 1200],
+  ['stim', 1, 20], ['drone_lamp', 1, 160], ['drone_lumber', 1, 180], ['drone_scan', 1, 260], ['drone_medic', 1, 300], ['hazmat', 1, 350], ['tesla', 1, 380], ['core_up', 1, 400], ['gun_laser', 1, 800]];
 // 可卖出的物品单价
 const SELL = { coal: 1, gel: 1, bone: 2, cloth: 2, wing: 3, copper: 2, iron: 3, silver: 5, gold: 8, bar_copper: 7, bar_iron: 10, bar_silver: 16, bar_gold: 25,
-  emerald: 30, diamond: 40, ruby: 60, uranium: 25, fuel_rod: 110, plutonium: 150, obsidian: 3, crystal: 30, glowshroom: 2, apple: 1, mushroom: 1 };
+  emerald: 30, diamond: 40, ruby: 60, uranium: 25, fuel_rod: 110, plutonium: 150, obsidian: 3, crystal: 30, glowshroom: 2, apple: 1, mushroom: 1,
+  sulfur: 3, lithium: 10, amethyst: 35, titanium: 12, platinum: 18, thorium: 30, bar_titanium: 40, bar_platinum: 60, ecto: 20 };
 const ARC = { armor_copper: ['#c8703a', '#8a4a20'], armor_iron: ['#c8c0b8', '#8a8078'], armor_gold: ['#e8b82a', '#a87a10'] };
 const PASSIVE = k => k === 'res' || k === 'armor' || k === 'acc';
-const buffs = { speed: 0, iron: 0, miner: 0, shine: 0, regen: 0, jump: 0 };
-const BUFF_NAME = { speed: '迅捷', iron: '铁皮', miner: '挖矿', shine: '光芒', regen: '再生', jump: '跳跃' };
+const buffs = { speed: 0, iron: 0, miner: 0, shine: 0, regen: 0, jump: 0, rad: 0 };
+const BUFF_NAME = { speed: '迅捷', iron: '铁皮', miner: '挖矿', shine: '光芒', regen: '再生', jump: '跳跃', rad: '☢辐射' };
 const ITEM_IDS = Object.keys(ITEMS);
 const ARMOR_IDS = ITEM_IDS.filter(id => ITEMS[id].k === 'armor').sort((a, b) => ITEMS[b].def - ITEMS[a].def);
 const HOTBAR_N = 8;
@@ -442,6 +497,24 @@ const RECIPES = [
   { out: ['gemblock', 1], cost: { diamond: 2, glass: 2 }, st: ANVIL },
   { out: ['rtg', 1], cost: { plutonium: 2, bar_iron: 10 }, st: ANVIL },
   { out: ['nuke', 1], cost: { plutonium: 3, dynamite: 2 }, st: ANVIL },
+  { out: ['bar_titanium', 1], cost: { titanium: 3 }, st: FURNACE },
+  { out: ['bar_platinum', 1], cost: { platinum: 3 }, st: FURNACE },
+  { out: ['bomb', 3], cost: { sulfur: 2, coal: 2 }, st: BENCH },
+  { out: ['stim', 1], cost: { sulfur: 1, glowshroom: 1, bottle: 1 }, st: BENCH },
+  { out: ['pick_titanium', 1], cost: { pick_ruby: 1, bar_titanium: 6 }, st: ANVIL },
+  { out: ['sword_titanium', 1], cost: { sword_ruby: 1, bar_titanium: 5 }, st: ANVIL },
+  { out: ['armor_titanium', 1], cost: { armor_ruby: 1, bar_titanium: 10 }, st: ANVIL },
+  { out: ['sword_plasma', 1], cost: { sword_titanium: 1, plutonium: 2, amethyst: 4 }, st: ANVIL },
+  { out: ['gun_plasma', 1], cost: { gun_laser: 1, plutonium: 2, bar_titanium: 6 }, st: ANVIL },
+  { out: ['hazmat', 1], cost: { cloth: 6, bar_titanium: 3, glass: 2 }, st: ANVIL },
+  { out: ['battery', 1], cost: { lithium: 6, bar_iron: 4 }, st: ANVIL },
+  { out: ['drone_lamp', 1], cost: { bar_iron: 4, lantern: 1, lithium: 3 }, st: ANVIL },
+  { out: ['tesla', 1], cost: { bar_copper: 8, bar_titanium: 2, battery: 1 }, st: ANVIL },
+  { out: ['core_up', 1], cost: { bar_platinum: 2, amethyst: 2, ecto: 1 }, st: ANVIL },
+  { out: ['core_nuke', 1], cost: { core_up: 1, plutonium: 1, bar_titanium: 4 }, st: ANVIL },
+  { out: ['cell_fusion', 1], cost: { lithium: 4, bottle: 1 }, st: ANVIL },
+  { out: ['fusion', 1], cost: { reactor: 1, bar_titanium: 10, bar_platinum: 6, plutonium: 2 }, st: ANVIL },
+  { out: ['bomb_h', 1], cost: { nuke: 1, lithium: 8, cell_fusion: 2 }, st: ANVIL },
 ];
 const ST_NAME = { [BENCH]: '工作台', [FURNACE]: '熔炉', [ANVIL]: '铁砧', [CAMPFIRE]: '篝火' };
 
@@ -562,7 +635,7 @@ function buildArt() {
   }
 
   // ── 物品图标 ──
-  icons = mkCanvas(T * 100, T);
+  icons = mkCanvas(T * 240, T);
   const ig = icons.getContext('2d');
   let ni = 0;
   const reg = id => { ICON[id] = ni++; return ICON[id]; };
@@ -570,7 +643,7 @@ function buildArt() {
   const ir = (i, x, y, w, h, c) => { ig.fillStyle = c; ig.fillRect(i * T + x, y, w, h); };
   const TIER = { wood: ['#9a6a3a', '#c7965a', '#6a4422'], copper: ['#c8703a', '#ffb07a', '#8a4a20'], iron: ['#9aa0aa', '#e8ecf2', '#6a707a'],
                  gold: ['#e8b82a', '#fff6b0', '#a87a10'], diamond: ['#3ad0e0', '#d0fdff', '#1a8a9a'],
-                 silver: ['#c8d0e0', '#ffffff', '#8890a8'], ruby: ['#e03a4a', '#ffb0b8', '#8a1424'], bone: ['#e8e0d0', '#ffffff', '#b8b0a0'] };
+                 silver: ['#c8d0e0', '#ffffff', '#8890a8'], ruby: ['#e03a4a', '#ffb0b8', '#8a1424'], bone: ['#e8e0d0', '#ffffff', '#b8b0a0'], titanium: ['#8fb8c8', '#e0f6ff', '#4a7888'] };
   Object.keys(TIER).forEach(tn => {
     const [c, hi] = TIER[tn];
     let i = reg('pick_' + tn);
@@ -584,7 +657,7 @@ function buildArt() {
     [[4, 11], [3, 12], [2, 13]].forEach(([x, y]) => { ip(i, x, y, '#7a5028'); ip(i, x + 1, y, '#5a3a1c'); });
     ip(i, 1, 14, '#c89a1a');
   });
-  ['copper', 'iron', 'gold', 'silver', 'diamond', 'ruby'].forEach(tn => {
+  ['copper', 'iron', 'gold', 'silver', 'diamond', 'ruby', 'titanium'].forEach(tn => {
     const [c, hi, dk] = TIER[tn];
     let i = reg('armor_' + tn);
     for (let y = 3; y < 14; y++) for (let x = 3; x < 13; x++) {
@@ -796,6 +869,29 @@ function buildArt() {
   spr('mod_speed', ['dddddddd', 'dRRRRRRd', 'dRoRoRRd', 'dRRoRoRd', 'dRRoRoRd', 'dRoRoRRd', 'dRRRRRRd', 'dddddddd']);
   spr('pick_laser', ['.........c', 'ggggggddcw', 'gdddddgd.c', 'ggg..dd...', 'gg........', 'gg........']);
   spr('jetpack', ['.gg.gg.', 'gwdgwdg', 'gddgddg', 'gddgddg', 'gddgddg', '.dd.dd.', '.o...o.', '.y...y.']);
+  // ════════ v5 贴图 ════════
+  oreTile(TITANIUM, '#8fb8c8', '#e0f6ff', '#4a7888'); oreTile(PLATINUM, '#e8f0f0', '#ffffff', '#9ab0b0'); oreTile(LITHIUM, '#ff9ad0', '#ffe0f0', '#b04a88');
+  oreTile(THORIUM, '#ff8a2a', '#ffd8a0', '#a84a10'); oreTile(AMETHYST, '#b05aff', '#e8d0ff', '#6a2aa8'); oreTile(SULFUR, '#e8e03a', '#ffffb0', '#a8a010');
+  baseT(DRONE_SCAN, '#b05aff'); rect(DRONE_SCAN, 7, 3, 2, 5, '#9aa0aa'); rect(DRONE_SCAN, 4, 1, 8, 2, '#c0c3cc'); rect(DRONE_SCAN, 5, 3, 6, 1, '#787c85'); rect(DRONE_SCAN, 7, 0, 2, 1, '#b05aff');
+  baseT(DRONE_LUMBER, '#b5834a'); baseT(DRONE_MEDIC, '#ff8ab0'); rect(DRONE_MEDIC, 7, 3, 2, 4, '#ff5a5a'); rect(DRONE_MEDIC, 6, 4, 4, 2, '#ff5a5a');
+  baseT(DRONE_LAMP, '#fff6b0');
+  rect(FUSION, 1, 3, 14, 13, '#2a3a6a'); rect(FUSION, 1, 3, 14, 1, '#6a8ad0'); rect(FUSION, 1, 3, 1, 13, '#4a5a9a'); rect(FUSION, 4, 6, 8, 7, '#0c1430'); rect(FUSION, 5, 7, 6, 5, '#4aa0ff'); rect(FUSION, 6, 8, 4, 3, '#d0f0ff'); rect(FUSION, 7, 9, 2, 1, '#ffffff');
+  rect(FUSION, 6, 1, 4, 2, '#9aa0aa'); for (let x = 1; x < 15; x++) px(FUSION * T + x, 15, x % 4 < 2 ? '#7ad0ff' : '#1a1208');
+  rect(TESLA, 5, 13, 6, 3, '#484b52'); rect(TESLA, 7, 5, 2, 8, '#8a5a34'); rect(TESLA, 5, 11, 6, 1, '#c8703a'); rect(TESLA, 5, 9, 6, 1, '#c8703a'); rect(TESLA, 6, 7, 4, 1, '#c8703a'); rect(TESLA, 5, 2, 6, 3, '#c0c3cc'); rect(TESLA, 6, 1, 4, 1, '#e8ecf2'); rect(TESLA, 6, 2, 2, 1, '#ffffff'); rect(TESLA, 11, 3, 1, 1, '#7ad0ff'); rect(TESLA, 4, 1, 1, 1, '#7ad0ff');
+  nug('sulfur', '#e8e03a', '#ffffb0', '#a8a010'); nug('lithium', '#ff9ad0', '#ffe0f0', '#b04a88'); nug('titanium', '#8fb8c8', '#e0f6ff', '#4a7888');
+  nug('platinum', '#e8f0f0', '#ffffff', '#9ab0b0'); nug('thorium', '#ff8a2a', '#ffd8a0', '#a84a10'); gem('amethyst', '#b05aff', '#e8d0ff', '#6a2aa8');
+  { const i = reg('bar_platinum'); ir(i, 4, 6, 9, 1, '#ffffff'); ir(i, 3, 7, 11, 3, '#e8f0f0'); ir(i, 2, 10, 13, 2, '#9ab0b0'); ir(i, 4, 7, 3, 1, '#ffffff'); }
+  PAL.m = '#c07aff'; PAL.M = '#6a2aa8'; PAL.t = '#8fb8c8'; PAL.T = '#4a7888'; PAL.f = '#5fff5f'; PAL.F = '#1f8f1f'; PAL.s = '#7ad0ff';
+  spr('ecto', ['..ssss..', '.swwwws.', 'swkwwkws', 'swwwwwws', 'swwwwwws', '.swwwws.', '.s.ss.s.']);
+  spr('sword_plasma', ['........mw', '.......mwm', '......mwm.', '.....mwm..', '....mwm...', '...mwm....', '.dmwm.....', '.ddm......', 'gdd.......', 'gg........']);
+  spr('gun_laser', ['..........', 'gggggggdf.', 'gdddddddfw', 'gggggg.df.', 'gd.g......', 'gd........', 'gg........']);
+  spr('gun_plasma', ['.tttttt...', 'tTTTTTTtm.', 'tmmmmmmTmw', 'tTTTTTTtm.', '.ttTt.....', '..tT......', '..tt......']);
+  spr('hazmat', ['..yyyy..', '.yssssy.', '.yssssy.', 'yyyyyyyy', 'yykyykyy', 'yyyyyyyy', '.yy..yy.', '.YY..YY.']);
+  flask('stim', '#5fff5f', '#d0ffd0', '#e8e03a');
+  spr('cell_fusion', ['.dddd.', '.suud.', '.swud.', '.suud.', '.suud.', '.suud.', '.suud.', '.dddd.']);
+  bombI('bomb_h', '#4aa0ff', '#d0f0ff', '#2060c0'); { const i = ICON.bomb_h; ir(i, 6, 8, 4, 1, '#1a1208'); ir(i, 7, 10, 2, 2, '#1a1208'); ir(i, 5, 11, 1, 1, '#1a1208'); ir(i, 10, 11, 1, 1, '#1a1208'); }
+  spr('core_up', ['..dddd..', '.dmmmmd.', 'dmMwwMmd', 'dmwyywmd', 'dmwyywmd', 'dmMwwMmd', '.dmmmmd.', '..dddd..']);
+  spr('core_nuke', ['..dddd..', '.dffffd.', 'dfFkkFfd', 'dfkwwkfd', 'dfkwwkfd', 'dfFkkFfd', '.dffffd.', '..dddd..']);
 }
 
 function itemIcon(id) {
@@ -887,7 +983,8 @@ function useItem(id) {
   if (inv[id] <= 0) return false;
   const it = ITEMS[id];
   if (id === 'mushroom' || id === 'potion' || it.heal) {
-    if (player.hp >= player.maxHp) { toast('生命已满', 1200); return false; }
+    if (player.hp >= player.maxHp && !(id === 'stim' && buffs.rad > 0)) { toast('生命已满', 1200); return false; }
+    if (id === 'stim') buffs.rad = 0;
     heal(it.heal || (id === 'potion' ? 60 : 15));
   } else if (it.buff) {
     buffs[it.buff] = it.dur; tickT = 1; toast(BUFF_NAME[it.buff] + '效果生效（' + it.dur + ' 秒）', 1500); sfx(520, 0.15, 'triangle', 0.07);
@@ -901,6 +998,21 @@ function useItem(id) {
   inv[id]--; hudDirty = true; return true;
 }
 
+// 洞穴怪物：越深越危险
+function caveMob(bx, by) {
+  const depth = by - surf[clamp(bx, 0, W - 1)], v = Math.random();
+  const bat = () => ({ type: 'bat', x: bx + 0.1, y: by + 0.2, w: 0.8, h: 0.5, vx: 0, vy: 0, onG: false, hp: 14, max: 14, dmg: 10, t: 0, hit: 0, coin: 3, drops: [['wing', 0.6]] });
+  if (v < 0.3) return bat();
+  let fy = by; while (fy < H - 2 && !isSolid(bx, fy + 1)) fy++;
+  const room = (w, h) => { for (let y = fy; y > fy - h; y--) for (let x = bx; x < bx + w; x++) if (isSolid(x, y)) return false; return fy - by < 10; };
+  const mk = (type, w, h, hp, dmg, coin, drops, ex) => Object.assign({ type, x: bx + 0.1, y: fy + 1 - h - 0.02, w, h, vx: 0, vy: 0, onG: false, hp, max: hp, dmg, t: 0, hit: 0, coin, drops }, ex);
+  if (depth > 68 && v < 0.42 && room(2, 3)) return mk('golem', 1.4, 2.4, 220, 34, 30, [['titanium', 1, 3], ['platinum', 0.6, 2], ['amethyst', 0.4, 1]], { sp: 1.7 });
+  if (depth > 42 && v < 0.6 && room(1, 2)) return mk('mutant', 0.75, 1.75, 90, 26, 14, [['uranium', 0.5, 1], ['cloth', 0.5, 1], ['plutonium', 0.08, 1]], { sp: 3.1, rad: 1 });
+  if (depth > 48 && v < 0.75 && room(1, 1)) return { x: bx, y: fy + 0.25, w: 0.9, h: 0.7, vx: 0, vy: 0, onG: false, hp: 70, max: 70, dmg: 22, col: ['#5fff5f', '#e0ffe0', '#1f8f1f'], t: 1, hit: 0, big: true, rad: 1, coin: 10, drops: [['uranium', 0.6, 1], ['gel', 1, 2]] };
+  if (v < 0.86 && room(1, 2)) return mk('skeleton', 0.75, 1.75, 60, 20, 8, [['bone', 0.9, 2], ['arrow', 0.5, 4]], { sp: 3.4 });
+  if (room(1, 1)) return mk('spider', 0.9, 0.6, 30, 14, 5, [['cloth', 0.6, 1]], { sp: 5 });
+  return bat();
+}
 function spawnSlime() {
   const night = daylight() < 0.4;
   if (enemies.length >= (night ? 7 : 4)) return;
@@ -908,7 +1020,7 @@ function spawnSlime() {
     for (let k = 0; k < 12; k++) {
       const bx = Math.floor(player.x + (Math.random() - 0.5) * 40), by = Math.floor(player.y + (Math.random() - 0.5) * 18);
       if (Math.abs(bx - player.x) > 10 && bx > 1 && bx < W - 2 && by > 0 && by < H - 2 && getT(bx, by) === AIR && walls[by * W + bx]) {
-        enemies.push({ type: 'bat', x: bx + 0.1, y: by + 0.2, w: 0.8, h: 0.5, vx: 0, vy: 0, onG: false, hp: 14, max: 14, dmg: 10, t: 0, hit: 0, coin: 3, drops: [['wing', 0.6]] });
+        enemies.push(caveMob(bx, by));
         return;
       }
     }
@@ -918,6 +1030,10 @@ function spawnSlime() {
   if (sx < 2 || sx > W - 3) return;
   let sy = 0; while (sy < H && !isSolid(sx, sy)) sy++;
   if (Math.abs(sy - player.y) > 30) return;
+  if (night && Math.random() < 0.18) { // 夜晚：幽灵，会穿墙
+    enemies.push({ type: 'ghost', x: sx, y: sy - 5, w: 0.8, h: 0.9, vx: 0, vy: 0, onG: false, hp: 35, max: 35, dmg: 15, t: 0, hit: 0, coin: 8, drops: [['ecto', 0.7, 1]] });
+    return;
+  }
   if (night && Math.random() < 0.4) { // 夜晚：僵尸
     enemies.push({ type: 'zombie', x: sx + 0.1, y: sy - 1.8, w: 0.75, h: 1.75, vx: 0, vy: 0, onG: false, hp: 45, max: 45, dmg: 18, t: 0, hit: 0, coin: 6, drops: [['cloth', 0.7], ['bone', 0.6]] });
     return;
@@ -1119,6 +1235,10 @@ function update(dt) {
   p.inv -= dt; p.swing -= dt; p.swingCd -= dt; p.useCd -= dt; placeCd -= dt; p.lastHurt += dt; shake -= dt;
   const regen = (p.lastHurt > 5 ? 4 : 0) + (buffs.regen > 0 ? 3 : 0) + (inv.band > 0 ? 1.5 : 0) + (nearFire ? 2 : 0);
   if (regen && p.hp < p.maxHp) { p.hp = Math.min(p.maxHp, p.hp + regen * dt); hpDirty = true; }
+  if (buffs.rad > 0) { // 辐射：持续掉血
+    if (inv.hazmat > 0) buffs.rad = 0;
+    else { p.hp -= 4 * dt; hpDirty = true; if (p.hp <= 0) { buffs.rad = 0; toast('你被辐射击倒了… 已回到出生点'); respawn(); } }
+  }
 
   // 触摸 / 鼠标交互
   let mining = false;
@@ -1216,8 +1336,11 @@ function update(dt) {
       if (e.hit <= 0) { e.vx = clamp(e.vx + Math.sign(p.x - e.x) * 18 * dt, -5, 5); e.vy = clamp(e.vy + Math.sign(p.y + 0.5 - e.y) * 18 * dt, -4, 4); }
       if (!boxHits(e.x + e.vx * dt, e.y, e.w, e.h)) e.x += e.vx * dt; else e.vx = -e.vx * 0.5;
       if (!boxHits(e.x, e.y + e.vy * dt, e.w, e.h)) e.y += e.vy * dt; else e.vy = -e.vy * 0.5;
-    } else if (e.type === 'zombie') {
-      if (e.hit <= 0 && e.onG) e.vx = Math.sign(p.x - e.x) * 2.8;
+    } else if (e.type === 'ghost') {
+      if (e.hit > 0) { e.x += e.vx * dt; e.y += e.vy * dt; }
+      else { const dx = p.x - e.x, dy = p.y + 0.4 - e.y, d = Math.hypot(dx, dy) || 1; e.x += dx / d * 2.6 * dt; e.y += dy / d * 2.6 * dt; }
+    } else if (e.type) { // 行走类：僵尸 / 骷髅 / 蜘蛛 / 变异者 / 魔像
+      if (e.hit <= 0 && e.onG) e.vx = Math.sign(p.x - e.x) * (e.sp || 2.8);
       const lx = e.x; moveEnt(e, dt, true);
       if (e.onG && e.hit <= 0 && Math.abs(e.x - lx) < 0.004 && Math.abs(p.x - e.x) > 0.6) e.vy = -11.5; // 被挡住就跳
     } else {
@@ -1227,11 +1350,14 @@ function update(dt) {
       }
       moveEnt(e, dt, false);
     }
-    if (e.x < p.x + p.w && e.x + e.w > p.x && e.y < p.y + p.h && e.y + e.h > p.y) hurtPlayer(e.dmg, e.x + e.w / 2);
+    if (e.x < p.x + p.w && e.x + e.w > p.x && e.y < p.y + p.h && e.y + e.h > p.y) {
+      if (e.rad && p.inv <= 0 && !(inv.hazmat > 0)) { buffs.rad = 10; tickT = 1; }
+      hurtPlayer(e.dmg, e.x + e.w / 2);
+    }
     if (e.hp <= 0) {
       const c = e.coin || (e.big ? 5 : 2); coins += c;
       burst(e.x + 0.45, e.y + 0.35, e.col ? e.col[0] : '#6a5a7a', 12); floatText('+' + c + ' 金币', e.x + 0.4, e.y - 0.5, '#ffd84a'); sfx(660, 0.1, 'square', 0.07);
-      if (e.drops) { for (const [did, ch] of e.drops) if (Math.random() < ch) give(did, 1, e.x + 0.4, e.y); }
+      if (e.drops) { for (const [did, ch, dn] of e.drops) if (Math.random() < ch) give(did, dn || 1, e.x + 0.4, e.y); }
       else give('gel', e.big ? 2 : 1, e.x + 0.4, e.y);
     }
   }
@@ -1257,19 +1383,26 @@ MACH[REACTOR]    = { n: '核反应堆', gen: 30 };
 MACH[RTG]        = { n: '钚电池', gen: 3 };
 MACH[BATTERY]    = { n: '蓄电池', cap: 600, bat: 1 };
 MACH[CENTRIFUGE] = { n: '离心机', cap: 100 };
+MACH[DRONE_SCAN]   = { n: '探矿机', cap: 200, drone: 'scan', col: '#b05aff' };
+MACH[DRONE_LUMBER] = { n: '伐木无人机基座', cap: 150, drone: 'lumber', col: '#b5834a' };
+MACH[DRONE_MEDIC]  = { n: '医疗无人机基座', cap: 150, drone: 'medic', col: '#ff8ab0' };
+MACH[DRONE_LAMP]   = { n: '照明无人机基座', cap: 150, drone: 'lamp', col: '#fff6b0' };
+MACH[FUSION]       = { n: '聚变反应堆', gen: 100 };
+MACH[TESLA]        = { n: '特斯拉线圈', cap: 150 };
+let lampLv = 0;
 const ORE_SET = new Uint8Array(NT);
-[COPPER, IRON, GOLD, COAL, DIAMOND, SILVER, RUBY, EMERALD, URANIUM].forEach(t => { ORE_SET[t] = 1; });
+[COPPER, IRON, GOLD, COAL, DIAMOND, SILVER, RUBY, EMERALD, URANIUM, TITANIUM, PLATINUM, LITHIUM, THORIUM, AMETHYST, SULFUR].forEach(t => { ORE_SET[t] = 1; });
 const POWER_R = 12; // 无线供电范围
 let machines = {}, selMode = null, selDrag = null, lift = null, machOpen = -1, powT = 0, quietBreak = false;
 
 function newMachine(t, i) {
   const m = { t, e: 0, i, x: i % W, y: (i / W) | 0 };
-  if (MACH[t].drone) { m.e = 40; m.r = 0; m.s = 0; m.on = MACH[t].drone === 'guard'; }
+  if (MACH[t].drone) { m.e = 40; m.r = 0; m.s = 0; m.c = 0; m.on = /guard|lumber|medic|lamp/.test(MACH[t].drone); }
   return m;
 }
 function removeMachine(i) {
   const m = machines[i]; if (!m) return;
-  if (m.r) give('mod_range', m.r); if (m.s) give('mod_speed', m.s);
+  if (m.r) give('mod_range', m.r); if (m.s) give('mod_speed', m.s); if (m.c) give('core_up', m.c); if (m.nk) give('core_nuke', 1); if (m.cells) give('cell_fusion', m.cells);
   if (m.pu) give('plutonium', m.pu); if (m.rod) give('fuel_rod', m.rod); if (m.rods) give('fuel_rod', m.rods); if (m.u) give('uranium', m.u);
   delete machines[i];
   if (machOpen === i) closeMach();
@@ -1295,6 +1428,8 @@ function powerTick(dt) {
   };
   for (const m of list) {
     if (m.e < 0) m.e = 0;
+    if (m.nk) m.e = Math.min(MACH[m.t].cap, m.e + 4 * dt); // 核能核心自供电
+    if (m.marks) m.marks = m.marks.filter(i => ORE_SET[tiles[i]]);
     const def = MACH[m.t];
     if (m.t === SOLAR) { m.out = def.gen * daylight() * (skyOpen(m) ? 1 : 0); feed(m, m.out * dt, true); }
     else if (m.t === RTG) { m.out = def.gen; feed(m, def.gen * dt, true); }
@@ -1308,6 +1443,10 @@ function powerTick(dt) {
         m.out = feed(m, def.gen * dt, true) / dt; m.fuel -= dt;
         if (m.fuel <= 0) { m.pu = (m.pu || 0) + 1; toast('核反应堆烧完了一根燃料棒，产出 1 钚', 2500); }
       }
+    } else if (m.t === FUSION) {
+      m.out = 0;
+      if (!(m.fuel > 0) && m.cells > 0) { m.cells--; m.fuel = 300; }
+      if (m.fuel > 0) { m.out = feed(m, def.gen * dt, true) / dt; m.fuel -= dt; }
     } else if (m.t === CENTRIFUGE) {
       if (m.u >= 4 && m.e >= 2 * dt) { m.e -= 2 * dt; m.p = (m.p || 0) + dt; if (m.p >= 20) { m.p = 0; m.u -= 4; m.rod = (m.rod || 0) + 1; toast('离心机提炼出 1 根铀燃料棒', 2500); } }
     }
@@ -1322,37 +1461,88 @@ function flyTo(m, x, y, sp, dt) {
   m.dx += dx / d * sp * dt; m.dy += dy / d * sp * dt;
   return d < 1.6;
 }
-function droneCan(m, x, y) {
+function droneCan(m, x, y, ore) {
   const t = getT(x, y);
   if (t === AIR || t === BEDROCK || MACH[t] || MACH[getT(x, y - 1)]) return false;
   if (m.job) return SOLID[t] === 1;
-  return m.t === DRONE_ORE ? ORE_SET[t] === 1 : SOLID[t] === 1;
+  return ore || m.t === DRONE_ORE ? ORE_SET[t] === 1 : SOLID[t] === 1;
 }
 function nextTarget(m, a) {
   for (let y = a.y0; y <= a.y1; y++) for (let x = a.x0; x <= a.x1; x++) if (droneCan(m, x, y)) return { x, y };
   return null;
 }
+function nextMark(m) { // 探矿机标记的矿：先采最近的
+  m.list = m.list.filter(i => ORE_SET[tiles[i]] && !MACH[tiles[i - W]]);
+  let b = -1, bd = 1e9;
+  for (const i of m.list) { const d = Math.hypot(i % W + 0.5 - m.dx, ((i / W) | 0) + 0.5 - m.dy); if (d < bd) { bd = d; b = i; } }
+  return b < 0 ? null : { x: b % W, y: (b / W) | 0 };
+}
+function findTree(m, R) {
+  let best = null, bd = 1e9;
+  for (let y = Math.max(1, m.y - R); y <= Math.min(H - 2, m.y + R); y++) for (let x = Math.max(1, m.x - R); x <= Math.min(W - 2, m.x + R); x++) {
+    if (tiles[y * W + x] !== LOG) continue;
+    const b = tiles[(y + 1) * W + x]; if (b !== GRASS && b !== DIRT) continue;
+    const d = Math.hypot(x - m.x, y - m.y); if (d < bd) { bd = d; best = { x, y }; }
+  }
+  return best;
+}
+function scanOres(m) {
+  if (m.e < 25) return toast('电量不足（扫描需要 25）');
+  m.e -= 25;
+  const R = 14 + 6 * (m.c || 0), marks = [];
+  for (let y = Math.max(1, m.y - R); y <= Math.min(H - 2, m.y + R); y++) for (let x = Math.max(1, m.x - R); x <= Math.min(W - 2, m.x + R); x++) {
+    if (ORE_SET[tiles[y * W + x]] && Math.hypot(x - m.x, y - m.y) <= R) marks.push(y * W + x);
+  }
+  m.marks = marks; m.ping = 1;
+  toast(marks.length ? '扫描完成：标记了 ' + marks.length + ' 块矿物（半径 ' + R + ' 格）' : '半径 ' + R + ' 格内没有矿物，换个地方试试', 3000);
+  sfx(1200, 0.25, 'sine', 0.06);
+}
+function dispatchMarks(m, type) {
+  const tg = (m.marks || []).filter(i => ORE_SET[tiles[i]] && (type < 0 || tiles[i] === type));
+  if (!tg.length) return toast('没有可采的标记，先扫描一下');
+  const bases = Object.keys(machines).map(k => machines[k]).filter(b => (b.t === DRONE_MINE || b.t === DRONE_ORE) && Math.hypot(b.x - m.x, b.y - m.y) <= 60)
+    .sort((a, b) => (b.e > 5) - (a.e > 5) || (a.list ? a.list.length : 0) - (b.list ? b.list.length : 0) || Math.hypot(a.x - m.x, a.y - m.y) - Math.hypot(b.x - m.x, b.y - m.y));
+  if (!bases.length) return toast('60 格内没有采矿/探矿无人机基座，先放一台', 3500);
+  const b = bases[0], set = new Set(b.list || []); tg.forEach(i => set.add(i));
+  b.list = Array.from(set); b.tg = null;
+  closeMach(); toast('已派' + MACH[b.t].n.replace('基座', '') + '前往开采 ' + tg.length + ' 块矿物' + (b.e > 5 ? '' : '（它现在没电，充上电就出发）'), 3500); sfx(880, 0.1, 'square', 0.06);
+}
+function teslaTick(m, dt) {
+  m.cd = (m.cd || 0) - dt;
+  if (m.zap && (m.zap.t -= dt) <= 0) m.zap = null;
+  if (m.cd > 0 || m.e < 3) return;
+  for (const e of enemies) {
+    if (Math.hypot(e.x - m.x, e.y - m.y) > 7) continue;
+    damageEnemy(e, 30, e.x > m.x ? 1 : -1); m.e -= 3; m.cd = 0.6; m.zap = { x: e.x + e.w / 2, y: e.y + e.h / 2, t: 0.12 }; sfx(1500, 0.06, 'sawtooth', 0.04);
+    break;
+  }
+}
 function droneUpdate(dt) {
+  let lampNext = 0;
+  const p = player;
   for (const k in machines) {
-    const m = machines[k], def = MACH[m.t];
+    const m = machines[k], def = MACH[m.t], K = 1 + 0.5 * (m.c || 0);
+    if (m.t === TESLA) { teslaTick(m, dt); continue; }
+    if (m.ping > 0) m.ping -= dt;
     if (!def.drone) continue;
     const hx = m.x + 0.5, hy = m.y - 0.7;
     if (m.dx === undefined) { m.dx = hx; m.dy = hy; }
     m.lz = false;
     if (def.drone === 'mine' || def.drone === 'ore') {
-      const job = m.job || (m.on ? m.area : null);
+      const viaList = !m.job && !!m.list && m.list.length > 0, job = m.job || (viaList ? m.list : m.on ? m.area : null);
       if (job && m.e > 0.5) {
-        if (!m.tg || !droneCan(m, m.tg.x, m.tg.y)) {
-          m.tg = nextTarget(m, job); m.p = 0;
-          if (!m.tg) {
+        if (!m.tg || !droneCan(m, m.tg.x, m.tg.y, viaList)) {
+          m.tg = viaList ? nextMark(m) : nextTarget(m, job); m.p = 0;
+          if (!m.tg && viaList) { m.list = null; toast('探矿机标记的矿物已全部采完', 2500); sfx(660, 0.2, 'square', 0.06); }
+          else if (!m.tg) {
             if (m.job) { m.job = null; toast('通道已打通！到停机坪点「送我回地表」', 3500); sfx(880, 0.2, 'square', 0.07); }
             else { m.on = false; toast(def.n.replace('基座', '') + '：框选区域已采完', 2500); sfx(660, 0.2, 'square', 0.06); }
           }
         }
         if (m.tg) {
-          if (flyTo(m, m.tg.x + 0.5, m.tg.y + 0.5, 10 + 3 * m.s, dt)) {
-            m.lz = true; m.e -= 1.2 * dt;
-            m.p += dt * 2.5 * (1 + 0.7 * m.s) / TILE[getT(m.tg.x, m.tg.y)].hard;
+          if (flyTo(m, m.tg.x + 0.5, m.tg.y + 0.5, (10 + 3 * m.s) * K, dt)) {
+            m.lz = true; m.e -= 1.2 * dt / K;
+            m.p += dt * 2.5 * (1 + 0.7 * m.s) * K / TILE[getT(m.tg.x, m.tg.y)].hard;
             if (m.p >= 1) { quietBreak = Math.abs(m.tg.x - player.x) > 22 || Math.abs(m.tg.y - player.y) > 14; breakTile(m.tg.x, m.tg.y); quietBreak = false; m.tg = null; }
           }
           continue;
@@ -1360,27 +1550,63 @@ function droneUpdate(dt) {
       }
       flyTo(m, hx, hy, 8, dt);
     } else if (def.drone === 'guard') {
-      let best = null, bd = 12;
+      let best = null, bd = 12 + 3 * (m.c || 0);
       if (m.on && m.e >= 2) for (const e of enemies) { const d = Math.hypot(e.x - m.x, e.y - m.y); if (d < bd) { bd = d; best = e; } }
       if (best) {
         flyTo(m, best.x + (m.x > best.x ? 3 : -3), best.y - 2.5, 9, dt);
         m.cd = (m.cd || 0) - dt;
         if (m.cd <= 0) {
           const a = Math.atan2(best.y + best.h / 2 - m.dy, best.x + best.w / 2 - m.dx);
-          shots.push({ draw: 'bolt', x: m.dx, y: m.dy, vx: Math.cos(a) * 26, vy: Math.sin(a) * 26, g: 0, life: 1, dmg: 22, col: '#ff5a5a', fire: true });
-          m.cd = 0.5; m.e -= 2; m.lz = false; sfx(1000, 0.05, 'sine', 0.04);
+          shots.push({ draw: 'bolt', x: m.dx, y: m.dy, vx: Math.cos(a) * 26, vy: Math.sin(a) * 26, g: 0, life: 1, dmg: Math.round(22 * K), col: '#ff5a5a', fire: true });
+          m.cd = 0.5 / K; m.e -= 2; m.lz = false; sfx(1000, 0.05, 'sine', 0.04);
         }
       } else flyTo(m, hx, hy, 8, dt);
+    } else if (def.drone === 'lumber') {
+      if (m.on && m.e > 0.5) {
+        if (!m.tg || getT(m.tg.x, m.tg.y) !== LOG) {
+          m.tg = null; m.p = 0; m.w = (m.w || 0) - dt;
+          if (m.w <= 0) { m.w = 2; m.tg = findTree(m, 14 + 4 * (m.c || 0)); }
+        }
+        if (m.tg) {
+          if (flyTo(m, m.tg.x + 0.5, m.tg.y - 0.6, 9 * K, dt)) {
+            m.lz = true; m.e -= dt / K; m.p += dt * 1.6 * K;
+            if (m.p >= 1) {
+              const x = m.tg.x, y = m.tg.y; quietBreak = true; breakTile(x, y); quietBreak = false;
+              if (inv.acorn > 0 && getT(x, y) === AIR) { tiles[y * W + x] = SAPLING; inv.acorn--; lightVer++; hudDirty = true; } // 补种
+              m.tg = null; m.w = 0.5;
+            }
+          }
+          continue;
+        }
+      }
+      flyTo(m, hx, hy, 8, dt);
+    } else if (def.drone === 'medic') {
+      const near = Math.hypot(p.x - m.x, p.y - m.y) < 12 + 3 * (m.c || 0);
+      if (m.on && near && m.e > 0.5 && (p.hp < p.maxHp || buffs.rad > 0)) {
+        if (flyTo(m, p.x + p.w / 2 - p.face * 1.1, p.y - 0.6, 13, dt)) {
+          m.lz = true; m.tg = { x: Math.floor(p.x + p.w / 2), y: Math.floor(p.y + 0.6) };
+          p.hp = Math.min(p.maxHp, p.hp + 4 * K * dt); m.e -= 1.5 * dt; hpDirty = true;
+          if (buffs.rad > 0) { buffs.rad = 0; tickT = 1; }
+        }
+      } else { m.tg = null; flyTo(m, hx, hy, 8, dt); }
+    } else if (def.drone === 'lamp') {
+      if (m.on && m.e > 0.3 && Math.hypot(p.x - m.x, p.y - m.y) < 60 + 20 * (m.c || 0)) {
+        flyTo(m, p.x + p.w / 2 + p.face * 1.2, p.y - 1.4, 14, dt); m.e -= 0.25 * dt / K; lampNext = Math.max(lampNext, 13 + Math.min(2, m.c || 0));
+      } else flyTo(m, hx, hy, 8, dt);
+    } else if (def.drone === 'scan') {
+      flyTo(m, hx, hy - (m.ping > 0 ? 1 : 0), 8, dt);
     } else { // 运输
       if (lift && lift.i === m.i) { m.dx = player.x + player.w / 2; m.dy = player.y - 0.5; }
       else flyTo(m, hx, hy, 10, dt);
     }
   }
+  lampLv = lampNext;
 }
 function requestLift(m) {
   const p = player;
   if (Math.abs(p.x - m.x) > 3.5 || Math.abs(p.y - m.y) > 4) return toast('请站到停机坪旁边再出发');
-  if (m.e < 30) return toast('电量不足（起飞需要 30）');
+  const cost = Math.round(30 / (1 + 0.5 * (m.c || 0)));
+  if (m.e < cost) return toast('电量不足（起飞需要 ' + cost + '）');
   let top = -1;
   for (let y = m.y - 1; y >= 0; y--) if (isSolid(m.x, y)) top = y;
   if (top >= 0) { // 通道被堵：联络采矿无人机
@@ -1399,13 +1625,13 @@ function requestLift(m) {
     if (gy < m.y - 2) { land = { x: gx, y: gy }; break; }
   }
   if (!land) return toast('上方没有可以降落的地面（你已经在地表了？）', 3000);
-  m.e -= 30; lift = { i: m.i, x: m.x + 0.125, land, t: 0 }; closeMach(); toast('运输无人机起飞！', 1500); sfx(500, 0.3, 'triangle', 0.07);
+  m.e -= cost; lift = { i: m.i, x: m.x + 0.125, land, t: 0 }; closeMach(); toast('运输无人机起飞！', 1500); sfx(500, 0.3, 'triangle', 0.07);
 }
 function handleSelect() {
   const m = machines[selMode.i];
   if (!m) { selMode = null; selDrag = null; return; }
   if (ptr.down) {
-    const [wx, wy] = ptrWorld(), tx = clamp(Math.floor(wx), 1, W - 2), ty = clamp(Math.floor(wy), 1, H - 2), N = 8 + 4 * m.r;
+    const [wx, wy] = ptrWorld(), tx = clamp(Math.floor(wx), 1, W - 2), ty = clamp(Math.floor(wy), 1, H - 2), N = 8 + 4 * m.r + 2 * (m.c || 0);
     if (!selDrag) selDrag = { sx: tx, sy: ty, ex: tx, ey: ty };
     selDrag.ex = clamp(tx, selDrag.sx - N + 1, selDrag.sx + N - 1); selDrag.ey = clamp(ty, selDrag.sy - N + 1, selDrag.sy + N - 1);
   } else if (selDrag) {
@@ -1424,6 +1650,27 @@ function drawMachines(z, ox, oy, now) {
       ctx.fillStyle = '#10141c'; ctx.fillRect(bx + 2 * z, by - 3 * z, 12 * z, 2 * z);
       ctx.fillStyle = m.e > def.cap * 0.2 ? '#5fd65f' : '#ff5a5a'; ctx.fillRect(bx + 2 * z, by - 3 * z, Math.round(12 * z * clamp(m.e / def.cap, 0, 1)), 2 * z);
     }
+    if (m.zap) { // 特斯拉电弧
+      const ex = m.zap.x * TS - ox, ey = m.zap.y * TS - oy, sx0 = bx + 8 * z, sy0 = by + 2 * z;
+      ctx.strokeStyle = '#d0f0ff'; ctx.lineWidth = z; ctx.beginPath(); ctx.moveTo(sx0, sy0);
+      for (let q = 1; q < 5; q++) ctx.lineTo(sx0 + (ex - sx0) * q / 5 + (Math.random() - 0.5) * 8 * z, sy0 + (ey - sy0) * q / 5 + (Math.random() - 0.5) * 8 * z);
+      ctx.lineTo(ex, ey); ctx.stroke();
+    }
+    if (m.marks && m.marks.length) { // 探矿机标记（黑暗里也看得见）
+      ctx.lineWidth = z; ctx.globalAlpha = 0.55 + 0.35 * Math.sin(now * 5);
+      for (const i of m.marks) {
+        const mx = (i % W) * TS - ox, my = ((i / W) | 0) * TS - oy;
+        if (mx < -TS || mx > cw || my < -TS || my > ch) continue;
+        ctx.strokeStyle = TILE[tiles[i]].col; ctx.strokeRect(mx + z * 1.5, my + z * 1.5, TS - 3 * z, TS - 3 * z);
+        ctx.fillStyle = TILE[tiles[i]].col; ctx.fillRect(mx + 6 * z, my + 6 * z, 4 * z, 4 * z);
+      }
+      ctx.globalAlpha = 1;
+    }
+    if (m.ping > 0) { // 扫描波
+      const R = (14 + 6 * (m.c || 0)) * TS * (1 - m.ping);
+      ctx.strokeStyle = def.col; ctx.globalAlpha = m.ping; ctx.lineWidth = 2 * z; ctx.beginPath(); ctx.arc(bx + 8 * z, by + 8 * z, R, 0, 6.283); ctx.stroke(); ctx.globalAlpha = 1;
+    }
+    if (m.nk) { ctx.fillStyle = '#5fff5f'; ctx.fillRect(bx + 7 * z, by - 6 * z, 2 * z, 2 * z); }
     if (!def.drone || m.dx === undefined) continue;
     const ar = m.job || (m.on && m.area);
     if (ar && (def.drone === 'mine' || def.drone === 'ore')) {
@@ -1466,7 +1713,7 @@ function renderMach() {
   if (def.gen || def.bat) add('small', '自动给 ' + POWER_R + ' 格内的机器无线供电');
   else add('small', '需要 ' + POWER_R + ' 格内有发电设备或蓄电池');
   if (def.drone === 'mine' || def.drone === 'ore') {
-    const N = 8 + 4 * m.r;
+    const N = 8 + 4 * m.r + 2 * (m.c || 0);
     add('div', '状态：' + (m.job ? '正在开辟运输通道' : m.on && m.area ? (m.e > 0.5 ? '作业中' : '没电了，等待充电') : '待机'));
     add('small', (m.area ? '区域 ' + (m.area.x1 - m.area.x0 + 1) + '×' + (m.area.y1 - m.area.y0 + 1) + ' · ' : '') + '框选上限 ' + N + '×' + N + ' · 范围模块 ' + m.r + '/2 · 速度模块 ' + m.s + '/3');
     btn('▣ 框选开采区域', () => { selMode = { i: m.i }; selDrag = null; closeMach(); toast('在画面上拖动手指框选（最大 ' + N + '×' + N + '）', 3500); });
@@ -1478,8 +1725,35 @@ function renderMach() {
     add('small', '自动射击 12 格内的敌人，每发耗电 2');
     btn(m.on ? '⏸ 关闭' : '▶ 开启', () => { m.on = !m.on; }, false, 'alt');
   } else if (def.drone === 'trans') {
-    add('small', '站在旁边点出发：沿正上方直线把你送回地表（耗电 30）。头顶有方块时，会联络 40 格内的采矿无人机开路。');
+    add('small', '站在旁边点出发：沿正上方直线把你送回地表（耗电 ' + Math.round(30 / (1 + 0.5 * (m.c || 0))) + '）。头顶有方块时，会联络 40 格内的采矿无人机开路。');
     btn('🚁 送我回地表', () => requestLift(m), !!lift);
+  } else if (def.drone === 'scan') {
+    const R = 14 + 6 * (m.c || 0), cnt = {};
+    (m.marks || []).forEach(i => { cnt[tiles[i]] = (cnt[tiles[i]] || 0) + 1; });
+    const types = Object.keys(cnt).map(Number).sort((a, b) => (SELL[TILE[b].drop] || 0) - (SELL[TILE[a].drop] || 0));
+    add('small', '扫描半径 ' + R + ' 格（每个升级核心 +6），每次耗电 25。标记的矿在黑暗里也会闪烁显示。');
+    btn('📡 扫描周围矿物', () => scanOres(m), m.e < 25);
+    if (types.length) {
+      add('div', '已标记 ' + m.marks.length + ' 块，点下面的按钮派机器人去采：', 'ok');
+      btn('⛏ 全部开采（' + m.marks.length + ' 块）', () => dispatchMarks(m, -1));
+      types.forEach(t => btn(ITEMS[TILE[t].drop].n + ' ×' + cnt[t] + ' → 派去开采', () => dispatchMarks(m, t), false, 'alt'));
+      btn('清除标记', () => { m.marks = []; }, false, 'alt');
+    } else add('small', '还没有标记。需要 60 格内有一台采矿或探矿无人机来执行开采。');
+  } else if (def.drone === 'lumber') {
+    add('small', '自动砍 ' + (14 + 4 * (m.c || 0)) + ' 格内长在地上的树，木头直接进背包；背包里有橡果会自动补种（现有 ' + inv.acorn + '）。');
+    btn(m.on ? '⏸ 关闭' : '▶ 开启', () => { m.on = !m.on; }, false, 'alt');
+  } else if (def.drone === 'medic') {
+    add('small', '你在 ' + (12 + 3 * (m.c || 0)) + ' 格内受伤时飞来治疗（' + (4 * (1 + 0.5 * (m.c || 0))) + ' 生命/秒），并清除辐射。治疗时耗电 1.5/秒。');
+    btn(m.on ? '⏸ 关闭' : '▶ 开启', () => { m.on = !m.on; }, false, 'alt');
+  } else if (def.drone === 'lamp') {
+    add('small', '跟着你飞并照亮周围（离基座 ' + (60 + 20 * (m.c || 0)) + ' 格内有效），跟随时缓慢耗电。');
+    btn(m.on ? '⏸ 关闭' : '▶ 开启', () => { m.on = !m.on; }, false, 'alt');
+  } else if (m.t === TESLA) {
+    add('small', '自动电击 7 格内的敌人，每次 30 伤害、耗电 3');
+  } else if (m.t === FUSION) {
+    add('div', '当前燃料剩余 ' + Math.ceil(Math.max(0, m.fuel || 0)) + ' 秒 · 待用 ' + (m.cells || 0) + ' 份', m.fuel > 0 ? 'ok' : 'no');
+    add('small', '聚变燃料在铁砧用 4 锂矿 + 1 玻璃瓶制作，一份烧 5 分钟');
+    btn('装入聚变燃料（背包有 ' + inv.cell_fusion + '）', () => { inv.cell_fusion--; m.cells = (m.cells || 0) + 1; }, inv.cell_fusion < 1);
   } else if (m.t === COALGEN) {
     add('div', '燃料还能烧 ' + Math.ceil(m.fuel || 0) + ' 秒', m.fuel > 0 ? 'ok' : 'no');
     btn('加 1 个煤（+20 秒，背包有 ' + inv.coal + '）', () => { inv.coal--; m.fuel = (m.fuel || 0) + 20; }, inv.coal < 1);
@@ -1492,9 +1766,16 @@ function renderMach() {
     add('div', '铀矿 ' + (m.u || 0) + ' 个 · 进度 ' + Math.floor((m.p || 0) / 20 * 100) + '%', m.u >= 4 ? 'ok' : 'no');
     add('small', '每 4 个铀矿提炼 1 根燃料棒，需 20 秒、耗电 40');
     btn('放入 4 个铀矿（背包有 ' + inv.uranium + '）', () => { inv.uranium -= 4; m.u = (m.u || 0) + 4; }, inv.uranium < 4);
+    btn('放入 6 个钍矿（背包有 ' + inv.thorium + '）', () => { inv.thorium -= 6; m.u = (m.u || 0) + 4; }, inv.thorium < 6);
     btn('取出燃料棒 ×' + (m.rod || 0), () => { give('fuel_rod', m.rod); m.rod = 0; }, !(m.rod > 0), 'alt');
   } else if (m.t === SOLAR) {
     add('small', skyOpen(m) ? (daylight() > 0.1 ? '阳光充足' : '现在是晚上，不发电') : '被遮挡了：必须放在露天、头顶没有方块的地方', skyOpen(m) ? 'ok' : 'no');
+  }
+  if (def.drone) { // 升级核心
+    const c = m.c || 0;
+    add('small', '升级核心 ' + c + '/3（每个：速度/威力/范围 +50%）' + (m.nk ? ' · ☢ 核能核心已装：自动充电' : ''));
+    btn('镶嵌升级核心（背包有 ' + inv.core_up + '）', () => { inv.core_up--; m.c = c + 1; sfx(990, 0.12, 'square', 0.06); }, inv.core_up < 1 || c >= 3, 'alt');
+    if (!m.nk) btn('镶嵌核能核心（背包有 ' + inv.core_nuke + '）', () => { inv.core_nuke--; m.nk = 1; sfx(990, 0.12, 'square', 0.06); }, inv.core_nuke < 1, 'alt');
   }
   btn('拆除回收', () => { breakTile(m.x, m.y); }, false, 'red');
   btn('关闭', closeMach, false, 'alt');
@@ -1527,6 +1808,11 @@ function loadGame() {
     for (const b in buffs) buffs[b] = (d.buffs && +d.buffs[b]) || 0;
     player.x = +d.x; player.y = +d.y; player.vx = player.vy = 0;
     if (!(player.x > 0 && player.y > -50) || boxHits(player.x, player.y, player.w, player.h)) respawn();
+    { // 旧存档补上后来新增的矿脉
+      const has = new Uint8Array(NT); for (let i = 0; i < tiles.length; i++) has[tiles[i]] = 1;
+      const add = NEW_VEINS.filter(v => !has[v[0]]); if (!has[URANIUM]) add.push([URANIUM, 24, 62, 5]);
+      if (add.length) injectVeins(d.seed + 99, add);
+    }
     machines = {}; selMode = null; selDrag = null; lift = null;
     if (d.machines) for (const k in d.machines) {
       const m = d.machines[k], i = +k;
@@ -1580,7 +1866,7 @@ function buildBackdrop() {
 function computeLight(x0, y0, x1, y1, sky) {
   x0 = clamp(x0, 0, W - 1); x1 = clamp(x1, 0, W - 1); y0 = clamp(y0, 0, H - 1); y1 = clamp(y1, 0, H - 1);
   const ptx = Math.floor(player.x + player.w / 2), pty = Math.floor(player.y + 0.6);
-  const pl = buffs.shine > 0 ? 14 : inv.helmet > 0 ? 12 : 8;
+  const pl = Math.max(lampLv, buffs.shine > 0 ? 14 : inv.helmet > 0 ? 12 : 8);
   const key = x0 + ',' + y0 + ',' + x1 + ',' + y1 + ',' + sky + ',' + ptx + ',' + pty + ',' + lightVer + ',' + pl;
   if (key === lightKey) return; // 没变化就不重算
   lightKey = key;
@@ -1701,11 +1987,29 @@ function drawMob(e, z, ox, oy) {
     e.fl = (e.fl || 0) + 1; const up = Math.floor(e.fl / 5) % 2;
     R(0, up ? 0 : 3, 5, 3, '#2e2438'); R(8, up ? 0 : 3, 5, 3, '#2e2438'); R(4, 2, 5, 5, '#4a3a5a'); R(5, 1, 1, 1, '#4a3a5a'); R(7, 1, 1, 1, '#4a3a5a');
     R(5, 3, 1, 1, '#ff5a5a'); R(7, 3, 1, 1, '#ff5a5a'); bw = 13;
+  } else if (e.type === 'spider') {
+    const st = Math.floor(e.x * 3) % 2; bw = 14;
+    R(3, 2, 8, 6, '#2a2030'); R(5, 1, 4, 1, '#2a2030'); R(4, 3, 2, 2, '#4a3a5a');
+    for (let k = 0; k < 3; k++) { R(0 + (k + st) % 2, 4 + k * 2, 3, 1, '#1a1420'); R(11 - (k + st) % 2, 4 + k * 2, 3, 1, '#1a1420'); }
+    R(player.x > e.x ? 9 : 4, 4, 1, 1, '#ff3030'); R(player.x > e.x ? 7 : 6, 4, 1, 1, '#ff3030');
+  } else if (e.type === 'ghost') {
+    ctx.globalAlpha = 0.75; const wv = Math.floor(e.x * 3 + e.y * 3) % 2; bw = 13;
+    R(2, 0, 9, 2, '#d0f0ff'); R(1, 2, 11, 9, '#e8f8ff'); R(1, 11, 3, 2 + wv, '#e8f8ff'); R(5, 11, 3, 3 - wv, '#e8f8ff'); R(9, 11, 3, 2 + wv, '#e8f8ff');
+    R(3, 4, 2, 3, '#10202a'); R(8, 4, 2, 3, '#10202a'); R(5, 8, 3, 1, '#10202a'); ctx.globalAlpha = 1;
+  } else if (e.type === 'golem') {
+    const f = player.x > e.x ? 1 : -1, st = Math.floor(e.x * 2) % 2; bw = 22;
+    R(3, 26, 6, 12 - st, '#4a5a66'); R(13, 26, 6, 11 + st, '#3e4c58'); R(2, 10, 18, 16, '#6a7a88'); R(2, 10, 18, 2, '#9ab0c0'); R(2, 22, 18, 4, '#4a5a66');
+    R(5, 1, 12, 9, '#7a8a98'); R(5, 1, 12, 2, '#a8c0d0'); R(f > 0 ? 12 : 6, 4, 4, 2, '#ff8a2a'); R(8, 14, 6, 6, '#b05aff'); R(9, 15, 2, 2, '#e8d0ff');
+    R(f > 0 ? 18 : -4, 12, 8, 6, '#6a7a88'); R(f > 0 ? 22 : -4, 16, 4, 4, '#4a5a66');
   } else {
     const f = player.x > e.x ? 1 : -1, st = Math.floor(e.x * 2) % 2;
-    R(2, 19, 4, 9 - st, '#3a3a5a'); R(6, 19, 4, 8 + st, '#2e2e4a'); R(2, 10, 8, 9, '#5a4a7a'); R(2, 17, 8, 2, '#3e3258');
-    R(2, 2, 8, 8, '#6a9a5a'); R(2, 0, 8, 3, '#2a3a2a'); R(f > 0 ? 7 : 3, 5, 2, 2, '#c81e1e'); R(4, 8, 4, 1, '#3a5a2a');
-    R(f > 0 ? 8 : -2, 11, 6, 3, '#6a9a5a');
+    const C = e.type === 'skeleton' ? ['#b8b0a0', '#a09888', '#e8e0d0', '#c8c0b0', '#e8e0d0', '#10100c', '#1a1a1a']
+            : e.type === 'mutant' ? ['#3a5a2a', '#2e4a20', '#e8e03a', '#a8a010', '#7fff5f', '#1f6b2a', '#ff3030']
+            : ['#3a3a5a', '#2e2e4a', '#5a4a7a', '#3e3258', '#6a9a5a', '#2a3a2a', '#c81e1e'];
+    R(2, 19, 4, 9 - st, C[0]); R(6, 19, 4, 8 + st, C[1]); R(2, 10, 8, 9, C[2]); R(2, 17, 8, 2, C[3]);
+    R(2, 2, 8, 8, C[4]); R(2, 0, 8, 3, C[5]); R(f > 0 ? 7 : 3, 5, 2, 2, C[6]); R(4, 8, 4, 1, C[5]);
+    R(f > 0 ? 8 : -2, 11, 6, 3, C[4]);
+    if (e.type === 'skeleton') { R(3, 12, 6, 1, '#10100c'); R(3, 14, 6, 1, '#10100c'); }
   }
   if (e.hp < e.max) {
     ctx.fillStyle = '#401018'; ctx.fillRect(sx, sy - 4 * z, bw * z, 2 * z);
@@ -2063,7 +2367,7 @@ function boot() {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { genWorld, newGame, tiles, walls, surf, player, respawn, update, render, boot, input, ptr, inv, breakTile, tryPlace, explode, craft, useItem, give,
-    getT, W, H, T, ITEMS, RECIPES, TILE, buffs, SHOP, SELL, MACH, powerTick, droneUpdate, requestLift, handleSelect, openMach, renderMach, mach: () => machines, lift: () => lift, selStart: i => { selMode = { i }; selDrag = null; }, addCoins: n => { coins += n; }, autoTarget, growTree, slowTick, saveGame, loadGame, renderBag, refreshHUD,
+    getT, W, H, T, ITEMS, RECIPES, TILE, buffs, SHOP, SELL, MACH, powerTick, droneUpdate, requestLift, handleSelect, openMach, scanOres, dispatchMarks, caveMob, enemies: () => enemies, drawMob, lampLv: () => lampLv, NEW_VEINS, renderMach, mach: () => machines, lift: () => lift, selStart: i => { selMode = { i }; selDrag = null; }, addCoins: n => { coins += n; }, autoTarget, growTree, slowTick, saveGame, loadGame, renderBag, refreshHUD,
     set: o => { if (o.sel !== undefined) sel = o.sel; if (o.hotbar) hotbar = o.hotbar; if (o.dayT !== undefined) dayT = o.dayT; if (o.running !== undefined) running = o.running; if (o.tab) bagTab = o.tab; },
     state: () => ({ enemies, shots, spawnX, spawnY, hotbar, sel, coins, icons, atlas, ICON }) };
 } else {
