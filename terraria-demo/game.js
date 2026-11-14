@@ -1947,7 +1947,7 @@ function renderBag() {
     head(g[0], it.n + (g[1] > 1 ? ' ×' + g[1] : ''));
     line(it.d); line('已拥有 ' + inv[g[0]]);
     line('价格 ' + g[2] + '◎ · 你有 ' + coins + '◎', coins >= g[2] ? 'ok' : 'no');
-    button('购买', () => { if (coins < g[2]) return; coins -= g[2]; give(g[0], g[1]); sfx(990, 0.08, 'square', 0.06); refreshHUD(); }, '', coins < g[2]);
+    button(coins >= g[2] ? '购买（' + g[2] + '◎）' : '金币不够，还差 ' + (g[2] - coins) + '◎', () => { if (coins < g[2]) { sfx(140, 0.12, 'square', 0.06); return; } coins -= g[2]; give(g[0], g[1]); sfx(990, 0.08, 'square', 0.06); refreshHUD(); renderBag(); }, coins >= g[2] ? '' : 'red');
     line('金币来源：打怪、开宝箱，或在「背包」页卖出矿石和宝石');
   }
 }
