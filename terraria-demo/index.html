@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="screen-orientation" content="landscape">
 <meta name="theme-color" content="#0b1030">
 <title>像素边境 · Demo</title>
 <style>
@@ -12,101 +13,120 @@
 html,body{margin:0;height:100%;overflow:hidden;background:#0b1030;touch-action:none;overscroll-behavior:none;
   font-family:"Courier New",ui-monospace,Menlo,monospace;font-weight:700;color:#fff}
 canvas{image-rendering:pixelated;image-rendering:crisp-edges}
-#game{position:fixed;inset:0;width:100%;height:100%;display:block}
+button{font:inherit;color:#fff;touch-action:none}
+/* 整个游戏放在 #stage 里；竖屏手机上把它旋转 90° 强制横屏 */
+#stage{position:fixed;left:0;top:0;width:100vw;height:100vh;overflow:hidden;transform-origin:0 0;
+  --sl:env(safe-area-inset-left,0px);--sr:env(safe-area-inset-right,0px);--sb:env(safe-area-inset-bottom,0px);--st:env(safe-area-inset-top,0px)}
+#stage.rot{transform:rotate(90deg) translateY(-100%);
+  --sl:env(safe-area-inset-top,0px);--sr:env(safe-area-inset-bottom,0px);--sb:0px;--st:0px}
+#game{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
 .px{border:3px solid #1a1208;background:#3b2a1a;box-shadow:inset 0 0 0 2px #6b4c2a,0 3px 0 rgba(0,0,0,.45)}
 
-#top{position:fixed;left:0;right:0;top:0;padding:calc(6px + env(safe-area-inset-top)) calc(8px + env(safe-area-inset-right)) 0 calc(8px + env(safe-area-inset-left));
-  display:flex;flex-direction:column;gap:6px;pointer-events:none}
-#status{display:flex;align-items:center;gap:8px;font-size:13px;text-shadow:2px 2px 0 #000}
-#hpbar{width:120px;height:16px;border:3px solid #1a1208;background:#401018;position:relative}
+#top{position:absolute;left:0;right:0;top:0;padding:calc(6px + var(--st)) calc(10px + var(--sr)) 0 calc(10px + var(--sl));
+  display:flex;align-items:flex-start;gap:8px;pointer-events:none}
+#status{display:flex;flex-direction:column;gap:3px;font-size:12px;text-shadow:2px 2px 0 #000;min-width:112px}
+#hpbar{width:112px;height:16px;border:3px solid #1a1208;background:#401018;position:relative}
 #hpfill{height:100%;width:100%;background:linear-gradient(#ff6a6a 0 40%,#d42a3a 40%)}
 #hptext{position:absolute;inset:0;text-align:center;font-size:10px;line-height:10px}
-#bagBtn{margin-left:auto;pointer-events:auto;padding:6px 10px;font:inherit;color:#ffe9a8;font-size:13px}
-#hotbar{display:flex;gap:4px;pointer-events:auto;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
-#hotbar::-webkit-scrollbar{display:none}
-.slot{flex:0 0 auto;width:44px;height:44px;position:relative;display:flex;align-items:center;justify-content:center;opacity:.92}
-.slot canvas{width:32px;height:32px}
-.slot.sel{background:#7a5a2a;box-shadow:inset 0 0 0 2px #ffd84a,0 3px 0 rgba(0,0,0,.45);opacity:1}
+#hotbar{flex:1;display:flex;justify-content:center;gap:3px;pointer-events:none;flex-wrap:wrap}
+.slot{flex:0 0 auto;width:40px;height:40px;position:relative;display:flex;align-items:center;justify-content:center;pointer-events:auto}
+.slot canvas{width:32px;height:32px;pointer-events:none}
+.slot.sel{background:#7a5a2a;box-shadow:inset 0 0 0 2px #ffd84a,0 3px 0 rgba(0,0,0,.45)}
 .slot.empty canvas{opacity:.3}
-.slot span{position:absolute;right:2px;bottom:0;font-size:11px;text-shadow:1px 1px 0 #000,-1px 1px 0 #000}
+.slot span{position:absolute;right:2px;bottom:0;font-size:10px;text-shadow:1px 1px 0 #000,-1px 1px 0 #000;pointer-events:none}
+#bagBtn{pointer-events:auto;padding:0 10px;height:40px;color:#ffe9a8;font-size:13px;white-space:nowrap}
 
-.pad{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom));display:flex;gap:12px}
-#padL{left:calc(14px + env(safe-area-inset-left))}
-#padR{right:calc(14px + env(safe-area-inset-right))}
-.btn{width:68px;height:68px;font-size:28px;color:#ffe9a8;display:flex;align-items:center;justify-content:center;opacity:.72;font-family:inherit}
+.pad{position:absolute;bottom:calc(16px + var(--sb));display:flex;gap:12px}
+#padL{left:calc(18px + var(--sl))}
+#padR{right:calc(18px + var(--sr))}
+.btn{width:64px;height:64px;font-size:26px;color:#ffe9a8;display:flex;align-items:center;justify-content:center;opacity:.7}
 .btn.on{opacity:1;transform:translateY(3px);background:#7a5a2a}
-#jump{width:80px;height:80px}
+#jump{width:76px;height:76px}
 
-#toast{position:fixed;left:50%;top:30%;transform:translateX(-50%);padding:8px 14px;font-size:14px;text-align:center;
-  max-width:86vw;pointer-events:none;opacity:0;transition:opacity .3s;text-shadow:2px 2px 0 #000}
+#toast{position:absolute;left:50%;top:24%;transform:translateX(-50%);padding:8px 14px;font-size:13px;text-align:center;
+  max-width:86%;pointer-events:none;opacity:0;transition:opacity .3s;text-shadow:2px 2px 0 #000;z-index:4}
 #toast.show{opacity:1}
 
-#craft{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:5}
-#craft.show{display:flex}
-#craftBox{width:min(92vw,380px);max-height:86vh;overflow:auto;padding:12px;touch-action:pan-y}
-#craftBox h2{margin:0 0 8px;font-size:16px;color:#ffd84a;display:flex;justify-content:space-between;align-items:center}
-#craftBox h3{margin:10px 0 6px;font-size:13px;color:#cfa}
-#res{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px}
-#res div{display:flex;align-items:center;gap:4px}
-#res canvas{width:20px;height:20px}
-.rec{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:2px dashed #6b4c2a;font-size:12px}
-.rec canvas{width:32px;height:32px;flex:0 0 auto}
-.rec .d{flex:1;line-height:1.4}
-.rec .d small{color:#d8c7a0;font-weight:400}
-.rec button,#closeCraft{font:inherit;font-size:12px;color:#fff;padding:8px 10px;background:#2f8f2f;border:3px solid #1a1208;box-shadow:inset 0 0 0 2px #5fd65f}
-.rec button:disabled{background:#555;box-shadow:inset 0 0 0 2px #777;color:#aaa}
-#closeCraft{background:#a33;box-shadow:inset 0 0 0 2px #e66}
+#bag{position:absolute;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:5}
+#bag.show{display:flex}
+#bagBox{display:flex;gap:10px;padding:10px;max-width:96%;max-height:96%;overflow:auto;touch-action:pan-y}
+#bagL{width:336px;flex:0 0 auto}
+#tabs{display:flex;gap:6px;margin-bottom:8px;align-items:center}
+#tabs button{padding:6px 12px;font-size:13px;background:#2a1d10;border:3px solid #1a1208;color:#d8c7a0}
+#tabs button.on{background:#7a5a2a;color:#ffd84a;box-shadow:inset 0 0 0 2px #ffd84a}
+#stations{font-size:10px;color:#9f9;margin-left:auto;font-weight:400}
+#grid{display:flex;flex-wrap:wrap;gap:2px;align-content:flex-start;min-height:166px}
+#grid .slot.dim canvas{opacity:.35}
+#bagR{width:190px;flex:0 0 auto;display:flex;flex-direction:column;gap:6px;font-size:12px;line-height:1.5}
+#closeBag{align-self:flex-end;padding:4px 10px;background:#a33;border:3px solid #1a1208;box-shadow:inset 0 0 0 2px #e66;font-size:12px}
+#detail{flex:1;display:flex;flex-direction:column;gap:6px}
+#detail .hd{display:flex;gap:8px;align-items:center;color:#ffd84a;font-size:14px}
+#detail .hd canvas{width:40px;height:40px;flex:0 0 auto}
+#detail small{font-weight:400;color:#d8c7a0;display:block}
+#detail .ok{color:#9f9}#detail .no{color:#f88}
+#detail button{padding:8px;background:#2f8f2f;border:3px solid #1a1208;box-shadow:inset 0 0 0 2px #5fd65f;font-size:12px}
+#detail button:disabled{background:#555;box-shadow:inset 0 0 0 2px #777;color:#aaa}
+#detail button.alt{background:#34508c;box-shadow:inset 0 0 0 2px #6a8ad0}
 
-#title{position:fixed;inset:0;z-index:10;background:#0b1030 url(title.jpg) center/cover no-repeat;image-rendering:pixelated;
-  display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:12vh 16px 10vh;text-align:center}
-#title h1{margin:0;font-size:clamp(40px,13vw,84px);letter-spacing:4px;color:#ffe14a;
+#title{position:absolute;inset:0;z-index:10;background:#0b1030 url(title.jpg) center 38%/cover no-repeat;image-rendering:pixelated;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-around;padding:12px;text-align:center}
+#title h1{margin:0;font-size:clamp(36px,9vmax,76px);letter-spacing:4px;color:#ffe14a;
   text-shadow:4px 0 0 #3a1c00,-4px 0 0 #3a1c00,0 4px 0 #3a1c00,0 -4px 0 #3a1c00,4px 4px 0 #3a1c00,-4px 4px 0 #3a1c00,0 10px 0 rgba(0,0,0,.5)}
-#title p{margin:10px 0 0;font-size:14px;letter-spacing:3px;text-shadow:2px 2px 0 #000}
-#startBtn{font:inherit;font-size:20px;color:#fff;padding:14px 30px;background:#2f8f2f;border:4px solid #0d2a0d;
-  box-shadow:inset 0 0 0 3px #5fd65f,0 6px 0 rgba(0,0,0,.5);animation:bob 1s steps(2) infinite}
-#title small{display:block;margin-top:14px;font-size:11px;line-height:1.7;text-shadow:1px 1px 0 #000;background:rgba(0,0,0,.45);padding:6px 10px}
-@keyframes bob{50%{transform:translateY(4px)}}
-@media (max-height:420px){.btn{width:56px;height:56px}#jump{width:64px;height:64px}.slot{width:38px;height:38px}.slot canvas{width:26px;height:26px}}
+#title p{margin:6px 0 0;font-size:13px;letter-spacing:3px;text-shadow:2px 2px 0 #000}
+#title .row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+#title button{font-size:18px;padding:12px 24px;background:#2f8f2f;border:4px solid #0d2a0d;box-shadow:inset 0 0 0 3px #5fd65f,0 6px 0 rgba(0,0,0,.5)}
+#newBtn.alt{background:#34508c;border-color:#101c3a;box-shadow:inset 0 0 0 3px #6a8ad0,0 6px 0 rgba(0,0,0,.5)}
+#title small{display:inline-block;margin-top:10px;font-size:11px;line-height:1.7;text-shadow:1px 1px 0 #000;background:rgba(0,0,0,.5);padding:6px 10px}
+@media (max-width:600px){#bagBox{flex-direction:column}}
 </style>
 </head>
 <body>
-<canvas id="game"></canvas>
+<div id="stage">
+  <canvas id="game"></canvas>
 
-<div id="top">
-  <div id="status">
-    <div id="hpbar"><div id="hpfill"></div><div id="hptext">100</div></div>
-    <span id="clock">☀</span><span id="coins">◎0</span>
-    <button id="bagBtn" class="px">⚒ 合成</button>
+  <div id="top">
+    <div id="status">
+      <div id="hpbar"><div id="hpfill"></div><div id="hptext">100</div></div>
+      <div><span id="clock">☀</span> <span id="coins">◎0</span></div>
+    </div>
+    <div id="hotbar"></div>
+    <button id="bagBtn" class="px">🎒 背包</button>
   </div>
-  <div id="hotbar"></div>
-</div>
 
-<div id="padL" class="pad">
-  <div id="left" class="btn px">◀</div>
-  <div id="right" class="btn px">▶</div>
-</div>
-<div id="padR" class="pad">
-  <div id="jump" class="btn px">▲</div>
-</div>
+  <div id="padL" class="pad">
+    <div id="left" class="btn px">◀</div>
+    <div id="right" class="btn px">▶</div>
+  </div>
+  <div id="padR" class="pad">
+    <div id="jump" class="btn px">▲</div>
+  </div>
 
-<div id="toast" class="px"></div>
+  <div id="toast" class="px"></div>
 
-<div id="craft">
-  <div id="craftBox" class="px">
-    <h2><span>背包 &amp; 合成</span><button id="closeCraft">关闭</button></h2>
-    <h3>材料</h3><div id="res"></div>
-    <h3>配方</h3><div id="recipes"></div>
+  <div id="bag">
+    <div id="bagBox" class="px">
+      <div id="bagL">
+        <div id="tabs"><button id="tabInv">背包</button><button id="tabCraft">合成</button><span id="stations"></span></div>
+        <div id="grid"></div>
+      </div>
+      <div id="bagR">
+        <button id="closeBag">✕ 关闭</button>
+        <div id="detail"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="title">
+    <div><h1>像素边境</h1><p>PIXEL FRONTIER · DEMO</p></div>
+    <div>
+      <div class="row">
+        <button id="contBtn" style="display:none">▶ 继续游戏</button>
+        <button id="newBtn">▶ 新的世界</button>
+      </div>
+      <small>◀ ▶ 移动 · ▲ 跳跃 · 点住画面：挖掘 / 放置 / 攻击 / 使用<br>电脑: A D 移动 · 空格跳 · 鼠标操作 · 数字键切换 · E 背包</small>
+    </div>
   </div>
 </div>
-
-<div id="title">
-  <div><h1>像素边境</h1><p>PIXEL FRONTIER · DEMO</p></div>
-  <div>
-    <button id="startBtn">▶ 开始冒险</button>
-    <small>◀ ▶ 移动 · ▲ 跳跃 · 点住方块挖掘 / 放置 / 攻击<br>电脑: A D 移动 · 空格跳 · 鼠标操作 · 数字键切换 · E 合成</small>
-  </div>
-</div>
-
 <script src="game.js"></script>
 </body>
 </html>
