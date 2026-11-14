@@ -37,11 +37,22 @@ button{font:inherit;color:#fff;touch-action:none}
 #bagBtn{pointer-events:auto;padding:0 10px;height:40px;color:#ffe9a8;font-size:13px;white-space:nowrap}
 
 .pad{position:absolute;bottom:calc(16px + var(--sb));display:flex;gap:12px}
-#padL{left:calc(18px + var(--sl))}
+#padL{left:calc(22px + var(--sl))}
 #padR{right:calc(18px + var(--sr))}
 .btn{width:64px;height:64px;font-size:26px;color:#ffe9a8;display:flex;align-items:center;justify-content:center;opacity:.7}
 .btn.on{opacity:1;transform:translateY(3px);background:#7a5a2a}
 #jump{width:76px;height:76px}
+#padR{align-items:flex-end}
+#act{margin-bottom:54px}
+#joy{width:132px;height:132px;border-radius:50%;background:rgba(40,28,16,.4);border:3px solid rgba(26,18,8,.8);
+  box-shadow:inset 0 0 0 2px rgba(255,233,168,.3);position:relative;opacity:.8}
+#joy.on{opacity:1}
+#knob{position:absolute;left:50%;top:50%;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;background:#7a5a2a;
+  border:3px solid #1a1208;box-shadow:inset 0 0 0 2px #ffd84a;pointer-events:none}
+#buffs{font-size:10px;color:#9f9;max-width:150px;font-weight:400}
+#pager{display:flex;align-items:center;justify-content:center;gap:8px;font-size:11px;margin-top:6px;color:#d8c7a0}
+#pager button{padding:4px 14px;background:#34508c;border:3px solid #1a1208;font-size:12px}
+#pager button:disabled{background:#444;color:#888}
 
 #toast{position:absolute;left:50%;top:24%;transform:translateX(-50%);padding:8px 14px;font-size:13px;text-align:center;
   max-width:86%;pointer-events:none;opacity:0;transition:opacity .3s;text-shadow:2px 2px 0 #000;z-index:4}
@@ -55,7 +66,7 @@ button{font:inherit;color:#fff;touch-action:none}
 #tabs button{padding:6px 12px;font-size:13px;background:#2a1d10;border:3px solid #1a1208;color:#d8c7a0}
 #tabs button.on{background:#7a5a2a;color:#ffd84a;box-shadow:inset 0 0 0 2px #ffd84a}
 #stations{font-size:10px;color:#9f9;margin-left:auto;font-weight:400}
-#grid{display:flex;flex-wrap:wrap;gap:2px;align-content:flex-start;min-height:166px}
+#grid{display:flex;flex-wrap:wrap;gap:2px;align-content:flex-start;min-height:166px;max-width:336px}
 #grid .slot.dim canvas{opacity:.35}
 #bagR{width:190px;flex:0 0 auto;display:flex;flex-direction:column;gap:6px;font-size:12px;line-height:1.5}
 #closeBag{align-self:flex-end;padding:4px 10px;background:#a33;border:3px solid #1a1208;box-shadow:inset 0 0 0 2px #e66;font-size:12px}
@@ -88,16 +99,17 @@ button{font:inherit;color:#fff;touch-action:none}
     <div id="status">
       <div id="hpbar"><div id="hpfill"></div><div id="hptext">100</div></div>
       <div><span id="clock">☀</span> <span id="coins">◎0</span></div>
+      <div id="buffs"></div>
     </div>
     <div id="hotbar"></div>
     <button id="bagBtn" class="px">🎒 背包</button>
   </div>
 
   <div id="padL" class="pad">
-    <div id="left" class="btn px">◀</div>
-    <div id="right" class="btn px">▶</div>
+    <div id="joy"><div id="knob"></div></div>
   </div>
   <div id="padR" class="pad">
+    <div id="act" class="btn px">⚒</div>
     <div id="jump" class="btn px">▲</div>
   </div>
 
@@ -108,6 +120,7 @@ button{font:inherit;color:#fff;touch-action:none}
       <div id="bagL">
         <div id="tabs"><button id="tabInv">背包</button><button id="tabCraft">合成</button><span id="stations"></span></div>
         <div id="grid"></div>
+        <div id="pager"></div>
       </div>
       <div id="bagR">
         <button id="closeBag">✕ 关闭</button>
@@ -123,7 +136,7 @@ button{font:inherit;color:#fff;touch-action:none}
         <button id="contBtn" style="display:none">▶ 继续游戏</button>
         <button id="newBtn">▶ 新的世界</button>
       </div>
-      <small>◀ ▶ 移动 · ▲ 跳跃 · 点住画面：挖掘 / 放置 / 攻击 / 使用<br>电脑: A D 移动 · 空格跳 · 鼠标操作 · 数字键切换 · E 背包</small>
+      <small>摇杆移动（上推跳 / 爬绳）· ▲ 跳跃 · ⚒ 自动使用手中物品 · 也可直接点画面<br>电脑: A D 移动 · 空格跳 · F 动作 · 鼠标操作 · 数字键切换 · E 背包</small>
     </div>
   </div>
 </div>

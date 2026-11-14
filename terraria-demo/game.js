@@ -6,7 +6,12 @@
 const T = 16, W = 400, H = 140;
 const AIR = 0, DIRT = 1, GRASS = 2, STONE = 3, LOG = 4, LEAVES = 5, COPPER = 6, IRON = 7, GOLD = 8,
       SAND = 9, PLANK = 10, TORCH = 11, BEDROCK = 12, COAL = 13, DIAMOND = 14, GLASS = 15, BRICK = 16,
-      PLATFORM = 17, BENCH = 18, FURNACE = 19, CHEST = 20, MUSHROOM = 21, FLOWER = 22, CRYSTAL = 23, NT = 24;
+      PLATFORM = 17, BENCH = 18, FURNACE = 19, CHEST = 20, MUSHROOM = 21, FLOWER = 22, CRYSTAL = 23,
+      SILVER = 24, RUBY = 25, EMERALD = 26, OBSIDIAN = 27, BRICK_CU = 28, BRICK_AU = 29, BRICK_RED = 30, BRICK_MUD = 31,
+      SANDSTONE = 32, BRICK_OBS = 33, GLASS_R = 34, GLASS_B = 35, GLASS_G = 36, THATCH = 37, CLOUD = 38, GEMBLOCK = 39,
+      TORCH_B = 40, LANTERN = 41, CAMPFIRE = 42, CANDLE = 43, CHANDELIER = 44, CHAIR = 45, TABLE = 46, BOOKSHELF = 47,
+      BED = 48, ANVIL = 49, SAPLING = 50, ROPE = 51, FLOWER_B = 52, FLOWER_Y = 53, BANNER = 54, POT = 55, PAINTING = 56,
+      STATUE = 57, GLOWSHROOM = 58, NT = 59;
 
 // solid, 挖掘耗时(秒), 掉落物品, 碎屑颜色
 const TILE = [
@@ -35,11 +40,26 @@ const TILE = [
   { solid: 0, hard: 0.05, drop: 'flower',   col: '#ff8ab0' },
   { solid: 0, hard: 0.60, drop: 'crystal',  col: '#ff5a8a' },
 ];
+// 新增方块（id 24 起，顺序与上面的常量一致）
+[[1, 1.2, 'silver', '#e8ecf2'], [1, 2.6, 'ruby', '#e03a4a'], [1, 2.0, 'emerald', '#3ad07a'], [1, 2.4, 'obsidian', '#2a1e3c'],
+ [1, 0.7, 'brick_copper', '#c8703a'], [1, 0.7, 'brick_gold', '#e8b82a'], [1, 0.7, 'brick_red', '#b8483a'], [1, 0.4, 'brick_mud', '#8a5a34'],
+ [1, 0.5, 'sandstone', '#e6d08c'], [1, 1.2, 'brick_obsidian', '#3a2a52'], [1, 0.2, 'glass_red', '#ff8a8a'], [1, 0.2, 'glass_blue', '#8ab8ff'],
+ [1, 0.2, 'glass_green', '#8aff9a'], [1, 0.2, 'thatch', '#d8b450'], [1, 0.15, 'cloud_block', '#f4f8ff'], [1, 1.0, 'gemblock', '#3ad0e0'],
+ [0, 0.05, 'torch_blue', '#7ad0ff'], [0, 0.2, 'lantern', '#ffd84a'], [0, 0.3, 'campfire', '#ff7a1a'], [0, 0.05, 'candle', '#f0e6d0'],
+ [0, 0.3, 'chandelier', '#c89a1a'], [0, 0.3, 'chair', '#b5834a'], [0, 0.3, 'table', '#b5834a'], [0, 0.3, 'bookshelf', '#7d5529'],
+ [0, 0.3, 'bed', '#d42a3a'], [0, 0.6, 'anvil', '#5c5f66'], [0, 0.05, 'acorn', '#3fb83f'], [0, 0.08, 'rope', '#c7965a'],
+ [0, 0.05, 'flower_blue', '#6aa0ff'], [0, 0.05, 'flower_yellow', '#ffd84a'], [0, 0.2, 'banner', '#d42a3a'], [0, 0.2, 'pot', '#b8622e'],
+ [0, 0.2, 'painting', '#c89a1a'], [0, 0.6, 'statue', '#9a9da6'], [0, 0.05, 'glowshroom', '#3ad0e0'],
+].forEach(([solid, hard, drop, col]) => TILE.push({ solid, hard, drop, col }));
 const SOLID = TILE.map(t => t.solid);
-const OPAQUE = TILE.map((t, i) => (t.solid && i !== GLASS) ? 1 : 0);
+const OPAQUE = TILE.map((t, i) => (t.solid && i !== GLASS && !(i >= GLASS_R && i <= GLASS_G)) ? 1 : 0);
 const EMIT = new Uint8Array(NT); EMIT[TORCH] = 15; EMIT[FURNACE] = 11; EMIT[CRYSTAL] = 9;
+EMIT[TORCH_B] = 14; EMIT[LANTERN] = 15; EMIT[CAMPFIRE] = 14; EMIT[CANDLE] = 11; EMIT[CHANDELIER] = 15; EMIT[GEMBLOCK] = 8; EMIT[GLOWSHROOM] = 7;
+const GLOW = {}; // 泛光颜色
+[TORCH, FURNACE, CAMPFIRE, LANTERN, CANDLE, CHANDELIER].forEach(t => { GLOW[t] = '255,170,60'; });
+GLOW[TORCH_B] = '80,160,255'; GLOW[GLOWSHROOM] = '60,220,230';
 const NEEDS_FLOOR = new Uint8Array(NT);
-[BENCH, FURNACE, CHEST, MUSHROOM, FLOWER, CRYSTAL].forEach(t => { NEEDS_FLOOR[t] = 1; });
+[BENCH, FURNACE, CHEST, MUSHROOM, FLOWER, CRYSTAL, CAMPFIRE, CANDLE, CHAIR, TABLE, BOOKSHELF, BED, ANVIL, SAPLING, FLOWER_B, FLOWER_Y, POT, STATUE, GLOWSHROOM].forEach(t => { NEEDS_FLOOR[t] = 1; });
 
 function mulberry32(a) {
   return function () {
@@ -110,6 +130,7 @@ function genWorld(seed) {
     }
   };
   vein(COAL, 120, 3, 8); vein(COPPER, 110, 5, 7); vein(IRON, 80, 18, 6); vein(GOLD, 50, 42, 5); vein(DIAMOND, 26, 66, 4);
+  vein(SILVER, 60, 30, 6); vein(EMERALD, 26, 52, 4); vein(RUBY, 20, 78, 4); vein(OBSIDIAN, 30, 84, 12);
   // 树、花、蘑菇
   for (let x = 4; x < W - 4; x++) {
     const h = surf[x];
@@ -125,7 +146,7 @@ function genWorld(seed) {
         if (tiles[i] === AIR) tiles[i] = LEAVES;
       }
       x += 3;
-    } else if (v < 0.26) tiles[(h - 1) * W + x] = FLOWER;
+    } else if (v < 0.26) tiles[(h - 1) * W + x] = v < 0.20 ? FLOWER : v < 0.23 ? FLOWER_B : FLOWER_Y;
     else if (v < 0.30) tiles[(h - 1) * W + x] = MUSHROOM;
   }
   // 洞穴里的宝箱、生命水晶、蘑菇
@@ -137,7 +158,7 @@ function genWorld(seed) {
       if (tiles[i] === AIR && walls[i] && SOLID[tiles[i + W]] && tiles[i + W] !== BEDROCK) { tiles[i] = t; k++; }
     }
   };
-  deco(CHEST, 30, 8); deco(CRYSTAL, 16, 22); deco(MUSHROOM, 50, 6);
+  deco(CHEST, 30, 8); deco(CRYSTAL, 16, 22); deco(MUSHROOM, 50, 6); deco(GLOWSHROOM, 40, 36);
   // 出生点
   spawnX = W / 2;
   for (let x = W / 2; x < W / 2 + 30; x++) if (tiles[surf[x] * W + x] === GRASS && getT(x, surf[x] - 1) !== LOG) { spawnX = x; break; }
@@ -160,7 +181,7 @@ const ITEMS = {
   sword_diamond: { n: '钻石剑', k: 'sword', dmg: 50, d: '伤害 50' },
   bow:    { n: '木弓', k: 'bow', dmg: 14, d: '点住画面朝该方向射箭，消耗箭矢' },
   arrow:  { n: '箭矢', k: 'res', d: '木弓的弹药' },
-  bomb:   { n: '炸弹', k: 'throw', d: '投掷后爆炸，炸开一片方块。小心自己！' },
+  bomb:   { n: '炸弹', k: 'throw', th: { bomb: { R: 2.7, fuse: 1.6 } }, d: '投掷后爆炸，炸开一片方块。小心自己！' },
   armor_copper: { n: '铜甲', k: 'armor', def: 0.20, d: '受到伤害 -20%（拥有即生效）' },
   armor_iron:   { n: '铁甲', k: 'armor', def: 0.35, d: '受到伤害 -35%（拥有即生效）' },
   armor_gold:   { n: '金甲', k: 'armor', def: 0.50, d: '受到伤害 -50%（拥有即生效）' },
@@ -188,8 +209,94 @@ const ITEMS = {
   bar_copper: { n: '铜锭', k: 'res', d: '制作铜制装备' },
   bar_iron:   { n: '铁锭', k: 'res', d: '制作铁制装备' },
   bar_gold:   { n: '金锭', k: 'res', d: '制作金制装备' },
+  // ── 新增 80 种 ──
+  silver:     { n: '银矿', k: 'res', d: '在熔炉冶炼成银锭' },
+  bar_silver: { n: '银锭', k: 'res', d: '制作银制装备' },
+  ruby:       { n: '红玉', k: 'res', d: '最深处的稀有宝石' },
+  emerald:    { n: '翡翠', k: 'res', d: '稀有宝石，可制作雷电法杖' },
+  bone:       { n: '骨头', k: 'res', d: '僵尸掉落' },
+  cloth:      { n: '布料', k: 'res', d: '僵尸掉落，可做床和旗帜' },
+  wing:       { n: '蝙蝠翼', k: 'res', d: '洞穴蝙蝠掉落' },
+  bottle:     { n: '玻璃瓶', k: 'res', d: '酿造药水的容器' },
+  pick_silver: { n: '银镐',   k: 'pick', pow: 2.7, d: '挖掘速度 ×2.7' },
+  pick_ruby:   { n: '红玉镐', k: 'pick', pow: 6.0, d: '挖掘速度 ×6' },
+  sword_silver: { n: '银剑',   k: 'sword', dmg: 29, d: '伤害 29' },
+  sword_ruby:   { n: '红玉剑', k: 'sword', dmg: 66, d: '伤害 66' },
+  sword_bone:   { n: '骨剑',   k: 'sword', dmg: 20, d: '伤害 20' },
+  spear_iron:   { n: '铁矛',   k: 'sword', dmg: 20, reach: 4.2, d: '伤害 20，攻击距离更远' },
+  spear_gold:   { n: '金矛',   k: 'sword', dmg: 31, reach: 4.6, d: '伤害 31，攻击距离更远' },
+  armor_silver:  { n: '银甲',   k: 'armor', def: 0.42, c: ['#e8ecf2', '#a8b0c0'], d: '受到伤害 -42%' },
+  armor_diamond: { n: '钻石甲', k: 'armor', def: 0.58, c: ['#3ad0e0', '#1a8a9a'], d: '受到伤害 -58%' },
+  armor_ruby:    { n: '红玉甲', k: 'armor', def: 0.66, c: ['#e03a4a', '#8a1424'], d: '受到伤害 -66%' },
+  bow_iron:   { n: '铁弓', k: 'bow', dmg: 22, d: '伤害 22，射速更快' },
+  bow_gold:   { n: '金弓', k: 'bow', dmg: 32, d: '伤害 32，射速更快' },
+  arrow_fire: { n: '火焰箭', k: 'res', d: '伤害 +10，优先使用' },
+  arrow_bone: { n: '骨箭',   k: 'res', d: '伤害 +5' },
+  staff_fire: { n: '火焰法杖', k: 'staff', dmg: 26, cd: 0.42, col: '#ff7a1a', d: '发射火球，无需弹药' },
+  staff_ice:  { n: '冰霜法杖', k: 'staff', dmg: 18, cd: 0.22, col: '#7ad0ff', d: '快速连射冰锥' },
+  staff_bolt: { n: '雷电法杖', k: 'staff', dmg: 44, cd: 0.6, col: '#f0f060', pierce: 1, d: '闪电可贯穿多个敌人' },
+  knife:       { n: '飞刀',     k: 'throw', th: { dmg: 13, sp: 22, g: 14, cd: 0.25 }, d: '投掷武器，伤害 13' },
+  shuriken:    { n: '手里剑',   k: 'throw', th: { dmg: 18, sp: 26, g: 6, cd: 0.2, pierce: 1 }, d: '可贯穿敌人，伤害 18' },
+  javelin:     { n: '标枪',     k: 'throw', th: { dmg: 30, sp: 24, g: 16, cd: 0.5 }, d: '沉重的投掷武器，伤害 30' },
+  boomerang:   { n: '回旋镖',   k: 'throw', th: { dmg: 16, sp: 20, g: 0, cd: 0.8, pierce: 1, keep: 1, back: 0.4, life: 0.8 }, d: '飞出去还会回来，不消耗' },
+  bomb_sticky: { n: '粘性炸弹', k: 'throw', th: { bomb: { R: 2.7, fuse: 1.8, sticky: 1 } }, d: '碰到方块就粘住再爆炸' },
+  dynamite:    { n: '炸药',     k: 'throw', th: { bomb: { R: 4.6, fuse: 2.4 } }, d: '超大范围爆破，快跑！' },
+  firework:    { n: '烟花',     k: 'throw', th: { dmg: 0, sp: 18, g: 0, cd: 0.4, life: 0.6, fx: 'firework' }, d: '砰！纯属好看' },
+  apple:         { n: '苹果',       k: 'use', heal: 10, d: '砍树偶尔掉落，恢复 10 生命' },
+  pie:           { n: '苹果派',     k: 'use', heal: 70, d: '香喷喷，恢复 70 生命' },
+  soup:          { n: '蘑菇汤',     k: 'use', heal: 40, d: '恢复 40 生命' },
+  potion_big:    { n: '强效治疗药水', k: 'use', heal: 120, d: '恢复 120 生命' },
+  potion_speed:  { n: '迅捷药水',   k: 'use', buff: 'speed', dur: 90, d: '移动速度 +30%，持续 90 秒' },
+  potion_iron:   { n: '铁皮药水',   k: 'use', buff: 'iron', dur: 120, d: '额外减伤 15%，持续 120 秒' },
+  potion_miner:  { n: '挖矿药水',   k: 'use', buff: 'miner', dur: 120, d: '挖掘速度 +50%，持续 120 秒' },
+  potion_shine:  { n: '光芒药水',   k: 'use', buff: 'shine', dur: 180, d: '身体发出强光，持续 180 秒' },
+  potion_regen:  { n: '再生药水',   k: 'use', buff: 'regen', dur: 90, d: '持续恢复生命 90 秒' },
+  potion_jump:   { n: '跳跃药水',   k: 'use', buff: 'jump', dur: 90, d: '跳得更高，持续 90 秒' },
+  mirror:        { n: '魔镜',       k: 'use', d: '瞬间传送回出生点，可重复使用' },
+  cloud:  { n: '云朵瓶',     k: 'acc', d: '饰品：可以在空中二段跳' },
+  boots:  { n: '疾风靴',     k: 'acc', d: '饰品：移动速度 +20%' },
+  helmet: { n: '矿工头盔',   k: 'acc', d: '饰品：自带更亮的照明' },
+  band:   { n: '再生手环',   k: 'acc', d: '饰品：缓慢恢复生命' },
+  shield: { n: '黑曜石盾',   k: 'acc', d: '饰品：受伤不再被击退' },
+  obsidian:       { n: '黑曜石',   k: 'block', tile: OBSIDIAN,  d: '深处的坚硬岩石' },
+  brick_copper:   { n: '铜砖',     k: 'block', tile: BRICK_CU,  d: '闪亮的铜色建材' },
+  brick_gold:     { n: '金砖',     k: 'block', tile: BRICK_AU,  d: '土豪专用建材' },
+  brick_red:      { n: '红砖',     k: 'block', tile: BRICK_RED, d: '经典红砖' },
+  brick_mud:      { n: '泥砖',     k: 'block', tile: BRICK_MUD, d: '泥土压成的砖' },
+  sandstone:      { n: '砂岩砖',   k: 'block', tile: SANDSTONE, d: '沙子压成的砖' },
+  brick_obsidian: { n: '黑曜石砖', k: 'block', tile: BRICK_OBS, d: '神秘的深色建材' },
+  glass_red:      { n: '红玻璃',   k: 'block', tile: GLASS_R,   d: '透光的彩色玻璃' },
+  glass_blue:     { n: '蓝玻璃',   k: 'block', tile: GLASS_B,   d: '透光的彩色玻璃' },
+  glass_green:    { n: '绿玻璃',   k: 'block', tile: GLASS_G,   d: '透光的彩色玻璃' },
+  thatch:         { n: '茅草',     k: 'block', tile: THATCH,    d: '适合做屋顶' },
+  cloud_block:    { n: '云块',     k: 'block', tile: CLOUD,     d: '软绵绵的云' },
+  gemblock:       { n: '钻石块',   k: 'block', tile: GEMBLOCK,  d: '会微微发光的奢华方块' },
+  torch_blue:     { n: '蓝火把',   k: 'block', tile: TORCH_B,   d: '发出蓝色的光' },
+  lantern:        { n: '灯笼',     k: 'block', tile: LANTERN,   d: '明亮的照明' },
+  campfire:       { n: '篝火',     k: 'block', tile: CAMPFIRE,  d: '靠近时恢复生命，还能煮汤' },
+  candle:         { n: '蜡烛',     k: 'block', tile: CANDLE,    d: '温馨的小光源' },
+  chandelier:     { n: '吊灯',     k: 'block', tile: CHANDELIER, d: '华丽的照明' },
+  chair:          { n: '椅子',     k: 'block', tile: CHAIR,     d: '家具' },
+  table:          { n: '桌子',     k: 'block', tile: TABLE,     d: '家具' },
+  bookshelf:      { n: '书架',     k: 'block', tile: BOOKSHELF, d: '家具' },
+  bed:            { n: '床',       k: 'block', tile: BED,       d: '放下后把出生点设在这里' },
+  anvil:          { n: '铁砧',     k: 'block', tile: ANVIL,     d: '靠近它可以打造高级装备' },
+  acorn:          { n: '橡果',     k: 'block', tile: SAPLING,   d: '种在地上会长成大树' },
+  rope:           { n: '绳子',     k: 'block', tile: ROPE,      d: '可以攀爬，下矿必备' },
+  flower_blue:    { n: '蓝花',     k: 'block', tile: FLOWER_B,  d: '药水材料' },
+  flower_yellow:  { n: '黄花',     k: 'block', tile: FLOWER_Y,  d: '药水材料' },
+  banner:         { n: '旗帜',     k: 'block', tile: BANNER,    d: '装饰' },
+  pot:            { n: '盆栽',     k: 'block', tile: POT,       d: '装饰' },
+  painting:       { n: '画',       k: 'block', tile: PAINTING,  d: '装饰' },
+  statue:         { n: '雕像',     k: 'block', tile: STATUE,    d: '装饰' },
+  glowshroom:     { n: '发光蘑菇', k: 'block', tile: GLOWSHROOM, d: '深层洞穴里发光的蘑菇，药水材料' },
 };
+const ARC = { armor_copper: ['#c8703a', '#8a4a20'], armor_iron: ['#c8c0b8', '#8a8078'], armor_gold: ['#e8b82a', '#a87a10'] };
+const PASSIVE = k => k === 'res' || k === 'armor' || k === 'acc';
+const buffs = { speed: 0, iron: 0, miner: 0, shine: 0, regen: 0, jump: 0 };
+const BUFF_NAME = { speed: '迅捷', iron: '铁皮', miner: '挖矿', shine: '光芒', regen: '再生', jump: '跳跃' };
 const ITEM_IDS = Object.keys(ITEMS);
+const ARMOR_IDS = ITEM_IDS.filter(id => ITEMS[id].k === 'armor').sort((a, b) => ITEMS[b].def - ITEMS[a].def);
 const HOTBAR_N = 8;
 const inv = {};
 let hotbar = [], sel = 0, coins = 0;
@@ -221,17 +328,86 @@ const RECIPES = [
   { out: ['bar_gold', 1], cost: { gold: 3 }, st: FURNACE },
   { out: ['pick_copper', 1], cost: { pick_wood: 1, bar_copper: 4 }, st: BENCH },
   { out: ['pick_iron', 1], cost: { pick_copper: 1, bar_iron: 5 }, st: BENCH },
-  { out: ['pick_gold', 1], cost: { pick_iron: 1, bar_gold: 6 }, st: BENCH },
+  { out: ['pick_gold', 1], cost: { pick_silver: 1, bar_gold: 6 }, st: BENCH },
   { out: ['pick_diamond', 1], cost: { pick_gold: 1, diamond: 5 }, st: BENCH },
   { out: ['sword_copper', 1], cost: { sword_wood: 1, bar_copper: 3 }, st: BENCH },
   { out: ['sword_iron', 1], cost: { sword_copper: 1, bar_iron: 4 }, st: BENCH },
-  { out: ['sword_gold', 1], cost: { sword_iron: 1, bar_gold: 5 }, st: BENCH },
+  { out: ['sword_gold', 1], cost: { sword_silver: 1, bar_gold: 5 }, st: BENCH },
   { out: ['sword_diamond', 1], cost: { sword_gold: 1, diamond: 4 }, st: BENCH },
   { out: ['armor_copper', 1], cost: { bar_copper: 8 }, st: BENCH },
   { out: ['armor_iron', 1], cost: { armor_copper: 1, bar_iron: 10 }, st: BENCH },
-  { out: ['armor_gold', 1], cost: { armor_iron: 1, bar_gold: 12 }, st: BENCH },
+  { out: ['armor_gold', 1], cost: { armor_silver: 1, bar_gold: 12 }, st: BENCH },
+  // ── 新增 ──
+  { out: ['rope', 5], cost: { wood: 1, gel: 1 } },
+  { out: ['campfire', 1], cost: { wood: 8, torch: 2 } },
+  { out: ['candle', 2], cost: { gel: 2 } },
+  { out: ['arrow_fire', 8], cost: { arrow: 8, torch: 1 } },
+  { out: ['arrow_bone', 8], cost: { bone: 1, wood: 1 } },
+  { out: ['bomb_sticky', 2], cost: { bomb: 2, gel: 2 } },
+  { out: ['torch_blue', 3], cost: { torch: 3, flower_blue: 1 } },
+  { out: ['thatch', 4], cost: { wood: 1, sand: 1 } },
+  { out: ['soup', 1], cost: { mushroom: 3 }, st: CAMPFIRE },
+  { out: ['pie', 1], cost: { apple: 3 }, st: CAMPFIRE },
+  { out: ['potion_big', 1], cost: { potion: 2, glowshroom: 1 } },
+  { out: ['potion_speed', 1], cost: { bottle: 1, flower_blue: 1, gel: 1 } },
+  { out: ['potion_iron', 1], cost: { bottle: 1, iron: 2, flower_yellow: 1 } },
+  { out: ['potion_miner', 1], cost: { bottle: 1, coal: 2, flower_yellow: 1 } },
+  { out: ['potion_shine', 1], cost: { bottle: 1, glowshroom: 2 } },
+  { out: ['potion_regen', 1], cost: { bottle: 1, mushroom: 1, flower: 1 } },
+  { out: ['potion_jump', 1], cost: { bottle: 1, wing: 1, flower_blue: 1 } },
+  { out: ['anvil', 1], cost: { bar_iron: 5 }, st: BENCH },
+  { out: ['knife', 5], cost: { stone: 2, wood: 1 }, st: BENCH },
+  { out: ['javelin', 4], cost: { wood: 2, bar_copper: 1 }, st: BENCH },
+  { out: ['boomerang', 1], cost: { wood: 6, bar_copper: 1 }, st: BENCH },
+  { out: ['dynamite', 1], cost: { bomb: 2, coal: 2, cloth: 1 }, st: BENCH },
+  { out: ['firework', 3], cost: { coal: 1, plank: 1, flower: 1 }, st: BENCH },
+  { out: ['sword_bone', 1], cost: { bone: 8 }, st: BENCH },
+  { out: ['boots', 1], cost: { cloth: 6, wing: 2 }, st: BENCH },
+  { out: ['cloud', 1], cost: { bottle: 1, wing: 4 }, st: BENCH },
+  { out: ['lantern', 1], cost: { bar_iron: 1, torch: 1 }, st: BENCH },
+  { out: ['chair', 1], cost: { plank: 4 }, st: BENCH },
+  { out: ['table', 1], cost: { plank: 6 }, st: BENCH },
+  { out: ['bookshelf', 1], cost: { plank: 8, cloth: 1 }, st: BENCH },
+  { out: ['bed', 1], cost: { plank: 6, cloth: 4 }, st: BENCH },
+  { out: ['banner', 1], cost: { cloth: 2, flower: 1 }, st: BENCH },
+  { out: ['painting', 1], cost: { plank: 4, cloth: 1, flower_blue: 1 }, st: BENCH },
+  { out: ['brick_mud', 2], cost: { dirt: 2 }, st: BENCH },
+  { out: ['sandstone', 2], cost: { sand: 2 }, st: BENCH },
+  { out: ['brick_copper', 4], cost: { bar_copper: 1, stone: 4 }, st: BENCH },
+  { out: ['brick_gold', 4], cost: { bar_gold: 1, stone: 4 }, st: BENCH },
+  { out: ['brick_obsidian', 2], cost: { obsidian: 2 }, st: BENCH },
+  { out: ['cloud_block', 4], cost: { wing: 1, glass: 1 }, st: BENCH },
+  { out: ['bar_silver', 1], cost: { silver: 3 }, st: FURNACE },
+  { out: ['bottle', 2], cost: { glass: 1 }, st: FURNACE },
+  { out: ['brick_red', 2], cost: { dirt: 2 }, st: FURNACE },
+  { out: ['pot', 1], cost: { dirt: 3, flower: 1 }, st: FURNACE },
+  { out: ['glass_red', 2], cost: { glass: 2, flower: 1 }, st: FURNACE },
+  { out: ['glass_blue', 2], cost: { glass: 2, flower_blue: 1 }, st: FURNACE },
+  { out: ['glass_green', 2], cost: { glass: 2, acorn: 1 }, st: FURNACE },
+  { out: ['pick_silver', 1], cost: { pick_iron: 1, bar_silver: 5 }, st: ANVIL },
+  { out: ['sword_silver', 1], cost: { sword_iron: 1, bar_silver: 4 }, st: ANVIL },
+  { out: ['armor_silver', 1], cost: { armor_iron: 1, bar_silver: 10 }, st: ANVIL },
+  { out: ['armor_diamond', 1], cost: { armor_gold: 1, diamond: 8 }, st: ANVIL },
+  { out: ['pick_ruby', 1], cost: { pick_diamond: 1, ruby: 5 }, st: ANVIL },
+  { out: ['sword_ruby', 1], cost: { sword_diamond: 1, ruby: 4 }, st: ANVIL },
+  { out: ['armor_ruby', 1], cost: { armor_diamond: 1, ruby: 8 }, st: ANVIL },
+  { out: ['spear_iron', 1], cost: { wood: 4, bar_iron: 3 }, st: ANVIL },
+  { out: ['spear_gold', 1], cost: { spear_iron: 1, bar_gold: 4 }, st: ANVIL },
+  { out: ['bow_iron', 1], cost: { bow: 1, bar_iron: 6 }, st: ANVIL },
+  { out: ['bow_gold', 1], cost: { bow_iron: 1, bar_gold: 6 }, st: ANVIL },
+  { out: ['shuriken', 8], cost: { bar_iron: 1 }, st: ANVIL },
+  { out: ['staff_fire', 1], cost: { wood: 6, ruby: 2, coal: 5 }, st: ANVIL },
+  { out: ['staff_ice', 1], cost: { wood: 6, diamond: 2 }, st: ANVIL },
+  { out: ['staff_bolt', 1], cost: { bar_gold: 4, emerald: 3 }, st: ANVIL },
+  { out: ['mirror', 1], cost: { glass: 3, bar_silver: 4, diamond: 1 }, st: ANVIL },
+  { out: ['helmet', 1], cost: { bar_copper: 6, torch: 5 }, st: ANVIL },
+  { out: ['band', 1], cost: { bar_gold: 3, crystal: 1 }, st: ANVIL },
+  { out: ['shield', 1], cost: { obsidian: 12, bar_iron: 5 }, st: ANVIL },
+  { out: ['statue', 1], cost: { stone: 15 }, st: ANVIL },
+  { out: ['chandelier', 1], cost: { bar_gold: 2, candle: 3 }, st: ANVIL },
+  { out: ['gemblock', 1], cost: { diamond: 2, glass: 2 }, st: ANVIL },
 ];
-const ST_NAME = { [BENCH]: '工作台', [FURNACE]: '熔炉' };
+const ST_NAME = { [BENCH]: '工作台', [FURNACE]: '熔炉', [ANVIL]: '铁砧', [CAMPFIRE]: '篝火' };
 
 // ───────────────────────── 像素贴图（程序生成）─────────────────────────
 let atlas = null, icons = null;
@@ -350,14 +526,15 @@ function buildArt() {
   }
 
   // ── 物品图标 ──
-  icons = mkCanvas(T * 32, T);
+  icons = mkCanvas(T * 100, T);
   const ig = icons.getContext('2d');
   let ni = 0;
   const reg = id => { ICON[id] = ni++; return ICON[id]; };
   const ip = (i, x, y, c) => { ig.fillStyle = c; ig.fillRect(i * T + x, y, 1, 1); };
   const ir = (i, x, y, w, h, c) => { ig.fillStyle = c; ig.fillRect(i * T + x, y, w, h); };
   const TIER = { wood: ['#9a6a3a', '#c7965a', '#6a4422'], copper: ['#c8703a', '#ffb07a', '#8a4a20'], iron: ['#9aa0aa', '#e8ecf2', '#6a707a'],
-                 gold: ['#e8b82a', '#fff6b0', '#a87a10'], diamond: ['#3ad0e0', '#d0fdff', '#1a8a9a'] };
+                 gold: ['#e8b82a', '#fff6b0', '#a87a10'], diamond: ['#3ad0e0', '#d0fdff', '#1a8a9a'],
+                 silver: ['#c8d0e0', '#ffffff', '#8890a8'], ruby: ['#e03a4a', '#ffb0b8', '#8a1424'], bone: ['#e8e0d0', '#ffffff', '#b8b0a0'] };
   Object.keys(TIER).forEach(tn => {
     const [c, hi] = TIER[tn];
     let i = reg('pick_' + tn);
@@ -371,7 +548,7 @@ function buildArt() {
     [[4, 11], [3, 12], [2, 13]].forEach(([x, y]) => { ip(i, x, y, '#7a5028'); ip(i, x + 1, y, '#5a3a1c'); });
     ip(i, 1, 14, '#c89a1a');
   });
-  ['copper', 'iron', 'gold'].forEach(tn => {
+  ['copper', 'iron', 'gold', 'silver', 'diamond', 'ruby'].forEach(tn => {
     const [c, hi, dk] = TIER[tn];
     let i = reg('armor_' + tn);
     for (let y = 3; y < 14; y++) for (let x = 3; x < 13; x++) {
@@ -433,6 +610,134 @@ function buildArt() {
       ip(i, x, y, d > 10 ? '#c89a1a' : x < 7 ? '#fff6b0' : '#ffd84a');
     }
   }
+
+  // ════════ 新增方块贴图 ════════
+  oreTile(SILVER, '#e8ecf2', '#ffffff', '#98a0b8'); oreTile(RUBY, '#e03a4a', '#ffb0b8', '#8a1424'); oreTile(EMERALD, '#3ad07a', '#c0ffd8', '#1a8a4a');
+  fillN(OBSIDIAN * T, 0, ['#1c1428', '#2a1e3c', '#3a2a52']);
+  for (let k = 0; k < 6; k++) px(OBSIDIAN * T + Math.floor(r() * 16), Math.floor(r() * 16), '#6a5a9a');
+  const brickT = (t, pal, mortar) => {
+    for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) {
+      const row = y >> 2, joint = (x + (row % 2) * 4) % 8 === 7;
+      px(t * T + x, y, y % 4 === 3 || joint ? mortar : y % 4 === 0 ? pal[2] : pick3(pal));
+    }
+  };
+  brickT(BRICK_CU, ['#b8622e', '#c8703a', '#e89a5a'], '#6a3414'); brickT(BRICK_AU, ['#d8a820', '#e8b82a', '#fff08a'], '#8a6410');
+  brickT(BRICK_RED, ['#a83a2a', '#b8483a', '#d06a5a'], '#e0d0c0'); brickT(BRICK_MUD, P.dirt, '#4a2e14');
+  brickT(SANDSTONE, P.sand, '#b8a060'); brickT(BRICK_OBS, ['#2a1e3c', '#3a2a52', '#5a4a7a'], '#120c1c');
+  const glassT = (t, rgb, hi, dk) => {
+    rect(t, 0, 0, 16, 16, 'rgba(' + rgb + ',.38)');
+    rect(t, 0, 0, 16, 1, hi); rect(t, 0, 0, 1, 16, hi); rect(t, 0, 15, 16, 1, dk); rect(t, 15, 0, 1, 16, dk);
+    [[3, 6], [4, 5], [5, 4], [6, 3]].forEach(([x, y]) => px(t * T + x, y, 'rgba(255,255,255,.8)'));
+  };
+  glassT(GLASS_R, '255,90,90', '#ffb0b0', '#b84a4a'); glassT(GLASS_B, '90,150,255', '#b0d0ff', '#4a6ab8'); glassT(GLASS_G, '90,230,120', '#b0ffc0', '#4aa85a');
+  for (let y = 0; y < T; y++) for (let x = 0; x < T; x++) px(THATCH * T + x, y, y % 4 === 3 ? '#a07a28' : ['#c8a040', '#d8b450', '#e8c860', '#b89038'][(x + (y >> 2) * 3 + (r() < 0.2 ? 1 : 0)) % 4]);
+  fillN(CLOUD * T, 0, ['#dce6f8', '#f4f8ff', '#ffffff']);
+  fillN(GEMBLOCK * T, 0, ['#2ab8c8', '#3ad0e0', '#8af0f8']);
+  rect(GEMBLOCK, 0, 0, 16, 1, '#c0fbff'); rect(GEMBLOCK, 0, 0, 1, 16, '#c0fbff'); rect(GEMBLOCK, 0, 15, 16, 1, '#1a8a9a'); rect(GEMBLOCK, 15, 0, 1, 16, '#1a8a9a');
+  [[4, 4], [5, 3], [10, 9], [11, 8]].forEach(([x, y]) => px(GEMBLOCK * T + x, y, '#fff'));
+  // 蓝火把
+  rect(TORCH_B, 7, 7, 1, 9, '#7a5028'); rect(TORCH_B, 8, 7, 1, 9, '#5a3a1c');
+  rect(TORCH_B, 6, 4, 4, 3, '#2a7aff'); rect(TORCH_B, 7, 2, 2, 2, '#2a7aff'); rect(TORCH_B, 7, 4, 2, 2, '#7ad0ff'); rect(TORCH_B, 7, 4, 1, 1, '#e0f8ff');
+  // 灯笼 / 篝火 / 蜡烛 / 吊灯
+  rect(LANTERN, 7, 0, 2, 3, '#5c5f66'); rect(LANTERN, 4, 3, 8, 10, '#3a3a44'); rect(LANTERN, 5, 5, 6, 6, '#ffb030'); rect(LANTERN, 6, 6, 4, 4, '#ffd84a'); rect(LANTERN, 7, 7, 2, 2, '#fff6b0'); rect(LANTERN, 5, 13, 6, 1, '#5c5f66');
+  rect(CAMPFIRE, 2, 13, 12, 3, '#5a3a1c'); rect(CAMPFIRE, 3, 12, 10, 1, '#7a5028'); rect(CAMPFIRE, 2, 14, 12, 1, '#3a2414');
+  rect(CAMPFIRE, 5, 8, 6, 4, '#ff7a1a'); rect(CAMPFIRE, 6, 5, 4, 4, '#ff7a1a'); rect(CAMPFIRE, 7, 3, 2, 2, '#ff7a1a'); rect(CAMPFIRE, 6, 9, 4, 3, '#ffd84a'); rect(CAMPFIRE, 7, 7, 2, 3, '#ffd84a'); rect(CAMPFIRE, 7, 10, 2, 2, '#fff6b0');
+  rect(CANDLE, 7, 10, 2, 6, '#f0e6d0'); rect(CANDLE, 6, 15, 4, 1, '#c89a1a'); rect(CANDLE, 7, 7, 2, 3, '#ffd84a'); rect(CANDLE, 7, 6, 1, 1, '#ff7a1a');
+  rect(CHANDELIER, 7, 0, 2, 5, '#8a6410'); rect(CHANDELIER, 2, 6, 12, 1, '#c89a1a'); rect(CHANDELIER, 2, 5, 1, 2, '#c89a1a'); rect(CHANDELIER, 13, 5, 1, 2, '#c89a1a'); rect(CHANDELIER, 7, 5, 2, 4, '#e8b82a');
+  [1, 6, 12].forEach(x => { rect(CHANDELIER, x, 7 + (x === 6 ? 2 : 0), 3, 3, '#f0e6d0'); rect(CHANDELIER, x + 1, 5 + (x === 6 ? 2 : 0) - 1, 1, 2, '#ffd84a'); });
+  // 家具
+  rect(CHAIR, 4, 3, 2, 13, '#8a5f30'); rect(CHAIR, 4, 3, 2, 1, '#c7965a'); rect(CHAIR, 4, 10, 9, 2, '#b5834a'); rect(CHAIR, 11, 12, 2, 4, '#8a5f30');
+  rect(TABLE, 0, 7, 16, 2, '#b5834a'); rect(TABLE, 0, 7, 16, 1, '#d8a868'); rect(TABLE, 2, 9, 2, 7, '#8a5f30'); rect(TABLE, 12, 9, 2, 7, '#8a5f30');
+  rect(BOOKSHELF, 1, 0, 14, 16, '#7d5529'); rect(BOOKSHELF, 1, 0, 14, 1, '#b5834a');
+  [1, 6, 11].forEach(y => { rect(BOOKSHELF, 2, y, 12, 4, '#2a1a0c'); for (let x = 2; x < 14; x++) if (r() > 0.12) rect(BOOKSHELF, x, y + (r() < 0.3 ? 1 : 0), 1, 4, ['#d42a3a', '#34508c', '#2f8f2f', '#e8b82a', '#9a5ad0'][Math.floor(r() * 5)]); rect(BOOKSHELF, 1, y + 4, 14, 1, '#b5834a'); });
+  rect(BED, 0, 6, 2, 10, '#7d5529'); rect(BED, 14, 9, 2, 7, '#7d5529'); rect(BED, 2, 12, 12, 2, '#8a5f30'); rect(BED, 2, 9, 12, 3, '#d42a3a'); rect(BED, 2, 9, 12, 1, '#f06a7a'); rect(BED, 2, 8, 4, 2, '#f4f6ff');
+  rect(ANVIL, 2, 7, 13, 3, '#5c5f66'); rect(ANVIL, 2, 7, 13, 1, '#a8abb4'); rect(ANVIL, 0, 8, 2, 1, '#787c85'); rect(ANVIL, 6, 10, 5, 3, '#484b52'); rect(ANVIL, 4, 13, 9, 3, '#5c5f66'); rect(ANVIL, 4, 13, 9, 1, '#787c85');
+  rect(SAPLING, 7, 10, 2, 6, '#7a5028'); rect(SAPLING, 5, 6, 6, 4, '#3fb83f'); rect(SAPLING, 6, 5, 4, 1, '#5fd65f'); rect(SAPLING, 4, 8, 1, 2, '#2f8f2f'); rect(SAPLING, 11, 7, 1, 2, '#2f8f2f');
+  for (let y = 0; y < T; y++) { px(ROPE * T + 7, y, y % 2 ? '#c7965a' : '#8a5f30'); px(ROPE * T + 8, y, y % 2 ? '#8a5f30' : '#c7965a'); }
+  const flowerT = (t, a, b) => {
+    rect(t, 7, 9, 1, 7, '#2f8f2f'); rect(t, 5, 12, 2, 1, '#3fb83f'); rect(t, 8, 13, 2, 1, '#3fb83f');
+    rect(t, 6, 5, 3, 1, a); rect(t, 6, 9, 3, 1, a); rect(t, 5, 6, 1, 3, a); rect(t, 9, 6, 1, 3, a); rect(t, 6, 6, 3, 3, b); rect(t, 7, 7, 1, 1, '#fff');
+  };
+  flowerT(FLOWER_B, '#3a6ae0', '#8ab0ff'); flowerT(FLOWER_Y, '#e8a810', '#ffe04a');
+  rect(BANNER, 3, 0, 10, 1, '#7d5529'); rect(BANNER, 4, 1, 8, 11, '#d42a3a'); rect(BANNER, 4, 12, 3, 2, '#d42a3a'); rect(BANNER, 9, 12, 3, 2, '#d42a3a'); rect(BANNER, 4, 1, 1, 13, '#f06a7a'); rect(BANNER, 7, 4, 2, 5, '#ffd84a'); rect(BANNER, 6, 5, 4, 2, '#ffd84a');
+  rect(POT, 5, 11, 6, 5, '#b8622e'); rect(POT, 4, 10, 8, 1, '#e08a4a'); rect(POT, 5, 15, 6, 1, '#8a4a20'); rect(POT, 7, 5, 2, 5, '#2f8f2f'); rect(POT, 5, 6, 2, 2, '#3fb83f'); rect(POT, 9, 4, 2, 2, '#3fb83f'); rect(POT, 7, 3, 2, 2, '#5fd65f');
+  rect(PAINTING, 2, 3, 12, 10, '#c89a1a'); rect(PAINTING, 3, 4, 10, 8, '#7ac0ff'); rect(PAINTING, 3, 9, 10, 3, '#3fb83f'); rect(PAINTING, 5, 8, 3, 1, '#3fb83f'); rect(PAINTING, 10, 5, 2, 2, '#ffd84a'); rect(PAINTING, 2, 3, 12, 1, '#ffe88a');
+  rect(STATUE, 4, 13, 8, 3, '#787c85'); rect(STATUE, 6, 6, 4, 7, '#9a9da6'); rect(STATUE, 6, 2, 4, 4, '#a8abb4'); rect(STATUE, 4, 7, 2, 4, '#8e939c'); rect(STATUE, 10, 7, 2, 4, '#8e939c'); rect(STATUE, 6, 2, 1, 11, '#c0c3cc');
+  rect(GLOWSHROOM, 7, 12, 2, 4, '#d0f8ff'); rect(GLOWSHROOM, 5, 10, 6, 2, '#3ad0e0'); rect(GLOWSHROOM, 6, 9, 4, 1, '#8af0f8'); rect(GLOWSHROOM, 4, 11, 8, 1, '#1a8a9a'); px(GLOWSHROOM * T + 6, 10, '#fff'); px(GLOWSHROOM * T + 9, 10, '#fff');
+
+  // ════════ 新增物品图标 ════════
+  const PAL = { k: '#1a1208', w: '#f4f6ff', g: '#9aa0aa', d: '#5c5f66', b: '#8a5a34', B: '#5a3a1c', l: '#c7965a', y: '#ffd84a', Y: '#c89a1a', o: '#ff7a1a',
+                r: '#d42a3a', R: '#8a1424', G: '#3fb83f', n: '#1f6b2a', c: '#3ad0e0', C: '#1a8a9a', p: '#ff8ab0', u: '#4aa0ff', U: '#2060c0', v: '#4a3a5a', V: '#2e2438', e: '#e8e0d0', E: '#b8b0a0' };
+  const spr = (id, rows) => {
+    const i = reg(id), w = rows.reduce((m, q) => Math.max(m, q.length), 0), x0 = (16 - w) >> 1, y0 = (16 - rows.length) >> 1;
+    rows.forEach((row, y) => { for (let x = 0; x < row.length; x++) if (PAL[row[x]]) ip(i, x0 + x, y0 + y, PAL[row[x]]); });
+  };
+  const gem = (id, c, hi, dk) => {
+    const i = reg(id);
+    ['..XXXXXX..', '.XHHXXXXD.', 'XHHXXXXXDD', '.XHXXXXDD.', '..XXXXDD..', '...XXDD...', '....XD....'].forEach((row, y) => {
+      for (let x = 0; x < 10; x++) if (row[x] !== '.') ip(i, 3 + x, 4 + y, row[x] === 'H' ? hi : row[x] === 'D' ? dk : c);
+    });
+  };
+  const flask = (id, liq, hi, cork) => {
+    const i = reg(id);
+    ir(i, 7, 2, 2, 1, cork || '#8a5a34'); ir(i, 7, 3, 2, 3, '#d8f2ff');
+    for (let y = 6; y < 14; y++) for (let x = 4; x < 12; x++) {
+      const d = (x - 7.5) ** 2 + (y - 9.5) ** 2; if (d > 17) continue;
+      ip(i, x, y, d > 11 ? '#d8f2ff' : y < 8 ? hi : liq);
+    }
+  };
+  const shaft = (id, c, tip, fletch, thick) => {
+    const i = reg(id);
+    for (let k = 0; k < 10; k++) { ip(i, 2 + k, 13 - k, c); if (thick) ip(i, 3 + k, 13 - k, '#5a3a1c'); }
+    [[12, 3], [13, 2], [12, 2], [13, 3], [11, 3], [12, 4], [14, 1]].forEach(([x, y]) => ip(i, x, y, tip));
+    if (fletch) [[2, 13], [2, 12], [3, 13], [1, 13], [2, 14]].forEach(([x, y]) => ip(i, x, y, fletch));
+  };
+  const bowI = (id, c, dk) => {
+    const i = reg(id);
+    [[5, 2], [6, 2], [7, 3], [8, 3], [9, 4], [10, 5], [10, 6], [11, 7], [11, 8], [10, 9], [10, 10], [9, 11], [8, 12], [7, 12], [6, 13], [5, 13]]
+      .forEach(([x, y]) => { ip(i, x, y, c); ip(i, x + 1, y, dk); });
+    ir(i, 5, 3, 1, 10, '#e8e8e8');
+  };
+  const staffI = (id, orb, hi) => {
+    const i = reg(id);
+    for (let k = 0; k < 9; k++) { ip(i, 2 + k, 13 - k, '#8a5a34'); ip(i, 3 + k, 13 - k, '#5a3a1c'); }
+    ir(i, 10, 2, 4, 4, orb); ir(i, 11, 1, 2, 6, orb); ir(i, 9, 3, 6, 2, orb); ir(i, 11, 3, 1, 1, hi); ir(i, 10, 2, 1, 1, hi);
+  };
+  const bombI = (id, c, hi, dk) => {
+    const i = reg(id);
+    for (let y = 5; y < 15; y++) for (let x = 3; x < 13; x++) {
+      const d = (x - 7.5) ** 2 + (y - 9.5) ** 2; if (d > 22) continue;
+      ip(i, x, y, d > 14 ? dk : (x < 7 && y < 9) ? hi : c);
+    }
+    ip(i, 9, 4, '#8a5a34'); ip(i, 10, 3, '#8a5a34'); ip(i, 11, 2, '#ffd84a'); ip(i, 12, 1, '#ff7a1a');
+  };
+  nug('silver', '#d8dce8', '#ffffff', '#8890a8');
+  gem('ruby', '#e03a4a', '#ffc0c8', '#8a1424'); gem('emerald', '#3ad07a', '#c0ffd8', '#1a8a4a');
+  flask('bottle', 'rgba(190,230,255,.35)', 'rgba(255,255,255,.6)'); flask('potion_big', '#b8143a', '#ff8aa0', '#ffd84a');
+  flask('potion_speed', '#4aa0ff', '#b0dcff'); flask('potion_iron', '#9aa0aa', '#e8ecf2'); flask('potion_miner', '#e8a810', '#fff08a');
+  flask('potion_shine', '#f0f060', '#ffffd0'); flask('potion_regen', '#ff8ab0', '#ffd0e0'); flask('potion_jump', '#3fb83f', '#b0ffb0');
+  flask('cloud', '#f4f8ff', '#ffffff', '#4aa0ff');
+  shaft('arrow_fire', '#8a5a34', '#ff7a1a', '#ffd84a'); shaft('arrow_bone', '#e8e0d0', '#ffffff', '#b8b0a0');
+  shaft('javelin', '#c7965a', '#c8ccd4', null, 1); shaft('spear_iron', '#8a5a34', '#e8ecf2', null, 1); shaft('spear_gold', '#8a5a34', '#ffd84a', null, 1);
+  bowI('bow_iron', '#9aa0aa', '#6a707a'); bowI('bow_gold', '#e8b82a', '#a87a10');
+  staffI('staff_fire', '#ff7a1a', '#fff6b0'); staffI('staff_ice', '#7ad0ff', '#ffffff'); staffI('staff_bolt', '#f0f060', '#ffffff');
+  bombI('bomb_sticky', '#2f8f2f', '#9af08a', '#1f6b2a');
+  { const i = reg('dynamite'); ir(i, 5, 5, 6, 9, '#d42a3a'); ir(i, 5, 5, 2, 9, '#f06a7a'); ir(i, 5, 8, 6, 1, '#e8e0d0'); ir(i, 5, 11, 6, 1, '#e8e0d0'); ir(i, 7, 3, 1, 2, '#8a5a34'); ir(i, 8, 2, 1, 1, '#ffd84a'); ir(i, 9, 1, 1, 1, '#ff7a1a'); }
+  { const i = reg('firework'); ir(i, 6, 5, 4, 7, '#4aa0ff'); ir(i, 6, 7, 4, 1, '#ffd84a'); ir(i, 6, 10, 4, 1, '#ffd84a'); ir(i, 7, 3, 2, 2, '#d42a3a'); ir(i, 6, 4, 4, 1, '#d42a3a'); ir(i, 8, 12, 1, 3, '#8a5a34'); }
+  spr('knife', ['.......gw', '......gw.', '.....gw..', '....gw...', '..Ygd....', '..bY.....', '.b.......']);
+  spr('shuriken', ['....g....', '....gg...', 'g..gwg...', 'gggwwwggg', '...gwg..g', '...gg....', '....g....']);
+  spr('boomerang', ['BBBBBBB.', 'BlllllB.', '.BBBBlB.', '....BlB.', '....BlB.', '....BlB.', '.....BB.']);
+  spr('apple', ['....B...', '...nB...', '.rrrrrr.', 'rrwrrrrr', 'rrwrrrrr', 'rrrrrrrR', '.rrrrrR.', '..rrRR..']);
+  spr('pie', ['..w...w..', '.lllllll.', 'lYlYlYlYl', 'BlllllllB', '.BBBBBBB.']);
+  spr('soup', ['..w..w....', '.w..w.....', 'BBBBBBBBBB', 'BooooooooB', '.BllllllB.', '..BllllB..', '...BBBB...']);
+  spr('mirror', ['..YYYY..', '.YcwccY.', '.YwcccY.', '.YccccY.', '.YccccY.', '..YYYY..', '...bb...', '...bb...', '...bb...']);
+  spr('boots', ['.BBB.....', '.Bll..ww.', '.Bll.www.', '.Blll.w..', '.BllllB..', '.BBBBBBB.']);
+  spr('helmet', ['..YYYY..', '.YyyyyY.', 'YyywwyyY', 'YyywwyyY', 'YY....YY']);
+  spr('band', ['...pp...', '..YYYY..', '.Y....Y.', 'Y......Y', 'Y......Y', '.Y....Y.', '..YYYY..']);
+  spr('shield', ['VVVVVVVV', 'VvvvvvvV', 'VvuuvvvV', 'VvuuvvvV', '.VvvvvV.', '..VvvV..', '...VV...']);
+  spr('bone', ['ee.....', 'eee....', '.eeE...', '..eeE..', '...eeE.', '....eee', '.....ee']);
+  spr('cloth', ['eeeeeeee', 'ewweeeeE', 'eeeewweE', 'eeeeeeeE', 'EeeeeeeE', 'EEEEEEEE']);
+  spr('wing', ['....vvv', '..vvvvv', '.vvvvvV', 'vvvvVV.', 'vv.V...', 'v......']);
 }
 
 function itemIcon(id) {
@@ -445,7 +750,8 @@ const player = { x: 0, y: 0, w: 0.75, h: 1.75, vx: 0, vy: 0, onG: false, face: 1
 let enemies = [], parts = [], texts = [], shots = [];
 let dayT = 0.04, timeAcc = 0, spawnT = 3, shake = 0;
 const DAY_LEN = 300;
-const input = { l: false, r: false, j: false };
+const input = { l: false, r: false, j: false, d: false, mx: 0, ju: false, jd: false, act: false, actFresh: false };
+let tickT = 0, nearFire = false;
 const ptr = { down: false, x: 0, y: 0, id: -1, fresh: false };
 const mine = { x: -1, y: -1, p: 0 };
 let placeCd = 0, hudDirty = true, hpDirty = true, running = false, saveT = 0;
@@ -453,10 +759,11 @@ let placeCd = 0, hudDirty = true, hpDirty = true, running = false, saveT = 0;
 function give(id, n, wx, wy) {
   inv[id] += n; hudDirty = true;
   const k = ITEMS[id].k;
-  if (k !== 'res' && k !== 'armor' && hotbar.indexOf(id) < 0) { const e = hotbar.indexOf(null); if (e >= 0) hotbar[e] = id; }
+  if (!PASSIVE(k) && hotbar.indexOf(id) < 0) { const e = hotbar.indexOf(null); if (e >= 0) hotbar[e] = id; }
   if (wx !== undefined) floatText('+' + n + ' ' + ITEMS[id].n, wx, wy, '#fff');
 }
-function armorDef() { return inv.armor_gold ? 0.5 : inv.armor_iron ? 0.35 : inv.armor_copper ? 0.2 : 0; }
+function bestArmor() { for (const id of ARMOR_IDS) if (inv[id] > 0) return id; return null; }
+function armorDef() { const a = bestArmor(); return Math.min(0.8, (a ? ITEMS[a].def : 0) + (buffs.iron > 0 ? 0.15 : 0)); }
 function nearStation(t) {
   const cx = Math.floor(player.x + player.w / 2), cy = Math.floor(player.y + player.h / 2);
   for (let y = cy - 4; y <= cy + 4; y++) for (let x = cx - 5; x <= cx + 5; x++) if (getT(x, y) === t) return true;
@@ -488,14 +795,15 @@ function moveEnt(e, dt, step) {
     const feet = e.y + e.h, ty = Math.floor(feet);
     if (feet - dy <= ty + 0.002) {
       const x1 = Math.floor(e.x + e.w - 1e-6);
-      for (let tx = Math.floor(e.x); tx <= x1; tx++) if (getT(tx, ty) === PLATFORM) { e.y = ty - e.h - 0.001; e.onG = true; e.vy = 0; break; }
+      if (!e.drop) for (let tx = Math.floor(e.x); tx <= x1; tx++) if (getT(tx, ty) === PLATFORM) { e.y = ty - e.h - 0.001; e.onG = true; e.vy = 0; break; }
     }
   }
   e.x = clamp(e.x, 0.01, W - e.w - 0.01);
 }
 
-function respawn() {
-  player.x = spawnX + 0.1; player.y = spawnY - 0.5; player.vx = player.vy = 0; player.hp = player.maxHp; player.inv = 2;
+function respawn(keepHp) {
+  player.x = spawnX + 0.1; player.y = spawnY - 0.5; player.vx = player.vy = 0; player.inv = 2;
+  if (!keepHp) player.hp = player.maxHp;
   while (boxHits(player.x, player.y, player.w, player.h) && player.y > 2) player.y -= 1;
   hpDirty = true;
 }
@@ -504,7 +812,8 @@ function hurtPlayer(d, fromX) {
   if (player.inv > 0) return;
   d = Math.max(1, Math.round(d * (1 - armorDef())));
   player.hp -= d; player.inv = 0.8; player.lastHurt = 0;
-  player.vx = (player.x + player.w / 2 > fromX ? 1 : -1) * 8; player.vy = -8;
+  if (!(inv.shield > 0)) { player.vx = (player.x + player.w / 2 > fromX ? 1 : -1) * 8; player.vy = -8; }
+  try { if (typeof navigator !== 'undefined' && navigator.vibrate) navigator.vibrate(30); } catch (e) { /* */ }
   floatText('-' + d, player.x + 0.4, player.y, '#ff6a6a'); sfx(140, 0.15, 'sawtooth', 0.12);
   hpDirty = true;
   if (player.hp <= 0) {
@@ -518,9 +827,15 @@ function heal(n) {
 }
 function useItem(id) {
   if (inv[id] <= 0) return false;
-  if (id === 'mushroom' || id === 'potion') {
+  const it = ITEMS[id];
+  if (id === 'mushroom' || id === 'potion' || it.heal) {
     if (player.hp >= player.maxHp) { toast('生命已满', 1200); return false; }
-    heal(id === 'potion' ? 60 : 15);
+    heal(it.heal || (id === 'potion' ? 60 : 15));
+  } else if (it.buff) {
+    buffs[it.buff] = it.dur; tickT = 1; toast(BUFF_NAME[it.buff] + '效果生效（' + it.dur + ' 秒）', 1500); sfx(520, 0.15, 'triangle', 0.07);
+  } else if (id === 'mirror') {
+    burst(player.x + 0.4, player.y + 0.9, '#3ad0e0', 16); respawn(true); player.inv = 0.5;
+    burst(player.x + 0.4, player.y + 0.9, '#3ad0e0', 16); sfx(880, 0.25, 'sine', 0.08); toast('回到了出生点', 1200); return true;
   } else if (id === 'crystal') {
     if (player.maxHp >= 200) { toast('生命上限已达最高', 1500); return false; }
     player.maxHp += 20; heal(20); toast('生命上限 +20！', 1500);
@@ -531,10 +846,24 @@ function useItem(id) {
 function spawnSlime() {
   const night = daylight() < 0.4;
   if (enemies.length >= (night ? 7 : 4)) return;
+  if (player.y > surf[clamp(Math.floor(player.x), 0, W - 1)] + 8) { // 地下：洞穴蝙蝠
+    for (let k = 0; k < 12; k++) {
+      const bx = Math.floor(player.x + (Math.random() - 0.5) * 40), by = Math.floor(player.y + (Math.random() - 0.5) * 18);
+      if (Math.abs(bx - player.x) > 10 && bx > 1 && bx < W - 2 && by > 0 && by < H - 2 && getT(bx, by) === AIR && walls[by * W + bx]) {
+        enemies.push({ type: 'bat', x: bx + 0.1, y: by + 0.2, w: 0.8, h: 0.5, vx: 0, vy: 0, onG: false, hp: 14, max: 14, dmg: 10, t: 0, hit: 0, coin: 3, drops: [['wing', 0.6]] });
+        return;
+      }
+    }
+    return;
+  }
   const sx = Math.floor(player.x + (Math.random() < 0.5 ? -1 : 1) * (16 + Math.random() * 10));
   if (sx < 2 || sx > W - 3) return;
   let sy = 0; while (sy < H && !isSolid(sx, sy)) sy++;
   if (Math.abs(sy - player.y) > 30) return;
+  if (night && Math.random() < 0.4) { // 夜晚：僵尸
+    enemies.push({ type: 'zombie', x: sx + 0.1, y: sy - 1.8, w: 0.75, h: 1.75, vx: 0, vy: 0, onG: false, hp: 45, max: 45, dmg: 18, t: 0, hit: 0, coin: 6, drops: [['cloth', 0.7], ['bone', 0.6]] });
+    return;
+  }
   const big = night && Math.random() < 0.6;
   enemies.push({ x: sx, y: sy - 1.2, w: 0.9, h: 0.7, vx: 0, vy: 0, onG: false, hp: big ? 40 : 18, max: big ? 40 : 18,
     dmg: big ? 16 : 8, col: big ? ['#c8324a', '#ff7a8a', '#7a1428'] : ['#3fb83f', '#9af08a', '#1f6b2a'], t: Math.random() * 2, hit: 0, big });
@@ -547,12 +876,12 @@ function damageEnemy(e, dmg, dir) {
 function startSwing(id) {
   const it = id ? ITEMS[id] : null;
   player.swing = 0.28; player.swingCd = 0.34;
-  const dmg = it && it.k === 'sword' ? it.dmg : 4;
+  const dmg = it && it.k === 'sword' ? it.dmg : 4, reach = (it && it.reach) || 2.7;
   const cx = player.x + player.w / 2, cy = player.y + player.h / 2;
   let hit = false;
   for (const e of enemies) {
     const ex = e.x + e.w / 2 - cx, ey = e.y + e.h / 2 - cy;
-    if (ex * player.face > -0.6 && Math.abs(ex) < 2.7 && Math.abs(ey) < 2.2) { damageEnemy(e, dmg, player.face); hit = true; }
+    if (ex * player.face > -0.6 && Math.abs(ex) < reach && Math.abs(ey) < 2.2) { damageEnemy(e, dmg, player.face); hit = true; }
   }
   sfx(hit ? 220 : 520, 0.06, hit ? 'square' : 'triangle', hit ? 0.1 : 0.04);
 }
@@ -561,7 +890,15 @@ function chestLoot(tx, ty) {
   const depth = ty - surf[tx], c = rint(5, 15) + Math.floor(depth / 4);
   coins += c; floatText('+' + c + ' 金币', tx + 0.5, ty - 0.6, '#ffd84a');
   give('torch', rint(4, 8));
-  const pool = [['arrow', 10, 20], ['potion', 1, 2], ['bomb', 2, 3], ['bar_copper', 3, 5], ['platform', 8, 14]];
+  const pool = [['arrow', 10, 20], ['potion', 1, 2], ['bomb', 2, 3], ['bar_copper', 3, 5], ['platform', 8, 14], ['rope', 8, 15], ['knife', 8, 14],
+    ['potion_speed', 1, 2], ['potion_miner', 1, 2], ['potion_shine', 1, 2], ['arrow_fire', 8, 14], ['bottle', 2, 4]];
+  if (depth > 28) pool.push(['bar_silver', 3, 5], ['potion_iron', 1, 2], ['shuriken', 8, 14], ['dynamite', 1, 2]);
+  if (depth > 50) pool.push(['potion_big', 1, 2], ['emerald', 1, 2]);
+  if (depth > 74) pool.push(['ruby', 1, 2]);
+  if (Math.random() < 0.3) { // 稀有饰品
+    const acc = ['cloud', 'boots', 'helmet', 'band', 'shield', 'boomerang', 'mirror'].filter(a => !inv[a]);
+    if (acc.length) { const a = acc[rint(0, acc.length - 1)]; give(a, 1); toast('宝箱里有稀有物品：' + ITEMS[a].n + '！', 3000); sfx(1040, 0.3, 'square', 0.08); return; }
+  }
   if (depth > 28) pool.push(['bar_iron', 3, 5]);
   if (depth > 50) pool.push(['bar_gold', 2, 4]);
   if (depth > 64) pool.push(['diamond', 1, 2]);
@@ -583,8 +920,13 @@ function breakTile(tx, ty) {
     let y = ty - 1, n = 0;
     while (y > 0 && tiles[y * W + tx] === LOG) { tiles[y * W + tx] = AIR; burst(tx + 0.5, y + 0.5, TILE[LOG].col, 3); n++; y--; }
     if (n) give('wood', n, tx + 0.5, ty - 1);
+    let nl = 0;
     for (let yy = y - 3; yy <= ty; yy++) for (let xx = tx - 3; xx <= tx + 3; xx++) {
-      if (getT(xx, yy) === LEAVES) { tiles[yy * W + xx] = AIR; if (Math.random() < 0.4) burst(xx + 0.5, yy + 0.5, TILE[LEAVES].col, 2); }
+      if (getT(xx, yy) === LEAVES) { tiles[yy * W + xx] = AIR; nl++; if (Math.random() < 0.4) burst(xx + 0.5, yy + 0.5, TILE[LEAVES].col, 2); }
+    }
+    if (nl) { // 树叶掉落橡果和苹果
+      const ac = Math.round(nl * 0.1 * (0.4 + Math.random())), ap = Math.round(nl * 0.07 * (0.3 + Math.random()));
+      if (ac) give('acorn', ac, tx + 0.5, ty - 2); if (ap) give('apple', ap, tx + 0.5, ty - 3);
     }
   }
   // 上方失去支撑的物件掉落
@@ -604,16 +946,17 @@ function tryPlace(tx, ty, id) {
     if (hit(player) || enemies.some(hit)) return;
   }
   tiles[i] = t; inv[id]--; hudDirty = true; placeCd = 0.13; lightVer++;
+  if (t === BED) { spawnX = tx; spawnY = ty - 1; toast('出生点已设在床边', 1500); }
   sfx(400, 0.04, 'square', 0.05);
 }
 
-function explode(x, y) {
-  const R = 2.7;
+function explode(x, y, R) {
+  R = R || 2.7;
   for (let ty = Math.floor(y - R); ty <= y + R; ty++) for (let tx = Math.floor(x - R); tx <= x + R; tx++) {
     if (Math.hypot(tx + 0.5 - x, ty + 0.5 - y) <= R) breakTile(tx, ty);
   }
-  for (const e of enemies) if (Math.hypot(e.x + e.w / 2 - x, e.y + e.h / 2 - y) < 4) damageEnemy(e, 60, Math.sign(e.x - x) || 1);
-  if (Math.hypot(player.x + player.w / 2 - x, player.y + player.h / 2 - y) < 3.2) hurtPlayer(35, x);
+  for (const e of enemies) if (Math.hypot(e.x + e.w / 2 - x, e.y + e.h / 2 - y) < R + 1.3) damageEnemy(e, 60, Math.sign(e.x - x) || 1);
+  if (Math.hypot(player.x + player.w / 2 - x, player.y + player.h / 2 - y) < R + 0.5) hurtPlayer(35, x);
   burst(x, y, '#ffd84a', 16); burst(x, y, '#ff7a1a', 16); burst(x, y, '#55555f', 12);
   shake = 0.35; sfx(70, 0.4, 'sawtooth', 0.2); sfx(110, 0.25, 'square', 0.12);
 }
@@ -628,39 +971,98 @@ function floatText(text, x, y, col) {
 }
 function daylight() { return clamp(0.5 + Math.sin(dayT * Math.PI * 2) * 2.5, 0, 1); }
 
+function growTree(x, y) {
+  const th = 4 + Math.floor(Math.random() * 4);
+  for (let k = 0; k < th; k++) { const t = getT(x, y - k); if (k && t !== AIR && t !== LEAVES) return; }
+  for (let k = 0; k < th; k++) tiles[(y - k) * W + x] = LOG;
+  const top = y - th + 1;
+  for (let dy = -3; dy <= 1; dy++) for (let dx = -2; dx <= 2; dx++) {
+    if (Math.abs(dx) + Math.abs(dy + 1) > 3) continue;
+    const xx = x + dx, yy = top + dy;
+    if (xx > 0 && xx < W && yy > 0 && tiles[yy * W + xx] === AIR) tiles[yy * W + xx] = LEAVES;
+  }
+  lightVer++;
+}
+// 每秒一次的慢速逻辑：增益倒计时显示、篝火检测、树苗生长
+function slowTick() {
+  nearFire = nearStation(CAMPFIRE);
+  const act = Object.keys(buffs).filter(b => buffs[b] > 0).map(b => BUFF_NAME[b] + Math.ceil(buffs[b]) + 's');
+  if (nearFire) act.push('篝火');
+  $('buffs').textContent = act.join(' ');
+  const px = Math.floor(player.x);
+  for (let y = 2; y < H - 2; y++) for (let x = Math.max(1, px - 45); x < Math.min(W - 1, px + 45); x++) {
+    if (tiles[y * W + x] === SAPLING && Math.random() < 0.035) growTree(x, y);
+  }
+}
+// 「动作键」的智能瞄准：自动选择面前的方块 / 最近的敌人
+function autoTarget(k) {
+  const p = player, cx = p.x + p.w / 2, f = p.face, cxT = Math.floor(cx);
+  const head = Math.floor(p.y + 0.3), feet = Math.floor(p.y + p.h - 0.3);
+  if (k === 'pick') {
+    const c = [];
+    if (input.d || input.jd) c.push([cxT, feet + 1], [Math.floor(p.x), feet + 1], [Math.floor(p.x + p.w), feet + 1]);
+    else if (input.ju) c.push([cxT, head - 1], [Math.floor(p.x), head - 1], [Math.floor(p.x + p.w), head - 1]);
+    for (let d = 1; d <= 2; d++) c.push([cxT + f * d, head], [cxT + f * d, feet]);
+    c.push([cxT + f, feet + 1], [cxT + f, head - 1]);
+    for (const [x, y] of c) { const t = getT(x, y); if (t !== AIR && t !== BEDROCK && y >= 0) return [x + 0.5, y + 0.5]; }
+  } else if (k === 'block') {
+    const c = (input.d || input.jd) ? [[cxT, feet + 1]] : [[cxT + f, feet + 1], [cxT + f * 2, feet + 1], [cxT + f, feet], [cxT + f, head]];
+    for (const [x, y] of c) if (getT(x, y) === AIR) return [x + 0.5, y + 0.5];
+  } else if (k === 'bow' || k === 'staff' || k === 'throw') {
+    let best = null, bd = 15;
+    for (const e of enemies) { const d = Math.hypot(e.x - p.x, e.y - p.y); if (d < bd) { bd = d; best = e; } }
+    if (best) return [best.x + best.w / 2, best.y + best.h / 2 - (k === 'staff' ? 0 : bd * 0.06)];
+    return [cx + f * 8, p.y + 0.2];
+  }
+  return [cx + f * 2, p.y + 0.8];
+}
+
 // ───────────────────────── 逻辑更新 ─────────────────────────
 function ptrWorld() { return [(ptr.x * dpr / zoom + camX) / T, (ptr.y * dpr / zoom + camY) / T]; }
 
 function update(dt) {
   const p = player;
   dayT = (dayT + dt / DAY_LEN) % 1;
-  const dir = (input.r ? 1 : 0) - (input.l ? 1 : 0);
-  const target = dir * 7.5, acc = p.onG ? 60 : 35;
+  const dir = input.mx ? input.mx : (input.r ? 1 : 0) - (input.l ? 1 : 0);
+  const jump = input.j || input.ju, down = input.d || input.jd;
+  for (const b in buffs) if (buffs[b] > 0) buffs[b] -= dt;
+  tickT += dt; if (tickT >= 1) { tickT = 0; slowTick(); }
+  const target = dir * 7.5 * (buffs.speed > 0 ? 1.3 : 1) * (inv.boots > 0 ? 1.2 : 1), acc = p.onG ? 60 : 35;
   if (p.vx < target) p.vx = Math.min(target, p.vx + acc * dt); else if (p.vx > target) p.vx = Math.max(target, p.vx - acc * dt);
-  if (dir) p.face = dir;
+  if (dir) p.face = dir > 0 ? 1 : -1;
   p.coyote = p.onG ? 0.1 : p.coyote - dt;
-  if (input.j && p.coyote > 0) { p.vy = -14.5; p.coyote = 0; sfx(360, 0.05, 'triangle', 0.04); }
-  if (!input.j && p.vy < -5) p.vy = -5;
+  if (p.onG) p.dj = false;
+  if (jump && p.coyote > 0) { p.vy = buffs.jump > 0 ? -17.5 : -14.5; p.coyote = 0; sfx(360, 0.05, 'triangle', 0.04); }
+  else if (jump && !p.jPrev && !p.onG && inv.cloud > 0 && !p.dj) { // 云朵瓶：二段跳
+    p.vy = -13; p.dj = true; burst(p.x + 0.4, p.y + p.h, '#f4f8ff', 8); sfx(480, 0.06, 'triangle', 0.05);
+  }
+  p.jPrev = jump;
+  if (!jump && p.vy < -5) p.vy = -5;
+  if (getT(Math.floor(p.x + p.w / 2), Math.floor(p.y + p.h / 2)) === ROPE) { p.vy = jump ? -7 : down ? 6 : -38 * dt; p.dj = false; } // 爬绳
+  p.drop = down;
   moveEnt(p, dt, true);
   if (p.onG && Math.abs(p.vx) > 0.5) p.walk += Math.abs(p.vx) * dt * 1.6; else if (p.onG) p.walk = 0;
   p.inv -= dt; p.swing -= dt; p.swingCd -= dt; p.useCd -= dt; placeCd -= dt; p.lastHurt += dt; shake -= dt;
-  if (p.lastHurt > 5 && p.hp < p.maxHp) { p.hp = Math.min(p.maxHp, p.hp + 4 * dt); hpDirty = true; }
+  const regen = (p.lastHurt > 5 ? 4 : 0) + (buffs.regen > 0 ? 3 : 0) + (inv.band > 0 ? 1.5 : 0) + (nearFire ? 2 : 0);
+  if (regen && p.hp < p.maxHp) { p.hp = Math.min(p.maxHp, p.hp + regen * dt); hpDirty = true; }
 
   // 触摸 / 鼠标交互
   let mining = false;
-  if (ptr.down) {
-    const [wx, wy] = ptrWorld(), tx = Math.floor(wx), ty = Math.floor(wy);
+  const id = hotbar[sel], it = id ? ITEMS[id] : null, k = it && inv[id] > 0 ? it.k : 'hand';
+  const auto = !ptr.down && input.act, ranged = k === 'bow' || k === 'staff' || k === 'throw';
+  const aim = ptr.down ? ptrWorld() : auto ? autoTarget(k) : null, fresh = ptr.fresh || input.actFresh;
+  if (aim) {
+    const [wx, wy] = aim, tx = Math.floor(wx), ty = Math.floor(wy);
     const cx = p.x + p.w / 2, cy = p.y + p.h / 2;
-    if (!dir) p.face = wx >= cx ? 1 : -1;
+    if (!dir && (!auto || ranged)) p.face = wx >= cx ? 1 : -1;
     const inReach = Math.hypot(tx + 0.5 - cx, ty + 0.5 - cy) <= 5.5;
-    const id = hotbar[sel], it = id ? ITEMS[id] : null, k = it && inv[id] > 0 ? it.k : 'hand';
-    if (k === 'pick' || k === 'sword' || k === 'hand' || k === 'res' || k === 'armor') {
+    if (k === 'pick' || k === 'sword' || k === 'hand' || PASSIVE(k)) {
       if (p.swingCd <= 0) startSwing(id);
       if (k === 'pick' && inReach) {
         const t = getT(tx, ty);
         if (t !== AIR && t !== BEDROCK && ty >= 0) {
           if (mine.x !== tx || mine.y !== ty) { mine.x = tx; mine.y = ty; mine.p = 0; }
-          mine.p += dt * it.pow / TILE[t].hard; mining = true;
+          mine.p += dt * it.pow * (buffs.miner > 0 ? 1.5 : 1) / TILE[t].hard; mining = true;
           if (Math.random() < dt * 8) parts.push({ x: tx + 0.5, y: ty + 0.5, vx: (Math.random() - 0.5) * 4, vy: -Math.random() * 4, life: 0.3, col: TILE[t].col });
           if (mine.p >= 1) { breakTile(tx, ty); mine.p = 0; mine.x = -1; }
         }
@@ -668,37 +1070,64 @@ function update(dt) {
     } else if (k === 'block') { if (inReach && placeCd <= 0) tryPlace(tx, ty, id); }
     else if (k === 'bow') {
       if (p.useCd <= 0) {
-        if (inv.arrow > 0) {
+        const am = inv.arrow_fire > 0 ? 'arrow_fire' : inv.arrow_bone > 0 ? 'arrow_bone' : inv.arrow > 0 ? 'arrow' : null;
+        if (am) {
           const a = Math.atan2(wy - cy, wx - cx);
-          shots.push({ type: 'arrow', x: cx, y: cy - 0.2, vx: Math.cos(a) * 24, vy: Math.sin(a) * 24 - 2, life: 3, dmg: it.dmg });
-          inv.arrow--; hudDirty = true; p.useCd = 0.38; p.swing = 0.15; sfx(700, 0.06, 'triangle', 0.06);
-        } else if (ptr.fresh) toast('没有箭矢了（木头 + 石头 可制作）', 1600);
+          shots.push({ draw: 'arrow', x: cx, y: cy - 0.2, vx: Math.cos(a) * 24, vy: Math.sin(a) * 24 - 2, g: 18, life: 3,
+            dmg: it.dmg + (am === 'arrow_fire' ? 10 : am === 'arrow_bone' ? 5 : 0), fire: am === 'arrow_fire' });
+          inv[am]--; hudDirty = true; p.useCd = id === 'bow' ? 0.38 : 0.28; p.swing = 0.15; sfx(700, 0.06, 'triangle', 0.06);
+        } else if (fresh) toast('没有箭矢了（木头 + 石头 可制作）', 1600);
+      }
+    } else if (k === 'staff') {
+      if (p.useCd <= 0) {
+        const a = Math.atan2(wy - cy, wx - cx);
+        shots.push({ draw: 'bolt', x: cx, y: cy - 0.2, vx: Math.cos(a) * 26, vy: Math.sin(a) * 26, g: 0, life: 1.1, dmg: it.dmg, col: it.col, pierce: it.pierce, fire: true });
+        p.useCd = it.cd; p.swing = 0.15; sfx(900, 0.08, 'sine', 0.06);
       }
     } else if (k === 'throw') {
       if (p.useCd <= 0) {
-        const a = Math.atan2(wy - cy, wx - cx), sp = clamp(Math.hypot(wx - cx, wy - cy) * 2.6, 8, 20);
-        shots.push({ type: 'bomb', x: cx, y: cy - 0.3, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 4, life: 1.6 });
-        inv[id]--; hudDirty = true; p.useCd = 0.6; p.swing = 0.2; sfx(300, 0.08, 'triangle', 0.05);
+        const th = it.th, a = Math.atan2(wy - cy, wx - cx);
+        if (th.bomb) {
+          const sp = clamp(Math.hypot(wx - cx, wy - cy) * 2.6, 8, 20);
+          shots.push({ draw: 'icon', icon: id, bomb: th.bomb, x: cx, y: cy - 0.3, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 4, g: 30, life: th.bomb.fuse });
+          p.useCd = 0.6;
+        } else {
+          shots.push({ draw: 'icon', icon: id, x: cx, y: cy - 0.2, vx: Math.cos(a) * th.sp, vy: Math.sin(a) * th.sp - (th.g ? 2 : 0), g: th.g, life: th.life || 2.5,
+            dmg: th.dmg, pierce: th.pierce, back: th.back, fx: th.fx });
+          p.useCd = th.cd;
+        }
+        if (!th.keep) { inv[id]--; hudDirty = true; }
+        p.swing = 0.2; sfx(300, 0.08, 'triangle', 0.05);
       }
-    } else if (k === 'use') { if (ptr.fresh && p.useCd <= 0) { useItem(id); p.useCd = 0.3; } }
-    ptr.fresh = false;
+    } else if (k === 'use') { if (fresh && p.useCd <= 0) { useItem(id); p.useCd = 0.3; } }
+    ptr.fresh = false; input.actFresh = false;
   }
   if (!mining) { mine.p = 0; mine.x = -1; }
 
   // 投射物
   for (const s of shots) {
-    s.life -= dt; s.vy += (s.type === 'bomb' ? 30 : 18) * dt;
+    s.life -= dt; s.vy += s.g * dt;
+    if (s.back && !s.rev && s.life < s.back) { s.vx = -s.vx; s.vy = -s.vy; s.rev = true; s.last = null; }
     const nx = s.x + s.vx * dt, ny = s.y + s.vy * dt;
-    if (s.type === 'arrow') {
+    if (!s.bomb) {
       s.x = nx; s.y = ny;
-      if (isSolid(Math.floor(nx), Math.floor(ny))) { s.life = 0; burst(nx, ny, '#c7965a', 3); continue; }
-      for (const e of enemies) if (nx > e.x - 0.1 && nx < e.x + e.w + 0.1 && ny > e.y - 0.1 && ny < e.y + e.h + 0.1) {
-        damageEnemy(e, s.dmg, Math.sign(s.vx) || 1); s.life = 0; sfx(220, 0.06, 'square', 0.08); break;
+      if (s.fire && Math.random() < 0.5) parts.push({ x: nx, y: ny, vx: (Math.random() - 0.5) * 2, vy: -Math.random() * 2, life: 0.25, col: s.col || '#ff7a1a' });
+      if (isSolid(Math.floor(nx), Math.floor(ny))) { s.life = 0; burst(nx, ny, s.col || '#c7965a', 3); }
+      else if (s.dmg) for (const e of enemies) if (e.hp > 0 && e !== s.last && nx > e.x - 0.15 && nx < e.x + e.w + 0.15 && ny > e.y - 0.15 && ny < e.y + e.h + 0.15) {
+        damageEnemy(e, s.dmg, Math.sign(s.vx) || 1); sfx(220, 0.06, 'square', 0.08);
+        if (s.pierce) s.last = e; else { s.life = 0; break; }
+      }
+      if (s.life <= 0 && s.fx === 'firework') {
+        ['#ff5a5a', '#ffd84a', '#5fd65f', '#4aa0ff', '#ff8ab0'].forEach(c => burst(s.x, s.y, c, 10)); sfx(1200, 0.25, 'square', 0.06); sfx(90, 0.2, 'sawtooth', 0.1);
       }
     } else {
-      if (isSolid(Math.floor(nx), Math.floor(s.y))) s.vx *= -0.4; else s.x = nx;
-      if (isSolid(Math.floor(s.x), Math.floor(ny))) { s.vy *= -0.35; s.vx *= 0.7; } else s.y = ny;
-      if (s.life <= 0) explode(s.x, s.y);
+      if (!s.stuck) {
+        let hit = false;
+        if (isSolid(Math.floor(nx), Math.floor(s.y))) { s.vx *= -0.4; hit = true; } else s.x = nx;
+        if (isSolid(Math.floor(s.x), Math.floor(ny))) { s.vy *= -0.35; s.vx *= 0.7; hit = true; } else s.y = ny;
+        if (hit && s.bomb.sticky) { s.stuck = true; s.vx = s.vy = s.g = 0; }
+      } else s.vy = 0;
+      if (s.life <= 0) explode(s.x, s.y, s.bomb.R);
     }
   }
   shots = shots.filter(s => s.life > 0);
@@ -708,16 +1137,27 @@ function update(dt) {
   if (spawnT <= 0) { spawnT = daylight() < 0.4 ? 2.5 : 5; spawnSlime(); }
   for (const e of enemies) {
     e.t -= dt; e.hit -= dt;
-    if (e.onG) {
-      e.vx *= 0.75;
-      if (e.t <= 0) { e.vy = e.big ? -12.5 : -10.5; e.vx = Math.sign(p.x - e.x) * (e.big ? 5 : 4); e.t = 0.9 + Math.random() * 1.2; }
+    if (e.type === 'bat') {
+      if (e.hit <= 0) { e.vx = clamp(e.vx + Math.sign(p.x - e.x) * 18 * dt, -5, 5); e.vy = clamp(e.vy + Math.sign(p.y + 0.5 - e.y) * 18 * dt, -4, 4); }
+      if (!boxHits(e.x + e.vx * dt, e.y, e.w, e.h)) e.x += e.vx * dt; else e.vx = -e.vx * 0.5;
+      if (!boxHits(e.x, e.y + e.vy * dt, e.w, e.h)) e.y += e.vy * dt; else e.vy = -e.vy * 0.5;
+    } else if (e.type === 'zombie') {
+      if (e.hit <= 0 && e.onG) e.vx = Math.sign(p.x - e.x) * 2.8;
+      const lx = e.x; moveEnt(e, dt, true);
+      if (e.onG && e.hit <= 0 && Math.abs(e.x - lx) < 0.004 && Math.abs(p.x - e.x) > 0.6) e.vy = -11.5; // 被挡住就跳
+    } else {
+      if (e.onG) {
+        e.vx *= 0.75;
+        if (e.t <= 0) { e.vy = e.big ? -12.5 : -10.5; e.vx = Math.sign(p.x - e.x) * (e.big ? 5 : 4); e.t = 0.9 + Math.random() * 1.2; }
+      }
+      moveEnt(e, dt, false);
     }
-    moveEnt(e, dt, false);
     if (e.x < p.x + p.w && e.x + e.w > p.x && e.y < p.y + p.h && e.y + e.h > p.y) hurtPlayer(e.dmg, e.x + e.w / 2);
     if (e.hp <= 0) {
-      const c = e.big ? 5 : 2; coins += c;
-      burst(e.x + 0.45, e.y + 0.35, e.col[0], 12); floatText('+' + c + ' 金币', e.x + 0.4, e.y - 0.5, '#ffd84a'); sfx(660, 0.1, 'square', 0.07);
-      give('gel', e.big ? 2 : 1, e.x + 0.4, e.y);
+      const c = e.coin || (e.big ? 5 : 2); coins += c;
+      burst(e.x + 0.45, e.y + 0.35, e.col ? e.col[0] : '#6a5a7a', 12); floatText('+' + c + ' 金币', e.x + 0.4, e.y - 0.5, '#ffd84a'); sfx(660, 0.1, 'square', 0.07);
+      if (e.drops) { for (const [did, ch] of e.drops) if (Math.random() < ch) give(did, 1, e.x + 0.4, e.y); }
+      else give('gel', e.big ? 2 : 1, e.x + 0.4, e.y);
     }
   }
   enemies = enemies.filter(e => e.hp > 0 && Math.abs(e.x - p.x) < 60 && e.y < H);
@@ -738,7 +1178,7 @@ function saveGame() {
     let s = '';
     for (let i = 0; i < tiles.length; i += 8192) s += String.fromCharCode.apply(null, tiles.subarray(i, i + 8192));
     localStorage.setItem(SAVE_KEY, JSON.stringify({ seed: worldSeed, tiles: btoa(s), inv, hotbar, sel, coins, dayT,
-      hp: player.hp, maxHp: player.maxHp, x: player.x, y: player.y }));
+      hp: player.hp, maxHp: player.maxHp, x: player.x, y: player.y, spawnX, spawnY, buffs }));
   } catch (e) { /* 存储不可用时忽略 */ }
 }
 function hasSave() { try { return !!localStorage.getItem(SAVE_KEY); } catch (e) { return false; } }
@@ -753,6 +1193,8 @@ function loadGame() {
     hotbar = d.hotbar.slice(0, HOTBAR_N).map(id => ITEMS[id] ? id : null); while (hotbar.length < HOTBAR_N) hotbar.push(null);
     sel = clamp(d.sel | 0, 0, HOTBAR_N - 1); coins = d.coins | 0; dayT = +d.dayT || 0.04;
     player.maxHp = clamp(d.maxHp | 0, 100, 200); player.hp = clamp(+d.hp || 100, 1, player.maxHp);
+    if (d.spawnX > 0 && d.spawnY > 0) { spawnX = d.spawnX | 0; spawnY = d.spawnY | 0; }
+    for (const b in buffs) buffs[b] = (d.buffs && +d.buffs[b]) || 0;
     player.x = +d.x; player.y = +d.y; player.vx = player.vy = 0;
     if (!(player.x > 0 && player.y > -50) || boxHits(player.x, player.y, player.w, player.h)) respawn();
     lightVer++; return true;
@@ -761,6 +1203,7 @@ function loadGame() {
 function newGame() {
   genWorld((Math.random() * 1e9) | 0); resetInventory();
   player.maxHp = 100; dayT = 0.04; enemies = []; shots = []; respawn(); player.inv = 0;
+  for (const b in buffs) buffs[b] = 0;
 }
 
 // ───────────────────────── 渲染 ─────────────────────────
@@ -801,7 +1244,8 @@ function buildBackdrop() {
 function computeLight(x0, y0, x1, y1, sky) {
   x0 = clamp(x0, 0, W - 1); x1 = clamp(x1, 0, W - 1); y0 = clamp(y0, 0, H - 1); y1 = clamp(y1, 0, H - 1);
   const ptx = Math.floor(player.x + player.w / 2), pty = Math.floor(player.y + 0.6);
-  const key = x0 + ',' + y0 + ',' + x1 + ',' + y1 + ',' + sky + ',' + ptx + ',' + pty + ',' + lightVer;
+  const pl = buffs.shine > 0 ? 14 : inv.helmet > 0 ? 12 : 8;
+  const key = x0 + ',' + y0 + ',' + x1 + ',' + y1 + ',' + sky + ',' + ptx + ',' + pty + ',' + lightVer + ',' + pl;
   if (key === lightKey) return; // 没变化就不重算
   lightKey = key;
   lx0 = x0; ly0 = y0; lw = x1 - x0 + 1; lh = y1 - y0 + 1;
@@ -812,7 +1256,7 @@ function computeLight(x0, y0, x1, y1, sky) {
   }
   { // 玩家自带微光
     const px = ptx - x0, py = pty - y0;
-    if (px >= 0 && px < lw && py >= 0 && py < lh && light[py * lw + px] < 8) light[py * lw + px] = 8;
+    if (px >= 0 && px < lw && py >= 0 && py < lh && light[py * lw + px] < pl) light[py * lw + px] = pl;
   }
   for (let pass = 0; pass < 2; pass++) {
     for (let y = 0; y < lh; y++) for (let x = 0; x < lw; x++) {
@@ -873,7 +1317,7 @@ function drawPlayer(sx, sy, z) {
   const lb = air ? 0 : ph >= 1 ? Math.round(Math.sin((ph - 1) * Math.PI) * 3) : 0;
   R(2, 19, 4, 7 - la, '#34508c'); R(2, 26 - la, 4, 2, '#3a2a1a');
   R(6, 19, 4, 7 - lb, '#2a4070'); R(6, 26 - lb, 4, 2, '#2e2014');
-  const ar = inv.armor_gold ? ['#e8b82a', '#a87a10'] : inv.armor_iron ? ['#c8c0b8', '#8a8078'] : inv.armor_copper ? ['#c8703a', '#8a4a20'] : ['#2e8b57', '#1f6b40'];
+  const ba = bestArmor(), ar = ba ? (ITEMS[ba].c || ARC[ba]) : ['#2e8b57', '#1f6b40'];
   R(2, 10, 8, 9, ar[0]); R(2, 17, 8, 2, ar[1]); R(1, 10, 2, 7, ar[1]);
   R(2, 2, 8, 8, '#f0c090'); R(2, 0, 9, 3, '#5a3418'); R(1, 1, 2, 6, '#5a3418'); R(2, 3, 2, 2, '#5a3418');
   R(7, 5, 2, 2, '#1a1208'); R(8, 5, 1, 1, '#fff'); R(6, 8, 3, 1, '#c08860');
@@ -913,6 +1357,26 @@ function drawSlime(e, z, ox, oy) {
   }
 }
 
+function drawMob(e, z, ox, oy) {
+  const TS = T * z, sx = Math.floor(e.x * TS) - ox, sy = Math.floor(e.y * TS) - oy, hit = e.hit > 0;
+  const R = (x, y, w, h, c) => { ctx.fillStyle = hit ? '#fff' : c; ctx.fillRect(sx + x * z, sy + y * z, w * z, h * z); };
+  let bw = 12;
+  if (e.type === 'bat') {
+    e.fl = (e.fl || 0) + 1; const up = Math.floor(e.fl / 5) % 2;
+    R(0, up ? 0 : 3, 5, 3, '#2e2438'); R(8, up ? 0 : 3, 5, 3, '#2e2438'); R(4, 2, 5, 5, '#4a3a5a'); R(5, 1, 1, 1, '#4a3a5a'); R(7, 1, 1, 1, '#4a3a5a');
+    R(5, 3, 1, 1, '#ff5a5a'); R(7, 3, 1, 1, '#ff5a5a'); bw = 13;
+  } else {
+    const f = player.x > e.x ? 1 : -1, st = Math.floor(e.x * 2) % 2;
+    R(2, 19, 4, 9 - st, '#3a3a5a'); R(6, 19, 4, 8 + st, '#2e2e4a'); R(2, 10, 8, 9, '#5a4a7a'); R(2, 17, 8, 2, '#3e3258');
+    R(2, 2, 8, 8, '#6a9a5a'); R(2, 0, 8, 3, '#2a3a2a'); R(f > 0 ? 7 : 3, 5, 2, 2, '#c81e1e'); R(4, 8, 4, 1, '#3a5a2a');
+    R(f > 0 ? 8 : -2, 11, 6, 3, '#6a9a5a');
+  }
+  if (e.hp < e.max) {
+    ctx.fillStyle = '#401018'; ctx.fillRect(sx, sy - 4 * z, bw * z, 2 * z);
+    ctx.fillStyle = '#ff5a5a'; ctx.fillRect(sx, sy - 4 * z, Math.round(bw * z * Math.max(0, e.hp) / e.max), 2 * z);
+  }
+}
+
 function render(now) {
   const z = zoom, TS = T * z, d = daylight();
   const vw = cw / z, vh = ch / z;
@@ -939,18 +1403,25 @@ function render(now) {
   }
   if (mine.x >= 0 && mine.p > 0) ctx.drawImage(atlas, Math.min(3, Math.floor(mine.p * 4)) * T, 2 * T, T, T, mine.x * TS - ox, mine.y * TS - oy, TS, TS);
 
-  for (const e of enemies) drawSlime(e, z, ox, oy);
+  for (const e of enemies) (e.type ? drawMob : drawSlime)(e, z, ox, oy);
   for (const s of shots) {
     const sx = Math.floor(s.x * TS) - ox, sy = Math.floor(s.y * TS) - oy;
-    if (s.type === 'arrow') {
+    if (s.draw === 'arrow') {
       const a = Math.atan2(s.vy, s.vx);
       ctx.save(); ctx.translate(sx, sy); ctx.rotate(a);
       ctx.fillStyle = '#8a5a34'; ctx.fillRect(-6 * z, -z / 2, 9 * z, z);
       ctx.fillStyle = '#e0e4ea'; ctx.fillRect(3 * z, -z, 2 * z, 2 * z); ctx.fillStyle = '#fff'; ctx.fillRect(-7 * z, -z, 2 * z, 2 * z);
       ctx.restore();
+    } else if (s.draw === 'bolt') {
+      ctx.fillStyle = s.col; ctx.fillRect(sx - 2 * z, sy - 2 * z, 4 * z, 4 * z);
+      ctx.fillStyle = '#fff'; ctx.fillRect(sx - z, sy - z, 2 * z, 2 * z);
+    } else if (!s.bomb) {
+      const [img, ix] = itemIcon(s.icon);
+      ctx.save(); ctx.translate(sx, sy); ctx.rotate(s.g || s.back ? now * 22 * (s.vx < 0 ? -1 : 1) : Math.atan2(s.vy, s.vx) + Math.PI / 4);
+      ctx.drawImage(img, ix, 0, T, T, -6 * z, -6 * z, 12 * z, 12 * z); ctx.restore();
     } else {
-      const blink = s.life < 0.6 && Math.floor(s.life * 12) % 2;
-      ctx.drawImage(icons, ICON.bomb * T, 0, T, T, sx - 6 * z, sy - 7 * z, 12 * z, 12 * z);
+      const blink = s.life < 0.6 && Math.floor(s.life * 12) % 2, [img, ix] = itemIcon(s.icon);
+      ctx.drawImage(img, ix, 0, T, T, sx - 6 * z, sy - 7 * z, 12 * z, 12 * z);
       if (blink) { ctx.fillStyle = 'rgba(255,80,40,.6)'; ctx.fillRect(sx - 4 * z, sy - 3 * z, 8 * z, 7 * z); }
     }
   }
@@ -971,9 +1442,9 @@ function render(now) {
   // 火把 / 熔炉暖光
   for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
     const t = tiles[y * W + x];
-    if (t !== TORCH && t !== FURNACE) continue;
+    const gl = GLOW[t]; if (!gl) continue;
     const fl = (0.10 + Math.sin(now * 9 + x * 3) * 0.03) * (walls[y * W + x] ? 1 : 1 - d * 0.9); // 白天地表不泛光
-    ctx.fillStyle = `rgba(255,170,60,${fl})`; ctx.fillRect((x - 2) * TS - ox, (y - 2) * TS - oy, TS * 5, TS * 5);
+    ctx.fillStyle = `rgba(${gl},${fl})`; ctx.fillRect((x - 2) * TS - ox, (y - 2) * TS - oy, TS * 5, TS * 5);
     ctx.fillRect((x - 1) * TS - ox, (y - 1) * TS - oy, TS * 3, TS * 3);
   }
 
@@ -982,6 +1453,9 @@ function render(now) {
     const ok = Math.hypot(tx + 0.5 - player.x - player.w / 2, ty + 0.5 - player.y - player.h / 2) <= 5.5;
     ctx.strokeStyle = ok ? 'rgba(255,255,255,.85)' : 'rgba(255,80,80,.7)'; ctx.lineWidth = z;
     ctx.strokeRect(tx * TS - ox + z / 2, ty * TS - oy + z / 2, TS - z, TS - z);
+  } else if (mine.x >= 0) { // 动作键自动选中的方块
+    ctx.strokeStyle = 'rgba(255,225,74,.9)'; ctx.lineWidth = z;
+    ctx.strokeRect(mine.x * TS - ox + z / 2, mine.y * TS - oy + z / 2, TS - z, TS - z);
   }
   ctx.font = `bold ${7 * z}px "Courier New",monospace`; ctx.textAlign = 'center';
   for (const q of texts) {
@@ -1006,7 +1480,8 @@ function sfx(freq, dur, type, vol) {
 
 // ───────────────────────── HUD / 背包界面 ─────────────────────────
 const $ = id => document.getElementById(id);
-let toastTimer = 0, bagOpen = false, bagTab = 'inv', bagSel = null, lastClock = '';
+let toastTimer = 0, bagOpen = false, bagTab = 'inv', bagSel = null, lastClock = '', bagPage = 0;
+const PAGE = 32;
 
 function iconCanvas(id) {
   const c = mkCanvas(T, T); const [img, ix] = itemIcon(id);
@@ -1018,14 +1493,14 @@ function mkSlot(id, count, cls) {
   if (count !== '' && count !== undefined) { const n = document.createElement('span'); n.textContent = count; el.appendChild(n); }
   return el;
 }
-function countLabel(id) { const k = ITEMS[id].k; return (k === 'pick' || k === 'sword' || k === 'bow' || k === 'armor') ? '' : inv[id]; }
+function countLabel(id) { const k = ITEMS[id].k; return (k === 'pick' || k === 'sword' || k === 'bow' || k === 'staff' || k === 'armor' || k === 'acc' || inv[id] === 1) ? '' : inv[id]; }
 
 function refreshHUD() {
   hudDirty = false; hpDirty = true;
   const bar = $('hotbar'); bar.innerHTML = '';
   hotbar.forEach((id, k) => {
     let label = id ? countLabel(id) : '';
-    if (id === 'bow') label = inv.arrow;
+    if (id && ITEMS[id].k === 'bow') label = inv.arrow + inv.arrow_fire + inv.arrow_bone;
     const el = mkSlot(id, label, (k === sel ? ' sel' : '') + (id && inv[id] <= 0 ? ' empty' : ''));
     el.addEventListener('pointerdown', ev => { ev.preventDefault(); ev.stopPropagation(); sel = k; hudDirty = true; sfx(700, 0.03, 'square', 0.03); });
     bar.appendChild(el);
@@ -1054,12 +1529,12 @@ function craft(rc) {
   });
   give(oid, n); sfx(880, 0.1, 'square', 0.06);
 }
-function setTab(t) { bagTab = t; bagSel = null; renderBag(); }
+function setTab(t) { bagTab = t; bagSel = null; bagPage = 0; renderBag(); }
 function toggleBag(show) { bagOpen = show; $('bag').classList.toggle('show', show); if (show) renderBag(); else ptr.down = false; }
 
 function renderBag() {
   $('tabInv').className = bagTab === 'inv' ? 'on' : ''; $('tabCraft').className = bagTab === 'craft' ? 'on' : '';
-  const sts = [BENCH, FURNACE].filter(nearStation).map(s => ST_NAME[s]);
+  const sts = [BENCH, FURNACE, ANVIL, CAMPFIRE].filter(nearStation).map(s => ST_NAME[s]);
   $('stations').textContent = sts.length ? '附近: ' + sts.join(' ') : '';
   const grid = $('grid'), det = $('detail'); grid.innerHTML = ''; det.innerHTML = '';
   const head = (id, title) => {
@@ -1071,10 +1546,18 @@ function renderBag() {
     const b = document.createElement('button'); b.textContent = txt; if (cls) b.className = cls; b.disabled = !!dis;
     b.addEventListener('click', fn); det.appendChild(b);
   };
+  const pager = total => { // 翻页条
+    const pages = Math.max(1, Math.ceil(total / PAGE)); bagPage = clamp(bagPage, 0, pages - 1);
+    const bar = $('pager'); bar.innerHTML = '';
+    const mk = (txt, d) => { const b = document.createElement('button'); b.textContent = txt; b.disabled = bagPage + d < 0 || bagPage + d >= pages;
+      b.addEventListener('click', () => { bagPage += d; renderBag(); }); bar.appendChild(b); };
+    mk('◀', -1); bar.appendChild(document.createTextNode(' ' + (bagPage + 1) + ' / ' + pages + ' 页（共 ' + total + '）')); mk('▶', 1);
+  };
   if (bagTab === 'inv') {
     const own = ITEM_IDS.filter(id => inv[id] > 0);
     if (bagSel === null || !(inv[bagSel] > 0)) bagSel = own[0] || null;
-    own.forEach(id => {
+    pager(own.length);
+    own.slice(bagPage * PAGE, bagPage * PAGE + PAGE).forEach(id => {
       const el = mkSlot(id, countLabel(id), id === bagSel ? ' sel' : '');
       el.addEventListener('click', () => { bagSel = id; renderBag(); });
       grid.appendChild(el);
@@ -1084,7 +1567,8 @@ function renderBag() {
     head(id, it.n + (countLabel(id) !== '' ? ' ×' + inv[id] : ''));
     line(it.d);
     if (it.k === 'use') button('使用', () => { useItem(id); refreshHUD(); });
-    if (it.k !== 'res' && it.k !== 'armor') {
+    if (it.k === 'acc' || it.k === 'armor') line('拥有即自动生效', 'ok');
+    if (!PASSIVE(it.k)) {
       const at = hotbar.indexOf(id);
       line(at >= 0 ? '已在快捷栏第 ' + (at + 1) + ' 格' : '未放入快捷栏');
       button('放到快捷栏第 ' + (sel + 1) + ' 格（当前选中）', () => {
@@ -1094,14 +1578,18 @@ function renderBag() {
     }
   } else {
     if (typeof bagSel !== 'number') bagSel = 0;
-    RECIPES.forEach((rc, k) => {
-      const el = mkSlot(rc.out[0], rc.out[1] > 1 ? rc.out[1] : '', (k === bagSel ? ' sel' : '') + (canCraft(rc) ? '' : ' dim'));
+    const can = RECIPES.map(canCraft); // 能做的排在前面
+    const order = RECIPES.map((_, k) => k).sort((a, b) => (can[b] - can[a]) || a - b);
+    pager(order.length);
+    order.slice(bagPage * PAGE, bagPage * PAGE + PAGE).forEach(k => {
+      const rc = RECIPES[k];
+      const el = mkSlot(rc.out[0], rc.out[1] > 1 ? rc.out[1] : '', (k === bagSel ? ' sel' : '') + (can[k] ? '' : ' dim'));
       el.addEventListener('click', () => { bagSel = k; renderBag(); });
       grid.appendChild(el);
     });
     const rc = RECIPES[bagSel], it = ITEMS[rc.out[0]];
     head(rc.out[0], it.n + (rc.out[1] > 1 ? ' ×' + rc.out[1] : ''));
-    line(it.d);
+    line(it.d); line('已拥有 ' + inv[rc.out[0]]);
     Object.keys(rc.cost).forEach(k => line(ITEMS[k].n + ' ' + inv[k] + '/' + rc.cost[k], inv[k] >= rc.cost[k] ? 'ok' : 'no'));
     if (rc.st) line('需要靠近：' + ST_NAME[rc.st], nearStation(rc.st) ? 'ok' : 'no');
     button('制作', () => { craft(rc); refreshHUD(); }, '', !canCraft(rc));
@@ -1115,7 +1603,29 @@ function bindInput() {
     el.addEventListener('pointerdown', set(true));
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(n => el.addEventListener(n, set(false)));
   };
-  hold('left', 'l'); hold('right', 'r'); hold('jump', 'j');
+  hold('jump', 'j'); hold('act', 'act');
+  $('act').addEventListener('pointerdown', () => { input.actFresh = true; });
+  { // 虚拟摇杆：左右移动，上推跳跃 / 爬绳，下拉穿过平台 / 向下挖
+    const joy = $('joy'), knob = $('knob'); let jid = -1, c = [0, 0];
+    const R = 52;
+    const mv = ev => {
+      const [x, y] = toStage(ev); let dx = x - c[0], dy = y - c[1];
+      const d = Math.hypot(dx, dy); if (d > R) { dx *= R / d; dy *= R / d; }
+      knob.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+      const nx = dx / R, ny = dy / R;
+      input.mx = Math.abs(nx) < 0.22 ? 0 : Math.sign(nx) * Math.min(1, (Math.abs(nx) - 0.22) / 0.5 + 0.3);
+      input.ju = ny < -0.55; input.jd = ny > 0.6;
+    };
+    const up = ev => { if (ev.pointerId !== jid) return; jid = -1; input.mx = 0; input.ju = input.jd = false; knob.style.transform = ''; joy.classList.remove('on'); };
+    joy.addEventListener('pointerdown', ev => {
+      ev.preventDefault(); jid = ev.pointerId; joy.classList.add('on');
+      const b = joy.getBoundingClientRect(); c = toStage({ clientX: b.left + b.width / 2, clientY: b.top + b.height / 2 });
+      try { joy.setPointerCapture(jid); } catch (e) { /* */ }
+      mv(ev);
+    });
+    joy.addEventListener('pointermove', ev => { if (ev.pointerId === jid) mv(ev); });
+    ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(n => joy.addEventListener(n, up));
+  }
 
   canvas.addEventListener('pointerdown', ev => { ev.preventDefault(); const [x, y] = toStage(ev); ptr.down = true; ptr.fresh = true; ptr.id = ev.pointerId; ptr.x = x; ptr.y = y; });
   canvas.addEventListener('pointermove', ev => { if (ev.pointerId === ptr.id) { const [x, y] = toStage(ev); ptr.x = x; ptr.y = y; } });
@@ -1128,14 +1638,14 @@ function bindInput() {
   $('tabInv').addEventListener('click', () => setTab('inv'));
   $('tabCraft').addEventListener('click', () => setTab('craft'));
 
-  const km = { KeyA: 'l', ArrowLeft: 'l', KeyD: 'r', ArrowRight: 'r', Space: 'j', KeyW: 'j', ArrowUp: 'j' };
+  const km = { KeyA: 'l', ArrowLeft: 'l', KeyD: 'r', ArrowRight: 'r', Space: 'j', KeyW: 'j', ArrowUp: 'j', KeyS: 'd', ArrowDown: 'd', KeyF: 'act' };
   window.addEventListener('keydown', ev => {
-    if (km[ev.code]) { input[km[ev.code]] = true; ev.preventDefault(); }
+    if (km[ev.code]) { if (ev.code === 'KeyF' && !ev.repeat) input.actFresh = true; input[km[ev.code]] = true; ev.preventDefault(); }
     else if (ev.code === 'KeyE' || ev.code === 'Escape') { if (running) toggleBag(ev.code === 'KeyE' && !bagOpen); }
     else if (/^Digit[1-8]$/.test(ev.code)) { sel = +ev.code[5] - 1; hudDirty = true; }
   });
   window.addEventListener('keyup', ev => { if (km[ev.code]) input[km[ev.code]] = false; });
-  window.addEventListener('blur', () => { input.l = input.r = input.j = false; ptr.down = false; });
+  window.addEventListener('blur', () => { input.l = input.r = input.j = input.d = input.act = input.ju = input.jd = false; input.mx = 0; ptr.down = false; });
   window.addEventListener('resize', resize);
   window.addEventListener('orientationchange', () => setTimeout(resize, 250));
   window.addEventListener('pagehide', saveGame);
@@ -1172,7 +1682,7 @@ function startGame(cont) {
         .catch(() => {}).then(() => setTimeout(resize, 300));
     }
   } catch (e) { /* */ }
-  toast(cont ? '欢迎回来！进度每 20 秒自动保存' : '选「镐」点住方块挖掘 · 砍树得木头 · 🎒 背包里可以合成', 4500);
+  toast(cont ? '欢迎回来！进度每 20 秒自动保存' : '摇杆移动 · 按住 ⚒ 自动挖面前的方块 · 也可以直接点方块 · 🎒 背包里合成', 4500);
 }
 
 function boot() {
@@ -1188,7 +1698,7 @@ function boot() {
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { genWorld, newGame, tiles, walls, surf, player, respawn, update, render, boot, input, ptr, inv, breakTile, tryPlace, explode, craft, useItem, give,
-    getT, W, H, T, ITEMS, RECIPES, TILE, saveGame, loadGame, renderBag, refreshHUD,
+    getT, W, H, T, ITEMS, RECIPES, TILE, buffs, autoTarget, growTree, slowTick, saveGame, loadGame, renderBag, refreshHUD,
     set: o => { if (o.sel !== undefined) sel = o.sel; if (o.hotbar) hotbar = o.hotbar; if (o.dayT !== undefined) dayT = o.dayT; if (o.running !== undefined) running = o.running; if (o.tab) bagTab = o.tab; },
     state: () => ({ enemies, shots, spawnX, spawnY, hotbar, sel, coins, icons, atlas, ICON }) };
 } else {
