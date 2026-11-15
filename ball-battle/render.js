@@ -109,13 +109,13 @@
           const target = match.balls[e.target];
           const color = themeFor(match, e.source).main;
           fx.hitFlash[e.target] = 0.18;
-          const heavy = e.kind === 'laser' || e.kind === 'thunder' || e.kind === 'punch' || e.kind === 'nuke';
+          const heavy = e.kind === 'laser' || e.kind === 'thunder' || e.kind === 'punch' || e.kind === 'nuke' || e.kind === 'tesla';
           const light = e.kind === 'burn' || e.kind === 'spore' || e.kind === 'wire';
           burst(fx, target.x, target.y, color, heavy ? 14 : light ? 3 : 7, 190, 0.45, 3);
           fx.shake = Math.max(fx.shake, heavy ? 7 : light ? 1.5 : 3.5);
           if (opts.floats) {
             const size = e.kind === 'nuke' ? 36 : e.kind === 'punch' ? 30 : heavy ? 24 : light ? 17 : 22;
-            floatText(fx, target.x + rand(-12, 12), target.y - target.r - 10, '-' + e.amount, color, size);
+            floatText(fx, target.x + rand(-12, 12), target.y - target.r - 10, '-' + Math.round(e.amount * 10) / 10, color, size);
           }
           break;
         }
@@ -151,13 +151,41 @@
           fx.shake = Math.max(fx.shake, 3);
           break;
         case 'oreSpawn':
-          fx.rings.push({ x: e.x, y: e.y, r0: 4, r1: 26, age: 0, life: 0.4, color: ORE_COLOR, width: 2 });
+          fx.rings.push({ x: e.x, y: e.y, r0: 4, r1: 26, age: 0, life: 0.4, color: oreColor(e.ore), width: 2 });
           break;
         case 'mine': {
-          burst(fx, e.x, e.y, ORE_COLOR, 10, 170, 0.4, 2.6);
-          if (opts.floats) floatText(fx, e.x, e.y - 16, '+' + e.amount + ' 矿', ORE_COLOR, 17);
+          const color = oreColor(e.ore);
+          burst(fx, e.x, e.y, color, 10, 170, 0.4, 2.6);
+          if (opts.floats && !e.drone) floatText(fx, e.x, e.y - 16, '+' + e.amount + ' ' + CFG.tech.resourceNames[e.ore], color, 17);
           break;
         }
+        case 'deliver': {
+          const color = oreColor(e.ore);
+          burst(fx, e.x, e.y, color, 4, 90, 0.3, 2);
+          if (opts.floats) floatText(fx, e.x + rand(-14, 14), e.y - 20, '+' + e.amount + ' ' + CFG.tech.resourceNames[e.ore], color, 15);
+          break;
+        }
+        case 'refine':
+          fx.rings.push({ x: e.x, y: e.y, r0: 6, r1: 34, age: 0, life: 0.4, color: '#d6ff3f', width: 3 });
+          if (opts.floats) floatText(fx, e.x, e.y - 20, '+1 浓缩铀', '#d6ff3f', 16);
+          break;
+        case 'shieldHit':
+          fx.rings.push({ x: e.x, y: e.y, r0: CFG.ballR + 6, r1: CFG.ballR + 22, age: 0, life: 0.25, color: '#7fd8ff', width: 4, follow: e.target });
+          break;
+        case 'teslaFire':
+          fx.beams.push({ x: e.x, y: e.y, tx: e.tx, ty: e.ty, color: '#c9a6ff', age: 0, life: 0.2, path: bolt(e.x, e.y, e.tx, e.ty, 12, 7) });
+          break;
+        case 'gridTrip':
+          floatText(fx, e.x, e.y - 30, '电力不足！全部停工', '#ff5a5a', 20);
+          fx.rings.push({ x: e.x, y: e.y, r0: 10, r1: 80, age: 0, life: 0.5, color: '#ff5a5a', width: 4 });
+          break;
+        case 'gridRestore':
+          floatText(fx, e.x, e.y - 30, '恢复供电', '#3ddc84', 18);
+          break;
+        case 'coreLost':
+          floatText(fx, e.x, e.y - 30, '核心被毁！库存减半', '#ff5a5a', 20);
+          fx.shake = Math.max(fx.shake, 12);
+          break;
         case 'buildStart':
           burst(fx, e.x, e.y, themeFor(match, e.owner).light, 6, 90, 0.35, 2.2);
           break;
@@ -584,7 +612,7 @@
 
         if (ult.phase === 'windup') {
           const t = 1 - ult.timer / CFG.flame.ultWindup; // 0 → 1
-          const len = 900;
+          const len = CFG.arena * 1.5;
           ctx.save();
           ctx.translate(ball.x, ball.y);
           ctx.rotate(ult.aim);
@@ -677,7 +705,7 @@
     tech: {
       /** 电量圈 + 施工位置的标记。 */
       under: function (ctx, match, fx, ball, theme) {
-        const ratio = Math.max(0, Math.min(1, ball.power / CFG.tech.powerMax));
+        const ratio = Math.max(0, Math.min(1, ball.grid.ratio / 2)); // 供电率，满圈 = 200%
         ctx.save();
         ctx.lineWidth = 4;
         ctx.lineCap = 'round';
@@ -689,6 +717,16 @@
           ctx.strokeStyle = theme.main;
           ctx.beginPath();
           ctx.arc(ball.x, ball.y, ball.r + 8, -Math.PI / 2, -Math.PI / 2 + TAU * ratio);
+          ctx.stroke();
+        }
+        if (ball.shield > 0.5) {
+          const k = ball.shield / CFG.tech.shieldMax;
+          ctx.fillStyle = 'rgba(127, 216, 255, ' + (0.06 + 0.1 * k) + ')';
+          ctx.strokeStyle = 'rgba(127, 216, 255, ' + (0.35 + 0.5 * k) + ')';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(ball.x, ball.y, ball.r + 15, 0, TAU);
+          ctx.fill();
           ctx.stroke();
         }
         if (ball.site) {
@@ -731,29 +769,40 @@
   // ---------------------------------------------------------------------
 
   const ORE_COLOR = '#8fe9ff';
+  const ORE_COLORS = { iron: '#c3ccda', copper: '#ff9d5c', silicon: '#8fe9ff', coal: '#6b7388', uranium: '#9dff6a', fuel: '#d6ff3f' };
+
+  function oreColor(type) {
+    return ORE_COLORS[type] || ORE_COLOR;
+  }
 
   function drawOres(ctx, match, fx) {
     for (let i = 0; i < match.ores.length; i++) {
       const o = match.ores[i];
       const r = CFG.tech.oreRadius;
+      const color = oreColor(o.type);
       const glint = 0.5 + 0.5 * Math.sin(fx.time * 3 + o.id);
       ctx.save();
       ctx.translate(o.x, o.y);
-      ctx.fillStyle = hexA(ORE_COLOR, 0.12 + 0.08 * glint);
+      ctx.fillStyle = hexA(color, (o.type === 'uranium' ? 0.22 : 0.1) + 0.08 * glint);
       ctx.beginPath();
       ctx.arc(0, 0, r + 8, 0, TAU);
       ctx.fill();
-      ctx.fillStyle = '#3aa7c9';
+      // 整块矿石
+      ctx.fillStyle = hexA(color, 0.55);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+      ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(0, -r); ctx.lineTo(r * 0.8, -r * 0.1); ctx.lineTo(r * 0.45, r); ctx.lineTo(-r * 0.45, r); ctx.lineTo(-r * 0.8, -r * 0.1);
       ctx.closePath();
       ctx.fill();
-      ctx.fillStyle = ORE_COLOR;
+      ctx.stroke();
+      // 亮面
+      ctx.fillStyle = color;
       ctx.beginPath();
       ctx.moveTo(0, -r); ctx.lineTo(r * 0.8, -r * 0.1); ctx.lineTo(0, r * 0.15); ctx.lineTo(-r * 0.8, -r * 0.1);
       ctx.closePath();
       ctx.fill();
-      ctx.fillStyle = hexA('#ffffff', 0.5 + 0.5 * glint);
+      ctx.fillStyle = hexA('#ffffff', 0.4 + 0.5 * glint);
       ctx.beginPath();
       ctx.arc(-r * 0.25, -r * 0.4, 2, 0, TAU);
       ctx.fill();
@@ -765,10 +814,15 @@
     for (let i = 0; i < match.wires.length; i++) {
       const w = match.wires[i];
       const theme = themeFor(match, w.owner);
+      const grid = match.balls[w.owner].grid;
       ctx.save();
       ctx.lineCap = 'round';
       if (!w.live) {
-        ctx.strokeStyle = 'rgba(160, 172, 196, 0.4)';
+        // 没通电：施工中是灰色虚线，跳闸是红色虚线。
+        const tripped = grid && grid.tripped && w.a.active && w.b.active;
+        ctx.strokeStyle = tripped
+          ? 'rgba(255, 90, 90, ' + (0.35 + 0.35 * (Math.sin(fx.time * 8) > 0 ? 1 : 0)) + ')'
+          : 'rgba(160, 172, 196, 0.4)';
         ctx.lineWidth = 2;
         ctx.setLineDash([6, 6]);
         ctx.beginPath();
@@ -785,16 +839,66 @@
         ctx.strokeStyle = theme.main;
         ctx.lineWidth = 2.5;
         ctx.stroke();
-        // 沿着电线跑的电流。
-        const len = Math.hypot(w.b.x - w.a.x, w.b.y - w.a.y) || 1;
-        const n = Math.max(1, Math.round(len / 90));
-        ctx.fillStyle = '#ffffff';
-        for (let k = 0; k < n; k++) {
-          const t = ((fx.time * 140) / len + k / n) % 1;
-          ctx.beginPath();
-          ctx.arc(w.a.x + (w.b.x - w.a.x) * t, w.a.y + (w.b.y - w.a.y) * t, 3, 0, TAU);
-          ctx.fill();
+        // 电流的方向：发电的支路往核心回送，用电的支路从电网取电。
+        const flow = w.b.flow || 0;
+        if (Math.abs(flow) > 0.05) {
+          const from = flow > 0 ? w.b : w.a;
+          const to = flow > 0 ? w.a : w.b;
+          const len = Math.hypot(to.x - from.x, to.y - from.y) || 1;
+          const n = Math.max(1, Math.round(len / 70));
+          const speed = 50 + Math.min(220, Math.abs(flow) * 9);
+          ctx.fillStyle = flow > 0 ? '#fff3b0' : '#ffffff';
+          const size = 2.2 + Math.min(2.5, Math.abs(flow) / 12);
+          for (let k = 0; k < n; k++) {
+            const t = ((fx.time * speed) / len + k / n) % 1;
+            ctx.beginPath();
+            ctx.arc(from.x + (to.x - from.x) * t, from.y + (to.y - from.y) * t, size, 0, TAU);
+            ctx.fill();
+          }
         }
+      }
+      ctx.restore();
+    }
+  }
+
+  /** 传送带：从传送带设备一路铺到核心，上面滚着矿。 */
+  function drawBelts(ctx, match, fx) {
+    for (let i = 0; i < match.buildings.length; i++) {
+      const b = match.buildings[i];
+      if (b.kind !== 'conveyor') continue;
+      let core = null;
+      for (let j = 0; j < match.buildings.length; j++) {
+        const c = match.buildings[j];
+        if (c.owner === b.owner && c.kind === 'core') { core = c; break; }
+      }
+      if (!core) continue;
+      const running = b.active && b.status !== 'nopower';
+      ctx.save();
+      ctx.globalAlpha = b.active ? 1 : 0.45;
+      ctx.lineCap = 'butt';
+      ctx.strokeStyle = '#2a3145';
+      ctx.lineWidth = 14;
+      ctx.beginPath();
+      ctx.moveTo(b.x, b.y);
+      ctx.lineTo(core.x, core.y);
+      ctx.stroke();
+      ctx.strokeStyle = '#4a556f';
+      ctx.lineWidth = 10;
+      ctx.setLineDash([8, 8]);
+      ctx.lineDashOffset = running ? -fx.time * 60 : 0;
+      ctx.stroke();
+      ctx.setLineDash([]);
+      for (let j = 0; j < b.items.length; j++) {
+        const item = b.items[j];
+        const x = b.x + (core.x - b.x) * item.t;
+        const y = b.y + (core.y - b.y) * item.t;
+        ctx.fillStyle = oreColor(item.type);
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.rect(x - 4.5, y - 4.5, 9, 9);
+        ctx.fill();
+        ctx.stroke();
       }
       ctx.restore();
     }
@@ -810,50 +914,74 @@
     ctx.closePath();
   }
 
-  function drawBuildings(ctx, match, fx) {
+  function iconText(ctx, text, r, color) {
+    ctx.font = '800 ' + Math.round(r * 1.05) + 'px ' + FONT;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = color;
+    ctx.fillText(text, 0, 1);
+  }
+
+  /** 各种设备的图标（原点在设备中心）。 */
+  function drawBuildingIcon(ctx, match, fx, b, theme) {
     const T = CFG.tech;
-    for (let i = 0; i < match.buildings.length; i++) {
-      const b = match.buildings[i];
-      const theme = themeFor(match, b.owner);
-      const r = b.r;
-      ctx.save();
-      ctx.translate(b.x, b.y);
-      ctx.globalAlpha = b.active ? 1 : 0.55;
-
-      // 底座
-      if (b.kind === 'plant' && b.active) {
-        const pulse = 0.5 + 0.5 * Math.sin(fx.time * 4);
-        ctx.fillStyle = hexA('#9dff6a', 0.12 + 0.1 * pulse);
+    const r = b.r;
+    const on = b.active && (b.status === 'working' || b.status === 'lowpower');
+    switch (b.kind) {
+      case 'core': {
+        const pulse = 0.5 + 0.5 * Math.sin(fx.time * 3);
+        ctx.fillStyle = theme.main;
         ctx.beginPath();
-        ctx.arc(0, 0, r + 12 + pulse * 4, 0, TAU);
+        for (let k = 0; k < 6; k++) {
+          const a = k * (TAU / 6) + Math.PI / 6;
+          ctx.lineTo(Math.cos(a) * r * 0.78, Math.sin(a) * r * 0.78);
+        }
+        ctx.closePath();
         ctx.fill();
+        ctx.fillStyle = hexA('#ffffff', 0.6 + 0.4 * pulse);
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.3, 0, TAU);
+        ctx.fill();
+        break;
       }
-      ctx.fillStyle = '#1a2236';
-      ctx.strokeStyle = theme.main;
-      ctx.lineWidth = 2.5;
-      roundRect(ctx, -r, -r, r * 2, r * 2, 6);
-      ctx.fill();
-      ctx.stroke();
-
-      if (b.kind === 'generator') {
-        // 闪电标志
+      case 'generator':
         ctx.fillStyle = theme.main;
         ctx.beginPath();
         ctx.moveTo(r * 0.15, -r * 0.7); ctx.lineTo(-r * 0.45, r * 0.1); ctx.lineTo(-r * 0.05, r * 0.1);
         ctx.lineTo(-r * 0.2, r * 0.7); ctx.lineTo(r * 0.45, -r * 0.15); ctx.lineTo(r * 0.05, -r * 0.15);
         ctx.closePath();
         ctx.fill();
-      } else if (b.kind === 'turret') {
-        ctx.rotate(b.aim);
-        ctx.fillStyle = theme.light;
-        ctx.fillRect(0, -3, r + 6, 6);
-        ctx.fillStyle = theme.main;
+        break;
+      case 'solar':
+        ctx.fillStyle = '#2f6fd6';
+        ctx.fillRect(-r * 0.75, -r * 0.75, r * 1.5, r * 1.5);
+        ctx.strokeStyle = '#bfe0ff';
+        ctx.lineWidth = 1.2;
         ctx.beginPath();
-        ctx.arc(0, 0, r * 0.55, 0, TAU);
-        ctx.fill();
-      } else if (b.kind === 'plant') {
-        // 辐射标志
-        ctx.fillStyle = '#ffd23f';
+        ctx.moveTo(0, -r * 0.75); ctx.lineTo(0, r * 0.75);
+        ctx.moveTo(-r * 0.75, 0); ctx.lineTo(r * 0.75, 0);
+        ctx.moveTo(-r * 0.75, -r * 0.75); ctx.lineTo(r * 0.75, r * 0.75);
+        ctx.stroke();
+        break;
+      case 'coal':
+        // 厂房 + 烟囱，开工时冒烟
+        ctx.fillStyle = '#8a93a8';
+        ctx.fillRect(-r * 0.7, -r * 0.05, r * 1.4, r * 0.75);
+        ctx.fillRect(r * 0.15, -r * 0.75, r * 0.38, r * 0.8);
+        ctx.fillStyle = on ? '#ff9d5c' : '#3a4156';
+        ctx.fillRect(-r * 0.5, r * 0.2, r * 0.35, r * 0.3);
+        if (on) {
+          for (let k = 0; k < 3; k++) {
+            const t = (fx.time * 0.8 + k / 3) % 1;
+            ctx.fillStyle = 'rgba(200, 205, 215, ' + 0.5 * (1 - t) + ')';
+            ctx.beginPath();
+            ctx.arc(r * 0.34 + t * 8, -r * 0.8 - t * 16, 3 + t * 5, 0, TAU);
+            ctx.fill();
+          }
+        }
+        break;
+      case 'plant': {
+        ctx.fillStyle = on ? '#ffd23f' : '#8a7a3a';
         ctx.beginPath();
         ctx.arc(0, 0, r * 0.82, 0, TAU);
         ctx.fill();
@@ -866,7 +994,7 @@
           ctx.closePath();
           ctx.fill();
         }
-        ctx.fillStyle = '#ffd23f';
+        ctx.fillStyle = on ? '#ffd23f' : '#8a7a3a';
         ctx.beginPath();
         ctx.arc(0, 0, r * 0.22, 0, TAU);
         ctx.fill();
@@ -874,9 +1002,98 @@
         ctx.beginPath();
         ctx.arc(0, 0, r * 0.12, 0, TAU);
         ctx.fill();
-      } else if (b.kind === 'silo') {
+        break;
+      }
+      case 'battery': {
+        const level = Math.max(0, Math.min(1, b.stored / T.batteryCapacity));
+        ctx.strokeStyle = '#dfe6f5';
+        ctx.lineWidth = 1.6;
+        ctx.strokeRect(-r * 0.45, -r * 0.6, r * 0.9, r * 1.25);
+        ctx.fillStyle = '#dfe6f5';
+        ctx.fillRect(-r * 0.2, -r * 0.78, r * 0.4, r * 0.18);
+        ctx.fillStyle = level > 0.3 ? '#3ddc84' : '#ff5a5a';
+        ctx.fillRect(-r * 0.36, r * 0.56 - r * 1.07 * level, r * 0.72, r * 1.07 * level);
+        break;
+      }
+      case 'miner':
+        iconText(ctx, '矿', r, theme.light);
+        break;
+      case 'repair':
+        ctx.fillStyle = '#3ddc84';
+        ctx.fillRect(-r * 0.16, -r * 0.6, r * 0.32, r * 1.2);
+        ctx.fillRect(-r * 0.6, -r * 0.16, r * 1.2, r * 0.32);
+        break;
+      case 'conveyor':
+        ctx.strokeStyle = theme.light;
+        ctx.lineWidth = 2.2;
+        ctx.lineJoin = 'round';
+        for (let k = -1; k <= 1; k++) {
+          ctx.beginPath();
+          ctx.moveTo(k * r * 0.42 - r * 0.15, -r * 0.42);
+          ctx.lineTo(k * r * 0.42 + r * 0.2, 0);
+          ctx.lineTo(k * r * 0.42 - r * 0.15, r * 0.42);
+          ctx.stroke();
+        }
+        break;
+      case 'centrifuge': {
+        const spin = b.progress > 0 && on ? fx.time * 9 : 0;
+        ctx.strokeStyle = '#9dff6a';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.68, 0, TAU);
+        ctx.stroke();
+        ctx.fillStyle = '#9dff6a';
+        for (let k = 0; k < 3; k++) {
+          const a = spin + k * (TAU / 3);
+          ctx.beginPath();
+          ctx.arc(Math.cos(a) * r * 0.42, Math.sin(a) * r * 0.42, r * 0.17, 0, TAU);
+          ctx.fill();
+        }
+        break;
+      }
+      case 'turret':
+        ctx.save();
+        ctx.rotate(b.aim);
+        ctx.fillStyle = theme.light;
+        ctx.fillRect(0, -3, r + 6, 6);
+        ctx.fillStyle = theme.main;
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.55, 0, TAU);
+        ctx.fill();
+        ctx.restore();
+        break;
+      case 'tesla': {
+        ctx.strokeStyle = '#c9a6ff';
+        ctx.lineWidth = 2;
+        for (let k = 1; k <= 3; k++) {
+          ctx.beginPath();
+          ctx.arc(0, 0, r * 0.25 * k, 0, TAU);
+          ctx.stroke();
+        }
+        ctx.fillStyle = on && Math.sin(fx.time * 20) > 0 ? '#ffffff' : '#c9a6ff';
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.2, 0, TAU);
+        ctx.fill();
+        break;
+      }
+      case 'shield':
+        ctx.strokeStyle = '#7fd8ff';
+        ctx.fillStyle = hexA('#7fd8ff', on ? 0.35 : 0.1);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(0, -r * 0.7);
+        ctx.lineTo(r * 0.6, -r * 0.4);
+        ctx.lineTo(r * 0.5, r * 0.25);
+        ctx.lineTo(0, r * 0.72);
+        ctx.lineTo(-r * 0.5, r * 0.25);
+        ctx.lineTo(-r * 0.6, -r * 0.4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        break;
+      case 'silo': {
         // 井口 + 弹头，外圈是充能进度
-        const ratio = Math.min(1, b.charge / T.nukeCost);
+        const ratio = Math.min(1, b.charge / T.nukeTime);
         ctx.fillStyle = '#0b0f1a';
         ctx.beginPath();
         ctx.arc(0, 0, r * 0.72, 0, TAU);
@@ -890,8 +1107,57 @@
         ctx.beginPath();
         ctx.arc(0, 0, r * 0.72, -Math.PI / 2, -Math.PI / 2 + TAU * ratio);
         ctx.stroke();
+        break;
       }
+      default:
+        break;
+    }
+  }
+
+  function drawBuildings(ctx, match, fx, selected) {
+    const T = CFG.tech;
+    const blink = Math.sin(fx.time * 8) > 0;
+    for (let i = 0; i < match.buildings.length; i++) {
+      const b = match.buildings[i];
+      const theme = themeFor(match, b.owner);
+      const r = b.r;
+      ctx.save();
+      ctx.translate(b.x, b.y);
+      ctx.globalAlpha = b.active ? 1 : 0.55;
+
+      if (b.kind === 'plant' && b.status === 'working') {
+        const pulse = 0.5 + 0.5 * Math.sin(fx.time * 4);
+        ctx.fillStyle = hexA('#9dff6a', 0.12 + 0.1 * pulse);
+        ctx.beginPath();
+        ctx.arc(0, 0, r + 12 + pulse * 4, 0, TAU);
+        ctx.fill();
+      }
+      // 底座：停工的设备边框变红。
+      const stopped = b.active && (b.status === 'nopower' || b.status === 'nofuel');
+      ctx.fillStyle = '#1a2236';
+      ctx.strokeStyle = stopped ? (blink ? '#ff5a5a' : '#7a2a2a') : theme.main;
+      ctx.lineWidth = 2.5;
+      roundRect(ctx, -r, -r, r * 2, r * 2, 6);
+      ctx.fill();
+      ctx.stroke();
+      if (stopped) ctx.globalAlpha = 0.5;
+      drawBuildingIcon(ctx, match, fx, b, theme);
       ctx.restore();
+
+      // 状态角标：没电 = 红色闪电，缺燃料 = 橙色感叹号，电压不足 = 黄点。
+      if (b.active && b.status !== 'working' && b.status !== 'idle') {
+        const bx = b.x + r - 2;
+        const by = b.y - r + 2;
+        ctx.fillStyle = b.status === 'nopower' ? '#ff4d4d' : b.status === 'nofuel' ? '#ff9d2a' : '#ffd23f';
+        ctx.beginPath();
+        ctx.arc(bx, by, 7, 0, TAU);
+        ctx.fill();
+        ctx.font = '800 10px ' + FONT;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#10131c';
+        ctx.fillText(b.status === 'nopower' ? '⚡' : b.status === 'nofuel' ? '!' : '↓', bx, by + 0.5);
+      }
 
       // 施工进度 / 血条
       if (!b.active) {
@@ -908,6 +1174,77 @@
         ctx.fillStyle = b.hp / b.maxHp > 0.4 ? '#3ddc84' : '#ff5a5a';
         ctx.fillRect(b.x - w / 2, b.y + r + 4, w * Math.max(0, b.hp / b.maxHp), 4);
       }
+
+      if (selected === b) {
+        ctx.save();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 4]);
+        ctx.lineDashOffset = -fx.time * 24;
+        ctx.strokeRect(b.x - r - 6, b.y - r - 6, r * 2 + 12, r * 2 + 12);
+        const range = b.kind === 'turret' ? T.turretRange : b.kind === 'tesla' ? T.teslaRange : 0;
+        if (range) {
+          ctx.strokeStyle = hexA(theme.main, 0.6);
+          ctx.fillStyle = hexA(theme.main, 0.06);
+          ctx.beginPath();
+          ctx.arc(b.x, b.y, range, 0, TAU);
+          ctx.fill();
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+    }
+  }
+
+  /** 采矿 / 维修机器人。 */
+  function drawDrones(ctx, match, fx) {
+    for (let i = 0; i < match.drones.length; i++) {
+      const d = match.drones[i];
+      const theme = themeFor(match, d.owner);
+      const repair = d.kind === 'repair';
+      ctx.save();
+      if (repair && d.state === 'work' && d.target) {
+        ctx.strokeStyle = 'rgba(61, 220, 132, ' + (0.5 + 0.4 * Math.sin(fx.time * 20)) + ')';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(d.x, d.y);
+        ctx.lineTo(d.target.x, d.target.y);
+        ctx.stroke();
+      }
+      if (!repair && d.state === 'mine' && d.target) {
+        ctx.strokeStyle = hexA(oreColor(d.target.type), 0.5 + 0.4 * Math.sin(fx.time * 26));
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(d.target.x, d.target.y, CFG.tech.oreRadius + 5, 0, TAU);
+        ctx.stroke();
+      }
+      ctx.translate(d.x, d.y);
+      // 四个旋翼
+      const spin = fx.time * 14 + d.id;
+      ctx.fillStyle = 'rgba(223, 230, 245, 0.45)';
+      for (let k = 0; k < 4; k++) {
+        const a = Math.PI / 4 + k * (Math.PI / 2);
+        ctx.beginPath();
+        ctx.ellipse(Math.cos(a) * 8, Math.sin(a) * 8, 4.5, 1.6, spin + k, 0, TAU);
+        ctx.fill();
+      }
+      ctx.fillStyle = repair ? '#3ddc84' : theme.main;
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(0, 0, 5.5, 0, TAU);
+      ctx.fill();
+      ctx.stroke();
+      if (d.carry) {
+        ctx.fillStyle = oreColor(d.carry.type);
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.rect(-4, 5, 8, 8);
+        ctx.fill();
+        ctx.stroke();
+      }
+      ctx.restore();
     }
   }
 
@@ -975,8 +1312,13 @@
       ctx.strokeStyle = hexA(b.color, 0.8 * a);
       ctx.lineWidth = b.small ? 3 : 6;
       ctx.beginPath();
-      ctx.moveTo(b.x, b.y);
-      ctx.lineTo(b.tx, b.ty);
+      if (b.path) {
+        ctx.moveTo(b.path[0][0], b.path[0][1]);
+        for (let k = 1; k < b.path.length; k++) ctx.lineTo(b.path[k][0], b.path[k][1]);
+      } else {
+        ctx.moveTo(b.x, b.y);
+        ctx.lineTo(b.tx, b.ty);
+      }
       ctx.stroke();
       ctx.strokeStyle = hexA('#ffffff', a);
       ctx.lineWidth = b.small ? 1 : 2;
@@ -1142,8 +1484,7 @@
     ctx.strokeStyle = '#141a29';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    for (let i = 1; i < 10; i++) {
-      const p = (A / 10) * i;
+    for (let p = 60; p < A; p += 60) {
       ctx.moveTo(p, 0); ctx.lineTo(p, A);
       ctx.moveTo(0, p); ctx.lineTo(A, p);
     }
@@ -1386,7 +1727,7 @@
   }
 
   function drawBanner(ctx, text) {
-    const A = CFG.arena;
+    const A = 600; // 调用前已经把画布换算成 600×600
     ctx.save();
     ctx.fillStyle = 'rgba(6, 8, 14, 0.45)';
     ctx.fillRect(0, 0, A, A);
@@ -1414,9 +1755,15 @@
     opts = opts || {};
     const A = CFG.arena;
     // 方框画在场地外侧一圈，不占用小球能到达的区域。
-    const scale = sizePx / (A + FRAME * 2);
-    ctx.setTransform(scale, 0, 0, scale, FRAME * scale, FRAME * scale);
+    const cam = opts.camera;
+    const view = cam ? cam.view : A + FRAME * 2;
+    const scale = sizePx / view;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.globalAlpha = 1;
+    ctx.fillStyle = '#05070c';
+    ctx.fillRect(0, 0, sizePx, sizePx);
+    ctx.setTransform(scale, 0, 0, scale,
+      sizePx / 2 - (cam ? cam.x : A / 2) * scale, sizePx / 2 - (cam ? cam.y : A / 2) * scale);
     drawArena(ctx);
 
     if (match) {
@@ -1437,11 +1784,19 @@
       match.balls.forEach(function (ball, i) {
         if (!fx.dead[i]) DRAW[ball.type].under(ctx, match, fx, ball, themes[i]);
       });
+      drawBelts(ctx, match, fx);
       drawOres(ctx, match, fx);
       drawWires(ctx, match, fx);
       drawStrikes(ctx, match, fx);
       drawMushrooms(ctx, match);
-      drawBuildings(ctx, match, fx);
+      drawBuildings(ctx, match, fx, opts.selected);
+      if (opts.selected && opts.selected.amount != null && match.ores.indexOf(opts.selected) >= 0) {
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(opts.selected.x, opts.selected.y, CFG.tech.oreRadius + 9, 0, TAU);
+        ctx.stroke();
+      }
       drawCrosses(ctx, match, fx, 'fire');
       drawDevices(ctx, match, fx);
       drawSpores(ctx, match);
@@ -1453,6 +1808,7 @@
       });
       drawBolts(ctx, match, fx);
       drawBeams(ctx, fx);
+      drawDrones(ctx, match, fx);
       drawNukes(ctx, match, fx);
       match.balls.forEach(function (ball, i) {
         if (!fx.dead[i]) DRAW[ball.type].over(ctx, match, fx, ball, themes[i]);
@@ -1466,16 +1822,21 @@
       ctx.restore();
     }
 
-    if (opts.banner) drawBanner(ctx, opts.banner);
-
     // 正方形方框。
     ctx.strokeStyle = '#dfe6f5';
     ctx.lineWidth = FRAME;
     ctx.strokeRect(-FRAME / 2, -FRAME / 2, A + FRAME, A + FRAME);
+
+    if (opts.banner) {
+      ctx.setTransform(sizePx / 600, 0, 0, sizePx / 600, 0, 0);
+      drawBanner(ctx, opts.banner);
+    }
   }
 
   return {
     THEMES: THEMES,
+    FRAME: FRAME,
+    ORE_COLORS: ORE_COLORS,
     themeFor: themeFor,
     createFx: createFx,
     handleEvents: handleEvents,

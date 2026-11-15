@@ -34,6 +34,7 @@
       thunderRadius: 55,
       thunderDamage: 4,
       thunderScatter: 80,  // 落点的随机偏差
+      thunderVsSummon: 8,  // 落雷对孢子 / 蘑菇 / 设备的伤害
       thunderChain: 120,   // 落雷清理孢子 / 蘑菇的范围
     },
 
@@ -82,7 +83,7 @@
       interval: 5,        // 每隔多久放一次孢子
       count: 5,
       sporeDamage: 1,
-      sporeVsBuilding: 2, // 孢子腐蚀科技球设备的伤害
+      sporeVsBuilding: 3, // 孢子腐蚀科技球设备的伤害
       sporeRadius: 6,
       sporeSpeed: 130,    // 孢子初速（会逐渐停下来）
       sporeDrag: 1.3,
@@ -100,48 +101,102 @@
 
     tech: {
       turnRate: 8,          // 科技球朝目标拐弯的角速度（弧度/秒）
-      // 矿物
-      oreStart: 6,          // 开局地图上的矿物数
-      oreAmount: 2,         // 每块矿能挖到多少
-      oreEvery: 4.5,        // 之后每隔多久再长出一块
-      oreMax: 6,
-      oreRadius: 12,
-      // 建造：按 order 的顺序造，被拆掉的会优先补回来
-      order: ['generator', 'turret', 'generator', 'turret', 'plant', 'silo',
-        'turret', 'turret', 'generator', 'turret', 'plant', 'silo'],
-      buildings: {
-        generator: { name: '发电机', cost: 2, hp: 22, r: 15 },
-        turret: { name: '电磁炮塔', cost: 3, hp: 22, r: 15 },
-        plant: { name: '核电站', cost: 7, hp: 45, r: 22 },
-        silo: { name: '核弹发射井', cost: 9, hp: 36, r: 20 },
+
+      // 矿物：weight 是出现的相对频率。浓缩铀（fuel）不是矿，要靠离心机加工。
+      ores: {
+        iron: { name: '铁矿', weight: 30 },
+        copper: { name: '铜矿', weight: 24 },
+        silicon: { name: '硅矿', weight: 20 },
+        coal: { name: '煤矿', weight: 14 },
+        uranium: { name: '铀矿', weight: 16 },
       },
-      spacing: 72,          // 设备之间的最小间距
-      linkRange: 230,       // 新设备离电网最远多远
+      resourceNames: { iron: '铁', copper: '铜', silicon: '硅', coal: '煤', uranium: '铀', fuel: '浓缩铀' },
+      startRes: { iron: 2, copper: 1 },
+      oreStart: 10,         // 开局地图上的矿物数（600 的地图；地图越大越多）
+      oreAmount: 2,         // 每块矿能挖到多少
+      oreEvery: 1.2,        // 之后每隔多久再长出一块
+      oreMax: 14,
+      oreRadius: 12,
+
+      // 发展路线：按顺序造，被拆掉的优先补回来。电不够时会先加造发电机。
+      order: ['core', 'generator', 'miner', 'turret', 'solar', 'conveyor', 'turret', 'coal', 'miner',
+        'repair', 'centrifuge', 'plant', 'silo', 'battery', 'tesla', 'shield', 'turret', 'solar',
+        'tesla', 'silo'],
+      lookahead: 3,         // 眼前这个造不起时，最多往后看几项
+      extraGenerators: 4,   // 电不够时最多额外补几台发电机
+      // supply = 发电（kW），demand = 耗电（kW）
+      buildings: {
+        core: { name: '核心', cost: { iron: 4 }, hp: 80, r: 24, supply: 3,
+          desc: '科技球的大本营。所有矿物都存在这里，自带一台 3 kW 的小电源。被摧毁会损失一半库存。' },
+        generator: { name: '发电机', cost: { iron: 2, copper: 1 }, hp: 22, r: 15, supply: 6,
+          desc: '最基础的电源，不用燃料，但只有 6 kW，带不动几台机器。' },
+        solar: { name: '太阳能板', cost: { silicon: 2, copper: 1 }, hp: 16, r: 15, supply: 4,
+          desc: '用硅做的光伏板，稳定输出 4 kW，不用燃料，就是比较脆。' },
+        coal: { name: '火力发电厂', cost: { iron: 4, copper: 2 }, hp: 32, r: 19, supply: 14,
+          desc: '烧煤发电 14 kW，每 5 秒烧掉 1 份煤。煤断了就停机。' },
+        plant: { name: '核反应堆', cost: { iron: 6, copper: 3, silicon: 2 }, hp: 45, r: 22, supply: 45,
+          desc: '用浓缩铀发电 45 kW，每 15 秒消耗 1 份浓缩铀。电通过电线送回电网。' },
+        battery: { name: '蓄电池', cost: { copper: 3, silicon: 1 }, hp: 20, r: 14,
+          desc: '电有富余时充电，电不够时放电顶上，最多存 80 kW·秒。' },
+        miner: { name: '采矿机器人站', cost: { iron: 2, copper: 1 }, hp: 22, r: 15, demand: 2,
+          desc: '放出一台采矿机器人，自动去挖矿，再送到最近的核心或传送带。' },
+        conveyor: { name: '传送带', cost: { iron: 3 }, hp: 24, r: 13, demand: 1,
+          desc: '建在远离核心的地方，机器人把矿放上来，传送带一路运回核心。' },
+        repair: { name: '维修机器人站', cost: { iron: 2, silicon: 2 }, hp: 22, r: 15, demand: 3,
+          desc: '放出一台维修机器人，哪个设备受伤就飞过去修，每秒 +4 血。' },
+        centrifuge: { name: '离心机', cost: { iron: 4, copper: 2, silicon: 2 }, hp: 28, r: 17, demand: 8,
+          desc: '把 2 份铀矿提纯成 1 份浓缩铀，每次 6 秒。核反应堆和核弹都要用浓缩铀。' },
+        turret: { name: '电磁炮塔', cost: { iron: 2, copper: 2 }, hp: 22, r: 15, demand: 4,
+          desc: '自动射击范围内的敌人；够不着时清理附近的孢子、蘑菇和敌方设备。' },
+        tesla: { name: '特斯拉线圈', cost: { copper: 5, silicon: 2 }, hp: 26, r: 16, demand: 12,
+          desc: '高压放电，伤害高但射程短、很费电。' },
+        shield: { name: '护盾发生器', cost: { iron: 3, silicon: 4 }, hp: 26, r: 16, demand: 10,
+          desc: '给科技球套上护盾，替它挡伤害，被打掉后慢慢回充。灼烧挡不住。' },
+        silo: { name: '核弹发射井', cost: { iron: 6, copper: 2, silicon: 3 }, hp: 36, r: 20, demand: 10,
+          desc: '充能 10 秒，再装上 1 份浓缩铀就发射核弹。' },
+      },
+      spacing: 64,          // 设备之间的最小间距
+      linkRange: 220,       // 新设备离电网最远多远
       buildReach: 36,       // 球离选好的位置多近就能开工
       buildTime: 1.5,       // 施工时间，完工后才运转
-      // 电力
-      generatorPower: 1,    // 每秒产电
-      plantPower: 5,
-      powerMax: 100,
-      // 电磁炮塔
+
+      // 电力：供电率 = 发电 / 耗电
+      tripRatio: 0.5,       // 低于这个比例：跳闸，所有用电设备停工
+      bonusMax: 0.5,        // 电有富余时的加成上限（供电率 200% 时达到）
+      coalBurn: 5,          // 一份煤烧多久
+      fuelBurn: 15,         // 一份浓缩铀烧多久
+      batteryCapacity: 80,
+      batteryRate: 12,      // 每个电池最大充 / 放电功率
+
+      // 物流
+      droneSpeed: 210,
+      mineTime: 1.2,
+      beltSpeed: 170,
+      repairRate: 4,
+      centrifugeTime: 6,
+      centrifugeUranium: 2,
+      coreLoss: 0.5,        // 核心被毁时损失的库存比例
+
+      // 武器
       turretRange: 180,
       turretDamage: 2,
-      turretEvery: 2,
-      shotCost: 3,          // 每发耗电
-      clearCost: 2,         // 打孢子 / 蘑菇的耗电和间隔
-      clearEvery: 1.2,
-      // 高压电线：敌人碰到通电的电线会被电
-      wireDamage: 1,
+      turretEvery: 2.2,
+      clearEvery: 1.2,      // 炮塔清理孢子 / 蘑菇 / 敌方设备的间隔
+      teslaRange: 150,
+      teslaDamage: 4,
+      teslaEvery: 2.4,
+      shieldMax: 20,
+      shieldRegen: 1.5,
+      wireDamage: 1,        // 高压电线：敌人碰到通电的电线会被电
       wireEvery: 1,
-      // 核弹
-      siloRate: 4,          // 发射井每秒最多充多少电
-      nukeCost: 35,
+      nukeTime: 10,         // 发射井充能秒数（满电时）
       nukeDelay: 1.6,       // 从发射到落地
       nukeRadius: 150,
       nukeScatter: 30,
       nukeDamage: 30,
       nukeBurn: 3,          // 辐射灼烧秒数
       nukeKnock: 3,
+
       // 设备怎么挨打
       ramDamage: 3,         // 敌方小球撞上设备
       ramDamageFlame: 3,
@@ -151,6 +206,8 @@
 
     boostDecay: 3,        // 被击飞后的额外速度每秒衰减的比例
   };
+
+  const DEFAULTS = { arena: CFG.arena, maxHp: CFG.maxHp };
 
   // ---------------------------------------------------------------------
   // 小工具
@@ -236,6 +293,14 @@
 
   function damage(state, target, amount, kind, sourceId) {
     if (state.over || target.hp <= 0) return;
+    if (target.shield > 0 && kind !== 'burn') {
+      // 科技球的护盾先顶上。
+      const absorbed = Math.min(target.shield, amount);
+      target.shield -= absorbed;
+      amount = round1(amount - absorbed);
+      state.events.push({ type: 'shieldHit', target: target.id, amount: absorbed, x: target.x, y: target.y });
+      if (amount <= 0) return;
+    }
     target.hp = Math.max(0, target.hp - amount);
     state.events.push({
       type: 'damage', target: target.id, source: sourceId,
@@ -734,22 +799,33 @@
       id: 'tech',
       name: '科技球',
       details: [
-        '开局采矿，造发电机和电磁炮塔，自动连成电网',
-        '敌人碰到高压电线 -1，炮塔耗电开火 -2',
-        '后期：核电站大量产电，发射井充满就丢核弹 -30',
-        '设备血厚，可以被打掉，拆了会重建',
+        '采铁、铜、硅、煤、铀五种矿，造 14 种设备',
+        '供电不足一半会跳闸停工；电有富余则攻速、伤害最多 +50%',
+        '核能路线：铀矿 → 离心机 → 浓缩铀 → 核反应堆 → 核弹 -30',
+        '点场上的设备可以看它的属性和工作状态',
       ],
       init: function (ball) {
-        ball.ore = 0;
-        ball.power = 0;
-        ball.income = 0;     // 当前每秒产电
+        ball.res = { iron: 0, copper: 0, silicon: 0, coal: 0, uranium: 0, fuel: 0 };
+        Object.keys(CFG.tech.startRes).forEach(function (k) { ball.res[k] = CFG.tech.startRes[k]; });
+        ball.grid = emptyGrid();
+        ball.shield = 0;
         ball.site = null;    // 选好的施工位置
         ball.siteCd = 0;
         ball.wireCd = 0;
         ball.nukes = 0;      // 已经发射了几枚
+        ball.started = false;
       },
       update: function (state, ball, enemy, dt) {
         const T = CFG.tech;
+        if (!ball.started) {
+          // 开局先在脚下放一个核心（不花钱，直接完工）。
+          ball.started = true;
+          const m = 60;
+          const core = placeBuilding(state, ball.id, 'core',
+            clamp(ball.x, m, CFG.arena - m), clamp(ball.y, m, CFG.arena - m));
+          core.active = true;
+          core.build = 0;
+        }
         // 设备自己会运转，球被麻痹也不耽误。
         runBuildings(state, ball, enemy, dt);
         if (ball.paralyzed) return;
@@ -759,24 +835,24 @@
           const ore = state.ores[i];
           if (Math.hypot(ore.x - ball.x, ore.y - ball.y) > ball.r + T.oreRadius) continue;
           state.ores.splice(i, 1);
-          ball.ore += ore.amount;
-          state.events.push({ type: 'mine', ball: ball.id, x: ore.x, y: ore.y, amount: ore.amount });
+          ball.res[ore.type] += ore.amount;
+          state.events.push({ type: 'mine', owner: ball.id, x: ore.x, y: ore.y, amount: ore.amount, ore: ore.type });
         }
 
-        // 矿够了就去施工，不够就去找最近的矿。
-        const kind = nextBuild(state, ball.id);
+        // 造得起就去施工，造不起就去找缺的那种矿。
+        const plan = nextBuild(state, ball);
         let target = null;
         ball.siteCd = Math.max(0, ball.siteCd - dt);
-        if (kind && ball.ore >= T.buildings[kind].cost) {
-          if (ball.site && !siteOk(state, ball.site.x, ball.site.y)) ball.site = null;
+        if (plan.kind) {
+          if (ball.site && (ball.site.kind !== plan.kind || !siteOk(state, ball.site.x, ball.site.y))) ball.site = null;
           if (!ball.site && ball.siteCd <= 0) {
-            ball.site = pickSite(state, ball);
+            ball.site = pickSite(state, ball, plan.kind);
             ball.siteCd = 0.4;
           }
           if (ball.site) {
             if (Math.hypot(ball.site.x - ball.x, ball.site.y - ball.y) <= T.buildReach) {
-              ball.ore -= T.buildings[kind].cost;
-              placeBuilding(state, ball.id, kind, ball.site.x, ball.site.y);
+              pay(ball.res, T.buildings[plan.kind].cost);
+              placeBuilding(state, ball.id, plan.kind, ball.site.x, ball.site.y);
               ball.site = null;
             } else {
               target = ball.site;
@@ -787,10 +863,15 @@
         }
         if (!target) {
           let best = Infinity;
+          let bestWanted = Infinity;
+          let wanted = null;
           for (let i = 0; i < state.ores.length; i++) {
-            const d = Math.hypot(state.ores[i].x - ball.x, state.ores[i].y - ball.y);
-            if (d < best) { best = d; target = state.ores[i]; }
+            const ore = state.ores[i];
+            const d = Math.hypot(ore.x - ball.x, ore.y - ball.y);
+            if (d < best) { best = d; target = ore; }
+            if (plan.wants.indexOf(ore.type) >= 0 && d < bestWanted) { bestWanted = d; wanted = ore; }
           }
+          if (wanted) target = wanted;
         }
         if (target) steerToward(ball, target.x, target.y, T.turnRate * dt);
       },
@@ -862,7 +943,7 @@
         Math.hypot(enemy.x - strike.x, enemy.y - strike.y) <= E.thunderRadius + enemy.r * 0.5;
       if (hit) damage(state, enemy, E.thunderDamage, 'thunder', strike.owner);
       // 电流会顺着地面窜出去，把更大一圈里的孢子 / 蘑菇一起电掉。
-      hitSummons(state, strike.owner, E.thunderDamage, inCircle(strike.x, strike.y, E.thunderChain));
+      hitSummons(state, strike.owner, E.thunderVsSummon, inCircle(strike.x, strike.y, E.thunderChain));
       state.events.push({
         type: 'thunder', strike: strike.id, owner: strike.owner, x: strike.x, y: strike.y, hit: hit,
       });
@@ -934,10 +1015,37 @@
   }
 
   // ---------------------------------------------------------------------
-  // 科技球：矿物、设备、电网、核弹
+  // 科技球：矿物、设备、电网、机器人、核弹
   // ---------------------------------------------------------------------
 
-  function spawnOre(state) {
+  function round1(v) {
+    return Math.round(v * 10) / 10;
+  }
+
+  /** 地图比默认的大多少倍（按面积算），矿物数量跟着变。 */
+  function areaScale() {
+    const f = CFG.arena / 600;
+    return Math.max(0.5, Math.min(10, f * f));
+  }
+
+  function emptyGrid() {
+    return { supply: 0, demand: 0, planSupply: 0, planDemand: 0, ratio: 0, eff: 0, bonus: 0, tripped: false, stored: 0, capacity: 0 };
+  }
+
+  function randomOreType(state) {
+    const ores = CFG.tech.ores;
+    const keys = Object.keys(ores);
+    let total = 0;
+    for (let i = 0; i < keys.length; i++) total += ores[keys[i]].weight;
+    let pick = state.rng() * total;
+    for (let i = 0; i < keys.length; i++) {
+      pick -= ores[keys[i]].weight;
+      if (pick <= 0) return keys[i];
+    }
+    return keys[0];
+  }
+
+  function spawnOre(state, type) {
     const T = CFG.tech;
     const margin = 45;
     for (let tries = 0; tries < 12; tries++) {
@@ -945,15 +1053,15 @@
       const y = margin + state.rng() * (CFG.arena - margin * 2);
       let ok = true;
       for (let i = 0; i < state.ores.length && ok; i++) {
-        if (Math.hypot(state.ores[i].x - x, state.ores[i].y - y) < 70) ok = false;
+        if (Math.hypot(state.ores[i].x - x, state.ores[i].y - y) < 60) ok = false;
       }
       for (let i = 0; i < state.buildings.length && ok; i++) {
         if (Math.hypot(state.buildings[i].x - x, state.buildings[i].y - y) < 50) ok = false;
       }
       if (!ok) continue;
-      const ore = { id: state.nextTechId++, x: x, y: y, amount: T.oreAmount };
+      const ore = { id: state.nextTechId++, type: type || randomOreType(state), x: x, y: y, amount: T.oreAmount, claim: null };
       state.ores.push(ore);
-      state.events.push({ type: 'oreSpawn', x: x, y: y });
+      state.events.push({ type: 'oreSpawn', x: x, y: y, ore: ore.type });
       return ore;
     }
     return null;
@@ -961,26 +1069,65 @@
 
   function updateOres(state, dt) {
     const T = CFG.tech;
-    state.oreTimer -= dt;
+    const scale = areaScale();
+    state.oreTimer -= dt * scale;
     if (state.oreTimer > 0) return;
     state.oreTimer += T.oreEvery;
-    if (state.ores.length < T.oreMax) spawnOre(state);
+    if (state.ores.length < Math.round(T.oreMax * scale)) spawnOre(state);
   }
 
-  /** 接下来该造什么：按 order 走，缺哪个补哪个；都造齐了返回 null。 */
-  function nextBuild(state, owner) {
+  function canAfford(res, cost) {
+    for (const k in cost) if ((res[k] || 0) < cost[k]) return false;
+    return true;
+  }
+
+  function pay(res, cost) {
+    for (const k in cost) res[k] -= cost[k];
+  }
+
+  function missingFor(res, cost) {
+    const out = [];
+    for (const k in cost) if ((res[k] || 0) < cost[k]) out.push(k);
+    return out;
+  }
+
+  /**
+   * 接下来造什么。返回 { kind, goal, wants }：
+   * kind = 现在就造得起的那一项（没有则为 null），goal = 发展路线上的下一个目标，
+   * wants = 还缺哪几种矿（球会优先去挖）。
+   */
+  function nextBuild(state, ball) {
+    const T = CFG.tech;
     const have = {};
     for (let i = 0; i < state.buildings.length; i++) {
       const b = state.buildings[i];
-      if (b.owner === owner) have[b.kind] = (have[b.kind] || 0) + 1;
+      if (b.owner === ball.id) have[b.kind] = (have[b.kind] || 0) + 1;
     }
     const need = {};
-    const order = CFG.tech.order;
-    for (let i = 0; i < order.length; i++) {
-      need[order[i]] = (need[order[i]] || 0) + 1;
-      if ((have[order[i]] || 0) < need[order[i]]) return order[i];
+    const grid = ball.grid;
+    let goal = null;
+    let seen = 0;
+    let powerBlocked = false;
+    for (let i = 0; i < T.order.length && seen < T.lookahead; i++) {
+      const kind = T.order[i];
+      need[kind] = (need[kind] || 0) + 1;
+      if ((have[kind] || 0) >= need[kind]) continue;
+      seen++;
+      if (!goal) goal = kind;
+      const spec = T.buildings[kind];
+      // 用电设备：电网带不动就先不造。
+      if (spec.demand && grid.planSupply < grid.planDemand + spec.demand) { powerBlocked = true; continue; }
+      if (canAfford(ball.res, spec.cost)) return { kind: kind, goal: goal, wants: [] };
     }
-    return null;
+    if (powerBlocked) {
+      const base = T.order.filter(function (k) { return k === 'generator'; }).length;
+      if ((have.generator || 0) < base + T.extraGenerators) {
+        const cost = T.buildings.generator.cost;
+        if (canAfford(ball.res, cost)) return { kind: 'generator', goal: 'generator', wants: [] };
+        return { kind: null, goal: 'generator', wants: missingFor(ball.res, cost) };
+      }
+    }
+    return { kind: null, goal: goal, wants: goal ? missingFor(ball.res, T.buildings[goal].cost) : [] };
   }
 
   function siteOk(state, x, y) {
@@ -991,28 +1138,42 @@
     return true;
   }
 
-  /** 挑一个施工位置：不挤着别的设备、离自家电网不太远，尽量就近。 */
-  function pickSite(state, ball) {
+  function findCore(state, owner) {
+    for (let i = 0; i < state.buildings.length; i++) {
+      const b = state.buildings[i];
+      if (b.owner === owner && b.kind === 'core') return b;
+    }
+    return null;
+  }
+
+  /** 挑一个施工位置：挨着自家电网、不挤着别的设备。传送带要建得离核心远一些。 */
+  function pickSite(state, ball, kind) {
     const T = CFG.tech;
     const margin = 55;
+    const own = state.buildings.filter(function (b) { return b.owner === ball.id; });
+    const core = findCore(state, ball.id);
     let best = null;
-    let bestD = Infinity;
-    let hasOwn = false;
-    for (let i = 0; i < state.buildings.length; i++) if (state.buildings[i].owner === ball.id) hasOwn = true;
+    let bestScore = -Infinity;
     for (let tries = 0; tries < 30; tries++) {
-      const x = margin + state.rng() * (CFG.arena - margin * 2);
-      const y = margin + state.rng() * (CFG.arena - margin * 2);
-      if (!siteOk(state, x, y)) continue;
-      if (hasOwn) {
-        let near = Infinity;
-        for (let i = 0; i < state.buildings.length; i++) {
-          const b = state.buildings[i];
-          if (b.owner === ball.id) near = Math.min(near, Math.hypot(b.x - x, b.y - y));
-        }
-        if (near > T.linkRange) continue;
+      let x;
+      let y;
+      if (!own.length) {
+        x = ball.x; y = ball.y;
+      } else {
+        const from = kind === 'conveyor' && core ? core : own[Math.floor(state.rng() * own.length)];
+        const angle = state.rng() * Math.PI * 2;
+        const dist = kind === 'conveyor' && core
+          ? 170 + state.rng() * 230
+          : T.spacing + state.rng() * (T.linkRange - T.spacing);
+        x = from.x + Math.cos(angle) * dist;
+        y = from.y + Math.sin(angle) * dist;
       }
-      const d = Math.hypot(x - ball.x, y - ball.y);
-      if (d < bestD) { bestD = d; best = { x: x, y: y }; }
+      if (x < margin || y < margin || x > CFG.arena - margin || y > CFG.arena - margin) continue;
+      if (!siteOk(state, x, y)) continue;
+      const score = kind === 'conveyor' && core
+        ? Math.hypot(x - core.x, y - core.y)
+        : -Math.hypot(x - ball.x, y - ball.y);
+      if (score > bestScore) { bestScore = score; best = { x: x, y: y, kind: kind }; }
     }
     return best;
   }
@@ -1031,9 +1192,17 @@
       maxHp: spec.hp,
       active: false,       // 施工完才运转
       build: T.buildTime,
-      cd: 0,               // 炮塔开火冷却
+      status: 'building',  // building | working | lowpower | nopower | nofuel | idle
+      out: 0,              // 当前实际发电
+      flow: 0,             // 这条支路往核心方向送的净功率（负数 = 从电网取电）
+      parent: null,        // 电线接到哪个设备上
+      cd: 0,               // 炮塔 / 线圈开火冷却
       aim: 0,              // 炮塔朝向
       charge: 0,           // 发射井充能
+      progress: 0,         // 离心机进度
+      fuelTime: 0,         // 火电 / 核电：这份燃料还能烧多久
+      stored: 0,           // 蓄电池电量
+      items: [],           // 传送带上的矿
       ramCd: 0,
       tags: {},
     };
@@ -1043,26 +1212,32 @@
     return building;
   }
 
-  /** 把一方的设备用最短的电线连成一张网（最小生成树）。 */
+  /** 把一方的设备用最短的电线连成一张网（最小生成树，以核心为根）。 */
   function refreshGrid(state, owner) {
     state.wires = state.wires.filter(function (w) { return w.owner !== owner; });
     const list = state.buildings.filter(function (b) { return b.owner === owner; });
-    if (list.length < 2) return;
-    const linked = [list[0]];
-    const rest = list.slice(1);
-    while (rest.length) {
+    if (!list.length) return;
+    let rootIndex = 0;
+    for (let i = 0; i < list.length; i++) if (list[i].kind === 'core') { rootIndex = i; break; }
+    const root = list.splice(rootIndex, 1)[0];
+    root.parent = null;
+    root.depth = 0;
+    const linked = [root];
+    while (list.length) {
       let bi = 0;
       let from = null;
       let bestD = Infinity;
-      for (let i = 0; i < rest.length; i++) {
+      for (let i = 0; i < list.length; i++) {
         for (let j = 0; j < linked.length; j++) {
-          const d = Math.hypot(rest[i].x - linked[j].x, rest[i].y - linked[j].y);
+          const d = Math.hypot(list[i].x - linked[j].x, list[i].y - linked[j].y);
           if (d < bestD) { bestD = d; bi = i; from = linked[j]; }
         }
       }
-      state.wires.push({ owner: owner, a: from, b: rest[bi], live: false });
-      linked.push(rest[bi]);
-      rest.splice(bi, 1);
+      const child = list.splice(bi, 1)[0];
+      child.parent = from;
+      child.depth = from.depth + 1;
+      state.wires.push({ owner: owner, a: from, b: child, live: false });
+      linked.push(child);
     }
   }
 
@@ -1078,6 +1253,12 @@
     state.events.push({
       type: 'buildingDie', owner: building.owner, kind: building.kind, x: building.x, y: building.y,
     });
+    if (building.kind === 'core') {
+      // 仓库炸了：库存损失一部分。
+      const res = state.balls[building.owner].res;
+      if (res) for (const k in res) res[k] = Math.floor(res[k] * (1 - CFG.tech.coreLoss));
+      state.events.push({ type: 'coreLost', owner: building.owner, x: building.x, y: building.y });
+    }
     refreshGrid(state, building.owner);
   }
 
@@ -1090,28 +1271,139 @@
     return Math.hypot(px - (x1 + dx * t), py - (y1 + dy * t));
   }
 
-  function runBuildings(state, ball, enemy, dt) {
+  /**
+   * 结算电网：发电、耗电、电池、供电率。
+   * 供电率 < tripRatio：跳闸，全部用电设备停工；不足 100%：按比例降速；
+   * 超过 100%：多出来的电换成攻速 / 伤害加成。
+   */
+  function updatePower(state, ball, own, dt) {
     const T = CFG.tech;
-    const own = state.buildings.filter(function (b) { return b.owner === ball.id; });
-
-    // 施工 + 产电。
-    let income = 0;
+    const res = ball.res;
+    let supply = 0;
+    let demand = 0;
+    let planSupply = 0;
+    let planDemand = 0;
+    const batteries = [];
     for (let i = 0; i < own.length; i++) {
       const b = own[i];
+      const spec = T.buildings[b.kind];
+      b.out = 0;
       if (!b.active) {
-        b.build -= dt;
-        if (b.build <= 0) {
-          b.active = true;
-          state.events.push({ type: 'buildDone', owner: b.owner, kind: b.kind, x: b.x, y: b.y });
-        }
+        b.status = 'building';
+        planSupply += spec.supply || 0;
+        planDemand += spec.demand || 0;
         continue;
       }
-      if (b.kind === 'generator') income += T.generatorPower;
-      else if (b.kind === 'plant') income += T.plantPower;
+      if (spec.supply) {
+        let on = true;
+        if (b.kind === 'coal' || b.kind === 'plant') {
+          const key = b.kind === 'coal' ? 'coal' : 'fuel';
+          if (b.fuelTime <= 0 && res[key] >= 1) {
+            res[key] -= 1;
+            b.fuelTime += b.kind === 'coal' ? T.coalBurn : T.fuelBurn;
+          }
+          if (b.fuelTime > 0) b.fuelTime -= dt;
+          else on = false;
+        }
+        b.status = on ? 'working' : 'nofuel';
+        if (on) { b.out = spec.supply; supply += spec.supply; planSupply += spec.supply; }
+      } else if (b.kind === 'battery') {
+        batteries.push(b);
+      } else if (spec.demand) {
+        demand += spec.demand;
+        planDemand += spec.demand;
+      }
     }
-    ball.income = income;
-    ball.power = Math.min(T.powerMax, ball.power + income * dt);
-    const powered = income > 0;
+
+    // 电池：有富余就充，不够就放。
+    let effective = supply;
+    let stored = 0;
+    const n = batteries.length;
+    for (let i = 0; i < n; i++) stored += batteries[i].stored;
+    const capacity = n * T.batteryCapacity;
+    let batteryFlow = 0; // 正数 = 放电
+    if (n && supply > demand && stored < capacity - 1e-6) {
+      const charge = Math.min(supply - demand, n * T.batteryRate, (capacity - stored) / dt);
+      batteryFlow = -charge;
+      effective -= charge;
+      for (let i = 0; i < n; i++) {
+        batteries[i].stored = Math.min(T.batteryCapacity, batteries[i].stored + (charge * dt) / n);
+        batteries[i].status = 'working';
+      }
+    } else if (n && supply < demand && stored > 1e-6) {
+      const discharge = Math.min(demand - supply, n * T.batteryRate, stored / dt);
+      batteryFlow = discharge;
+      effective += discharge;
+      for (let i = 0; i < n; i++) {
+        batteries[i].stored = Math.max(0, batteries[i].stored - (discharge * dt) / n);
+        batteries[i].status = 'working';
+      }
+    } else {
+      for (let i = 0; i < n; i++) batteries[i].status = 'idle';
+    }
+    for (let i = 0; i < n; i++) batteries[i].out = batteryFlow / n;
+
+    const ratio = demand > 0 ? effective / demand : (effective > 0 ? 2 : 0);
+    const tripped = demand > 0 && ratio < T.tripRatio;
+    const eff = tripped ? 0 : Math.min(1, ratio);
+    const bonus = ratio > 1 ? Math.min(T.bonusMax, (ratio - 1) * T.bonusMax) : 0;
+    const grid = ball.grid;
+    if (tripped !== grid.tripped && state.time > 0.5) {
+      const core = findCore(state, ball.id) || own[0];
+      if (core) state.events.push({ type: tripped ? 'gridTrip' : 'gridRestore', owner: ball.id, x: core.x, y: core.y });
+    }
+    grid.supply = round1(effective);
+    grid.demand = demand;
+    grid.planSupply = planSupply;
+    grid.planDemand = planDemand;
+    grid.ratio = ratio;
+    grid.eff = eff;
+    grid.bonus = bonus;
+    grid.tripped = tripped;
+    grid.stored = stored;
+    grid.capacity = capacity;
+
+    // 用电设备的状态 + 每条电线上的潮流（从叶子往核心累加）。
+    const sorted = own.slice().sort(function (a, b) { return (b.depth || 0) - (a.depth || 0); });
+    for (let i = 0; i < own.length; i++) {
+      const b = own[i];
+      const spec = T.buildings[b.kind];
+      if (b.active && spec.demand) b.status = tripped ? 'nopower' : eff < 1 ? 'lowpower' : 'working';
+      b.flow = b.active ? b.out - (spec.demand ? spec.demand * eff : 0) : 0;
+    }
+    for (let i = 0; i < sorted.length; i++) {
+      const b = sorted[i];
+      if (b.parent && !b.parent.dead) b.parent.flow += b.flow;
+    }
+  }
+
+  function runBuildings(state, ball, enemy, dt) {
+    const T = CFG.tech;
+    const res = ball.res;
+    const own = state.buildings.filter(function (b) { return b.owner === ball.id; });
+
+    // 施工。
+    for (let i = 0; i < own.length; i++) {
+      const b = own[i];
+      if (b.active) continue;
+      b.build -= dt;
+      if (b.build > 0) continue;
+      b.active = true;
+      state.events.push({ type: 'buildDone', owner: b.owner, kind: b.kind, x: b.x, y: b.y });
+      if (b.kind === 'miner' || b.kind === 'repair') {
+        state.drones.push({
+          id: state.nextTechId++, owner: b.owner, kind: b.kind, home: b,
+          x: b.x, y: b.y, state: 'idle', target: null, carry: null, drop: null, timer: 0,
+        });
+      }
+    }
+
+    updatePower(state, ball, own, dt);
+    const grid = ball.grid;
+    const eff = grid.eff;
+    const rate = eff * (1 + grid.bonus);
+    const core = findCore(state, ball.id);
+    let shielded = false;
 
     for (let i = 0; i < own.length; i++) {
       const b = own[i];
@@ -1125,55 +1417,198 @@
         hurtBuilding(state, b, enemy.type === 'flame' ? T.ramDamageFlame : T.ramDamage);
         if (b.dead) continue;
       }
-      if (!b.active || !powered) continue;
+      if (!b.active || eff <= 0) continue;
 
-      if (b.kind === 'turret') {
-        b.cd = Math.max(0, b.cd - dt);
+      if (b.kind === 'turret' || b.kind === 'tesla') {
+        const tesla = b.kind === 'tesla';
+        const range = tesla ? T.teslaRange : T.turretRange;
+        b.cd = Math.max(0, b.cd - dt * rate);
         if (enemy.hp > 0) b.aim = Math.atan2(enemy.y - b.y, enemy.x - b.x);
         if (b.cd > 0) continue;
-        if (enemy.hp > 0 && ball.power >= T.shotCost &&
-            Math.hypot(enemy.x - b.x, enemy.y - b.y) <= T.turretRange + enemy.r) {
-          ball.power -= T.shotCost;
-          b.cd = T.turretEvery;
-          state.events.push({ type: 'turretFire', owner: ball.id, x: b.x, y: b.y, tx: enemy.x, ty: enemy.y });
-          damage(state, enemy, T.turretDamage, 'turret', ball.id);
-        } else if (ball.power >= T.clearCost) {
-          // 够不着敌人就清理附近的孢子 / 蘑菇。
+        const dmg = round1((tesla ? T.teslaDamage : T.turretDamage) * (1 + grid.bonus));
+        if (enemy.hp > 0 && Math.hypot(enemy.x - b.x, enemy.y - b.y) <= range + enemy.r) {
+          b.cd = tesla ? T.teslaEvery : T.turretEvery;
+          state.events.push({
+            type: tesla ? 'teslaFire' : 'turretFire', owner: ball.id, x: b.x, y: b.y, tx: enemy.x, ty: enemy.y,
+          });
+          damage(state, enemy, dmg, tesla ? 'tesla' : 'turret', ball.id);
+        } else if (!tesla) {
+          // 够不着敌人就清理附近的孢子 / 蘑菇 / 敌方设备。
           let got = null;
-          const hit = hitSummons(state, ball.id, T.turretDamage, function (x, y, r) {
-            if (Math.hypot(x - b.x, y - b.y) > T.turretRange + r) return false;
+          const hit = hitSummons(state, ball.id, dmg, function (x, y, r) {
+            if (Math.hypot(x - b.x, y - b.y) > range + r) return false;
             got = { x: x, y: y };
             return true;
           }, 1);
           if (hit) {
-            ball.power -= T.clearCost;
             b.cd = T.clearEvery;
             b.aim = Math.atan2(got.y - b.y, got.x - b.x);
             state.events.push({ type: 'turretFire', owner: ball.id, x: b.x, y: b.y, tx: got.x, ty: got.y, small: true });
           }
         }
       } else if (b.kind === 'silo') {
-        const take = Math.min(ball.power, T.siloRate * dt, T.nukeCost - b.charge);
-        b.charge += take;
-        ball.power -= take;
-        if (b.charge >= T.nukeCost - 1e-6 && enemy.hp > 0) {
-          b.charge = 0;
-          launchNuke(state, ball, b, enemy);
+        b.charge = Math.min(T.nukeTime, b.charge + dt * rate);
+        if (b.charge >= T.nukeTime - 1e-6) {
+          if (res.fuel >= 1 && enemy.hp > 0) {
+            res.fuel -= 1;
+            b.charge = 0;
+            launchNuke(state, ball, b, enemy);
+          } else if (res.fuel < 1) {
+            b.status = 'nofuel';
+          }
+        }
+      } else if (b.kind === 'centrifuge') {
+        if (b.progress <= 0 && res.uranium >= T.centrifugeUranium) {
+          res.uranium -= T.centrifugeUranium;
+          b.progress = 1e-6;
+        }
+        if (b.progress > 0) {
+          b.progress += dt * eff;
+          if (b.progress >= T.centrifugeTime) {
+            b.progress = 0;
+            res.fuel += 1;
+            state.events.push({ type: 'refine', owner: ball.id, x: b.x, y: b.y });
+          }
+        } else {
+          b.status = 'idle';
+        }
+      } else if (b.kind === 'shield') {
+        shielded = true;
+        ball.shield = Math.min(T.shieldMax, ball.shield + T.shieldRegen * rate * dt);
+      } else if (b.kind === 'conveyor') {
+        if (!core || !core.active) continue;
+        const len = Math.hypot(core.x - b.x, core.y - b.y) || 1;
+        for (let j = b.items.length - 1; j >= 0; j--) {
+          const item = b.items[j];
+          item.t += (T.beltSpeed * eff * dt) / len;
+          if (item.t < 1) continue;
+          b.items.splice(j, 1);
+          res[item.type] += item.amount;
+          state.events.push({ type: 'deliver', owner: ball.id, x: core.x, y: core.y, amount: item.amount, ore: item.type });
         }
       }
     }
+    ball.shieldOn = shielded;
 
     // 高压电线。
     ball.wireCd = Math.max(0, ball.wireCd - dt);
     for (let i = 0; i < state.wires.length; i++) {
       const w = state.wires[i];
       if (w.owner !== ball.id) continue;
-      w.live = powered && w.a.active && w.b.active;
+      w.live = grid.supply > 0 && !grid.tripped && w.a.active && w.b.active;
       if (!w.live || ball.wireCd > 0 || enemy.hp <= 0 || enemy.dashing) continue;
       if (segmentDistance(enemy.x, enemy.y, w.a.x, w.a.y, w.b.x, w.b.y) > enemy.r * 0.6) continue;
       ball.wireCd = T.wireEvery;
       state.events.push({ type: 'wireZap', owner: ball.id, x: enemy.x, y: enemy.y });
       damage(state, enemy, T.wireDamage, 'wire', ball.id);
+    }
+  }
+
+  /** 机器人朝 (tx, ty) 飞一步，到了返回 true。 */
+  function moveDrone(drone, tx, ty, step, reach) {
+    const dx = tx - drone.x;
+    const dy = ty - drone.y;
+    const dist = Math.hypot(dx, dy);
+    if (dist <= (reach || 0) + step) {
+      if (!reach) { drone.x = tx; drone.y = ty; }
+      return true;
+    }
+    drone.x += (dx / dist) * step;
+    drone.y += (dy / dist) * step;
+    return false;
+  }
+
+  /** 采到的矿送去哪：最近的核心或传送带。 */
+  function pickDrop(state, drone) {
+    const core = findCore(state, drone.owner);
+    if (!core || !core.active) return null;
+    let best = core;
+    let bestD = Math.hypot(core.x - drone.x, core.y - drone.y);
+    for (let i = 0; i < state.buildings.length; i++) {
+      const b = state.buildings[i];
+      if (b.owner !== drone.owner || b.kind !== 'conveyor' || !b.active) continue;
+      const d = Math.hypot(b.x - drone.x, b.y - drone.y);
+      if (d < bestD) { bestD = d; best = b; }
+    }
+    return best;
+  }
+
+  function updateDrones(state, dt) {
+    const T = CFG.tech;
+    for (let i = state.drones.length - 1; i >= 0; i--) {
+      const d = state.drones[i];
+      if (d.home.dead) { state.drones.splice(i, 1); continue; }
+      const ball = state.balls[d.owner];
+      const eff = ball.grid.eff;
+      if (ball.hp <= 0 || eff <= 0) continue; // 没电：原地趴窝
+      const step = T.droneSpeed * eff * dt;
+
+      if (d.kind === 'miner') {
+        if (d.state === 'idle') {
+          let best = null;
+          let bestD = Infinity;
+          for (let j = 0; j < state.ores.length; j++) {
+            const ore = state.ores[j];
+            if (ore.claim != null && ore.claim !== d.id &&
+                state.drones.some(function (o) { return o.id === ore.claim && o.target === ore; })) continue;
+            const dist = Math.hypot(ore.x - d.x, ore.y - d.y);
+            if (dist < bestD) { bestD = dist; best = ore; }
+          }
+          if (best) { best.claim = d.id; d.target = best; d.state = 'go'; }
+          else moveDrone(d, d.home.x, d.home.y - d.home.r - 8, step);
+        } else if (d.state === 'go' || d.state === 'mine') {
+          if (state.ores.indexOf(d.target) < 0) { d.state = 'idle'; d.target = null; continue; }
+          if (d.state === 'go') {
+            if (moveDrone(d, d.target.x, d.target.y, step)) { d.state = 'mine'; d.timer = T.mineTime; }
+          } else {
+            d.timer -= dt * eff;
+            if (d.timer > 0) continue;
+            const ore = d.target;
+            state.ores.splice(state.ores.indexOf(ore), 1);
+            d.carry = { type: ore.type, amount: ore.amount };
+            d.target = null;
+            d.state = 'return';
+            d.drop = null;
+            state.events.push({ type: 'mine', owner: d.owner, x: ore.x, y: ore.y, amount: ore.amount, ore: ore.type, drone: true });
+          }
+        } else if (d.state === 'return') {
+          if (!d.drop || d.drop.dead) d.drop = pickDrop(state, d);
+          if (!d.drop) continue;
+          if (!moveDrone(d, d.drop.x, d.drop.y, step)) continue;
+          if (d.drop.kind === 'conveyor') {
+            d.drop.items.push({ type: d.carry.type, amount: d.carry.amount, t: 0 });
+          } else {
+            ball.res[d.carry.type] += d.carry.amount;
+            state.events.push({ type: 'deliver', owner: d.owner, x: d.drop.x, y: d.drop.y, amount: d.carry.amount, ore: d.carry.type });
+          }
+          d.carry = null;
+          d.drop = null;
+          d.state = 'idle';
+        }
+      } else {
+        // 维修机器人：找伤得最重的设备。
+        if (d.state === 'idle') {
+          let best = null;
+          let worst = 0.999;
+          for (let j = 0; j < state.buildings.length; j++) {
+            const b = state.buildings[j];
+            if (b.owner !== d.owner) continue;
+            const ratio = b.hp / b.maxHp;
+            if (ratio < worst) { worst = ratio; best = b; }
+          }
+          if (best) { d.target = best; d.state = 'go'; }
+          else moveDrone(d, d.home.x, d.home.y - d.home.r - 8, step);
+        } else {
+          const b = d.target;
+          if (!b || b.dead || b.hp >= b.maxHp) { d.state = 'idle'; d.target = null; continue; }
+          if (moveDrone(d, b.x, b.y, step, b.r + 12)) {
+            d.state = 'work';
+            b.hp = Math.min(b.maxHp, b.hp + T.repairRate * eff * dt);
+          } else {
+            d.state = 'go';
+          }
+        }
+      }
     }
   }
 
@@ -1368,6 +1803,9 @@
     const seed = opts.seed == null ? (Date.now() ^ (Math.random() * 0x7fffffff)) >>> 0 : opts.seed;
     const rng = makeRng(seed);
     const types = [opts.left || 'electric', opts.right || 'laser'];
+    // 自定义地图尺寸 / 血量（不填就用默认值）。
+    CFG.arena = opts.arena ? clamp(Math.round(opts.arena), 300, 4000) : DEFAULTS.arena;
+    CFG.maxHp = opts.hp ? clamp(Math.round(opts.hp), 1, 99999) : DEFAULTS.maxHp;
     const state = {
       seed: seed,
       rng: rng,
@@ -1381,6 +1819,7 @@
       buildings: [],   // 科技球的设备
       wires: [],       // 设备之间的电线
       nukes: [],       // 飞行中的核弹
+      drones: [],      // 采矿 / 维修机器人
       oreTimer: CFG.tech.oreEvery,
       nextTechId: 1,
       nextDeviceId: 1,
@@ -1421,7 +1860,10 @@
     });
     state.hasTech = types.indexOf('tech') >= 0;
     if (state.hasTech) {
-      for (let i = 0; i < CFG.tech.oreStart; i++) spawnOre(state);
+      const count = Math.round(CFG.tech.oreStart * areaScale());
+      // 开局每种矿至少有一块。
+      const kinds = Object.keys(CFG.tech.ores);
+      for (let i = 0; i < count; i++) spawnOre(state, i < kinds.length ? kinds[i] : null);
       state.events.length = 0;
     }
     return state;
@@ -1465,6 +1907,7 @@
     updateMushrooms(state, dt);
     if (state.hasTech) {
       updateOres(state, dt);
+      updateDrones(state, dt);
       updateNukes(state, dt);
     }
 
@@ -1503,6 +1946,7 @@
     predict: predict,
     placeBuilding: placeBuilding,
     nextBuild: nextBuild,
+    DEFAULTS: DEFAULTS,
     hurtBuilding: hurtBuilding,
   };
 });

@@ -50,6 +50,24 @@
   <div class="stage">
     <canvas id="arena" width="600" height="600" role="img" aria-label="对战场地"></canvas>
 
+    <!-- 摄像机 -->
+    <div class="cambar" role="group" aria-label="摄像机">
+      <button type="button" class="cam" id="cam-reset" title="归正：回到全图">归正</button>
+      <button type="button" class="cam cam--who" id="cam-0" aria-pressed="false">左</button>
+      <button type="button" class="cam cam--who" id="cam-1" aria-pressed="false">右</button>
+      <button type="button" class="cam" id="cam-out" aria-label="缩小" title="缩小">－</button>
+      <button type="button" class="cam" id="cam-in" aria-label="放大" title="放大">＋</button>
+    </div>
+
+    <!-- 点设备看详情 -->
+    <aside class="inspect" id="inspect" aria-live="off" hidden>
+      <button type="button" class="inspect__close" id="inspect-close" aria-label="关闭详情">×</button>
+      <h3 class="inspect__title" id="inspect-title"></h3>
+      <p class="inspect__status" id="inspect-status"></p>
+      <dl class="inspect__rows" id="inspect-rows"></dl>
+      <p class="inspect__desc" id="inspect-desc"></p>
+    </aside>
+
     <div class="result" id="result" role="status" aria-live="polite" hidden>
       <p class="result__title" id="result-title"></p>
       <p class="result__sub" id="result-sub"></p>
@@ -95,6 +113,15 @@
         <legend>右方</legend>
         <div class="picker__options" data-el="options"></div>
       </fieldset>
+    </div>
+    <div class="custom">
+      <label class="custom__field">血量
+        <input type="number" id="opt-maxhp" min="10" max="5000" step="10" value="100" inputmode="numeric">
+      </label>
+      <label class="custom__field">地图尺寸
+        <input type="number" id="opt-arena" min="400" max="3000" step="100" value="600" inputmode="numeric">
+      </label>
+      <p class="custom__hint">血量 10–5000，地图 400–3000（默认 600）。场上可以拖动画面、滚轮缩放，点设备看详情。</p>
     </div>
     <div class="modal__actions">
       <button type="button" class="btn" id="select-cancel" hidden>返回对战</button>

@@ -300,18 +300,21 @@ test('对局：同一个种子结果完全一致，小球始终在场地内', ()
   assert.deepEqual(run(), run());
 });
 
-test('科技球：开局有矿，会采矿、造设备、连电网、产电', () => {
+test('科技球：开局有各种矿和一个核心，会采矿、造设备、连电网、发电', () => {
   const m = Sim.createMatch({ left: 'tech', right: 'laser', seed: 5 });
   assert.equal(m.ores.length, Sim.CFG.tech.oreStart);
+  const kinds = new Set(m.ores.map((o) => o.type));
+  for (const k of Object.keys(Sim.CFG.tech.ores)) assert.ok(kinds.has(k), '开局应该有' + k);
   const tech = m.balls[0];
   m.balls[1].hp = 1e9; // 只看发育，不让对局提前结束
   tech.hp = 1e9;
   Sim.advance(m, 30);
   const own = m.buildings.filter((b) => b.owner === 0);
-  assert.ok(own.length >= 2, '30 秒内至少造出两个设备');
+  assert.ok(own.some((b) => b.kind === 'core'));
   assert.ok(own.some((b) => b.kind === 'generator'));
+  assert.ok(own.length >= 4, '30 秒内至少造出四个设备');
   assert.equal(m.wires.filter((w) => w.owner === 0).length, own.length - 1, '电线把所有设备连成一张网');
-  assert.ok(tech.income > 0, '发电机在产电');
+  assert.ok(tech.grid.supply > 0, '在发电');
 });
 
 test('科技球：设备血厚，打掉后电网会重连', () => {
@@ -329,30 +332,109 @@ test('科技球：设备血厚，打掉后电网会重连', () => {
   assert.ok(a.hp === a.maxHp);
 });
 
-test('科技球：发射井充满电就发射核弹，炸中 -30', () => {
-  const T = Sim.CFG.tech;
+// 摆好一批完工的设备，跑一小会儿让电网结算。
+function techGrid(kinds) {
   const m = Sim.createMatch({ left: 'tech', right: 'spore', seed: 3 });
   const tech = m.balls[0];
-  const enemy = m.balls[1];
-  enemy.paralyzed = true; // 站着不动，核弹一定炸中
-  enemy.shock = null;
+  tech.hp = m.balls[1].hp = 1e9;
+  tech.paralyzed = true;       // 球不动，只看设备
+  tech.started = true;         // 不自动放核心
   m.ores.length = 0;
-  const plant = Sim.placeBuilding(m, 0, 'plant', 80, 80);
-  const silo = Sim.placeBuilding(m, 0, 'silo', 80, 200);
-  plant.active = silo.active = true;
-  tech.power = T.powerMax;
+  const built = kinds.map((kind, i) => {
+    const b = Sim.placeBuilding(m, 0, kind, 60 + (i % 7) * 70, 60 + Math.floor(i / 7) * 70);
+    b.build = 0; // 下一步就完工
+    return b;
+  });
+  return { m, tech, built };
+}
+
+test('科技球：一台发电机带 5 个炮塔会跳闸，全部停工', () => {
+  const { m, tech, built } = techGrid(['generator', 'turret', 'turret', 'turret', 'turret', 'turret']);
+  tech.paralyzed = true;
+  Sim.step(m);
+  assert.equal(tech.grid.supply, 6);
+  assert.equal(tech.grid.demand, 20);
+  assert.equal(tech.grid.tripped, true);
+  assert.ok(built.slice(1).every((b) => b.status === 'nopower'));
+});
+
+test('科技球：电有富余时有攻速 / 伤害加成，刚好够用时没有', () => {
+  const rich = techGrid(['generator', 'generator', 'turret']); // 12 kW 带 4 kW
+  Sim.step(rich.m);
+  assert.equal(rich.tech.grid.tripped, false);
+  assert.equal(rich.tech.grid.bonus, Sim.CFG.tech.bonusMax);
+  const tight = techGrid(['generator', 'turret', 'miner']);    // 6 kW 带 6 kW
+  Sim.step(tight.m);
+  assert.equal(tight.tech.grid.bonus, 0);
+  assert.equal(tight.built[1].status, 'working');
+});
+
+test('科技球：火力发电厂没煤就停机，有煤才发电', () => {
+  const { m, tech, built } = techGrid(['coal']);
+  Sim.step(m);
+  assert.equal(built[0].status, 'nofuel');
+  assert.equal(tech.grid.supply, 0);
+  tech.res.coal = 1;
+  Sim.step(m);
+  assert.equal(built[0].status, 'working');
+  assert.equal(tech.grid.supply, Sim.CFG.tech.buildings.coal.supply);
+  assert.equal(tech.res.coal, 0);
+});
+
+test('科技球：离心机把铀矿提纯成浓缩铀', () => {
+  const { m, tech } = techGrid(['generator', 'generator', 'centrifuge']);
+  tech.res.uranium = 2;
+  for (let i = 0; i < 120 * 8; i++) { tech.paralyzed = true; Sim.step(m); }
+  assert.equal(tech.res.uranium, 0);
+  assert.equal(tech.res.fuel, 1);
+});
+
+test('科技球：采矿机器人把矿送上传送带，再运回核心', () => {
+  const { m, tech } = techGrid(['core', 'generator', 'miner']);
+  const belt = Sim.placeBuilding(m, 0, 'conveyor', 500, 500);
+  belt.build = 0;
+  const before = tech.res.iron;
+  m.ores.push({ id: 999, type: 'iron', x: 540, y: 540, amount: 2, claim: null });
+  let onBelt = false;
+  for (let i = 0; i < 120 * 20 && tech.res.iron === before; i++) {
+    tech.paralyzed = true;
+    Sim.step(m);
+    m.ores.length = Math.min(m.ores.length, 1); // 不要新长出来的矿干扰
+    if (belt.items.length) onBelt = true;
+  }
+  assert.ok(onBelt, '矿先上了传送带');
+  assert.equal(tech.res.iron, before + 2);
+});
+
+test('科技球：发射井充能后消耗浓缩铀发射核弹，炸中 -30', () => {
+  const T = Sim.CFG.tech;
+  const { m, tech } = techGrid(['plant', 'silo']);
+  const enemy = m.balls[1];
+  enemy.hp = 100;
+  tech.res.fuel = 3;
   let launched = false;
   let nukeDamage = 0;
-  for (let i = 0; i < 120 * 20 && !m.over; i++) {
-    enemy.paralyzed = true;
+  for (let i = 0; i < 120 * 20 && !nukeDamage; i++) {
+    tech.paralyzed = true;
+    enemy.paralyzed = true; // 站着不动，核弹一定炸中
     Sim.step(m);
     for (const e of m.events) {
       if (e.type === 'nukeLaunch') launched = true;
       if (e.type === 'damage' && e.kind === 'nuke') nukeDamage += e.amount;
     }
     m.events.length = 0;
-    if (nukeDamage) break;
   }
   assert.ok(launched);
   assert.equal(nukeDamage, T.nukeDamage);
+  assert.ok(tech.res.fuel < 3, '用掉了浓缩铀');
+});
+
+test('自定义血量和地图尺寸', () => {
+  const m = Sim.createMatch({ left: 'electric', right: 'laser', seed: 1, hp: 250, arena: 1200 });
+  assert.equal(m.balls[0].hp, 250);
+  assert.equal(Sim.CFG.arena, 1200);
+  assert.ok(m.balls[1].x > 600);
+  Sim.createMatch({ left: 'electric', right: 'laser', seed: 1 });
+  assert.equal(Sim.CFG.arena, 600);
+  assert.equal(Sim.CFG.maxHp, 100);
 });
