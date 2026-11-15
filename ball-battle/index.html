@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#080a11">
+<title>小球对战</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="app">
+  <h1 class="sr-only">小球对战</h1>
+
+  <!-- 上方：双方名字、血条、技能状态 -->
+  <header class="hud" id="hud">
+    <section class="fighter fighter--left" id="fighter-0" aria-label="左方">
+      <div class="fighter__name"><span class="fighter__dot" aria-hidden="true"></span><span data-el="name">—</span></div>
+      <div class="hp" data-el="hp">
+        <div class="bar bar--hp" role="progressbar" aria-label="血量" aria-valuemin="0" aria-valuemax="50" aria-valuenow="50" data-el="hpBar">
+          <div class="bar__ghost" data-el="hpGhost"></div>
+          <div class="bar__fill" data-el="hpFill"></div>
+        </div>
+        <span class="hp__num" data-el="hpNum" aria-hidden="true">50</span>
+      </div>
+      <div class="ability">
+        <div class="ability__text"><span data-el="abilityLabel">—</span><span class="ability__value" data-el="abilityValue">—</span></div>
+        <div class="bar bar--ability" aria-hidden="true"><div class="bar__fill" data-el="abilityFill"></div></div>
+      </div>
+    </section>
+
+    <div class="hud__vs" aria-hidden="true">VS</div>
+
+    <section class="fighter fighter--right" id="fighter-1" aria-label="右方">
+      <div class="fighter__name"><span class="fighter__dot" aria-hidden="true"></span><span data-el="name">—</span></div>
+      <div class="hp" data-el="hp">
+        <div class="bar bar--hp" role="progressbar" aria-label="血量" aria-valuemin="0" aria-valuemax="50" aria-valuenow="50" data-el="hpBar">
+          <div class="bar__ghost" data-el="hpGhost"></div>
+          <div class="bar__fill" data-el="hpFill"></div>
+        </div>
+        <span class="hp__num" data-el="hpNum" aria-hidden="true">50</span>
+      </div>
+      <div class="ability">
+        <div class="ability__text"><span data-el="abilityLabel">—</span><span class="ability__value" data-el="abilityValue">—</span></div>
+        <div class="bar bar--ability" aria-hidden="true"><div class="bar__fill" data-el="abilityFill"></div></div>
+      </div>
+    </section>
+  </header>
+
+  <!-- 中间：正方形场地 -->
+  <div class="stage">
+    <canvas id="arena" width="600" height="600" role="img" aria-label="对战场地"></canvas>
+
+    <div class="result" id="result" role="status" aria-live="polite" hidden>
+      <p class="result__title" id="result-title"></p>
+      <p class="result__sub" id="result-sub"></p>
+      <div class="result__actions">
+        <button type="button" class="btn btn--primary" id="result-again">再来一局</button>
+        <button type="button" class="btn" id="result-reselect">重选角色</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 下方：设置 -->
+  <footer class="settings" aria-labelledby="settings-title">
+    <h2 class="settings__title" id="settings-title">设置</h2>
+    <div class="settings__group">
+      <button type="button" class="btn" id="btn-restart">重开</button>
+      <button type="button" class="btn" id="btn-reselect">重选角色</button>
+    </div>
+    <div class="settings__group">
+      <label class="switch">
+        <input type="checkbox" id="opt-floats" checked>
+        <span class="switch__track" aria-hidden="true"></span>
+        <span>显示伤害飘字</span>
+      </label>
+      <label class="switch">
+        <input type="checkbox" id="opt-hp" checked>
+        <span class="switch__track" aria-hidden="true"></span>
+        <span>显示双方血条</span>
+      </label>
+    </div>
+  </footer>
+</main>
+
+<!-- 选角色 -->
+<div class="modal" id="select" hidden>
+  <form class="modal__panel" id="select-form" role="dialog" aria-modal="true" aria-labelledby="select-title">
+    <h2 class="modal__title" id="select-title">选择角色</h2>
+    <div class="picker">
+      <fieldset class="picker__side" data-side="left">
+        <legend>左方</legend>
+        <div class="picker__options" data-el="options"></div>
+      </fieldset>
+      <fieldset class="picker__side" data-side="right">
+        <legend>右方</legend>
+        <div class="picker__options" data-el="options"></div>
+      </fieldset>
+    </div>
+    <div class="modal__actions">
+      <button type="button" class="btn" id="select-cancel" hidden>返回对战</button>
+      <button type="submit" class="btn btn--primary" id="select-start">开始对战</button>
+    </div>
+  </form>
+</div>
+
+<noscript><p class="noscript">这个小游戏需要启用 JavaScript 才能运行。</p></noscript>
+
+<script src="sim.js"></script>
+<script src="render.js"></script>
+<script src="main.js"></script>
+</body>
+</html>
