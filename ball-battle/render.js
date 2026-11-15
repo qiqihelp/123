@@ -26,6 +26,14 @@
       { main: '#ff4d6d', light: '#ffd3db', dark: '#a3122e', ink: '#ffffff', arc: '#ffffff' },
       { main: '#b07cff', light: '#ecdfff', dark: '#5a2bb0', ink: '#ffffff', arc: '#ffffff' },
     ],
+    flame: [
+      { main: '#ff8a2a', light: '#ffe2b8', dark: '#b23a00', ink: '#ffffff', arc: '#fff3d6' },
+      { main: '#ff5fa2', light: '#ffd9ea', dark: '#a3175a', ink: '#ffffff', arc: '#ffffff' },
+    ],
+    spore: [
+      { main: '#7ddc5a', light: '#e1fbd2', dark: '#2f7d1c', ink: '#0d2a05', arc: '#ffffff' },
+      { main: '#3fd6b0', light: '#d3fbf0', dark: '#0f7a62', ink: '#00271f', arc: '#ffffff' },
+    ],
   };
 
   function themeFor(match, ballId) {
@@ -48,6 +56,8 @@
       particles: [],
       floats: [],
       rings: [],
+      bolts: [],
+      zaps: [],
       shake: 0,
       trails: [[], []],
       trailTimer: 0,
@@ -93,10 +103,13 @@
           const target = match.balls[e.target];
           const color = themeFor(match, e.source).main;
           fx.hitFlash[e.target] = 0.18;
-          burst(fx, target.x, target.y, color, e.kind === 'laser' ? 14 : 7, 190, 0.45, 3);
-          fx.shake = Math.max(fx.shake, e.kind === 'laser' ? 7 : 3.5);
+          const heavy = e.kind === 'laser' || e.kind === 'thunder' || e.kind === 'punch';
+          const light = e.kind === 'burn' || e.kind === 'spore';
+          burst(fx, target.x, target.y, color, heavy ? 14 : light ? 3 : 7, 190, 0.45, 3);
+          fx.shake = Math.max(fx.shake, heavy ? 7 : light ? 1.5 : 3.5);
           if (opts.floats) {
-            floatText(fx, target.x, target.y - target.r - 10, '-' + e.amount, color, e.kind === 'laser' ? 24 : 22);
+            const size = e.kind === 'punch' ? 30 : heavy ? 24 : light ? 17 : 22;
+            floatText(fx, target.x + rand(-12, 12), target.y - target.r - 10, '-' + e.amount, color, size);
           }
           break;
         }
@@ -130,6 +143,56 @@
         case 'deviceFire':
           burst(fx, e.x, e.y, '#ffffff', 8, 200, 0.3, 2.4);
           fx.shake = Math.max(fx.shake, 3);
+          break;
+        case 'burn':
+          break;
+        case 'zap':
+          fx.zaps.push({ ball: e.ball, x: e.x, y: e.y, age: 0, life: 0.14 });
+          break;
+        case 'thunder': {
+          const color = themeFor(match, e.owner).main;
+          fx.bolts.push({ x: e.x, y: e.y, color: color, age: 0, life: 0.28, path: bolt(e.x + rand(-40, 40), -10, e.x, e.y, 16, 9) });
+          fx.rings.push({ x: e.x, y: e.y, r0: 10, r1: CFG.electric.thunderRadius + 14, age: 0, life: 0.35, color: color, width: 5 });
+          burst(fx, e.x, e.y, color, 10, 220, 0.4, 3);
+          fx.shake = Math.max(fx.shake, e.hit ? 8 : 3);
+          break;
+        }
+        case 'flameHit':
+        case 'flamePunch': {
+          const color = themeFor(match, e.ball).main;
+          const big = e.type === 'flamePunch';
+          fx.rings.push({ x: e.x, y: e.y, r0: 12, r1: e.radius, age: 0, life: big ? 0.5 : 0.35, color: color, width: big ? 10 : 6 });
+          fx.rings.push({ x: e.x, y: e.y, r0: 6, r1: e.radius * 0.6, age: 0, life: big ? 0.4 : 0.28, color: '#fff3d6', width: big ? 5 : 3 });
+          burst(fx, e.x, e.y, color, big ? 34 : 14, big ? 380 : 240, big ? 0.7 : 0.45, big ? 4.5 : 3.2);
+          fx.shake = Math.max(fx.shake, big ? 16 : 6);
+          break;
+        }
+        case 'ultWindup': {
+          const ball = match.balls[e.ball];
+          fx.rings.push({ x: ball.x, y: ball.y, r0: 90, r1: ball.r, age: 0, life: 0.5, color: themeFor(match, e.ball).main, width: 3, follow: e.ball });
+          break;
+        }
+        case 'ultDash':
+          burst(fx, e.x, e.y, themeFor(match, e.ball).main, 16, 260, 0.45, 3.5);
+          fx.shake = Math.max(fx.shake, 5);
+          break;
+        case 'dashEnd':
+          if (!e.hit) burst(fx, e.x, e.y, themeFor(match, e.ball).main, 10, 200, 0.4, 3);
+          break;
+        case 'sporeRelease':
+          fx.rings.push({ x: e.x, y: e.y, r0: 8, r1: 40, age: 0, life: 0.3, color: themeFor(match, e.owner).main, width: 3 });
+          break;
+        case 'sprout':
+        case 'mushroomGrow':
+          burst(fx, e.x, e.y, themeFor(match, e.owner).light, 3, 60, 0.3, 2);
+          break;
+        case 'mushroomPop':
+        case 'mushroomBurst':
+        case 'mushroomDie':
+          burst(fx, e.x, e.y, themeFor(match, e.owner).main, 7, 130, 0.35, 2.6);
+          break;
+        case 'sporeDie':
+          burst(fx, e.x, e.y, themeFor(match, e.owner).main, 2, 60, 0.25, 1.8);
           break;
         case 'wall': {
           burst(fx, e.x, e.y, themeFor(match, e.ball).main, 4, 90, 0.3, 2.2);
@@ -176,6 +239,14 @@
       const r = fx.rings[i];
       r.age += dt;
       if (r.age >= r.life) fx.rings.splice(i, 1);
+    }
+    for (let i = fx.bolts.length - 1; i >= 0; i--) {
+      fx.bolts[i].age += dt;
+      if (fx.bolts[i].age >= fx.bolts[i].life) fx.bolts.splice(i, 1);
+    }
+    for (let i = fx.zaps.length - 1; i >= 0; i--) {
+      fx.zaps[i].age += dt;
+      if (fx.zaps[i].age >= fx.zaps[i].life) fx.zaps.splice(i, 1);
     }
 
     if (!match) return;
@@ -437,7 +508,254 @@
         ctx.restore();
       },
     },
+    flame: {
+      /** 灼热光晕；蓄力时画瞄准线和收拢的火圈。 */
+      under: function (ctx, match, fx, ball, theme) {
+        const ult = ball.ult;
+        const pulse = 0.5 + 0.5 * Math.sin(fx.time * 9);
+        const glowR = ball.r + 16 + pulse * 5 + (ult.phase === 'idle' ? 0 : 16);
+        const aura = ctx.createRadialGradient(ball.x, ball.y, ball.r * 0.6, ball.x, ball.y, glowR);
+        aura.addColorStop(0, hexA(theme.main, 0.45));
+        aura.addColorStop(1, hexA(theme.main, 0));
+        ctx.fillStyle = aura;
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, glowR, 0, TAU);
+        ctx.fill();
+
+        if (ult.phase === 'windup') {
+          const t = 1 - ult.timer / CFG.flame.ultWindup; // 0 → 1
+          const len = 900;
+          ctx.save();
+          ctx.translate(ball.x, ball.y);
+          ctx.rotate(ult.aim);
+          ctx.fillStyle = hexA(theme.main, 0.1 + 0.22 * t);
+          ctx.fillRect(0, -ball.r, len, ball.r * 2);
+          ctx.strokeStyle = hexA(theme.arc, 0.35 + 0.5 * t);
+          ctx.lineWidth = 2;
+          ctx.setLineDash([14, 10]);
+          ctx.lineDashOffset = -fx.time * 120;
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(len, 0);
+          ctx.stroke();
+          ctx.restore();
+
+          ctx.save();
+          ctx.strokeStyle = hexA(theme.main, 0.9);
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.arc(ball.x, ball.y, ball.r + 6 + (1 - t) * 44, 0, TAU);
+          ctx.stroke();
+          ctx.restore();
+        } else if (ult.phase === 'idle') {
+          // 怒气圈。
+          const ratio = Math.min(1, ult.energy / CFG.flame.ultEnergy);
+          ctx.save();
+          ctx.lineWidth = 4;
+          ctx.lineCap = 'round';
+          ctx.strokeStyle = hexA(theme.main, 0.18);
+          ctx.beginPath();
+          ctx.arc(ball.x, ball.y, ball.r + 8, 0, TAU);
+          ctx.stroke();
+          if (ratio > 0) {
+            ctx.strokeStyle = theme.main;
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.r + 8, -Math.PI / 2, -Math.PI / 2 + TAU * ratio);
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+      },
+      over: function () {},
+      body: function (ctx, ball, theme) {
+        // 一簇火苗。
+        const r = ball.r;
+        ctx.save();
+        ctx.translate(ball.x, ball.y);
+        ctx.fillStyle = hexA(theme.light, 0.5);
+        ctx.beginPath();
+        ctx.moveTo(0, -r * 0.82);
+        ctx.bezierCurveTo(r * 0.62, -r * 0.2, r * 0.6, r * 0.55, 0, r * 0.7);
+        ctx.bezierCurveTo(-r * 0.6, r * 0.55, -r * 0.5, -r * 0.05, -r * 0.2, -r * 0.3);
+        ctx.bezierCurveTo(-r * 0.1, -r * 0.1, -r * 0.05, -r * 0.5, 0, -r * 0.82);
+        ctx.fill();
+        ctx.restore();
+      },
+    },
+    spore: {
+      /** 下一波孢子的进度圈。 */
+      under: function (ctx, match, fx, ball, theme) {
+        const ratio = Math.max(0, Math.min(1, 1 - ball.sporeTimer / CFG.spore.interval));
+        ctx.save();
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = hexA(theme.main, 0.18);
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.r + 8, 0, TAU);
+        ctx.stroke();
+        if (ratio > 0) {
+          ctx.strokeStyle = theme.main;
+          ctx.beginPath();
+          ctx.arc(ball.x, ball.y, ball.r + 8, -Math.PI / 2, -Math.PI / 2 + TAU * ratio);
+          ctx.stroke();
+        }
+        ctx.restore();
+      },
+      over: function () {},
+      body: function (ctx, ball, theme) {
+        // 菌盖上的斑点。
+        const r = ball.r;
+        const spots = [[-0.45, -0.4, 0.2], [0.42, -0.35, 0.16], [0.55, 0.3, 0.14], [-0.5, 0.35, 0.17], [0, -0.68, 0.11], [0.05, 0.66, 0.12]];
+        ctx.fillStyle = hexA(theme.light, 0.7);
+        for (let i = 0; i < spots.length; i++) {
+          ctx.beginPath();
+          ctx.arc(ball.x + spots[i][0] * r, ball.y + spots[i][1] * r, spots[i][2] * r, 0, TAU);
+          ctx.fill();
+        }
+      },
+    },
   };
+
+  // ---------------------------------------------------------------------
+  // 场上的东西：落雷、孢子、蘑菇、灼烧
+  // ---------------------------------------------------------------------
+
+  /** 落雷预警圈：越接近劈下来越亮。 */
+  function drawStrikes(ctx, match, fx) {
+    const E = CFG.electric;
+    for (let i = 0; i < match.strikes.length; i++) {
+      const s = match.strikes[i];
+      const theme = themeFor(match, s.owner);
+      const t = 1 - s.timer / E.thunderDelay;
+      ctx.fillStyle = hexA(theme.main, 0.08 + 0.2 * t);
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, E.thunderRadius, 0, TAU);
+      ctx.fill();
+      ctx.strokeStyle = hexA(theme.main, 0.5 + 0.5 * t);
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 6]);
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, E.thunderRadius, 0, TAU);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.strokeStyle = hexA(theme.arc, 0.9);
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, E.thunderRadius * (1 - t), 0, TAU);
+      ctx.stroke();
+    }
+  }
+
+  function drawMushrooms(ctx, match) {
+    const S = CFG.spore;
+    for (let i = 0; i < match.mushrooms.length; i++) {
+      const m = match.mushrooms[i];
+      const theme = themeFor(match, m.owner);
+      const mature = m.stage === 'mature';
+      const r = mature ? S.matureRadius : S.youngRadius;
+      // 菌柄
+      ctx.fillStyle = hexA(theme.light, 0.95);
+      ctx.beginPath();
+      ctx.rect(m.x - r * 0.3, m.y - r * 0.1, r * 0.6, r * 0.95);
+      ctx.fill();
+      // 菌盖
+      ctx.fillStyle = mature ? theme.main : hexA(theme.main, 0.75);
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, r, Math.PI, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = theme.dark;
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      if (mature) {
+        ctx.fillStyle = hexA(theme.light, 0.9);
+        ctx.beginPath();
+        ctx.arc(m.x - r * 0.4, m.y - r * 0.45, r * 0.17, 0, TAU);
+        ctx.arc(m.x + r * 0.35, m.y - r * 0.5, r * 0.14, 0, TAU);
+        ctx.fill();
+        // 快要分裂时鼓起来的圈。
+        const t = Math.min(1, m.age / S.matureTime);
+        ctx.strokeStyle = hexA(theme.main, 0.25 + 0.6 * t);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(m.x, m.y, r + 4, -Math.PI / 2, -Math.PI / 2 + TAU * t);
+        ctx.stroke();
+      }
+      if (m.hp < S.mushroomHp) {
+        ctx.strokeStyle = 'rgba(10, 12, 20, 0.8)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(m.x - r * 0.2, m.y - r * 0.9);
+        ctx.lineTo(m.x + r * 0.1, m.y - r * 0.45);
+        ctx.lineTo(m.x - r * 0.1, m.y - r * 0.1);
+        ctx.stroke();
+      }
+    }
+  }
+
+  function drawSpores(ctx, match) {
+    const S = CFG.spore;
+    for (let i = 0; i < match.spores.length; i++) {
+      const s = match.spores[i];
+      const theme = themeFor(match, s.owner);
+      ctx.fillStyle = hexA(theme.main, 0.28);
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, S.sporeRadius + 4, 0, TAU);
+      ctx.fill();
+      ctx.fillStyle = theme.light;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, S.sporeRadius * 0.75, 0, TAU);
+      ctx.fill();
+    }
+  }
+
+  /** 灼烧中的球：身上窜火苗。 */
+  function drawBurn(ctx, fx, ball) {
+    if (!ball.burn) return;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 6; i++) {
+      const a = i * 1.047 + fx.time * 2.2;
+      const flick = 0.5 + 0.5 * Math.sin(fx.time * 17 + i * 2.1);
+      const d = ball.r + 1 + flick * 5;
+      ctx.fillStyle = i % 2 ? 'rgba(255, 138, 42, 0.75)' : 'rgba(255, 214, 102, 0.75)';
+      ctx.beginPath();
+      ctx.arc(ball.x + Math.cos(a) * d, ball.y + Math.sin(a) * d - flick * 5, 3 + flick * 3, 0, TAU);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  /** 落雷的闪电、电孢子的电弧。 */
+  function drawBolts(ctx, match, fx) {
+    if (!fx.bolts.length && !fx.zaps.length) return;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    for (let i = 0; i < fx.bolts.length; i++) {
+      const b = fx.bolts[i];
+      const a = 1 - b.age / b.life;
+      ctx.strokeStyle = hexA(b.color, 0.7 * a);
+      ctx.lineWidth = 12;
+      strokePaths(ctx, [b.path], 0, 0);
+      ctx.strokeStyle = hexA('#ffffff', a);
+      ctx.lineWidth = 4;
+      strokePaths(ctx, [b.path], 0, 0);
+    }
+    for (let i = 0; i < fx.zaps.length; i++) {
+      const z = fx.zaps[i];
+      const from = match.balls[z.ball];
+      const a = 1 - z.age / z.life;
+      const path = bolt(from.x, from.y, z.x, z.y, 7, 5);
+      ctx.strokeStyle = hexA(themeFor(match, z.ball).main, 0.8 * a);
+      ctx.lineWidth = 5;
+      strokePaths(ctx, [path], 0, 0);
+      ctx.strokeStyle = hexA('#ffffff', a);
+      ctx.lineWidth = 1.5;
+      strokePaths(ctx, [path], 0, 0);
+    }
+    ctx.restore();
+  }
 
   function hexA(hex, alpha) {
     const n = parseInt(hex.slice(1), 16);
@@ -750,11 +1068,18 @@
       match.balls.forEach(function (ball, i) {
         if (!fx.dead[i]) DRAW[ball.type].under(ctx, match, fx, ball, themes[i]);
       });
+      drawStrikes(ctx, match, fx);
+      drawMushrooms(ctx, match);
       drawCrosses(ctx, match, fx, 'fire');
       drawDevices(ctx, match, fx);
+      drawSpores(ctx, match);
       match.balls.forEach(function (ball, i) {
         if (!fx.dead[i]) drawBall(ctx, match, fx, ball, themes[i], opts);
       });
+      match.balls.forEach(function (ball, i) {
+        if (!fx.dead[i]) drawBurn(ctx, fx, ball);
+      });
+      drawBolts(ctx, match, fx);
       match.balls.forEach(function (ball, i) {
         if (!fx.dead[i]) DRAW[ball.type].over(ctx, match, fx, ball, themes[i]);
       });

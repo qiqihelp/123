@@ -122,6 +122,21 @@
         tone: full ? 'ready' : '',
       };
     },
+    flame: function (ball) {
+      const F = CFG.flame;
+      const ult = ball.ult;
+      if (ult.phase === 'windup') {
+        return { label: '烈焰冲拳', value: '蓄力 ' + ult.timer.toFixed(1) + 's', ratio: 1 - ult.timer / F.ultWindup, tone: 'ready' };
+      }
+      if (ult.phase === 'dash') return { label: '烈焰冲拳', value: '冲！', ratio: 1, tone: 'ready' };
+      return { label: '怒气', value: Math.floor(ult.energy) + ' / ' + F.ultEnergy, ratio: ult.energy / F.ultEnergy, tone: '' };
+    },
+    spore: function (ball) {
+      const S = CFG.spore;
+      let n = 0;
+      for (let i = 0; i < match.mushrooms.length; i++) if (match.mushrooms[i].owner === ball.id) n++;
+      return { label: '蘑菇 ' + n, value: '孢子 ' + Math.max(0, ball.sporeTimer).toFixed(1) + 's', ratio: 1 - ball.sporeTimer / S.interval, tone: n >= S.maxMushrooms ? 'ready' : '' };
+    },
   };
 
   /** 只在值真的变了的时候才碰 DOM。 */

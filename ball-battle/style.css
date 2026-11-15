@@ -524,3 +524,7 @@ body {
     transition-delay: 0s !important;
   }
 }
+
+/* 角色多了以后，只展开选中那张卡的说明，弹窗才不会太长。 */
+.pick input:not(:checked) + .pick__card .pick__details { display: none; }
+.modal__panel { max-height: 100%; overflow-y: auto; }
