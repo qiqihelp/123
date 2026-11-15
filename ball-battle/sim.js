@@ -17,7 +17,7 @@
     arena: 600,        // 正方形场地边长（逻辑单位）
     ballR: 28,
     speed: 230,        // 小球恒定速率（单位/秒）
-    maxHp: 50,         // 电击每轮 9 点、激光每道 7 点，一局大约一分多钟
+    maxHp: 100,
     step: 1 / 120,     // 固定模拟步长
 
     electric: {
@@ -29,15 +29,19 @@
     },
 
     laser: {
-      interval: 2,     // 两次发射之间的间隔
-      warn: 0.55,      // 预警线持续时间
-      fire: 0.4,       // 激光持续时间
+      interval: 3.4,   // 每隔多久丢一次装置
+      arm: 0.7,        // 装置落地后预警多久才发射
+      fire: 0.4,       // 十字激光持续时间
       width: 20,
-      damage: 7,
+      damage: 4,       // 每个装置的十字激光最多命中一次
       chargeMax: 20,
       chargeRate: 1,   // 每秒自然充能
-      chargeOnHit: 3,  // 每道激光命中额外充能
-      doubleGap: 64,   // 双发同向激光时，两道激光到球心的距离
+      chargeOnHit: 2,  // 每个装置命中额外充能
+      burstCount: 4,   // 充能满时一次丢出几个装置
+      throwTime: 0.3,  // 丢出的装置飞多久落地
+      throwMin: 130,   // 丢出的距离范围
+      throwMax: 170,
+      margin: 30,      // 装置离方框的最小距离
     },
   };
 
@@ -144,52 +148,51 @@
     },
 
     /*
-     * 激光球：每隔一段时间发射一道横向或纵向激光。
-     * 充能条随时间增长、命中也会增长；满 20 时下一次改为双发
-     * （两纵 / 两横 / 一纵一横），并清空充能。
+     * 激光球：每隔一段时间在脚下丢一个激光发射装置，装置随后发射十字激光。
+     * 充能条随时间增长、命中也会增长；满 20 时下一次改为向四周丢出 4 个装置，
+     * 并清空充能。
      */
     laser: {
       id: 'laser',
       name: '激光球',
-      summary: '定时发射横向 / 纵向激光',
+      summary: '丢下激光发射装置，发射十字激光',
       details: [
-        '定时发射横向或纵向激光',
+        '定时丢下装置，发射十字激光',
         '充能随时间和命中增加',
-        '充能满 20：一次两道激光',
+        '充能满 20：一次丢出 4 个装置',
       ],
       init: function (ball, rng) {
         ball.charge = 0;
         // 首发时间错开一点，两个激光球才不会永远同时开火。
         ball.fireTimer = CFG.laser.interval * (0.5 + rng() * 0.5);
-        ball.volleys = 0;
       },
       update: function (state, ball, enemy, dt) {
-        if (ball.paralyzed) return; // 麻痹时无法充能、无法发射
+        if (ball.paralyzed) return; // 麻痹时无法充能、无法丢装置（已丢出的照常发射）
         const L = CFG.laser;
         ball.charge = Math.min(L.chargeMax, ball.charge + L.chargeRate * dt);
         ball.fireTimer -= dt;
         if (ball.fireTimer > 0) return;
         ball.fireTimer += L.interval;
-        ball.volleys += 1;
 
         if (ball.charge >= L.chargeMax) {
           ball.charge = 0;
-          const pattern = ['VV', 'HH', 'VH'][Math.floor(state.rng() * 3)];
-          if (pattern === 'VH') {
-            spawnBeam(state, ball, 'v', 0, true);
-            spawnBeam(state, ball, 'h', 0, true);
-          } else {
-            const orient = pattern === 'VV' ? 'v' : 'h';
-            spawnBeam(state, ball, orient, -L.doubleGap, true);
-            spawnBeam(state, ball, orient, L.doubleGap, true);
+          // 四个装置围成一个歪着的方阵（转 12°~24°，随机朝左或朝右歪），
+          // 这样它们各占一行一列，八道激光不会挤在同一条线上。
+          const tilt = (12 + state.rng() * 12) * Math.PI / 180;
+          const base = state.rng() < 0.5 ? tilt : Math.PI / 2 - tilt;
+          // 贴着方框时把落点整体往场内挪，免得几个装置被挤到同一条线上。
+          const inset = L.margin + L.throwMax * 0.95;
+          const cx = clamp(ball.x, inset, CFG.arena - inset);
+          const cy = clamp(ball.y, inset, CFG.arena - inset);
+          for (let i = 0; i < L.burstCount; i++) {
+            const angle = base + (i / L.burstCount) * Math.PI * 2;
+            const dist = L.throwMin + state.rng() * (L.throwMax - L.throwMin);
+            spawnDevice(state, ball, cx + Math.cos(angle) * dist, cy + Math.sin(angle) * dist, true);
           }
-          state.events.push({ type: 'volley', ball: ball.id, pattern: pattern, double: true });
+          state.events.push({ type: 'deploy', ball: ball.id, count: L.burstCount, burst: true });
         } else {
-          const orient = state.rng() < 0.5 ? 'v' : 'h';
-          spawnBeam(state, ball, orient, 0, false);
-          state.events.push({
-            type: 'volley', ball: ball.id, pattern: orient.toUpperCase(), double: false,
-          });
+          spawnDevice(state, ball, ball.x, ball.y, false);
+          state.events.push({ type: 'deploy', ball: ball.id, count: 1, burst: false });
         }
       },
     },
@@ -198,59 +201,62 @@
   const CHARACTER_IDS = Object.keys(CHARACTERS);
 
   // ---------------------------------------------------------------------
-  // 激光
+  // 激光发射装置
   // ---------------------------------------------------------------------
 
-  function spawnBeam(state, owner, orient, offset, fromDouble) {
-    state.beams.push({
-      id: state.nextBeamId++,
+  function spawnDevice(state, owner, x, y, thrown) {
+    const L = CFG.laser;
+    state.devices.push({
+      id: state.nextDeviceId++,
       owner: owner.id,
-      orient: orient,          // 'v' 纵向（一条竖线）| 'h' 横向
-      offset: offset,          // 相对球心的偏移；激光始终跟着发射者移动
-      phase: 'warn',           // 'warn' 预警 → 'fire' 发射
-      timer: CFG.laser.warn,
-      pos: beamPos(owner, orient, offset),
+      // 落点（夹在方框内）；被丢出的装置先从 fromX/fromY 飞过来。
+      x: clamp(x, L.margin, CFG.arena - L.margin),
+      y: clamp(y, L.margin, CFG.arena - L.margin),
+      fromX: owner.x,
+      fromY: owner.y,
+      phase: thrown ? 'fly' : 'arm',   // 'fly' 飞行 → 'arm' 预警 → 'fire' 发射十字激光
+      timer: thrown ? L.throwTime : L.arm,
       hit: false,
-      double: fromDouble,
+      burst: thrown,
     });
   }
 
-  function beamPos(owner, orient, offset) {
-    const half = CFG.laser.width / 2;
-    const centre = (orient === 'v' ? owner.x : owner.y) + offset;
-    return clamp(centre, half, CFG.arena - half);
-  }
-
-  function updateBeams(state, dt) {
+  function updateDevices(state, dt) {
     const L = CFG.laser;
-    for (let i = state.beams.length - 1; i >= 0; i--) {
-      const beam = state.beams[i];
-      const owner = state.balls[beam.owner];
-      const enemy = state.balls[1 - beam.owner];
-      beam.pos = beamPos(owner, beam.orient, beam.offset);
-      beam.timer -= dt;
+    for (let i = state.devices.length - 1; i >= 0; i--) {
+      const device = state.devices[i];
+      const owner = state.balls[device.owner];
+      const enemy = state.balls[1 - device.owner];
+      device.timer -= dt;
 
-      if (beam.phase === 'warn') {
-        if (beam.timer > 0) continue;
-        beam.phase = 'fire';
-        beam.timer += L.fire;
-        state.events.push({ type: 'beamFire', beam: beam.id, owner: beam.owner });
+      if (device.phase === 'fly') {
+        if (device.timer > 0) continue;
+        device.phase = 'arm';
+        device.timer += L.arm;
+        state.events.push({ type: 'deviceLand', device: device.id, owner: device.owner, x: device.x, y: device.y });
+      }
+      if (device.phase === 'arm') {
+        if (device.timer > 0) continue;
+        device.phase = 'fire';
+        device.timer += L.fire;
+        state.events.push({ type: 'deviceFire', device: device.id, owner: device.owner, x: device.x, y: device.y });
       }
 
-      if (!beam.hit && enemy.hp > 0) {
-        const enemyAxis = beam.orient === 'v' ? enemy.x : enemy.y;
-        if (Math.abs(enemyAxis - beam.pos) <= L.width / 2 + enemy.r) {
-          beam.hit = true;
+      // 十字激光：横竖两道都穿过装置，敌人碰到任意一道就算命中（每个装置只算一次）。
+      if (!device.hit && enemy.hp > 0) {
+        const reach = L.width / 2 + enemy.r;
+        if (Math.abs(enemy.x - device.x) <= reach || Math.abs(enemy.y - device.y) <= reach) {
+          device.hit = true;
           damage(state, enemy, L.damage, 'laser', owner.id);
           owner.charge = Math.min(L.chargeMax, owner.charge + L.chargeOnHit);
           state.events.push({
-            type: 'beamHit', beam: beam.id, owner: owner.id, target: enemy.id,
-            x: enemy.x, y: enemy.y, orient: beam.orient,
+            type: 'deviceHit', device: device.id, owner: owner.id, target: enemy.id,
+            x: enemy.x, y: enemy.y,
           });
         }
       }
 
-      if (beam.timer <= 0) state.beams.splice(i, 1);
+      if (device.timer <= 0) state.devices.splice(i, 1);
     }
   }
 
@@ -391,8 +397,8 @@
       rng: rng,
       time: 0,
       balls: [],
-      beams: [],
-      nextBeamId: 1,
+      devices: [],
+      nextDeviceId: 1,
       events: [],
       over: false,
       winner: null, // 0 | 1 | -1（同归于尽）
@@ -455,12 +461,12 @@
 
     CHARACTERS[a.type].update(state, a, b, dt);
     CHARACTERS[b.type].update(state, b, a, dt);
-    updateBeams(state, dt);
+    updateDevices(state, dt);
 
     if (a.hp <= 0 || b.hp <= 0) {
       state.over = true;
       state.winner = a.hp <= 0 && b.hp <= 0 ? -1 : a.hp <= 0 ? 1 : 0;
-      state.beams.length = 0;
+      state.devices.length = 0;
       state.balls.forEach(function (ball) {
         if (ball.hp <= 0) state.events.push({ type: 'death', ball: ball.id, x: ball.x, y: ball.y });
       });

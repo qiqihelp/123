@@ -117,7 +117,7 @@
       const full = ball.charge >= max;
       return {
         label: '充能',
-        value: full ? '已充满 · 双发' : Math.floor(ball.charge) + ' / ' + max,
+        value: full ? '已充满 · 4 个装置' : Math.floor(ball.charge) + ' / ' + max,
         ratio: ball.charge / max,
         tone: full ? 'ready' : '',
       };

@@ -96,7 +96,7 @@
           burst(fx, target.x, target.y, color, e.kind === 'laser' ? 14 : 7, 190, 0.45, 3);
           fx.shake = Math.max(fx.shake, e.kind === 'laser' ? 7 : 3.5);
           if (opts.floats) {
-            floatText(fx, target.x, target.y - target.r - 10, '-' + e.amount, color, e.kind === 'laser' ? 26 : 22);
+            floatText(fx, target.x, target.y - target.r - 10, '-' + e.amount, color, e.kind === 'laser' ? 24 : 22);
           }
           break;
         }
@@ -116,15 +116,20 @@
           });
           break;
         }
-        case 'volley': {
-          if (e.double && opts.floats) {
-            const ball = match.balls[e.ball];
-            floatText(fx, ball.x, ball.y - ball.r - 14, '双重激光！', themeFor(match, e.ball).main, 18);
-          }
+        case 'deploy': {
+          if (!e.burst) break;
+          const ball = match.balls[e.ball];
+          const color = themeFor(match, e.ball).main;
+          fx.rings.push({ x: ball.x, y: ball.y, r0: ball.r, r1: 120, age: 0, life: 0.4, color: color, width: 3 });
+          if (opts.floats) floatText(fx, ball.x, ball.y - ball.r - 14, '激光阵！', color, 20);
           break;
         }
-        case 'beamFire':
-          fx.shake = Math.max(fx.shake, 2.5);
+        case 'deviceLand':
+          burst(fx, e.x, e.y, themeFor(match, e.owner).main, 6, 110, 0.3, 2.2);
+          break;
+        case 'deviceFire':
+          burst(fx, e.x, e.y, '#ffffff', 8, 200, 0.3, 2.4);
+          fx.shake = Math.max(fx.shake, 3);
           break;
         case 'wall': {
           burst(fx, e.x, e.y, themeFor(match, e.ball).main, 4, 90, 0.3, 2.2);
@@ -458,47 +463,129 @@
     ctx.stroke();
   }
 
-  function drawBeams(ctx, match, fx, phase) {
+  /** 装置当前画在哪：飞行中的装置沿一条缓出的线飞向落点。 */
+  function devicePos(device) {
+    if (device.phase !== 'fly') return { x: device.x, y: device.y, lift: 0 };
+    const t = 1 - Math.max(0, device.timer) / CFG.laser.throwTime; // 0 → 1
+    const ease = 1 - Math.pow(1 - t, 2);
+    return {
+      x: device.fromX + (device.x - device.fromX) * ease,
+      y: device.fromY + (device.y - device.fromY) * ease,
+      lift: Math.sin(t * Math.PI), // 抛物线的“高度”，用来放大一点
+    };
+  }
+
+  /** 两条穿过 (x, y) 的带子：一横一竖。 */
+  function fillCross(ctx, x, y, width) {
+    const A = CFG.arena;
+    ctx.fillRect(x - width / 2, 0, width, A);
+    ctx.fillRect(0, y - width / 2, A, width);
+  }
+
+  /** 十字激光：phase='arm' 画预警线，phase='fire' 画激光本体。 */
+  function drawCrosses(ctx, match, fx, phase) {
     const L = CFG.laser;
     const A = CFG.arena;
-    for (let i = 0; i < match.beams.length; i++) {
-      const beam = match.beams[i];
-      if (beam.phase !== phase) continue;
-      const theme = themeFor(match, beam.owner);
-      const vertical = beam.orient === 'v';
+    for (let i = 0; i < match.devices.length; i++) {
+      const device = match.devices[i];
+      if (device.phase !== phase) continue;
+      const theme = themeFor(match, device.owner);
 
       ctx.save();
-      if (phase === 'warn') {
-        const t = 1 - beam.timer / L.warn; // 0 → 1
-        ctx.fillStyle = hexA(theme.main, 0.05 + 0.1 * t);
-        if (vertical) ctx.fillRect(beam.pos - L.width / 2, 0, L.width, A);
-        else ctx.fillRect(0, beam.pos - L.width / 2, A, L.width);
+      if (phase === 'arm') {
+        const t = 1 - device.timer / L.arm; // 0 → 1
+        ctx.fillStyle = hexA(theme.main, 0.04 + 0.1 * t);
+        fillCross(ctx, device.x, device.y, L.width);
         ctx.strokeStyle = hexA(theme.main, 0.35 + 0.5 * t);
         ctx.lineWidth = 1.5 + t * 1.5;
         ctx.setLineDash([12, 8]);
         ctx.lineDashOffset = -fx.time * 160;
         ctx.beginPath();
-        if (vertical) { ctx.moveTo(beam.pos, 0); ctx.lineTo(beam.pos, A); }
-        else { ctx.moveTo(0, beam.pos); ctx.lineTo(A, beam.pos); }
+        ctx.moveTo(device.x, 0); ctx.lineTo(device.x, A);
+        ctx.moveTo(0, device.y); ctx.lineTo(A, device.y);
         ctx.stroke();
       } else {
-        const t = 1 - beam.timer / L.fire; // 0 → 1
+        const t = 1 - device.timer / L.fire; // 0 → 1
         const grow = t < 0.12 ? t / 0.12 : 1;
         const fade = t > 0.65 ? 1 - ((t - 0.65) / 0.35) * 0.55 : 1;
         const w = L.width * grow * fade;
         const layers = [
-          [w * 3, hexA(theme.main, 0.16 * fade)],
-          [w * 1.7, hexA(theme.main, 0.4 * fade)],
+          [w * 3, hexA(theme.main, 0.14 * fade)],
+          [w * 1.7, hexA(theme.main, 0.38 * fade)],
           [w, theme.main],
           [w * 0.45, '#ffffff'],
         ];
         for (let k = 0; k < layers.length; k++) {
-          const lw = layers[k][0];
           ctx.fillStyle = layers[k][1];
-          if (vertical) ctx.fillRect(beam.pos - lw / 2, 0, lw, A);
-          else ctx.fillRect(0, beam.pos - lw / 2, A, lw);
+          fillCross(ctx, device.x, device.y, layers[k][0]);
         }
       }
+      ctx.restore();
+    }
+  }
+
+  /** 激光发射装置本体：一个菱形小盒子，四个方向各有一个发射口。 */
+  function drawDevices(ctx, match, fx) {
+    const L = CFG.laser;
+    for (let i = 0; i < match.devices.length; i++) {
+      const device = match.devices[i];
+      const theme = themeFor(match, device.owner);
+      const pos = devicePos(device);
+      const size = 10 * (1 + pos.lift * 0.5);
+
+      ctx.save();
+      if (device.phase === 'fly') {
+        // 飞行轨迹。
+        ctx.strokeStyle = hexA(theme.main, 0.35);
+        ctx.lineWidth = 2;
+        ctx.setLineDash([3, 6]);
+        ctx.beginPath();
+        ctx.moveTo(device.fromX, device.fromY);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      } else if (device.phase === 'arm') {
+        // 蓄力：一个圆环收拢到装置上，收到底就发射。
+        const t = 1 - device.timer / L.arm;
+        ctx.strokeStyle = hexA(theme.main, 0.25 + 0.6 * t);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 34 - 22 * t, 0, TAU);
+        ctx.stroke();
+      } else {
+        const glow = ctx.createRadialGradient(pos.x, pos.y, 2, pos.x, pos.y, 34);
+        glow.addColorStop(0, 'rgba(255,255,255,0.95)');
+        glow.addColorStop(0.4, hexA(theme.main, 0.6));
+        glow.addColorStop(1, hexA(theme.main, 0));
+        ctx.fillStyle = glow;
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, 34, 0, TAU);
+        ctx.fill();
+      }
+
+      ctx.translate(pos.x, pos.y);
+      // 四个发射口。
+      ctx.fillStyle = theme.light;
+      ctx.fillRect(-2.5, -size - 4, 5, 6);
+      ctx.fillRect(-2.5, size - 2, 5, 6);
+      ctx.fillRect(-size - 4, -2.5, 6, 5);
+      ctx.fillRect(size - 2, -2.5, 6, 5);
+      // 菱形外壳。
+      ctx.rotate(Math.PI / 4);
+      const half = size * 0.78;
+      ctx.fillStyle = '#141a29';
+      ctx.strokeStyle = theme.main;
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.rect(-half, -half, half * 2, half * 2);
+      ctx.fill();
+      ctx.stroke();
+      // 核心：蓄力时闪烁，发射时全亮。
+      const pulse = device.phase === 'fire' ? 1 : 0.55 + 0.45 * Math.sin(fx.time * 26);
+      ctx.fillStyle = device.phase === 'fly' ? theme.main : hexA('#ffffff', 0.5 + 0.5 * pulse);
+      ctx.beginPath();
+      ctx.arc(0, 0, half * 0.42, 0, TAU);
+      ctx.fill();
       ctx.restore();
     }
   }
@@ -656,14 +743,15 @@
       }
 
       const themes = [themeFor(match, 0), themeFor(match, 1)];
-      drawBeams(ctx, match, fx, 'warn');
+      drawCrosses(ctx, match, fx, 'arm');
       match.balls.forEach(function (ball, i) {
         if (!fx.dead[i]) drawTrail(ctx, fx, ball, themes[i]);
       });
       match.balls.forEach(function (ball, i) {
         if (!fx.dead[i]) DRAW[ball.type].under(ctx, match, fx, ball, themes[i]);
       });
-      drawBeams(ctx, match, fx, 'fire');
+      drawCrosses(ctx, match, fx, 'fire');
+      drawDevices(ctx, match, fx);
       match.balls.forEach(function (ball, i) {
         if (!fx.dead[i]) drawBall(ctx, match, fx, ball, themes[i], opts);
       });

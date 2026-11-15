@@ -114,84 +114,148 @@ test('激光：充能每秒 +1，封顶 20', () => {
   assert.equal(a.charge, CFG.laser.chargeMax);
 });
 
-test('激光：平时单发，充能满 20 时双发并清空充能', () => {
-  const patterns = new Set();
-  for (let seed = 1; seed <= 12; seed++) {
+test('激光：平时丢 1 个装置，充能满 20 时丢出 4 个并清空充能', () => {
+  const L = CFG.laser;
+  let bursts = 0;
+  for (let seed = 1; seed <= 8; seed++) {
     const m = Sim.createMatch({ left: 'laser', right: 'laser', seed: seed * 101 });
     const shooter = m.balls[0];
-    m.balls[1].fireTimer = 1e9; // 对手不开火
+    m.balls[1].fireTimer = 1e9; // 对手不丢装置
     const log = [];
-    let beamsBefore = 0;
     while (m.time < 60 && !m.over) {
       const chargeBefore = shooter.charge;
-      beamsBefore = m.nextBeamId;
+      const firstNewId = m.nextDeviceId;
       stepAndCollect(m, log);
-      const volley = log.length && log.findLast((e) => e.type === 'volley' && e.time === m.time);
-      if (!volley) continue;
-      const spawned = m.nextBeamId - beamsBefore;
-      const full = chargeBefore + CFG.laser.chargeRate * DT >= CFG.laser.chargeMax;
-      assert.equal(volley.double, full, '是否双发只取决于充能是否已满');
-      assert.equal(spawned, full ? 2 : 1);
-      const fresh = m.beams.filter((beam) => beam.id >= beamsBefore);
-      const orients = fresh.map((beam) => beam.orient).sort().join('');
+      const deploy = log.findLast((e) => e.type === 'deploy' && e.time === m.time);
+      if (!deploy) continue;
+
+      const fresh = m.devices.filter((device) => device.id >= firstNewId);
+      const full = chargeBefore + L.chargeRate * DT >= L.chargeMax;
+      assert.equal(deploy.burst, full, '是否丢 4 个只取决于充能是否已满');
+      assert.equal(fresh.length, full ? 4 : 1);
+      for (const device of fresh) {
+        assert.ok(device.x >= L.margin && device.x <= CFG.arena - L.margin, '装置落在方框内');
+        assert.ok(device.y >= L.margin && device.y <= CFG.arena - L.margin, '装置落在方框内');
+      }
       if (full) {
-        patterns.add(volley.pattern);
-        assert.ok(['VV', 'HH', 'VH'].includes(volley.pattern));
-        assert.equal(orients, { VV: 'vv', HH: 'hh', VH: 'hv' }[volley.pattern]);
-        assert.ok(shooter.charge < 1, '双发后充能清空');
+        bursts++;
+        assert.ok(shooter.charge < 1, '丢出 4 个后充能清空');
+        assert.ok(fresh.every((device) => device.phase === 'fly'), '丢出的装置先飞一段');
+        const spots = new Set(fresh.map((device) => Math.round(device.x) + ',' + Math.round(device.y)));
+        assert.ok(spots.size >= 3, '4 个装置散开落在不同位置');
       } else {
-        assert.ok(orients === 'v' || orients === 'h');
+        // 平时就丢在脚下，落地即开始预警。
+        assert.equal(fresh[0].phase, 'arm');
+        assert.ok(Math.hypot(fresh[0].x - shooter.x, fresh[0].y - shooter.y) <= L.margin * 1.5);
       }
     }
-    assert.ok(log.some((e) => e.type === 'volley' && e.double), '60s 内至少双发一次');
+    assert.ok(log.some((e) => e.type === 'deploy' && e.burst), '60s 内至少充满一次');
   }
-  assert.deepEqual([...patterns].sort(), ['HH', 'VH', 'VV'], '三种双发组合都会出现');
+  assert.ok(bursts >= 8);
 });
 
-test('激光：两次发射间隔固定，预警结束后才造成伤害', () => {
+test('激光：两次丢装置的间隔固定', () => {
   const m = Sim.createMatch({ left: 'laser', right: 'laser', seed: 7 });
-  const [shooter, target] = m.balls;
-  target.fireTimer = 1e9;
+  m.balls[1].fireTimer = 1e9;
   const log = [];
-  while (m.time < 12) {
-    // 让目标始终和发射者同一列、隔开一段距离：纵向激光必中，横向必不中。
-    target.x = shooter.x;
-    target.y = shooter.y < CFG.arena / 2 ? shooter.y + 220 : shooter.y - 220;
-    target.vx = shooter.vx; target.vy = shooter.vy;
-    stepAndCollect(m, log);
+  while (m.time < 20 && !m.over) stepAndCollect(m, log);
+  const deploys = log.filter((e) => e.type === 'deploy');
+  assert.ok(deploys.length >= 5);
+  for (let i = 1; i < deploys.length; i++) {
+    assert.ok(near(deploys[i].time - deploys[i - 1].time, CFG.laser.interval));
   }
-  const volleys = log.filter((e) => e.type === 'volley');
-  for (let i = 1; i < volleys.length; i++) {
-    assert.ok(near(volleys[i].time - volleys[i - 1].time, CFG.laser.interval));
+});
+
+test('激光：装置预警后发射十字激光，横竖都能命中，每个装置只算一次', () => {
+  const L = CFG.laser;
+  const reach = L.width / 2 + CFG.ballR;
+  let aligned = 0;
+  let missed = 0;
+  let viaRow = 0;
+  let viaColumn = 0;
+
+  for (let seed = 1; seed <= 6; seed++) {
+    const m = Sim.createMatch({ left: 'laser', right: 'laser', seed: seed * 13 });
+    const target = m.balls[1];
+    // 把目标钉在一个固定位置，命中与否就只取决于装置和它是否同行 / 同列。
+    target.paralyzed = true;
+    target.x = 470; target.y = 110;
+    const log = [];
+    const devices = new Map();
+    while (m.time < 40 && !m.over) {
+      stepAndCollect(m, log);
+      for (const device of m.devices) {
+        if (!devices.has(device.id)) devices.set(device.id, { x: device.x, y: device.y, burst: device.burst, born: m.time });
+      }
+    }
+    const hits = log.filter((e) => e.type === 'deviceHit');
+    const fired = new Set(log.filter((e) => e.type === 'deviceFire').map((e) => e.device));
+
+    for (const [id, device] of devices) {
+      if (!fired.has(id)) continue; // 对局结束时还没来得及发射的装置
+      const sameColumn = Math.abs(target.x - device.x) <= reach;
+      const sameRow = Math.abs(target.y - device.y) <= reach;
+      const mine = hits.filter((hit) => hit.device === id);
+      if (sameColumn || sameRow) {
+        aligned++;
+        if (sameColumn) viaColumn++;
+        if (sameRow) viaRow++;
+        assert.equal(mine.length, 1, '同行或同列：命中且只命中一次');
+        const delay = (device.burst ? L.throwTime : 0) + L.arm;
+        assert.ok(near(mine[0].time - device.born, delay, DT * 3), '预警结束的瞬间才造成伤害');
+      } else {
+        missed++;
+        assert.equal(mine.length, 0, '不同行也不同列：打不中');
+      }
+    }
+    const dmg = log.filter((e) => e.type === 'damage');
+    assert.equal(dmg.length, hits.length);
+    dmg.forEach((d) => assert.equal(d.amount, L.damage));
   }
-  const vertical = volleys.filter((v) => v.pattern === 'V');
-  const hits = log.filter((e) => e.type === 'beamHit');
-  assert.ok(vertical.length > 0 && volleys.length > vertical.length, '横纵都出现过');
-  assert.equal(hits.length, vertical.length, '每道纵向激光只命中一次，横向不中');
-  hits.forEach((hit, i) => {
-    assert.equal(hit.orient, 'v');
-    assert.ok(near(hit.time - vertical[i].time, CFG.laser.warn), '预警期间不造成伤害');
-  });
-  const dmg = log.filter((e) => e.type === 'damage');
-  assert.equal(dmg.length, hits.length);
-  dmg.forEach((d) => assert.equal(d.amount, CFG.laser.damage));
+  assert.ok(aligned > 0 && missed > 0, '命中和落空的情况都测到了');
+  assert.ok(viaRow > 0 && viaColumn > 0, '横向和纵向的激光都命中过');
 });
 
 test('激光：命中会额外累积充能', () => {
   const m = Sim.createMatch({ left: 'laser', right: 'laser', seed: 7 });
   const [shooter, target] = m.balls;
   target.fireTimer = 1e9;
+  shooter.x = 200; shooter.y = 200;
+  shooter.fireTimer = DT / 2; // 下一步就丢装置
   const log = [];
+  stepAndCollect(m, log);
+  const device = m.devices[0];
+  // 把目标钉在装置的正下方：纵向那道激光必中。
+  target.paralyzed = true;
+  target.x = device.x;
+  target.y = 500;
+
   let before = 0;
-  while (!log.some((e) => e.type === 'beamHit')) {
-    target.x = shooter.x;
-    target.y = shooter.y < CFG.arena / 2 ? shooter.y + 220 : shooter.y - 220;
-    target.vx = shooter.vx; target.vy = shooter.vy;
+  while (!log.some((e) => e.type === 'deviceHit')) {
     before = shooter.charge;
     stepAndCollect(m, log);
   }
+  assert.ok(before < 2, '这时充能还远没到上限');
   const gained = shooter.charge - before;
   assert.ok(near(gained, CFG.laser.chargeOnHit + CFG.laser.chargeRate * DT, 1e-6));
+  assert.equal(target.hp, CFG.maxHp - CFG.laser.damage);
+});
+
+test('激光：被麻痹时不丢新装置，但已丢出的装置照常发射', () => {
+  const m = Sim.createMatch({ left: 'electric', right: 'laser', seed: 11 });
+  const [zap, laser] = m.balls;
+  zap.x = 100; zap.y = 100;
+  laser.x = 500; laser.y = 500;
+  laser.fireTimer = DT / 2; // 下一步就丢装置
+  const log = [];
+  stepAndCollect(m, log);
+  assert.equal(m.devices.length, 1);
+  placeBeside(zap, laser, 80); // 紧接着被电到
+  stepAndCollect(m, log);
+  assert.equal(laser.paralyzed, true);
+  while (laser.paralyzed) stepAndCollect(m, log);
+  assert.equal(log.filter((e) => e.type === 'deploy').length, 1, '麻痹的 3 秒里没有丢新装置');
+  assert.equal(log.filter((e) => e.type === 'deviceFire').length, 1, '之前丢下的装置照常发射');
 });
 
 test('对局：一定会分出胜负，结束后不再推进', () => {
