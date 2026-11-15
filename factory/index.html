@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#10120c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <title>星核工厂</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect fill='%2310120c' width='16' height='16'/%3E%3Crect fill='%23e3a045' x='3' y='3' width='10' height='10'/%3E%3Crect fill='%23ffc857' x='6' y='6' width='4' height='4'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <section id="title-screen">
+      <canvas id="title-canvas" width="208" height="128" aria-hidden="true"></canvas>
+      <p class="eyebrow">扇区 · 锈河 7-C</p>
+      <h1>星核工厂</h1>
+      <p class="tagline">开采，传送，守住坠落的星核。</p>
+      <p class="note">原创小品，玩法致敬《像素工厂》</p>
+      <div class="title-actions">
+        <button id="btn-start" class="btn primary" type="button">开始建造</button>
+        <button id="btn-continue" class="btn" type="button" hidden>继续驻守</button>
+        <button id="btn-help" class="btn ghost" type="button">怎么玩</button>
+      </div>
+    </section>
+
+    <section id="game" hidden>
+      <div id="play-col">
+        <header id="topbar">
+          <div class="top-row">
+            <div class="res-scroll" id="resources"></div>
+            <div class="top-actions">
+              <button id="btn-speed" class="icon-btn" type="button" aria-label="速度">1×</button>
+              <button id="btn-sound" class="icon-btn" type="button" aria-label="声音">声</button>
+              <button id="btn-pause" class="icon-btn" type="button" aria-label="暂停">暂停</button>
+            </div>
+          </div>
+          <div class="status-row">
+            <div class="core-wrap">
+              <span class="core-label">星核</span>
+              <div class="hp" id="core-hp-track"><div id="core-hp"></div></div>
+            </div>
+            <div class="wave-wrap">
+              <div id="wave-label">准备</div>
+              <div id="wave-sub">侦察爬虫</div>
+            </div>
+            <button id="btn-focus" class="icon-btn" type="button">定位</button>
+          </div>
+        </header>
+        <div id="stage">
+          <canvas id="view"></canvas>
+          <div id="zoom-pad">
+            <button id="zoom-in" type="button" aria-label="放大">+</button>
+            <button id="zoom-out" type="button" aria-label="缩小">−</button>
+          </div>
+          <div id="inspect" hidden></div>
+          <div id="banner" hidden></div>
+          <div id="toast" hidden></div>
+        </div>
+      </div>
+      <footer id="dock">
+        <div id="coach" hidden>
+          <p id="coach-text"></p>
+          <button id="coach-btn" type="button">知道了</button>
+        </div>
+        <div id="sel-info">
+          <strong id="sel-name">拖动地图</strong>
+          <span id="sel-desc">单指拖动，双指缩放。点下面的设备开始建造。</span>
+        </div>
+        <div id="cats"></div>
+        <div id="tools"></div>
+        <div id="dock-actions">
+          <button id="tool-hand" class="dock-btn on" type="button">拖动</button>
+          <button id="tool-demo" class="dock-btn" type="button">拆除</button>
+          <button id="tool-rot" class="dock-btn" type="button">旋转</button>
+          <button id="btn-path" class="dock-btn on" type="button">路径</button>
+          <button id="btn-wave" class="btn go" type="button">出击</button>
+          <button id="btn-launch" class="btn launch" type="button">撤离</button>
+        </div>
+      </footer>
+    </section>
+
+    <div id="modal" hidden>
+      <div class="modal-card" id="modal-card" role="dialog" aria-modal="true"></div>
+    </div>
+  </div>
+  <noscript>需要开启 JavaScript 才能玩星核工厂。</noscript>
+  <script src="sim.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
