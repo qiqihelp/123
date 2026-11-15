@@ -34,6 +34,10 @@
       { main: '#7ddc5a', light: '#e1fbd2', dark: '#2f7d1c', ink: '#0d2a05', arc: '#ffffff' },
       { main: '#3fd6b0', light: '#d3fbf0', dark: '#0f7a62', ink: '#00271f', arc: '#ffffff' },
     ],
+    tech: [
+      { main: '#4d9bff', light: '#d6e8ff', dark: '#1b4fa8', ink: '#ffffff', arc: '#ffffff' },
+      { main: '#c9d3e6', light: '#ffffff', dark: '#66728c', ink: '#10203a', arc: '#ffffff' },
+    ],
   };
 
   function themeFor(match, ballId) {
@@ -58,6 +62,8 @@
       rings: [],
       bolts: [],
       zaps: [],
+      beams: [],
+      flash: 0,
       shake: 0,
       trails: [[], []],
       trailTimer: 0,
@@ -103,12 +109,12 @@
           const target = match.balls[e.target];
           const color = themeFor(match, e.source).main;
           fx.hitFlash[e.target] = 0.18;
-          const heavy = e.kind === 'laser' || e.kind === 'thunder' || e.kind === 'punch';
-          const light = e.kind === 'burn' || e.kind === 'spore';
+          const heavy = e.kind === 'laser' || e.kind === 'thunder' || e.kind === 'punch' || e.kind === 'nuke';
+          const light = e.kind === 'burn' || e.kind === 'spore' || e.kind === 'wire';
           burst(fx, target.x, target.y, color, heavy ? 14 : light ? 3 : 7, 190, 0.45, 3);
           fx.shake = Math.max(fx.shake, heavy ? 7 : light ? 1.5 : 3.5);
           if (opts.floats) {
-            const size = e.kind === 'punch' ? 30 : heavy ? 24 : light ? 17 : 22;
+            const size = e.kind === 'nuke' ? 36 : e.kind === 'punch' ? 30 : heavy ? 24 : light ? 17 : 22;
             floatText(fx, target.x + rand(-12, 12), target.y - target.r - 10, '-' + e.amount, color, size);
           }
           break;
@@ -144,6 +150,55 @@
           burst(fx, e.x, e.y, '#ffffff', 8, 200, 0.3, 2.4);
           fx.shake = Math.max(fx.shake, 3);
           break;
+        case 'oreSpawn':
+          fx.rings.push({ x: e.x, y: e.y, r0: 4, r1: 26, age: 0, life: 0.4, color: ORE_COLOR, width: 2 });
+          break;
+        case 'mine': {
+          burst(fx, e.x, e.y, ORE_COLOR, 10, 170, 0.4, 2.6);
+          if (opts.floats) floatText(fx, e.x, e.y - 16, '+' + e.amount + ' 矿', ORE_COLOR, 17);
+          break;
+        }
+        case 'buildStart':
+          burst(fx, e.x, e.y, themeFor(match, e.owner).light, 6, 90, 0.35, 2.2);
+          break;
+        case 'buildDone': {
+          const big = e.kind === 'plant' || e.kind === 'silo';
+          fx.rings.push({ x: e.x, y: e.y, r0: 8, r1: big ? 70 : 44, age: 0, life: 0.45, color: themeFor(match, e.owner).main, width: big ? 5 : 3 });
+          break;
+        }
+        case 'buildingHit':
+          burst(fx, e.x, e.y, '#dfe6f5', 3, 110, 0.25, 2);
+          break;
+        case 'buildingDie': {
+          const color = themeFor(match, e.owner).main;
+          fx.rings.push({ x: e.x, y: e.y, r0: 8, r1: 60, age: 0, life: 0.4, color: color, width: 4 });
+          burst(fx, e.x, e.y, color, 16, 220, 0.5, 3.2);
+          burst(fx, e.x, e.y, '#8a93a8', 8, 140, 0.6, 3);
+          fx.shake = Math.max(fx.shake, 6);
+          break;
+        }
+        case 'turretFire':
+          fx.beams.push({ x: e.x, y: e.y, tx: e.tx, ty: e.ty, color: themeFor(match, e.owner).main, small: !!e.small, age: 0, life: 0.14 });
+          break;
+        case 'wireZap':
+          burst(fx, e.x, e.y, themeFor(match, e.owner).arc, 6, 180, 0.25, 2.2);
+          break;
+        case 'nukeLaunch':
+          burst(fx, e.x, e.y, '#ffd23f', 18, 240, 0.5, 3.4);
+          fx.rings.push({ x: e.x, y: e.y, r0: 10, r1: 60, age: 0, life: 0.4, color: '#ffd23f', width: 4 });
+          fx.shake = Math.max(fx.shake, 6);
+          break;
+        case 'nuke': {
+          fx.flash = 0.55;
+          fx.rings.push({ x: e.x, y: e.y, r0: 20, r1: e.radius, age: 0, life: 0.7, color: '#fff1b8', width: 16 });
+          fx.rings.push({ x: e.x, y: e.y, r0: 10, r1: e.radius * 1.5, age: 0, life: 1.0, color: '#ff8a2a', width: 8 });
+          fx.rings.push({ x: e.x, y: e.y, r0: 6, r1: e.radius * 0.7, age: 0, life: 0.5, color: '#ffffff', width: 10 });
+          burst(fx, e.x, e.y, '#ffd23f', 40, 460, 0.9, 5);
+          burst(fx, e.x, e.y, '#ff6a2a', 30, 300, 1.1, 6);
+          burst(fx, e.x, e.y, '#6b7388', 20, 160, 1.3, 7);
+          fx.shake = Math.max(fx.shake, 26);
+          break;
+        }
         case 'burn':
           break;
         case 'zap':
@@ -243,6 +298,11 @@
     for (let i = fx.bolts.length - 1; i >= 0; i--) {
       fx.bolts[i].age += dt;
       if (fx.bolts[i].age >= fx.bolts[i].life) fx.bolts.splice(i, 1);
+    }
+    fx.flash = Math.max(0, fx.flash - dt);
+    for (let i = fx.beams.length - 1; i >= 0; i--) {
+      fx.beams[i].age += dt;
+      if (fx.beams[i].age >= fx.beams[i].life) fx.beams.splice(i, 1);
     }
     for (let i = fx.zaps.length - 1; i >= 0; i--) {
       fx.zaps[i].age += dt;
@@ -614,7 +674,316 @@
         }
       },
     },
+    tech: {
+      /** 电量圈 + 施工位置的标记。 */
+      under: function (ctx, match, fx, ball, theme) {
+        const ratio = Math.max(0, Math.min(1, ball.power / CFG.tech.powerMax));
+        ctx.save();
+        ctx.lineWidth = 4;
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = hexA(theme.main, 0.18);
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.r + 8, 0, TAU);
+        ctx.stroke();
+        if (ratio > 0) {
+          ctx.strokeStyle = theme.main;
+          ctx.beginPath();
+          ctx.arc(ball.x, ball.y, ball.r + 8, -Math.PI / 2, -Math.PI / 2 + TAU * ratio);
+          ctx.stroke();
+        }
+        if (ball.site) {
+          ctx.strokeStyle = hexA(theme.light, 0.7);
+          ctx.lineWidth = 2;
+          ctx.setLineDash([5, 5]);
+          ctx.lineDashOffset = -fx.time * 30;
+          ctx.strokeRect(ball.site.x - 15, ball.site.y - 15, 30, 30);
+          ctx.strokeStyle = hexA(theme.light, 0.22);
+          ctx.beginPath();
+          ctx.moveTo(ball.x, ball.y);
+          ctx.lineTo(ball.site.x, ball.site.y);
+          ctx.stroke();
+        }
+        ctx.restore();
+      },
+      over: function () {},
+      body: function (ctx, ball, theme) {
+        // 齿轮。
+        const r = ball.r;
+        ctx.save();
+        ctx.translate(ball.x, ball.y);
+        ctx.fillStyle = hexA(theme.light, 0.55);
+        for (let i = 0; i < 8; i++) {
+          ctx.rotate(TAU / 8);
+          ctx.fillRect(-r * 0.11, -r * 0.86, r * 0.22, r * 0.24);
+        }
+        ctx.strokeStyle = hexA(theme.light, 0.6);
+        ctx.lineWidth = r * 0.12;
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.62, 0, TAU);
+        ctx.stroke();
+        ctx.restore();
+      },
+    },
   };
+
+  // ---------------------------------------------------------------------
+  // 科技球的东西：矿物、电线、设备、核弹
+  // ---------------------------------------------------------------------
+
+  const ORE_COLOR = '#8fe9ff';
+
+  function drawOres(ctx, match, fx) {
+    for (let i = 0; i < match.ores.length; i++) {
+      const o = match.ores[i];
+      const r = CFG.tech.oreRadius;
+      const glint = 0.5 + 0.5 * Math.sin(fx.time * 3 + o.id);
+      ctx.save();
+      ctx.translate(o.x, o.y);
+      ctx.fillStyle = hexA(ORE_COLOR, 0.12 + 0.08 * glint);
+      ctx.beginPath();
+      ctx.arc(0, 0, r + 8, 0, TAU);
+      ctx.fill();
+      ctx.fillStyle = '#3aa7c9';
+      ctx.beginPath();
+      ctx.moveTo(0, -r); ctx.lineTo(r * 0.8, -r * 0.1); ctx.lineTo(r * 0.45, r); ctx.lineTo(-r * 0.45, r); ctx.lineTo(-r * 0.8, -r * 0.1);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = ORE_COLOR;
+      ctx.beginPath();
+      ctx.moveTo(0, -r); ctx.lineTo(r * 0.8, -r * 0.1); ctx.lineTo(0, r * 0.15); ctx.lineTo(-r * 0.8, -r * 0.1);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = hexA('#ffffff', 0.5 + 0.5 * glint);
+      ctx.beginPath();
+      ctx.arc(-r * 0.25, -r * 0.4, 2, 0, TAU);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  function drawWires(ctx, match, fx) {
+    for (let i = 0; i < match.wires.length; i++) {
+      const w = match.wires[i];
+      const theme = themeFor(match, w.owner);
+      ctx.save();
+      ctx.lineCap = 'round';
+      if (!w.live) {
+        ctx.strokeStyle = 'rgba(160, 172, 196, 0.4)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([6, 6]);
+        ctx.beginPath();
+        ctx.moveTo(w.a.x, w.a.y);
+        ctx.lineTo(w.b.x, w.b.y);
+        ctx.stroke();
+      } else {
+        ctx.strokeStyle = hexA(theme.main, 0.28);
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(w.a.x, w.a.y);
+        ctx.lineTo(w.b.x, w.b.y);
+        ctx.stroke();
+        ctx.strokeStyle = theme.main;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+        // 沿着电线跑的电流。
+        const len = Math.hypot(w.b.x - w.a.x, w.b.y - w.a.y) || 1;
+        const n = Math.max(1, Math.round(len / 90));
+        ctx.fillStyle = '#ffffff';
+        for (let k = 0; k < n; k++) {
+          const t = ((fx.time * 140) / len + k / n) % 1;
+          ctx.beginPath();
+          ctx.arc(w.a.x + (w.b.x - w.a.x) * t, w.a.y + (w.b.y - w.a.y) * t, 3, 0, TAU);
+          ctx.fill();
+        }
+      }
+      ctx.restore();
+    }
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  function drawBuildings(ctx, match, fx) {
+    const T = CFG.tech;
+    for (let i = 0; i < match.buildings.length; i++) {
+      const b = match.buildings[i];
+      const theme = themeFor(match, b.owner);
+      const r = b.r;
+      ctx.save();
+      ctx.translate(b.x, b.y);
+      ctx.globalAlpha = b.active ? 1 : 0.55;
+
+      // 底座
+      if (b.kind === 'plant' && b.active) {
+        const pulse = 0.5 + 0.5 * Math.sin(fx.time * 4);
+        ctx.fillStyle = hexA('#9dff6a', 0.12 + 0.1 * pulse);
+        ctx.beginPath();
+        ctx.arc(0, 0, r + 12 + pulse * 4, 0, TAU);
+        ctx.fill();
+      }
+      ctx.fillStyle = '#1a2236';
+      ctx.strokeStyle = theme.main;
+      ctx.lineWidth = 2.5;
+      roundRect(ctx, -r, -r, r * 2, r * 2, 6);
+      ctx.fill();
+      ctx.stroke();
+
+      if (b.kind === 'generator') {
+        // 闪电标志
+        ctx.fillStyle = theme.main;
+        ctx.beginPath();
+        ctx.moveTo(r * 0.15, -r * 0.7); ctx.lineTo(-r * 0.45, r * 0.1); ctx.lineTo(-r * 0.05, r * 0.1);
+        ctx.lineTo(-r * 0.2, r * 0.7); ctx.lineTo(r * 0.45, -r * 0.15); ctx.lineTo(r * 0.05, -r * 0.15);
+        ctx.closePath();
+        ctx.fill();
+      } else if (b.kind === 'turret') {
+        ctx.rotate(b.aim);
+        ctx.fillStyle = theme.light;
+        ctx.fillRect(0, -3, r + 6, 6);
+        ctx.fillStyle = theme.main;
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.55, 0, TAU);
+        ctx.fill();
+      } else if (b.kind === 'plant') {
+        // 辐射标志
+        ctx.fillStyle = '#ffd23f';
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.82, 0, TAU);
+        ctx.fill();
+        ctx.fillStyle = '#1a1a1a';
+        for (let k = 0; k < 3; k++) {
+          const a = -Math.PI / 2 + k * (TAU / 3);
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.arc(0, 0, r * 0.7, a - 0.5, a + 0.5);
+          ctx.closePath();
+          ctx.fill();
+        }
+        ctx.fillStyle = '#ffd23f';
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.22, 0, TAU);
+        ctx.fill();
+        ctx.fillStyle = '#1a1a1a';
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.12, 0, TAU);
+        ctx.fill();
+      } else if (b.kind === 'silo') {
+        // 井口 + 弹头，外圈是充能进度
+        const ratio = Math.min(1, b.charge / T.nukeCost);
+        ctx.fillStyle = '#0b0f1a';
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.72, 0, TAU);
+        ctx.fill();
+        ctx.fillStyle = ratio >= 0.85 && Math.sin(fx.time * 16) > 0 ? '#ffffff' : '#ff4d4d';
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.36, 0, TAU);
+        ctx.fill();
+        ctx.strokeStyle = '#ffd23f';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.72, -Math.PI / 2, -Math.PI / 2 + TAU * ratio);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // 施工进度 / 血条
+      if (!b.active) {
+        ctx.strokeStyle = hexA(theme.light, 0.9);
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, r + 6, -Math.PI / 2, -Math.PI / 2 + TAU * (1 - b.build / T.buildTime));
+        ctx.stroke();
+      }
+      if (b.hp < b.maxHp) {
+        const w = r * 2;
+        ctx.fillStyle = 'rgba(6, 8, 14, 0.8)';
+        ctx.fillRect(b.x - w / 2, b.y + r + 4, w, 4);
+        ctx.fillStyle = b.hp / b.maxHp > 0.4 ? '#3ddc84' : '#ff5a5a';
+        ctx.fillRect(b.x - w / 2, b.y + r + 4, w * Math.max(0, b.hp / b.maxHp), 4);
+      }
+    }
+  }
+
+  /** 飞行中的核弹：落点警告圈 + 弹头。 */
+  function drawNukes(ctx, match, fx) {
+    const T = CFG.tech;
+    for (let i = 0; i < match.nukes.length; i++) {
+      const n = match.nukes[i];
+      const t = Math.max(0, Math.min(1, 1 - n.timer / T.nukeDelay));
+      const blink = Math.sin(fx.time * (10 + t * 30)) > 0;
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 60, 60, ' + (0.08 + 0.16 * t) + ')';
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, T.nukeRadius, 0, TAU);
+      ctx.fill();
+      ctx.strokeStyle = blink ? '#ffd23f' : '#ff4d4d';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([14, 9]);
+      ctx.lineDashOffset = -fx.time * 60;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, T.nukeRadius, 0, TAU);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(n.x, n.y, T.nukeRadius * (1 - t), 0, TAU);
+      ctx.moveTo(n.x - 14, n.y); ctx.lineTo(n.x + 14, n.y);
+      ctx.moveTo(n.x, n.y - 14); ctx.lineTo(n.x, n.y + 14);
+      ctx.stroke();
+
+      // 弹头：沿抛物线飞过去，越高越大。
+      const height = Math.sin(t * Math.PI);
+      const mx = n.sx + (n.x - n.sx) * t;
+      const my = n.sy + (n.y - n.sy) * t - height * 70;
+      const size = 7 + height * 7;
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+      ctx.beginPath();
+      ctx.ellipse(n.sx + (n.x - n.sx) * t, n.sy + (n.y - n.sy) * t, size, size * 0.5, 0, 0, TAU);
+      ctx.fill();
+      ctx.fillStyle = '#ff8a2a';
+      ctx.beginPath();
+      ctx.arc(mx, my, size + 4 + Math.sin(fx.time * 40) * 2, 0, TAU);
+      ctx.fill();
+      ctx.fillStyle = '#f4f6fb';
+      ctx.beginPath();
+      ctx.arc(mx, my, size, 0, TAU);
+      ctx.fill();
+      ctx.fillStyle = '#ff4d4d';
+      ctx.beginPath();
+      ctx.arc(mx, my, size * 0.45, 0, TAU);
+      ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  /** 炮塔的电磁炮弹道。 */
+  function drawBeams(ctx, fx) {
+    if (!fx.beams.length) return;
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.lineCap = 'round';
+    for (let i = 0; i < fx.beams.length; i++) {
+      const b = fx.beams[i];
+      const a = 1 - b.age / b.life;
+      ctx.strokeStyle = hexA(b.color, 0.8 * a);
+      ctx.lineWidth = b.small ? 3 : 6;
+      ctx.beginPath();
+      ctx.moveTo(b.x, b.y);
+      ctx.lineTo(b.tx, b.ty);
+      ctx.stroke();
+      ctx.strokeStyle = hexA('#ffffff', a);
+      ctx.lineWidth = b.small ? 1 : 2;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
 
   // ---------------------------------------------------------------------
   // 场上的东西：落雷、孢子、蘑菇、灼烧
@@ -1068,8 +1437,11 @@
       match.balls.forEach(function (ball, i) {
         if (!fx.dead[i]) DRAW[ball.type].under(ctx, match, fx, ball, themes[i]);
       });
+      drawOres(ctx, match, fx);
+      drawWires(ctx, match, fx);
       drawStrikes(ctx, match, fx);
       drawMushrooms(ctx, match);
+      drawBuildings(ctx, match, fx);
       drawCrosses(ctx, match, fx, 'fire');
       drawDevices(ctx, match, fx);
       drawSpores(ctx, match);
@@ -1080,10 +1452,17 @@
         if (!fx.dead[i]) drawBurn(ctx, fx, ball);
       });
       drawBolts(ctx, match, fx);
+      drawBeams(ctx, fx);
+      drawNukes(ctx, match, fx);
       match.balls.forEach(function (ball, i) {
         if (!fx.dead[i]) DRAW[ball.type].over(ctx, match, fx, ball, themes[i]);
       });
       drawEffects(ctx, match, fx, opts);
+      if (fx.flash > 0) {
+        // 核爆的闪光。
+        ctx.fillStyle = 'rgba(255, 248, 220, ' + Math.min(0.75, fx.flash * 1.6) * (opts.reducedMotion ? 0.3 : 1) + ')';
+        ctx.fillRect(-20, -20, A + 40, A + 40);
+      }
       ctx.restore();
     }
 

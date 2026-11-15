@@ -137,6 +137,22 @@
       for (let i = 0; i < match.mushrooms.length; i++) if (match.mushrooms[i].owner === ball.id) n++;
       return { label: '蘑菇 ' + n, value: '孢子 ' + Math.max(0, ball.sporeTimer).toFixed(1) + 's', ratio: 1 - ball.sporeTimer / S.interval, tone: n >= S.maxMushrooms ? 'ready' : '' };
     },
+    tech: function (ball) {
+      const T = CFG.tech;
+      const label = '电力 ' + Math.floor(ball.power) + '（+' + ball.income + '/秒）· 矿 ' + ball.ore;
+      let charge = -1;
+      for (let i = 0; i < match.buildings.length; i++) {
+        const b = match.buildings[i];
+        if (b.owner === ball.id && b.kind === 'silo' && b.active) charge = Math.max(charge, b.charge / T.nukeCost);
+      }
+      if (charge >= 0) {
+        return { label: label, value: '核弹 ' + Math.floor(charge * 100) + '%', ratio: charge, tone: charge >= 0.85 ? 'ready' : '' };
+      }
+      const kind = Sim.nextBuild(match, ball.id);
+      if (!kind) return { label: label, value: '设备齐全', ratio: 1, tone: 'ready' };
+      const spec = T.buildings[kind];
+      return { label: label, value: '下一个：' + spec.name, ratio: ball.ore / spec.cost, tone: '' };
+    },
   };
 
   /** 只在值真的变了的时候才碰 DOM。 */

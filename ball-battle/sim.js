@@ -26,6 +26,7 @@
       tickDamage: 3,
       tickEvery: 1,
       cooldown: 8,
+      zapBuildingEvery: 0.3, // 同一个设备多久最多被闪电链电一次
       zapEvery: 0.1,   // 闪电链就绪时，每隔多久电掉一个靠近的孢子 / 蘑菇
       // 落雷：每隔一段时间预判敌人的位置劈一道雷。
       thunderEvery: 4.5,
@@ -42,6 +43,7 @@
       fire: 0.4,       // 十字激光持续时间
       width: 20,
       damage: 6,       // 每个装置的十字激光最多命中一次
+      summonDamage: 3, // 激光扫到孢子 / 蘑菇 / 设备时的伤害
       chargeMax: 20,
       chargeRate: 1,   // 每秒自然充能
       chargeOnHit: 2,  // 每个装置命中额外充能
@@ -80,6 +82,7 @@
       interval: 5,        // 每隔多久放一次孢子
       count: 5,
       sporeDamage: 1,
+      sporeVsBuilding: 2, // 孢子腐蚀科技球设备的伤害
       sporeRadius: 6,
       sporeSpeed: 130,    // 孢子初速（会逐渐停下来）
       sporeDrag: 1.3,
@@ -93,6 +96,57 @@
       matureRadius: 14,
       maxMushrooms: 16,   // 场上同一方最多这么多蘑菇 / 孢子，多出来的孢子直接枯萎
       maxSpores: 120,
+    },
+
+    tech: {
+      turnRate: 8,          // 科技球朝目标拐弯的角速度（弧度/秒）
+      // 矿物
+      oreStart: 6,          // 开局地图上的矿物数
+      oreAmount: 2,         // 每块矿能挖到多少
+      oreEvery: 4.5,        // 之后每隔多久再长出一块
+      oreMax: 6,
+      oreRadius: 12,
+      // 建造：按 order 的顺序造，被拆掉的会优先补回来
+      order: ['generator', 'turret', 'generator', 'turret', 'plant', 'silo',
+        'turret', 'turret', 'generator', 'turret', 'plant', 'silo'],
+      buildings: {
+        generator: { name: '发电机', cost: 2, hp: 22, r: 15 },
+        turret: { name: '电磁炮塔', cost: 3, hp: 22, r: 15 },
+        plant: { name: '核电站', cost: 7, hp: 45, r: 22 },
+        silo: { name: '核弹发射井', cost: 9, hp: 36, r: 20 },
+      },
+      spacing: 72,          // 设备之间的最小间距
+      linkRange: 230,       // 新设备离电网最远多远
+      buildReach: 36,       // 球离选好的位置多近就能开工
+      buildTime: 1.5,       // 施工时间，完工后才运转
+      // 电力
+      generatorPower: 1,    // 每秒产电
+      plantPower: 5,
+      powerMax: 100,
+      // 电磁炮塔
+      turretRange: 180,
+      turretDamage: 2,
+      turretEvery: 2,
+      shotCost: 3,          // 每发耗电
+      clearCost: 2,         // 打孢子 / 蘑菇的耗电和间隔
+      clearEvery: 1.2,
+      // 高压电线：敌人碰到通电的电线会被电
+      wireDamage: 1,
+      wireEvery: 1,
+      // 核弹
+      siloRate: 4,          // 发射井每秒最多充多少电
+      nukeCost: 35,
+      nukeDelay: 1.6,       // 从发射到落地
+      nukeRadius: 150,
+      nukeScatter: 30,
+      nukeDamage: 30,
+      nukeBurn: 3,          // 辐射灼烧秒数
+      nukeKnock: 3,
+      // 设备怎么挨打
+      ramDamage: 3,         // 敌方小球撞上设备
+      ramDamageFlame: 3,
+      ramEvery: 0.5,
+      hitCap: 20,           // 设备一次最多掉这么多血
     },
 
     boostDecay: 3,        // 被击飞后的额外速度每秒衰减的比例
@@ -243,7 +297,7 @@
    * inside(x, y, r) 返回这个东西是否在攻击范围内。孢子一碰就没，蘑菇有 2 点血。
    * limit：最多打掉几个（不填就是全部）。返回打中的数量。
    */
-  function hitSummons(state, attackerId, amount, inside, limit) {
+  function hitSummons(state, attackerId, amount, inside, limit, tag) {
     let count = 0;
     const max = limit == null ? Infinity : limit;
     for (let i = state.spores.length - 1; i >= 0 && count < max; i--) {
@@ -264,6 +318,16 @@
       state.events.push({
         type: 'mushroomDie', owner: mushroom.owner, x: mushroom.x, y: mushroom.y, stage: mushroom.stage,
       });
+    }
+    // 科技球的设备。持续型的攻击（激光、冲刺）带上 tag，同一次攻击只算一下。
+    for (let i = state.buildings.length - 1; i >= 0 && count < max; i--) {
+      const building = state.buildings[i];
+      if (building.owner === attackerId) continue;
+      if (tag != null && building.tags[tag]) continue;
+      if (!inside(building.x, building.y, building.r)) continue;
+      if (tag != null) building.tags[tag] = true;
+      count++;
+      hurtBuilding(state, building, amount);
     }
     return count;
   }
@@ -348,6 +412,13 @@
         }
         spent = true;
         break;
+      }
+      for (let j = state.buildings.length - 1; j >= 0 && !spent; j--) {
+        const building = state.buildings[j];
+        if (building.owner === spore.owner) continue;
+        if (Math.hypot(building.x - spore.x, building.y - spore.y) > building.r + S.sporeRadius) continue;
+        hurtBuilding(state, building, S.sporeVsBuilding);
+        spent = true;
       }
       if (spent) {
         state.spores.splice(i, 1);
@@ -459,7 +530,7 @@
             if (Math.hypot(x - ball.x, y - ball.y) > E.reach + r) return false;
             zapped = { x: x, y: y };
             return true;
-          }, 1);
+          }, 1, 'zap' + ball.id + '-' + Math.floor(state.time / E.zapBuildingEvery));
           if (hit) {
             ball.zapTimer = E.zapEvery;
             state.events.push({ type: 'zap', ball: ball.id, x: zapped.x, y: zapped.y });
@@ -583,12 +654,13 @@
             ball.vx = Math.cos(ult.aim);
             ball.vy = Math.sin(ult.aim);
             normalizeVelocity(ball, true);
+            ult.count = (ult.count || 0) + 1;
             state.events.push({ type: 'ultDash', ball: ball.id, x: ball.x, y: ball.y, angle: ult.aim });
           }
         } else if (ult.phase === 'dash') {
           ult.timer -= dt;
           // 一路上的孢子 / 蘑菇直接撞碎。
-          hitSummons(state, ball.id, 99, inCircle(ball.x, ball.y, ball.r));
+          hitSummons(state, ball.id, 99, inCircle(ball.x, ball.y, ball.r), null, 'dash' + ball.id + '-' + ult.count);
           if (ult.timer <= 0) endDash(state, ball, false);
         }
       },
@@ -655,6 +727,72 @@
         if (ball.sporeTimer > 0) return;
         ball.sporeTimer += CFG.spore.interval;
         releaseSpores(state, ball.id, ball.x, ball.y, CFG.spore.count, ball.r, 'ball');
+      },
+    },
+
+    tech: {
+      id: 'tech',
+      name: '科技球',
+      details: [
+        '开局采矿，造发电机和电磁炮塔，自动连成电网',
+        '敌人碰到高压电线 -1，炮塔耗电开火 -2',
+        '后期：核电站大量产电，发射井充满就丢核弹 -30',
+        '设备血厚，可以被打掉，拆了会重建',
+      ],
+      init: function (ball) {
+        ball.ore = 0;
+        ball.power = 0;
+        ball.income = 0;     // 当前每秒产电
+        ball.site = null;    // 选好的施工位置
+        ball.siteCd = 0;
+        ball.wireCd = 0;
+        ball.nukes = 0;      // 已经发射了几枚
+      },
+      update: function (state, ball, enemy, dt) {
+        const T = CFG.tech;
+        // 设备自己会运转，球被麻痹也不耽误。
+        runBuildings(state, ball, enemy, dt);
+        if (ball.paralyzed) return;
+
+        // 采矿：碰到就挖走。
+        for (let i = state.ores.length - 1; i >= 0; i--) {
+          const ore = state.ores[i];
+          if (Math.hypot(ore.x - ball.x, ore.y - ball.y) > ball.r + T.oreRadius) continue;
+          state.ores.splice(i, 1);
+          ball.ore += ore.amount;
+          state.events.push({ type: 'mine', ball: ball.id, x: ore.x, y: ore.y, amount: ore.amount });
+        }
+
+        // 矿够了就去施工，不够就去找最近的矿。
+        const kind = nextBuild(state, ball.id);
+        let target = null;
+        ball.siteCd = Math.max(0, ball.siteCd - dt);
+        if (kind && ball.ore >= T.buildings[kind].cost) {
+          if (ball.site && !siteOk(state, ball.site.x, ball.site.y)) ball.site = null;
+          if (!ball.site && ball.siteCd <= 0) {
+            ball.site = pickSite(state, ball);
+            ball.siteCd = 0.4;
+          }
+          if (ball.site) {
+            if (Math.hypot(ball.site.x - ball.x, ball.site.y - ball.y) <= T.buildReach) {
+              ball.ore -= T.buildings[kind].cost;
+              placeBuilding(state, ball.id, kind, ball.site.x, ball.site.y);
+              ball.site = null;
+            } else {
+              target = ball.site;
+            }
+          }
+        } else {
+          ball.site = null;
+        }
+        if (!target) {
+          let best = Infinity;
+          for (let i = 0; i < state.ores.length; i++) {
+            const d = Math.hypot(state.ores[i].x - ball.x, state.ores[i].y - ball.y);
+            if (d < best) { best = d; target = state.ores[i]; }
+          }
+        }
+        if (target) steerToward(ball, target.x, target.y, T.turnRate * dt);
       },
     },
   };
@@ -787,11 +925,295 @@
         }
       }
       // 激光扫过的孢子 / 蘑菇也会被烧掉。
-      hitSummons(state, device.owner, L.damage, function (x, y, r) {
+      hitSummons(state, device.owner, L.summonDamage, function (x, y, r) {
         return Math.abs(x - device.x) <= L.width / 2 + r || Math.abs(y - device.y) <= L.width / 2 + r;
-      });
+      }, null, 'laser' + device.id);
 
       if (device.timer <= 0) state.devices.splice(i, 1);
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // 科技球：矿物、设备、电网、核弹
+  // ---------------------------------------------------------------------
+
+  function spawnOre(state) {
+    const T = CFG.tech;
+    const margin = 45;
+    for (let tries = 0; tries < 12; tries++) {
+      const x = margin + state.rng() * (CFG.arena - margin * 2);
+      const y = margin + state.rng() * (CFG.arena - margin * 2);
+      let ok = true;
+      for (let i = 0; i < state.ores.length && ok; i++) {
+        if (Math.hypot(state.ores[i].x - x, state.ores[i].y - y) < 70) ok = false;
+      }
+      for (let i = 0; i < state.buildings.length && ok; i++) {
+        if (Math.hypot(state.buildings[i].x - x, state.buildings[i].y - y) < 50) ok = false;
+      }
+      if (!ok) continue;
+      const ore = { id: state.nextTechId++, x: x, y: y, amount: T.oreAmount };
+      state.ores.push(ore);
+      state.events.push({ type: 'oreSpawn', x: x, y: y });
+      return ore;
+    }
+    return null;
+  }
+
+  function updateOres(state, dt) {
+    const T = CFG.tech;
+    state.oreTimer -= dt;
+    if (state.oreTimer > 0) return;
+    state.oreTimer += T.oreEvery;
+    if (state.ores.length < T.oreMax) spawnOre(state);
+  }
+
+  /** 接下来该造什么：按 order 走，缺哪个补哪个；都造齐了返回 null。 */
+  function nextBuild(state, owner) {
+    const have = {};
+    for (let i = 0; i < state.buildings.length; i++) {
+      const b = state.buildings[i];
+      if (b.owner === owner) have[b.kind] = (have[b.kind] || 0) + 1;
+    }
+    const need = {};
+    const order = CFG.tech.order;
+    for (let i = 0; i < order.length; i++) {
+      need[order[i]] = (need[order[i]] || 0) + 1;
+      if ((have[order[i]] || 0) < need[order[i]]) return order[i];
+    }
+    return null;
+  }
+
+  function siteOk(state, x, y) {
+    for (let i = 0; i < state.buildings.length; i++) {
+      const b = state.buildings[i];
+      if (Math.hypot(b.x - x, b.y - y) < CFG.tech.spacing) return false;
+    }
+    return true;
+  }
+
+  /** 挑一个施工位置：不挤着别的设备、离自家电网不太远，尽量就近。 */
+  function pickSite(state, ball) {
+    const T = CFG.tech;
+    const margin = 55;
+    let best = null;
+    let bestD = Infinity;
+    let hasOwn = false;
+    for (let i = 0; i < state.buildings.length; i++) if (state.buildings[i].owner === ball.id) hasOwn = true;
+    for (let tries = 0; tries < 30; tries++) {
+      const x = margin + state.rng() * (CFG.arena - margin * 2);
+      const y = margin + state.rng() * (CFG.arena - margin * 2);
+      if (!siteOk(state, x, y)) continue;
+      if (hasOwn) {
+        let near = Infinity;
+        for (let i = 0; i < state.buildings.length; i++) {
+          const b = state.buildings[i];
+          if (b.owner === ball.id) near = Math.min(near, Math.hypot(b.x - x, b.y - y));
+        }
+        if (near > T.linkRange) continue;
+      }
+      const d = Math.hypot(x - ball.x, y - ball.y);
+      if (d < bestD) { bestD = d; best = { x: x, y: y }; }
+    }
+    return best;
+  }
+
+  function placeBuilding(state, owner, kind, x, y) {
+    const T = CFG.tech;
+    const spec = T.buildings[kind];
+    const building = {
+      id: state.nextTechId++,
+      owner: owner,
+      kind: kind,
+      x: x,
+      y: y,
+      r: spec.r,
+      hp: spec.hp,
+      maxHp: spec.hp,
+      active: false,       // 施工完才运转
+      build: T.buildTime,
+      cd: 0,               // 炮塔开火冷却
+      aim: 0,              // 炮塔朝向
+      charge: 0,           // 发射井充能
+      ramCd: 0,
+      tags: {},
+    };
+    state.buildings.push(building);
+    state.events.push({ type: 'buildStart', owner: owner, kind: kind, x: x, y: y });
+    refreshGrid(state, owner);
+    return building;
+  }
+
+  /** 把一方的设备用最短的电线连成一张网（最小生成树）。 */
+  function refreshGrid(state, owner) {
+    state.wires = state.wires.filter(function (w) { return w.owner !== owner; });
+    const list = state.buildings.filter(function (b) { return b.owner === owner; });
+    if (list.length < 2) return;
+    const linked = [list[0]];
+    const rest = list.slice(1);
+    while (rest.length) {
+      let bi = 0;
+      let from = null;
+      let bestD = Infinity;
+      for (let i = 0; i < rest.length; i++) {
+        for (let j = 0; j < linked.length; j++) {
+          const d = Math.hypot(rest[i].x - linked[j].x, rest[i].y - linked[j].y);
+          if (d < bestD) { bestD = d; bi = i; from = linked[j]; }
+        }
+      }
+      state.wires.push({ owner: owner, a: from, b: rest[bi], live: false });
+      linked.push(rest[bi]);
+      rest.splice(bi, 1);
+    }
+  }
+
+  function hurtBuilding(state, building, amount) {
+    if (building.dead) return;
+    const dealt = Math.min(amount, CFG.tech.hitCap);
+    building.hp -= dealt;
+    state.events.push({ type: 'buildingHit', owner: building.owner, x: building.x, y: building.y, amount: dealt });
+    if (building.hp > 0) return;
+    building.dead = true;
+    const index = state.buildings.indexOf(building);
+    if (index >= 0) state.buildings.splice(index, 1);
+    state.events.push({
+      type: 'buildingDie', owner: building.owner, kind: building.kind, x: building.x, y: building.y,
+    });
+    refreshGrid(state, building.owner);
+  }
+
+  /** 点 (px, py) 到线段的距离。 */
+  function segmentDistance(px, py, x1, y1, x2, y2) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len2 = dx * dx + dy * dy;
+    const t = len2 > 0 ? clamp(((px - x1) * dx + (py - y1) * dy) / len2, 0, 1) : 0;
+    return Math.hypot(px - (x1 + dx * t), py - (y1 + dy * t));
+  }
+
+  function runBuildings(state, ball, enemy, dt) {
+    const T = CFG.tech;
+    const own = state.buildings.filter(function (b) { return b.owner === ball.id; });
+
+    // 施工 + 产电。
+    let income = 0;
+    for (let i = 0; i < own.length; i++) {
+      const b = own[i];
+      if (!b.active) {
+        b.build -= dt;
+        if (b.build <= 0) {
+          b.active = true;
+          state.events.push({ type: 'buildDone', owner: b.owner, kind: b.kind, x: b.x, y: b.y });
+        }
+        continue;
+      }
+      if (b.kind === 'generator') income += T.generatorPower;
+      else if (b.kind === 'plant') income += T.plantPower;
+    }
+    ball.income = income;
+    ball.power = Math.min(T.powerMax, ball.power + income * dt);
+    const powered = income > 0;
+
+    for (let i = 0; i < own.length; i++) {
+      const b = own[i];
+      if (b.dead) continue;
+
+      // 敌方小球撞上来会砸坏设备（冲拳的烈焰球另算）。
+      b.ramCd = Math.max(0, b.ramCd - dt);
+      if (enemy.hp > 0 && !enemy.dashing && b.ramCd <= 0 &&
+          Math.hypot(enemy.x - b.x, enemy.y - b.y) <= enemy.r + b.r) {
+        b.ramCd = T.ramEvery;
+        hurtBuilding(state, b, enemy.type === 'flame' ? T.ramDamageFlame : T.ramDamage);
+        if (b.dead) continue;
+      }
+      if (!b.active || !powered) continue;
+
+      if (b.kind === 'turret') {
+        b.cd = Math.max(0, b.cd - dt);
+        if (enemy.hp > 0) b.aim = Math.atan2(enemy.y - b.y, enemy.x - b.x);
+        if (b.cd > 0) continue;
+        if (enemy.hp > 0 && ball.power >= T.shotCost &&
+            Math.hypot(enemy.x - b.x, enemy.y - b.y) <= T.turretRange + enemy.r) {
+          ball.power -= T.shotCost;
+          b.cd = T.turretEvery;
+          state.events.push({ type: 'turretFire', owner: ball.id, x: b.x, y: b.y, tx: enemy.x, ty: enemy.y });
+          damage(state, enemy, T.turretDamage, 'turret', ball.id);
+        } else if (ball.power >= T.clearCost) {
+          // 够不着敌人就清理附近的孢子 / 蘑菇。
+          let got = null;
+          const hit = hitSummons(state, ball.id, T.turretDamage, function (x, y, r) {
+            if (Math.hypot(x - b.x, y - b.y) > T.turretRange + r) return false;
+            got = { x: x, y: y };
+            return true;
+          }, 1);
+          if (hit) {
+            ball.power -= T.clearCost;
+            b.cd = T.clearEvery;
+            b.aim = Math.atan2(got.y - b.y, got.x - b.x);
+            state.events.push({ type: 'turretFire', owner: ball.id, x: b.x, y: b.y, tx: got.x, ty: got.y, small: true });
+          }
+        }
+      } else if (b.kind === 'silo') {
+        const take = Math.min(ball.power, T.siloRate * dt, T.nukeCost - b.charge);
+        b.charge += take;
+        ball.power -= take;
+        if (b.charge >= T.nukeCost - 1e-6 && enemy.hp > 0) {
+          b.charge = 0;
+          launchNuke(state, ball, b, enemy);
+        }
+      }
+    }
+
+    // 高压电线。
+    ball.wireCd = Math.max(0, ball.wireCd - dt);
+    for (let i = 0; i < state.wires.length; i++) {
+      const w = state.wires[i];
+      if (w.owner !== ball.id) continue;
+      w.live = powered && w.a.active && w.b.active;
+      if (!w.live || ball.wireCd > 0 || enemy.hp <= 0 || enemy.dashing) continue;
+      if (segmentDistance(enemy.x, enemy.y, w.a.x, w.a.y, w.b.x, w.b.y) > enemy.r * 0.6) continue;
+      ball.wireCd = T.wireEvery;
+      state.events.push({ type: 'wireZap', owner: ball.id, x: enemy.x, y: enemy.y });
+      damage(state, enemy, T.wireDamage, 'wire', ball.id);
+    }
+  }
+
+  function launchNuke(state, ball, silo, enemy) {
+    const T = CFG.tech;
+    const p = predict(enemy, T.nukeDelay);
+    const angle = state.rng() * Math.PI * 2;
+    const dist = state.rng() * T.nukeScatter;
+    const nuke = {
+      id: state.nextTechId++,
+      owner: ball.id,
+      sx: silo.x,
+      sy: silo.y,
+      x: clamp(p.x + Math.cos(angle) * dist, 0, CFG.arena),
+      y: clamp(p.y + Math.sin(angle) * dist, 0, CFG.arena),
+      timer: T.nukeDelay,
+    };
+    ball.nukes += 1;
+    state.nukes.push(nuke);
+    state.events.push({ type: 'nukeLaunch', owner: ball.id, x: silo.x, y: silo.y, tx: nuke.x, ty: nuke.y });
+  }
+
+  function updateNukes(state, dt) {
+    const T = CFG.tech;
+    for (let i = state.nukes.length - 1; i >= 0; i--) {
+      const nuke = state.nukes[i];
+      nuke.timer -= dt;
+      if (nuke.timer > 0) continue;
+      state.nukes.splice(i, 1);
+      const enemy = state.balls[1 - nuke.owner];
+      const hit = enemy.hp > 0 && Math.hypot(enemy.x - nuke.x, enemy.y - nuke.y) <= T.nukeRadius;
+      if (hit) {
+        damage(state, enemy, T.nukeDamage, 'nuke', nuke.owner);
+        applyBurn(state, enemy, T.nukeBurn, nuke.owner);
+        knockBack(enemy, nuke.x, nuke.y, T.nukeKnock);
+      }
+      hitSummons(state, nuke.owner, 99, inCircle(nuke.x, nuke.y, T.nukeRadius));
+      state.events.push({
+        type: 'nuke', owner: nuke.owner, x: nuke.x, y: nuke.y, radius: T.nukeRadius, hit: hit,
+      });
     }
   }
 
@@ -955,6 +1377,12 @@
       strikes: [],     // 还没劈下来的落雷
       spores: [],
       mushrooms: [],
+      ores: [],        // 矿物（有科技球才会出现）
+      buildings: [],   // 科技球的设备
+      wires: [],       // 设备之间的电线
+      nukes: [],       // 飞行中的核弹
+      oreTimer: CFG.tech.oreEvery,
+      nextTechId: 1,
       nextDeviceId: 1,
       nextStrikeId: 1,
       nextSummonId: 1,
@@ -991,6 +1419,11 @@
       normalizeVelocity(ball, false);
       state.balls.push(ball);
     });
+    state.hasTech = types.indexOf('tech') >= 0;
+    if (state.hasTech) {
+      for (let i = 0; i < CFG.tech.oreStart; i++) spawnOre(state);
+      state.events.length = 0;
+    }
     return state;
   }
 
@@ -1030,12 +1463,17 @@
     updateStrikes(state, dt);
     updateSpores(state, dt);
     updateMushrooms(state, dt);
+    if (state.hasTech) {
+      updateOres(state, dt);
+      updateNukes(state, dt);
+    }
 
     if (a.hp <= 0 || b.hp <= 0) {
       state.over = true;
       state.winner = a.hp <= 0 && b.hp <= 0 ? -1 : a.hp <= 0 ? 1 : 0;
       state.devices.length = 0;
       state.strikes.length = 0;
+      state.nukes.length = 0;
       state.balls.forEach(function (ball) {
         if (ball.hp <= 0) state.events.push({ type: 'death', ball: ball.id, x: ball.x, y: ball.y });
       });
@@ -1063,5 +1501,8 @@
     applyBurn: applyBurn,
     releaseSpores: releaseSpores,
     predict: predict,
+    placeBuilding: placeBuilding,
+    nextBuild: nextBuild,
+    hurtBuilding: hurtBuilding,
   };
 });

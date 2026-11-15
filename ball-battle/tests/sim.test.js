@@ -299,3 +299,60 @@ test('对局：同一个种子结果完全一致，小球始终在场地内', ()
   };
   assert.deepEqual(run(), run());
 });
+
+test('科技球：开局有矿，会采矿、造设备、连电网、产电', () => {
+  const m = Sim.createMatch({ left: 'tech', right: 'laser', seed: 5 });
+  assert.equal(m.ores.length, Sim.CFG.tech.oreStart);
+  const tech = m.balls[0];
+  m.balls[1].hp = 1e9; // 只看发育，不让对局提前结束
+  tech.hp = 1e9;
+  Sim.advance(m, 30);
+  const own = m.buildings.filter((b) => b.owner === 0);
+  assert.ok(own.length >= 2, '30 秒内至少造出两个设备');
+  assert.ok(own.some((b) => b.kind === 'generator'));
+  assert.equal(m.wires.filter((w) => w.owner === 0).length, own.length - 1, '电线把所有设备连成一张网');
+  assert.ok(tech.income > 0, '发电机在产电');
+});
+
+test('科技球：设备血厚，打掉后电网会重连', () => {
+  const m = Sim.createMatch({ left: 'tech', right: 'electric', seed: 9 });
+  const a = Sim.placeBuilding(m, 0, 'generator', 100, 100);
+  const b = Sim.placeBuilding(m, 0, 'turret', 200, 100);
+  Sim.placeBuilding(m, 0, 'generator', 300, 100);
+  assert.equal(m.wires.length, 2);
+  Sim.hurtBuilding(m, b, 5);
+  assert.equal(m.buildings.length, 3, '一下打不掉');
+  Sim.hurtBuilding(m, b, 999);
+  Sim.hurtBuilding(m, b, 999);
+  assert.equal(m.buildings.length, 2);
+  assert.equal(m.wires.length, 1);
+  assert.ok(a.hp === a.maxHp);
+});
+
+test('科技球：发射井充满电就发射核弹，炸中 -30', () => {
+  const T = Sim.CFG.tech;
+  const m = Sim.createMatch({ left: 'tech', right: 'spore', seed: 3 });
+  const tech = m.balls[0];
+  const enemy = m.balls[1];
+  enemy.paralyzed = true; // 站着不动，核弹一定炸中
+  enemy.shock = null;
+  m.ores.length = 0;
+  const plant = Sim.placeBuilding(m, 0, 'plant', 80, 80);
+  const silo = Sim.placeBuilding(m, 0, 'silo', 80, 200);
+  plant.active = silo.active = true;
+  tech.power = T.powerMax;
+  let launched = false;
+  let nukeDamage = 0;
+  for (let i = 0; i < 120 * 20 && !m.over; i++) {
+    enemy.paralyzed = true;
+    Sim.step(m);
+    for (const e of m.events) {
+      if (e.type === 'nukeLaunch') launched = true;
+      if (e.type === 'damage' && e.kind === 'nuke') nukeDamage += e.amount;
+    }
+    m.events.length = 0;
+    if (nukeDamage) break;
+  }
+  assert.ok(launched);
+  assert.equal(nukeDamage, T.nukeDamage);
+});
