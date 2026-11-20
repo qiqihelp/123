@@ -1,4 +1,4 @@
-import { W, H, field, catalog, units, clamp } from "./sim.mjs";
+import { W, H, CORE_X, CORE_Y, field, catalog, units, clamp } from "./sim.mjs";
 const rect = (c, x, y, w, h, color) => {
   c.fillStyle = color;
   c.fillRect(x, y, w, h);
@@ -86,40 +86,92 @@ const routes = [
     [631, 384],
   ],
 ].map((line) => line.map(([x, y]) => field(x, y)));
-function seg(x, y, [ax, ay], [bx, by]) {
-  const dx = bx - ax,
-    dy = by - ay,
-    t = clamp(((x - ax) * dx + (y - ay) * dy) / (dx * dx + dy * dy), 0, 1);
-  return Math.hypot(x - ax - dx * t, y - ay - dy * t);
-}
+routes.push(
+  [[0, 755], [265, 746], [470, 665], [681, 675], field(0, 344)],
+  [
+    [238, 290],
+    [260, 435],
+    [382, 538],
+    [470, 665],
+    [410, 820],
+    [487, 938],
+    [625, 1127],
+    [940, 1215],
+    [1330, 1190],
+    [1765, 1250],
+    [2235, 1200],
+    [2580, 1010],
+    [2720, 1125],
+    [3030, 1218],
+    [3200, 1190],
+  ],
+  [[0, 1060], [255, 1038], [560, 995], field(0, 495)],
+  [
+    [630, 0],
+    [680, 148],
+    [900, 223],
+    [1128, 185],
+    [1372, 122],
+    [1560, 188],
+    [1735, 226],
+    [2086, 198],
+    [2460, 333],
+    [2825, 390],
+    [3200, 421],
+  ],
+  [field(590, 0), [1560, 188]],
+  [field(960, 104), [2330, 482], [2460, 333]],
+  [field(960, 506), [2375, 725], [2500, 825], [2580, 1010]],
+  [
+    [2375, 725],
+    [2680, 750],
+    [2885, 775],
+    [3200, 700],
+  ],
+);
+const segments = routes.flatMap((line) =>
+  line.slice(1).map(([bx, by], i) => {
+    const [ax, ay] = line[i],
+      dx = bx - ax,
+      dy = by - ay;
+    return {
+      ax,
+      ay,
+      dx,
+      dy,
+      inv: 1 / (dx * dx + dy * dy),
+      left: Math.min(ax, bx) - 57,
+      right: Math.max(ax, bx) + 57,
+      top: Math.min(ay, by) - 57,
+      bottom: Math.max(ay, by) + 57,
+    };
+  }),
+);
 function road(x, y) {
-  let r = 500;
-  for (const line of routes)
-    for (let i = 1; i < line.length; i++)
-      r = Math.min(r, seg(x, y, line[i - 1], line[i]));
-  return r;
+  let best = 3600;
+  for (const s of segments) {
+    if (x < s.left || x > s.right || y < s.top || y > s.bottom) continue;
+    const dx = x - s.ax,
+      dy = y - s.ay,
+      t = clamp((dx * s.dx + dy * s.dy) * s.inv, 0, 1);
+    const ux = dx - t * s.dx,
+      uy = dy - t * s.dy;
+    best = Math.min(best, ux * ux + uy * uy);
+  }
+  return Math.sqrt(best);
 }
 function water(x, y) {
-  x *= 960 / W;
-  y *= 576 / H;
+  const oldX = (x - CORE_X) * 0.75,
+    oldY = (y - CORE_Y) * 0.8;
   return Math.max(
-    1 - Math.hypot((x - 124) / 196, (y - 24) / 113),
-    1 - Math.hypot((x - 832) / 136, (y - 575) / 96),
-    1 - Math.hypot((x - 959) / 64, (y - 536) / 123),
+    1 - Math.hypot((oldX - 124) / 196, (oldY - 24) / 113),
+    1 - Math.hypot((oldX - 832) / 136, (oldY - 575) / 96),
+    1 - Math.hypot((oldX - 959) / 64, (oldY - 536) / 123),
+    1 - Math.hypot((x - 215) / 256, (y - 1260) / 206),
+    1 - Math.hypot((x - 2800) / 444, (y - 104) / 199),
+    1 - Math.hypot((x - 3070) / 213, (y - 970) / 140),
+    1 - Math.hypot((x - 1650) / 249, (y - 1460) / 158),
   );
-}
-const clearings = [
-  [215, 450, 125],
-  [767, 151, 115],
-  [484, 179, 28],
-  [624, 385, 30],
-  [167, 354, 28],
-  [791, 357, 30],
-  [298, 162, 25],
-  [485, 483, 28],
-].map(([x, y, r]) => [...field(x, y), r]);
-function clearing(x, y) {
-  return clearings.some(([a, b, r]) => Math.hypot(x - a, y - b) < r);
 }
 function rock(c, x, y, s, v) {
   c.save();
@@ -229,7 +281,14 @@ function tree(c, x, y, s, v) {
   rect(c, -5, -2, 5, 1, light);
   c.restore();
 }
-function mine(c, x, y) {
+const mineColors = {
+  ore: ["#8ebfc4", "#589da9", "#41767b", "#bad2bc"],
+  rich: ["#e8c578", "#ba934c", "#82663f", "#ffe5a7"],
+  crystal: ["#bcabea", "#8c74ce", "#605397", "#e7d6f9"],
+  prism: ["#edabd1", "#cd73aa", "#8f5189", "#fbe4e9"],
+};
+function mine(c, x, y, kind) {
+  const palette = mineColors[kind];
   c.save();
   c.translate(x, y);
   const r = rng(x + y);
@@ -258,7 +317,7 @@ function mine(c, x, y) {
         [a + k, b - 3],
         [a + 1, b + 2],
       ],
-      i % 3 === 0 ? "#8ebfc4" : "#589da9",
+      i % 3 === 0 ? palette[0] : palette[1],
     );
     poly(
       c,
@@ -268,9 +327,9 @@ function mine(c, x, y) {
         [a + k, b + 2],
         [a + 1, b + 4],
       ],
-      "#41767b",
+      palette[2],
     );
-    rect(c, a, b - k + 1, k / 2, 1, "#bad2bc");
+    rect(c, a, b - k + 1, k / 2, 1, palette[3]);
   }
   c.restore();
 }
@@ -281,8 +340,21 @@ export function terrain(g) {
   const c = cv.getContext("2d");
   const im = c.createImageData(W, H),
     d = im.data;
-  for (let sy = 0; sy < H; sy += 2)
-    for (let sx = 0; sx < W; sx += 2) {
+  const clearings = [
+    [...field(215, 450), 125],
+    [...field(767, 151), 112],
+    ...g.mines.map((m) => [m.x, m.y, 34]),
+    ...g.relays.map((r) => [r.x, r.y, 35]),
+  ];
+  const clearing = (x, y) =>
+    clearings.some(
+      ([a, b, r]) =>
+        Math.abs(x - a) < r &&
+        Math.abs(y - b) < r &&
+        Math.hypot(x - a, y - b) < r,
+    );
+  for (let sy = 0; sy < H; sy += 4)
+    for (let sx = 0; sx < W; sx += 4) {
       const n =
           noise(sx, sy, 83) * 0.51 +
           noise(sx, sy, 30) * 0.29 +
@@ -297,12 +369,18 @@ export function terrain(g) {
           road(sx, sy) +
           (noise(sx, sy, 23) - 0.5) * 20 +
           (noise(sx, sy, 7) - 0.5) * 8;
-      const patch =
-        Math.max(
-          ...clearings.map(([a, b, r]) => 1 - Math.hypot(sx - a, sy - b) / r),
-        ) +
-        (noise(sx, sy, 29) - 0.5) * 0.32;
-      let base = [79 + n * 49, 87 + n * 39, 59 + n * 26];
+      let patch = 0;
+      for (const [ax, ay, r] of clearings) {
+        if (Math.abs(ax - sx) < r && Math.abs(ay - sy) < r)
+          patch = Math.max(patch, 1 - Math.hypot(ax - sx, ay - sy) / r);
+      }
+      patch += (noise(sx, sy, 29) - 0.5) * 0.32;
+      const regional = noise(sx + 483, sy + 196, 420);
+      let base = [
+        74 + n * 49 + regional * 10,
+        83 + n * 39 + regional * 7,
+        58 + n * 26,
+      ];
       if (patch > 0.12) base = [89 + n * 60, 89 + n * 47, 61 + n * 30];
       if (path < 29)
         base =
@@ -316,8 +394,8 @@ export function terrain(g) {
             : wet > 0.15
               ? [61 + n * 30, 74 + n * 27, 59 + n * 25]
               : [83 + n * 45, 88 + n * 34, 62 + n * 29];
-      for (let dy = 0; dy < 2; dy++)
-        for (let dx = 0; dx < 2; dx++) {
+      for (let dy = 0; dy < 4; dy++)
+        for (let dx = 0; dx < 4; dx++) {
           const k = ((sy + dy) * W + sx + dx) * 4;
           d[k] = base[0] + j;
           d[k + 1] = base[1] + j;
@@ -327,7 +405,7 @@ export function terrain(g) {
     }
   c.putImageData(im, 0, 0);
   const r = rng(57193);
-  for (let i = 0; i < 14700; i++) {
+  for (let i = 0; i < 62800; i++) {
     const x = Math.floor(r() * W),
       y = Math.floor(r() * H),
       v = r(),
@@ -384,7 +462,7 @@ export function terrain(g) {
     c.strokeStyle = "#a6a07566";
     c.strokeRect(x - 21.5, y - 16.5, 43, 33);
   }
-  for (let i = 0; i < 490; i++) {
+  for (let i = 0; i < 2400; i++) {
     const x = Math.round(r() * W),
       y = Math.round(r() * H);
     if (water(x, y) > 0.1 || road(x, y) < 25 || clearing(x, y)) continue;
@@ -392,7 +470,7 @@ export function terrain(g) {
     if (n > 0.57) rock(c, x, y, 0.32 + r() * 0.95, r() < 0.43);
   }
   const forest = [];
-  for (let i = 0; i < 3380; i++) {
+  for (let i = 0; i < 16500; i++) {
     const x = Math.round(r() * W),
       y = Math.round(r() * H),
       w = water(x, y),
@@ -409,7 +487,7 @@ export function terrain(g) {
   }
   forest.sort((a, b) => a[1] - b[1]);
   for (const treeSpec of forest) tree(c, ...treeSpec);
-  for (const m of g.mines) mine(c, m.x, m.y);
+  for (const m of g.mines) mine(c, m.x, m.y, m.kind);
   // Fine survey grid, deliberately faint so units remain legible.
   for (let x = 48; x < W; x += 48) rect(c, x, 0, 1, H, "#e4dec40c");
   for (let y = 48; y < H; y += 48) rect(c, 0, y, W, 1, "#e4dec40c");
@@ -490,10 +568,16 @@ export function vehicle(
     [d, m, b, l, hi, k] = set,
     missile = Boolean(units[type].missiles),
     artillery = Boolean(units[type].splash) && !missile,
-    big = type === "heavy" || type === "heavyArtillery",
+    big = [
+      "heavy",
+      "heavyArtillery",
+      "plasmaTank",
+      "assault",
+      "missileT2",
+    ].includes(type),
     scout = type === "scout",
     miner = type === "miner",
-    u = big ? 1.24 : scout ? 0.83 : 1;
+    u = big ? 1.24 : scout ? 0.83 : type === "raider" ? 0.94 : 1;
   c.save();
   c.translate(Math.round(x), Math.round(y));
   c.scale(u, u);
@@ -521,11 +605,27 @@ export function vehicle(
     c.translate(-kick(recoil, 6), 0);
     for (const y of [-7, 3]) {
       box(c, -5, y, 19, 5, set);
-      rect(c, -2, y, 12, 1, "#c9bd8a");
+      rect(c, -2, y, 12, 1, type === "missileT2" ? "#e2b699" : "#c9bd8a");
+      if (type === "missileT2") {
+        rect(c, 0, y + 2, 5, 2, "#f2d489");
+        rect(c, 7, y + 2, 2, 2, "#d9a963");
+      }
       rect(c, 10, y + 1, 4, 3, "#101b1c");
       rect(c, 10, y, 2, 4, "#cdd0a7");
       if (salvoLane === (y < 0 ? -1 : 1)) muzzle(c, 14, y + 2, recoil, 0.82);
     }
+  } else if (type === "plasmaTank") {
+    c.rotate(aim - angle);
+    box(c, -7, -5, 14, 10, set);
+    rect(c, -5, -3, 8, 6, "#5a427e");
+    rect(c, -4, -2, 6, 4, "#a584e9");
+    rect(c, -2, -1, 3, 2, "#f1d9ff");
+    c.translate(-kick(recoil, 7), 0);
+    for (const py of [-4, 2]) {
+      rect(c, 4, py, 14, 2, "#b694ef");
+      rect(c, 13, py, 4, 2, "#f1e1ff");
+    }
+    if (recoil > 0.175) rect(c, 17, -2, 7, 4, "#ead6fc");
   } else if (artillery) {
     c.rotate(aim - angle);
     box(c, -8, -5, 13, 10, set);
@@ -540,7 +640,14 @@ export function vehicle(
   } else {
     c.rotate(aim - angle);
     box(c, -5, -4, 11, 8, set);
-    rect(c, -3, -2, 4, 4, d);
+    rect(
+      c,
+      -3,
+      -2,
+      4,
+      4,
+      type === "assault" ? "#c7af72" : type === "raider" ? "#9cbeb0" : d,
+    );
     rect(c, -2, -2, 3, 1, hi);
     c.translate(-kick(recoil, big ? 7 : 6), 0);
     rect(c, 4, -2, big ? 17 : 13, 4, k);
@@ -625,6 +732,23 @@ export function structure(c, type, team, x, y, angle = 0, recoil = 0) {
     }
     rect(c, -3, -9, 6, 20, d);
     rect(c, -1, -7, 2, 12, "#cdd794");
+  } else if (type === "lab") {
+    rect(c, -23, -15, 52, 39, "#22233575");
+    box(c, -22, -16, 44, 32, set);
+    box(c, -19, -19, 33, 26, set);
+    c.fillStyle = "#5b4e79";
+    c.beginPath();
+    c.ellipse(-2, -8, 13, 9, 0, 0, Math.PI * 2);
+    c.fill();
+    c.fillStyle = "#a990d6";
+    c.beginPath();
+    c.ellipse(-4, -11, 10, 5, 0, 0, Math.PI * 2);
+    c.fill();
+    rect(c, -8, -12, 7, 2, "#efdaff");
+    rect(c, -12, 8, 26, 6, "#38334a");
+    for (let i = -10; i < 13; i += 6) rect(c, i, 10, 3, 2, "#c8a9f3");
+    line(c, 17, -5, 17, -24, k, 3);
+    rect(c, 15, -25, 8, 3, "#d0ade8");
   } else if (type === "repair") {
     rect(c, -22, -13, 49, 36, "#1b221966");
     box(c, -22, -16, 44, 34, set);
@@ -718,8 +842,9 @@ export function icon(type) {
   }
   return cv;
 }
-export function marker(c, x, y, text, team = 0) {
-  const color = team === 1 ? "#c0d7d5" : team === -1 ? "#efb49a" : "#efce84";
+export function marker(c, x, y, text, team = 0, tint = null) {
+  const color =
+    tint || (team === 1 ? "#c0d7d5" : team === -1 ? "#efb49a" : "#efce84");
   c.font = "bold 10px monospace";
   c.textAlign = "center";
   const w = Math.ceil(c.measureText(text).width) + 13;
@@ -782,11 +907,12 @@ export function drawMissile(c, m) {
 }
 export function drawBurst(c, b) {
   const p = clamp(1 - b.life / b.total, 0, 1),
+    plasma = b.style === "plasma",
     spark = b.style === "spark",
     big = b.style === "debris";
   const r = b.radius * (1 - Math.pow(1 - p, 2.2)) * (spark ? 1 : 1.55);
   c.globalAlpha = (1 - p) * (spark ? 0.8 : 0.94);
-  c.strokeStyle = spark ? "#ffdd87" : "#f5dd9a";
+  c.strokeStyle = plasma ? "#ead9ff" : spark ? "#ffdd87" : "#f5dd9a";
   c.lineWidth = (spark ? 1.25 : 2.6) * (1 - 0.62 * p);
   c.beginPath();
   c.ellipse(b.x, b.y, Math.max(1, r), Math.max(1, r * 0.75), 0, 0, Math.PI * 2);
@@ -794,7 +920,7 @@ export function drawBurst(c, b) {
   if (!spark) {
     const second = Math.max(1, r * 0.65);
     c.lineWidth = 1.5;
-    c.strokeStyle = "#eaa068";
+    c.strokeStyle = plasma ? "#ae7fe9" : "#eaa068";
     c.beginPath();
     c.ellipse(b.x, b.y, second, second * 0.75, 0, 0, Math.PI * 2);
     c.stroke();
@@ -810,7 +936,7 @@ export function drawBurst(c, b) {
         [b.x + f, b.y],
         [b.x, b.y + f],
       ],
-      "#ffaf53",
+      plasma ? "#b683e5" : "#ffaf53",
     );
     rect(c, b.x - f * 0.36, b.y - f * 0.36, f * 0.72, f * 0.72, "#fff6bd");
   }
@@ -837,4 +963,35 @@ export function drawBurst(c, b) {
     );
   }
   c.globalAlpha = 1;
+}
+
+export function drawPlasma(c, shot) {
+  const t = 1 - shot.life / shot.total,
+    dx = shot.tx - shot.x,
+    dy = shot.ty - shot.y;
+  const x = shot.x + dx * t,
+    y = shot.y + dy * t;
+  line(
+    c,
+    x - dx * Math.min(0.22, t),
+    y - dy * Math.min(0.22, t),
+    x,
+    y,
+    "#9f63e2a0",
+    7,
+  );
+  line(
+    c,
+    x - dx * Math.min(0.1, t),
+    y - dy * Math.min(0.1, t),
+    x,
+    y,
+    "#edd1ff",
+    2.5,
+  );
+  c.fillStyle = "#c997fb90";
+  c.beginPath();
+  c.arc(x, y, 7, 0, Math.PI * 2);
+  c.fill();
+  rect(c, x - 2, y - 2, 4, 4, "#fff0ff");
 }

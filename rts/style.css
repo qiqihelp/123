@@ -1326,3 +1326,139 @@ body {
     linear-gradient(currentColor, currentColor) bottom right/1px 4px;
   background-repeat: no-repeat;
 }
+.crystal {
+  color: #d2b6f1;
+}
+.crystal em,
+.crystal-cost {
+  color: #c1a8e3;
+}
+.resource.crystal .res-icon {
+  text-shadow: 0 0 9px #b98be151;
+}
+.mini-panel canvas {
+  height: auto;
+  aspect-ratio: 20 / 9;
+}
+.tabs button {
+  min-width: 0;
+  white-space: nowrap;
+}
+.tier-unit {
+  border-left: 2px solid #a188bb;
+}
+.unit-card .crystal-cost {
+  display: block;
+  margin-top: 3px;
+}
+.research-tree {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: auto auto;
+  align-content: start;
+  gap: 13px 7px;
+  padding-top: 3px;
+}
+.research-card {
+  position: relative;
+  display: grid;
+  align-content: start;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 5px 4px;
+  text-align: left;
+  background: #383a35;
+  border: 1px solid #6a6071;
+  color: #f1e7f3;
+  padding: 8px;
+  min-height: 69px;
+}
+.research-card:hover:not(:disabled) {
+  border-color: #c4a9e4;
+  background: #474351;
+}
+.research-card:disabled {
+  opacity: 0.75;
+}
+.research-root {
+  grid-column: 1 / -1;
+  border-left: 2px solid #bfa5df;
+}
+.research-branch:before {
+  content: "";
+  position: absolute;
+  height: 12px;
+  width: 1px;
+  background: #8d779b;
+  top: -13px;
+  left: 50%;
+}
+.research-branch {
+  grid-template-columns: 1fr;
+}
+.research-card .unit-name,
+.research-card .unit-desc {
+  white-space: normal;
+}
+.research-card .unit-cost {
+  margin: 0;
+}
+.research-state {
+  grid-column: 1/-1;
+  color: #d2b8ea;
+  font: 10px var(--mono);
+  align-self: end;
+}
+.research-active {
+  background: linear-gradient(
+    90deg,
+    #564762 var(--research-progress),
+    #383a35 var(--research-progress)
+  );
+  border-color: #ba9ed6;
+  opacity: 1 !important;
+}
+.research-done {
+  background: #3b4739;
+  border-color: #779271;
+}
+.research-done .research-state {
+  color: #c6e2b1;
+}
+@media (orientation: landscape) and (max-height: 565px),
+  (orientation: portrait) and (pointer: coarse) {
+  .mini-panel canvas {
+    height: auto;
+  }
+  .tier-unit .crystal-cost {
+    display: inline;
+  }
+  .research-card {
+    padding: 6px;
+    min-height: 54px;
+  }
+  .research-card .unit-desc {
+    display: block;
+    font-size: 9px;
+  }
+  .research-card .unit-cost {
+    font-size: 10px;
+  }
+  .research-tree {
+    gap: 9px 7px;
+  }
+  .research-branch:before {
+    top: -9px;
+    height: 8px;
+  }
+}
+@media (orientation: landscape) and (max-width: 670px),
+  (orientation: portrait) and (pointer: coarse) and (max-height: 670px) {
+  .resource small {
+    font-size: 8px;
+  }
+  .resource {
+    padding-inline: 5px;
+  }
+  #crystal-income {
+    display: none;
+  }
+}

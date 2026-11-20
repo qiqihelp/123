@@ -1,8 +1,11 @@
-export const W = 1280,
-  H = 720;
+export const W = 3200,
+  H = 1440;
+export const CORE_X = 850,
+  CORE_Y = 320;
+export const START_VIEW = { x: 1390, y: 702, z: 2.55 };
 export const field = (x, y) => [
-  Math.round((x * W) / 960),
-  Math.round((y * H) / 576),
+  CORE_X + Math.round((x * 1280) / 960),
+  CORE_Y + Math.round((y * 720) / 576),
 ];
 export const location = (x, y) => {
   const [px, py] = field(x, y);
@@ -99,6 +102,65 @@ export const units = {
     flight: 0.72,
     splash: 24,
   },
+  raider: {
+    name: "疾风坦克",
+    desc: "快速射击 · 侧翼突袭",
+    cost: 155,
+    hp: 121,
+    speed: 63,
+    size: 12,
+    range: 107,
+    damage: 14,
+    rate: 0.4,
+    time: 5,
+  },
+  assault: {
+    name: "攻坚坦克",
+    desc: "破甲重炮 · 克制建筑",
+    cost: 335,
+    hp: 285,
+    speed: 33,
+    size: 17,
+    range: 156,
+    damage: 54,
+    rate: 1.55,
+    time: 10,
+    structureBonus: 1.5,
+  },
+  plasmaTank: {
+    name: "等离子坦克",
+    desc: "T2 · 自修护盾",
+    cost: 465,
+    crystal: 16,
+    hp: 240,
+    shield: 96,
+    speed: 39,
+    size: 17,
+    range: 172,
+    damage: 86,
+    rate: 1.75,
+    time: 13,
+    plasma: true,
+    flight: 0.29,
+    tech: "t2",
+  },
+  missileT2: {
+    name: "导弹坦克 T2",
+    desc: "T2 · 四发齐射",
+    cost: 530,
+    crystal: 20,
+    hp: 245,
+    speed: 37,
+    size: 18,
+    range: 231,
+    damage: 45,
+    rate: 3.4,
+    time: 15,
+    missiles: 4,
+    flight: 0.77,
+    splash: 29,
+    tech: "t2",
+  },
 };
 export const buildings = {
   generator: {
@@ -157,6 +219,15 @@ export const buildings = {
     splash: 34,
     flight: 0.53,
   },
+  lab: {
+    name: "研究中心",
+    desc: "解锁 T2 及分支科技",
+    cost: 245,
+    hp: 310,
+    size: 25,
+    time: 9,
+    powerDraw: 3,
+  },
   hq: {
     name: "指挥中心",
     hp: 1150,
@@ -167,12 +238,69 @@ export const buildings = {
   },
   factory: { name: "战车工厂", hp: 560, size: 25 },
 };
+export const techs = {
+  t2: {
+    name: "T2 科技",
+    desc: "解锁等离子坦克与 T2 导弹坦克",
+    short: "解锁两种 T2 坦克",
+    cost: 300,
+    crystal: 24,
+    time: 16,
+  },
+  plasmaFocus: {
+    name: "等离子聚焦",
+    desc: "等离子单发伤害 +18",
+    short: "等离子伤害 +18",
+    cost: 225,
+    crystal: 22,
+    time: 12,
+    requires: "t2",
+  },
+  guidance: {
+    name: "制导升级",
+    desc: "两款导弹坦克单枚伤害 +8",
+    short: "导弹单发伤害 +8",
+    cost: 210,
+    crystal: 18,
+    time: 12,
+    requires: "t2",
+  },
+};
+export const minerals = {
+  ore: { name: "普通矿", label: "ORE", ore: 8, crystal: 0, color: "#71b7c9" },
+  rich: {
+    name: "高纯矿",
+    label: "RICH",
+    ore: 14,
+    crystal: 0,
+    color: "#e3bd68",
+  },
+  crystal: {
+    name: "晶能矿",
+    label: "CRYSTAL",
+    ore: 4,
+    crystal: 2,
+    color: "#ad9bea",
+  },
+  prism: {
+    name: "富晶矿",
+    label: "PRISM",
+    ore: 2,
+    crystal: 4,
+    color: "#e993cb",
+  },
+};
+const mine = (x, y, kind = "ore") => ({ x, y, kind });
+const localMine = (x, y, kind) => ({ ...location(x, y), kind: kind || "ore" });
 export const catalog = { ...units, ...buildings };
 export const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 export const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 export function createGame() {
   const g = {
     ore: 640,
+    crystal: 0,
+    tech: new Set(),
+    research: null,
     time: 0,
     nextWave: 55,
     lastWave: 0,
@@ -183,6 +311,8 @@ export function createGame() {
     queue: [],
     shots: [],
     shells: [],
+    plasma: [],
+    damageText: [],
     missiles: [],
     smoke: [],
     bursts: [],
@@ -191,12 +321,34 @@ export function createGame() {
     relays: [
       { ...location(484, 179), name: "A", owner: 0, progress: 0 },
       { ...location(624, 385), name: "B", owner: 0, progress: 0 },
+      { x: 470, y: 665, name: "C", owner: 0, progress: 0 },
+      { x: 1560, y: 188, name: "D", owner: 0, progress: 0 },
+      { x: 2580, y: 1010, name: "E", owner: 0, progress: 0 },
     ],
     mines: [
-      location(167, 354),
-      location(791, 357),
-      location(298, 162),
-      location(485, 483),
+      localMine(167, 354),
+      localMine(791, 357),
+      localMine(298, 162),
+      localMine(485, 483),
+      localMine(284, 329, "crystal"),
+      localMine(530, 89, "rich"),
+      localMine(872, 232, "crystal"),
+      mine(260, 435, "ore"),
+      mine(410, 820, "crystal"),
+      mine(587, 494, "rich"),
+      mine(625, 1127, "prism"),
+      mine(940, 1215, "ore"),
+      mine(1128, 185, "rich"),
+      mine(1735, 226, "prism"),
+      mine(2086, 198, "ore"),
+      mine(2460, 333, "rich"),
+      mine(2825, 390, "crystal"),
+      mine(2375, 725, "ore"),
+      mine(2885, 775, "rich"),
+      mine(2720, 1125, "prism"),
+      mine(2235, 1200, "crystal"),
+      mine(1765, 1250, "ore"),
+      mine(1330, 1190, "rich"),
     ],
     selected: new Set(),
   };
@@ -209,7 +361,7 @@ export function createGame() {
   spawn(g, "generator", -1, ...field(813, 183));
   spawn(g, "turret", -1, ...field(704, 173));
   const miner = spawn(g, "miner", 1, ...field(186, 367), -2.15);
-  miner.order = { kind: "mine", ...g.mines[0] };
+  miner.order = { ...g.mines[0], kindOfMine: g.mines[0].kind, kind: "mine" };
   spawn(g, "scout", 1, ...field(365, 360), -0.65);
   spawn(g, "scout", 1, ...field(383, 400), -0.57);
   g.selected.add(spawn(g, "tank", 1, ...field(316, 377), -0.6).id);
@@ -235,6 +387,9 @@ function spawn(g, type, team, x, y, angle = team === 1 ? -0.7 : 2.4) {
     hitFlash: 0,
     repairGlow: 0,
     hp: spec.hp,
+    shield: spec.shield || 0,
+    shieldClock: 0,
+    shieldFlash: 0,
     cd: 0,
     order: null,
   };
@@ -261,7 +416,14 @@ export const mining = (g, a) =>
 export const relayCount = (g) => g.relays.filter((r) => r.owner === 1).length;
 export const income = (g) =>
   4 +
-  8 * g.actors.filter((a) => a.team === 1 && mining(g, a)).length +
+  g.actors.reduce(
+    (sum, a) =>
+      sum +
+      (a.team === 1 && a.hp > 0 && mining(g, a)
+        ? minerals[a.order.kindOfMine || "ore"].ore
+        : 0),
+    0,
+  ) +
   5 * relayCount(g) +
   (load(g) <= capacity(g)
     ? g.actors.reduce(
@@ -270,6 +432,36 @@ export const income = (g) =>
         0,
       )
     : 0);
+export const crystalIncome = (g) =>
+  g.actors.reduce(
+    (sum, a) =>
+      sum +
+      (a.team === 1 && a.hp > 0 && mining(g, a)
+        ? minerals[a.order.kindOfMine || "ore"].crystal
+        : 0),
+    0,
+  );
+export function researchBlocked(g, key) {
+  const spec = techs[key];
+  if (!spec || g.result) return "战斗已结束";
+  if (g.tech.has(key)) return "已完成";
+  if (!owns(g, "lab")) return "请先建造研究中心";
+  if (load(g) > capacity(g)) return "研究中心供电不足";
+  if (spec.requires && !g.tech.has(spec.requires)) return "需要先完成 T2 科技";
+  if (g.research) return "已有项目正在研究";
+  if (g.ore + 1e-6 < spec.cost) return "矿石不足";
+  if (g.crystal + 1e-6 < spec.crystal) return "晶能不足，请开采晶能矿";
+  return "";
+}
+export function startResearch(g, key) {
+  const reason = researchBlocked(g, key);
+  if (reason) return reason;
+  const s = techs[key];
+  g.ore -= s.cost;
+  g.crystal -= s.crystal;
+  g.research = { key, left: s.time };
+  return "";
+}
 export const selected = (g) =>
   g.actors.filter((a) => g.selected.has(a.id) && a.team === 1 && a.hp > 0);
 export function blocked(g, type) {
@@ -277,7 +469,10 @@ export function blocked(g, type) {
   if (!spec?.cost) return "该单位不能生产";
   if (g.result) return "战斗已结束";
   if (g.queue.length >= 6) return "生产队列已满";
+  if (spec.tech && !g.tech.has(spec.tech)) return "需要先完成 T2 科技";
   if (g.ore + 1e-6 < spec.cost) return "矿石不足";
+  if (spec.crystal && g.crystal + 1e-6 < spec.crystal)
+    return "晶能不足，请开采晶能矿";
   if (units[type] && !owns(g, "factory")) return "战车工厂已损毁";
   if (
     units[type] &&
@@ -304,6 +499,7 @@ export function enqueue(g, type) {
   if (reason) return reason;
   const spec = catalog[type];
   g.ore -= spec.cost;
+  g.crystal -= spec.crystal || 0;
   g.queue.push({ type, left: spec.time });
   return "";
 }
@@ -349,7 +545,7 @@ export function order(g, x, y, mode = "auto", targetId) {
       enemy && catalog[a.type].range
         ? { kind: "target", id: enemy.id }
         : deposit && a.type === "miner"
-          ? { kind: "mine", ...deposit }
+          ? { ...deposit, kindOfMine: deposit.kind || "ore", kind: "mine" }
           : attack
             ? { kind: "attack", ...pos, center: point }
             : { kind: "move", ...pos };
@@ -357,7 +553,7 @@ export function order(g, x, y, mode = "auto", targetId) {
   return enemy
     ? "集火目标已锁定。"
     : deposit && group.some((a) => a.type === "miner")
-      ? "采矿车已前往矿床。"
+      ? "采矿车已前往" + minerals[deposit.kind || "ore"].name + "。"
       : attack
         ? "进攻指令：清扫目标区域。"
         : "部队正在向标记位置移动。";
@@ -404,10 +600,32 @@ function blast(g, x, y, radius, style) {
   const total = style === "spark" ? 0.32 : style === "debris" ? 0.75 : 0.63;
   g.bursts.push({ x, y, radius, style, life: total, total });
 }
+function floatDamage(g, target, value, shield) {
+  if (value <= 0) return;
+  if (g.damageText.length >= 140) g.damageText.shift();
+  g.damageText.push({
+    x: target.x + (shield ? -10 : 5),
+    y: target.y - catalog[target.type].size - 13,
+    life: 0.84,
+    total: 0.84,
+    value: Math.round(value),
+    shield,
+  });
+}
 function strike(g, target, damage) {
   if (target.hp <= 0) return;
-  target.hp -= damage;
-  target.hitFlash = 0.12;
+  const absorbed = Math.min(target.shield || 0, damage);
+  if (absorbed) {
+    target.shield -= absorbed;
+    target.shieldFlash = 0.18;
+    floatDamage(g, target, absorbed, true);
+  }
+  const hull = Math.min(target.hp, damage - absorbed);
+  if (hull) {
+    target.hp -= hull;
+    target.hitFlash = 0.12;
+    floatDamage(g, target, hull, false);
+  }
   if (target.hp <= 0)
     blast(
       g,
@@ -416,6 +634,17 @@ function strike(g, target, damage) {
       Math.max(28, catalog[target.type].size * 1.5),
       "debris",
     );
+}
+export function rechargeShield(a, s, dt) {
+  if (!s.shield || a.shield >= s.shield) {
+    a.shieldClock = 0;
+    return;
+  }
+  a.shieldClock += dt;
+  while (a.shieldClock + 1e-8 >= 0.5 && a.shield < s.shield) {
+    a.shieldClock = Math.max(0, a.shieldClock - 0.5);
+    a.shield = Math.min(s.shield, a.shield + 4);
+  }
 }
 function explode(g, x, y, p) {
   blast(g, x, y, p.radius, "blast");
@@ -428,6 +657,13 @@ function explode(g, x, y, p) {
 }
 function fire(g, a, b, s) {
   a.cd = s.rate;
+  const damage =
+    s.damage +
+    (a.team === 1 && s.missiles && g.tech.has("guidance")
+      ? 8
+      : a.team === 1 && s.plasma && g.tech.has("plasmaFocus")
+        ? 18
+        : 0);
   a.recoil = 0.24;
   const fx = Math.cos(a.aim),
     fy = Math.sin(a.aim),
@@ -437,7 +673,7 @@ function fire(g, a, b, s) {
   if (s.missiles) {
     a.salvoLane = -1;
     for (let i = 0; i < s.missiles; i++) {
-      const lane = i === 0 ? -1 : 1,
+      const lane = i % 2 === 0 ? -1 : 1,
         x = sx - fy * lane * 6,
         y = sy + fx * lane * 6;
       g.missiles.push({
@@ -452,11 +688,24 @@ function fire(g, a, b, s) {
         team: a.team,
         age: -i * 0.12,
         total: s.flight + i * 0.04,
-        damage: s.damage,
+        damage,
         radius: s.splash,
         lane,
+        delayed: i > 0,
       });
     }
+  } else if (s.plasma) {
+    g.plasma.push({
+      x: sx,
+      y: sy,
+      tx: b.x,
+      ty: b.y,
+      id: b.id,
+      team: a.team,
+      damage,
+      total: s.flight,
+      life: s.flight,
+    });
   } else if (s.splash) {
     g.shells.push({
       x: sx,
@@ -470,7 +719,11 @@ function fire(g, a, b, s) {
       radius: s.splash,
     });
   } else {
-    strike(g, b, s.damage);
+    strike(
+      g,
+      b,
+      Math.round(damage * (buildings[b.type] ? s.structureBonus || 1 : 1)),
+    );
     blast(g, b.x, b.y, s.damage > 30 ? 21 : 15, "spark");
     g.shots.push({ x: sx, y: sy, tx: b.x, ty: b.y, team: a.team, life: 0.14 });
   }
@@ -480,11 +733,11 @@ function updateMissiles(g, dt) {
     const previous = m.age;
     m.age += dt;
     if (m.age <= 0) continue;
-    if (m.lane === 1 && previous <= 0) {
+    if (m.delayed && previous <= 0) {
       const launcher = g.actors.find((a) => a.id === m.source && a.hp > 0);
       if (launcher) {
         launcher.recoil = 0.24;
-        launcher.salvoLane = 1;
+        launcher.salvoLane = m.lane;
       }
     }
     const target = g.actors.find((a) => a.id === m.id && a.hp > 0);
@@ -508,6 +761,21 @@ function updateMissiles(g, dt) {
     if (t === 1) explode(g, m.x, m.y, m);
   }
   g.missiles = g.missiles.filter((m) => m.age < m.total);
+}
+function updatePlasma(g, dt) {
+  for (const p of g.plasma) {
+    p.life -= dt;
+    const target = g.actors.find((a) => a.id === p.id && a.hp > 0);
+    if (target) {
+      p.tx = target.x;
+      p.ty = target.y;
+    }
+    if (p.life <= 0) {
+      if (target) strike(g, target, p.damage);
+      blast(g, p.tx, p.ty, 27, "plasma");
+    }
+  }
+  g.plasma = g.plasma.filter((p) => p.life > 0);
 }
 const aiLanes = [location(600, 412), location(478, 203), location(702, 301)];
 function enemyAI(g, dt) {
@@ -597,10 +865,26 @@ export function step(g, dt) {
   if (g.result) return;
   g.time += dt;
   g.ore = Math.min(99999, g.ore + income(g) * dt);
+  g.crystal = Math.min(99999, g.crystal + crystalIncome(g) * dt);
+  if (g.research) {
+    const r = g.research,
+      spec = techs[r.key];
+    if (!owns(g, "lab")) {
+      g.ore += spec.cost;
+      g.crystal += spec.crystal;
+      g.research = null;
+      g.events.push("研究中心损毁，研究资源已退回。");
+    } else if (load(g) <= capacity(g) && (r.left -= dt) <= 0) {
+      g.tech.add(r.key);
+      g.research = null;
+      g.events.push(spec.name + "已完成。");
+    }
+  }
   const job = g.queue[0];
   if (job) {
     if (units[job.type] && !owns(g, "factory")) {
       g.ore += catalog[job.type].cost;
+      g.crystal += catalog[job.type].crystal || 0;
       g.queue.shift();
       g.events.push("工厂损毁，生产订单已退款。");
     } else if ((job.left -= dt) <= 0) {
@@ -634,6 +918,11 @@ export function step(g, dt) {
           [176, 530],
           [210, 390],
           [418, 478],
+          [126, 542],
+          [199, 544],
+          [357, 512],
+          [431, 520],
+          [254, 568],
         ].map(([x, y]) => field(x, y));
         const pos = positions.find(
           ([x, y]) =>
@@ -667,6 +956,8 @@ export function step(g, dt) {
       "heavy",
       "missileTank",
       "heavyArtillery",
+      g.wave >= 7 ? "missileT2" : "assault",
+      g.wave >= 8 ? "plasmaTank" : "raider",
     ];
     const factory = g.actors.find(
       (a) => a.team === -1 && a.type === "factory" && a.hp > 0,
@@ -692,8 +983,10 @@ export function step(g, dt) {
     a.recoil = Math.max(0, a.recoil - dt);
     a.hitFlash = Math.max(0, a.hitFlash - dt);
     a.repairGlow = Math.max(0, a.repairGlow - dt);
+    a.shieldFlash = Math.max(0, a.shieldFlash - dt);
     const s = catalog[a.type];
     if (a.hp <= 0 || (brownout && a.team === 1 && s.powerDraw)) continue;
+    rechargeShield(a, s, dt);
     if (s.heal) {
       for (const ally of g.actors)
         if (
@@ -746,6 +1039,7 @@ export function step(g, dt) {
   }
   g.shells = g.shells.filter((shell) => shell.life > 0);
   updateMissiles(g, dt);
+  updatePlasma(g, dt);
   for (let i = 0; i < g.actors.length; i++) {
     const a = g.actors[i];
     if (!units[a.type] || a.hp <= 0) continue;
@@ -793,7 +1087,7 @@ export function step(g, dt) {
       }
     }
   }
-  for (const list of [g.shots, g.bursts, g.smoke]) {
+  for (const list of [g.shots, g.bursts, g.smoke, g.damageText]) {
     for (const e of list) e.life -= dt;
     for (let i = list.length - 1; i >= 0; i--)
       if (list[i].life <= 0) list.splice(i, 1);

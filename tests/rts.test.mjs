@@ -12,6 +12,14 @@ import {
   capacity,
   relayCount,
   catalog,
+  W,
+  H,
+  crystalIncome,
+  minerals,
+  techs,
+  researchBlocked,
+  startResearch,
+  rechargeShield,
   location,
 } from "../rts/sim.mjs";
 
@@ -223,4 +231,107 @@ test("new buildings share the power budget, repair vehicles and boost income", (
   assert.equal(enqueue(g, "mortar"), "");
   advance(g, 10.1);
   assert.ok(g.actors.some((a) => a.team === 1 && a.type === "mortar"));
+});
+
+test("the expanded map is exactly five times larger and every mineral has a valid deposit", () => {
+  const g = createGame();
+  assert.equal(W * H, 5 * 1280 * 720);
+  assert.ok(g.mines.length >= 20);
+  assert.deepEqual(
+    new Set(g.mines.map((m) => m.kind)),
+    new Set(Object.keys(minerals)),
+  );
+  assert.ok(g.mines.every((m) => m.x > 0 && m.x < W && m.y > 0 && m.y < H));
+  assert.ok(g.relays.length > 2);
+  const miner = g.actors.find((a) => a.type === "miner");
+  g.selected = new Set([miner.id]);
+  for (const [kind, spec] of Object.entries(minerals)) {
+    const m = g.mines.find((p) => p.kind === kind);
+    Object.assign(miner, { x: m.x, y: m.y });
+    order(g, m.x, m.y, "move");
+    assert.equal(income(g), 4 + spec.ore);
+    assert.equal(crystalIncome(g), spec.crystal);
+  }
+});
+
+test("mining crystals and building a powered lab unlocks T2 and its two independent research branches", () => {
+  const g = createGame();
+  assert.match(researchBlocked(g, "t2"), /研究中心/);
+  assert.match(blocked(g, "plasmaTank"), /T2/);
+  assert.equal(enqueue(g, "lab"), "");
+  const miner = g.actors.find((a) => a.type === "miner"),
+    m = g.mines[4];
+  g.selected = new Set([miner.id]);
+  order(g, m.x, m.y, "move");
+  advance(g, 19);
+  assert.ok(g.crystal >= 24);
+  assert.match(researchBlocked(g, "guidance"), /T2/);
+  const ore = g.ore,
+    crystal = g.crystal;
+  assert.equal(startResearch(g, "t2"), "");
+  assert.equal(g.ore, ore - techs.t2.cost);
+  assert.equal(g.crystal, crystal - techs.t2.crystal);
+  advance(g, 15);
+  assert.match(blocked(g, "missileT2"), /T2/);
+  advance(g, 1.2);
+  assert.ok(g.tech.has("t2"));
+  advance(g, 22);
+  assert.equal(blocked(g, "plasmaTank"), "");
+  assert.equal(blocked(g, "missileT2"), "");
+  assert.equal(startResearch(g, "plasmaFocus"), "");
+  assert.match(researchBlocked(g, "guidance"), /正在研究/);
+  advance(g, 12.1);
+  assert.ok(g.tech.has("plasmaFocus"));
+  assert.equal(startResearch(g, "guidance"), "");
+});
+
+test("plasma projectiles inflict shield then hull damage, and hull HP never passively regenerates", () => {
+  const { g, blue, red, wing } = rangeScenario("tank");
+  blue.type = "plasmaTank";
+  Object.assign(red, {
+    type: "plasmaTank",
+    shield: 32,
+    hp: catalog.plasmaTank.hp,
+    shieldClock: 0,
+  });
+  wing.x = 940;
+  order(g, red.x, red.y, "auto", red.id);
+  advance(g, 0.18);
+  assert.equal(red.hp, catalog.plasmaTank.hp);
+  assert.equal(g.plasma.length, 1);
+  advance(g, 0.18);
+  assert.deepEqual(
+    g.damageText.map((d) => [d.value, d.shield]),
+    [
+      [32, true],
+      [catalog.plasmaTank.damage - 32, false],
+    ],
+  );
+  assert.equal(red.shield, 0);
+  const hp = red.hp;
+  g.selected.clear();
+  blue.cd = 30;
+  advance(g, 0.45);
+  assert.equal(red.shield, 4);
+  assert.equal(red.hp, hp);
+  const actor = { shield: 87, shieldClock: 0, hp: 53 };
+  rechargeShield(actor, catalog.plasmaTank, 0.49);
+  assert.equal(actor.shield, 87);
+  rechargeShield(actor, catalog.plasmaTank, 0.01);
+  assert.equal(actor.shield, 91);
+  rechargeShield(actor, catalog.plasmaTank, 1);
+  assert.equal(actor.shield, 96);
+  assert.equal(actor.hp, 53);
+});
+
+test("T2 missile tanks fire four rounds and benefit from the optional guidance branch", () => {
+  const { g, blue, red, wing } = rangeScenario("tank");
+  g.tech.add("guidance");
+  blue.type = "missileT2";
+  red.x = 692;
+  wing.x = 748;
+  order(g, red.x, red.y, "auto", red.id);
+  advance(g, 0.1);
+  assert.equal(g.missiles.length, 4);
+  assert.ok(g.missiles.every((m) => m.damage === catalog.missileT2.damage + 8));
 });

@@ -65,6 +65,13 @@
                 ><em id="income">+12</em>
               </div>
             </div>
+            <div class="resource crystal">
+              <span class="res-icon">◇</span>
+              <div>
+                <small>晶能 / CRYSTAL</small><strong id="crystal">0</strong
+                ><em id="crystal-income">+0</em>
+              </div>
+            </div>
             <div class="resource mint">
               <span class="res-icon">ϟ</span>
               <div>
@@ -133,13 +140,15 @@
               </div>
               <div id="objective-main"><b></b> 摧毁敌方指挥中心</div>
               <div id="objective-relay">
-                <b></b> 占领中继站 <span id="relay-count">0 / 2</span>
+                <b></b> 占领中继站 <span id="relay-count">0 / 5</span>
               </div>
             </div>
             <div id="map-message" class="map-message" hidden></div>
             <div class="map-nav">
               <div class="zoom">
-                <button id="zoom-in" aria-label="放大">+</button
+                <button id="view-home" aria-label="回到基地" title="回到基地">
+                  ⌂</button
+                ><button id="zoom-in" aria-label="放大">+</button
                 ><button id="zoom-out" aria-label="缩小">−</button>
               </div>
               <div class="mini-panel">
@@ -149,7 +158,7 @@
                 <canvas
                   id="mini"
                   width="150"
-                  height="84"
+                  height="68"
                   aria-label="小地图，点击移动镜头"
                 ></canvas>
               </div>
@@ -171,11 +180,15 @@
                 ▦ 部队</button
               ><button id="artillery-tab" aria-pressed="false">⊕ 火炮</button>
               <button id="build-tab" aria-pressed="false">⬡ 建筑</button>
+              <button id="tech-tab" aria-pressed="false">✦ 科技</button>
             </div>
             <div class="side-content">
               <div class="list-title">
                 <span id="list-title">部署单位</span
-                ><span>生产 <b id="queue">00</b></span>
+                ><span id="production-hud">生产 <b id="queue">00</b></span
+                ><span id="research-hud" hidden
+                  >等级 <b id="research-tier">T1</b></span
+                >
               </div>
               <div class="unit-list" id="unit-list"></div>
               <div class="wave">
@@ -256,6 +269,14 @@
         </li>
         <li>
           导弹坦克每轮射出两枚追踪弹。新建筑包括维修站、精炼厂和迫击炮塔。
+        </li>
+        <li>
+          高纯矿产出更多矿石，紫色晶能矿与粉色富晶矿产出晶能。建造研究中心，在「科技」页研究
+          T2 和分支科技。小地图可以快速跳转远处矿点。
+        </li>
+        <li>
+          等离子坦克的护盾每 0.5 秒恢复 4
+          点，车体不会自行回血。蓝色飘字代表护盾吸收，金色代表车体伤害。
         </li>
         <li>派部队靠近黄色中继站，清除附近敌人并占领，即可获得额外矿石。</li>
         <li>

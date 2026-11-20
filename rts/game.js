@@ -1,6 +1,12 @@
 import {
   W,
   H,
+  START_VIEW,
+  techs,
+  minerals,
+  crystalIncome,
+  researchBlocked,
+  startResearch,
   units,
   catalog,
   clamp,
@@ -28,6 +34,7 @@ import {
   marker,
   brackets,
   drawBurst,
+  drawPlasma,
   drawSmoke,
   drawMissile,
 } from "./art.js";
@@ -37,19 +44,30 @@ const canvas = $("map"),
   mini = $("mini"),
   mc = mini.getContext("2d");
 const divisions = {
-  units: { title: "部署单位", types: ["miner", "scout", "tank", "heavy"] },
+  units: {
+    title: "部署单位",
+    types: ["miner", "scout", "tank", "heavy", "raider", "assault"],
+  },
   artillery: {
     title: "火炮支援",
-    types: ["lightArtillery", "heavyArtillery", "missileTank"],
+    types: [
+      "lightArtillery",
+      "heavyArtillery",
+      "missileTank",
+      "plasmaTank",
+      "missileT2",
+    ],
   },
   build: {
     title: "基地建设",
-    types: ["generator", "turret", "repair", "refinery", "mortar"],
+    types: ["generator", "turret", "repair", "refinery", "mortar", "lab"],
   },
+  tech: { title: "研究中心 · 科技树", types: Object.keys(techs) },
 };
 let g = createGame(),
   ground = terrain(g),
-  camera = { x: W / 2, y: H / 2, z: 1 },
+  radarGround = document.createElement("canvas"),
+  camera = { ...START_VIEW },
   view = { x: 0, y: 0, s: 1 },
   paused = false,
   tab = "units",
@@ -67,6 +85,9 @@ let g = createGame(),
   cards = [],
   sound = false,
   audio;
+radarGround.width = mini.width;
+radarGround.height = mini.height;
+radarGround.getContext("2d").drawImage(ground, 0, 0, mini.width, mini.height);
 const keys = new Set();
 const touches = new Map();
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
@@ -111,7 +132,7 @@ function resize() {
 new ResizeObserver(resize).observe(canvas);
 resize();
 function zoom(change) {
-  camera.z = clamp(camera.z * change, 1, 3.4);
+  camera.z = clamp(camera.z * change, 1, 8);
   calcView();
 }
 function fractions(e, el) {
@@ -326,6 +347,7 @@ function finishPointer(e, cancelled = false) {
   if (hit?.team === 1) {
     if (drag.shift && g.selected.has(hit.id)) g.selected.delete(hit.id);
     else g.selected.add(hit.id);
+    if (hit.type === "lab") setTab("tech");
   }
   setMode("auto");
   refreshSelection();
@@ -348,13 +370,17 @@ canvas.addEventListener(
 );
 mini.addEventListener("pointerdown", (e) => {
   const uv = fractions(e, mini);
-  if (camera.z === 1) camera.z = 1.45;
+  if (camera.z === 1) camera.z = START_VIEW.z;
   camera.x = uv.x * W;
   camera.y = uv.y * H;
   calcView();
 });
 $("zoom-in").onclick = () => zoom(1.25);
 $("zoom-out").onclick = () => zoom(0.8);
+$("view-home").onclick = () => {
+  camera = { ...START_VIEW };
+  calcView();
+};
 $("move").onclick = () => setOrderButton("move");
 $("attack").onclick = () => setOrderButton("attack");
 $("stop").onclick = $("touch-stop").onclick = halt;
@@ -418,7 +444,7 @@ $("cancel-reset").onclick = () => $("reset-dialog").close();
 $("confirm-reset").onclick = () => {
   $("reset-dialog").close();
   g = createGame();
-  camera = { x: W / 2, y: H / 2, z: 1 };
+  camera = { ...START_VIEW };
   calcView();
   paused = false;
   shownResult = null;
@@ -494,25 +520,39 @@ function setTab(name) {
   const list = $("unit-list");
   list.replaceChildren();
   cards = [];
+  list.classList.toggle("research-tree", tab === "tech");
   for (const type of divisions[tab].types) {
-    const spec = catalog[type],
-      btn = document.createElement("button");
-    btn.className = "unit-card";
+    const isTech = tab === "tech",
+      spec = isTech ? techs[type] : catalog[type];
+    const btn = document.createElement("button");
     btn.type = "button";
+    btn.className = isTech
+      ? "research-card" +
+        (spec.requires ? " research-branch" : " research-root")
+      : "unit-card" + (spec.tech ? " tier-unit" : "");
     const info = document.createElement("span");
-    info.innerHTML = `<span class="unit-name">${spec.name}</span><span class="unit-desc">${spec.desc}</span>`;
+    info.innerHTML = `<span class="unit-name">${spec.name}</span><span class="unit-desc">${isTech ? spec.short : spec.desc}</span>`;
     const cost = document.createElement("span");
     cost.className = "unit-cost";
-    cost.textContent = "◆ " + spec.cost;
-    btn.append(icon(type), info, cost);
+    cost.innerHTML = `◆ ${spec.cost}${spec.crystal ? ` <span class="crystal-cost">◇ ${spec.crystal}</span>` : ""}`;
+    if (!isTech) btn.append(icon(type));
+    const state = document.createElement("span");
+    state.className = "research-state";
+    btn.append(info, cost);
+    if (isTech) btn.append(state);
     btn.onclick = () => {
-      const err = enqueue(g, type);
-      status(err || spec.name + "已加入生产队列。");
+      const err = isTech ? startResearch(g, type) : enqueue(g, type);
+      status(
+        err ||
+          (isTech
+            ? "已开始研究 " + spec.name + "。"
+            : spec.name + "已加入生产队列。"),
+      );
       if (!err) beep(560, 0.035);
       refresh();
     };
     list.append(btn);
-    cards.push({ btn, type });
+    cards.push({ btn, type, isTech, state });
   }
   refresh();
 }
@@ -542,8 +582,14 @@ function refreshSelection() {
   if (sel.length) {
     const hp = sel.reduce((sum, a) => sum + a.hp, 0),
       max = sel.reduce((sum, a) => sum + catalog[a.type].hp, 0);
+    const shieldMax = sel.reduce(
+      (sum, a) => sum + (catalog[a.type].shield || 0),
+      0,
+    );
+    const shield = sel.reduce((sum, a) => sum + (a.shield || 0), 0);
     parent.querySelector(".health-label").textContent =
-      `${Math.ceil(hp)} / ${max}`;
+      `${Math.ceil(hp)} / ${max}` +
+      (shieldMax ? ` · 护盾 ${shield}/${shieldMax}` : "");
     parent.querySelector(".hp i").style.width = (hp / max) * 100 + "%";
   }
   for (const id of ["attack", "move", "stop"])
@@ -554,6 +600,11 @@ function refresh() {
   $("clock").textContent = two(Math.floor(t / 60)) + ":" + two(t % 60);
   $("ore").textContent = Math.floor(g.ore);
   $("income").textContent = "+" + income(g);
+  $("crystal").textContent = Math.floor(g.crystal);
+  $("crystal-income").textContent = "+" + crystalIncome(g);
+  $("research-hud").hidden = tab !== "tech";
+  $("production-hud").hidden = tab === "tech";
+  $("research-tier").textContent = g.tech.has("t2") ? "T2" : "T1";
   $("power").innerHTML = load(g) + ` <span>/ ${capacity(g)}</span>`;
   $("population").innerHTML = fleet(g) + " <span>/ 30</span>";
   const remaining = Math.max(0, Math.ceil(g.nextWave - g.time));
@@ -567,23 +618,39 @@ function refresh() {
     ? 100 * clamp((g.time - g.lastWave) / (g.nextWave - g.lastWave), 0, 1) + "%"
     : "0%";
   const count = relayCount(g);
-  $("relay-count").textContent = count + " / 2";
-  $("objective-relay").classList.toggle("done", count === 2);
+  $("relay-count").textContent = count + " / " + g.relays.length;
+  $("objective-relay").classList.toggle("done", count === g.relays.length);
   $("objective-main").classList.toggle("done", g.result === "victory");
   const job = g.queue[0];
   $("queue").textContent = job
     ? `${two(g.queue.length)} · ${Math.ceil(job.left)}s`
     : "00";
   $("queue").title = job ? catalog[job.type].name : "";
-  for (const { btn, type } of cards) {
-    const reason = blocked(g, type);
+  for (const { btn, type, isTech, state } of cards) {
+    const spec = isTech ? techs[type] : catalog[type];
+    const reason = isTech ? researchBlocked(g, type) : blocked(g, type);
     btn.disabled = Boolean(reason);
-    const spec = catalog[type];
-    btn.title =
-      reason ||
-      (spec.splash
-        ? `射程 ${spec.range} · 伤害 ${spec.damage} · 每 ${spec.rate} 秒开火`
-        : `部署${spec.name} · ${spec.time} 秒`);
+    if (isTech) {
+      const researching = g.research?.key === type;
+      btn.classList.toggle("research-done", g.tech.has(type));
+      btn.classList.toggle("research-active", researching);
+      btn.style.setProperty(
+        "--research-progress",
+        researching ? 100 * (1 - g.research.left / spec.time) + "%" : "0%",
+      );
+      state.textContent = researching
+        ? load(g) > capacity(g)
+          ? "供电不足 · 已暂停"
+          : "研究中 · " + Math.ceil(g.research.left) + "s"
+        : reason || "可研究 · " + spec.time + "s";
+      btn.title = spec.desc;
+    } else {
+      btn.title =
+        reason ||
+        (spec.range
+          ? `射程 ${spec.range} · 单发伤害 ${spec.damage} · 间隔 ${spec.rate} 秒`
+          : `部署${spec.name} · ${spec.time} 秒`);
+    }
   }
   if (g.events.length) {
     status(g.events.join(" "));
@@ -623,8 +690,17 @@ function render(now) {
   const shakeX = Math.round(Math.sin(g.time * 210) * impulse * 2.8),
     shakeY = Math.round(Math.cos(g.time * 168) * impulse * 1.7);
   c.setTransform(view.s, 0, 0, view.s, view.x + shakeX, view.y + shakeY);
-  c.drawImage(ground, 0, 0);
-  for (const r of g.relays) relay(c, r);
+  // Upload only the visible region of the fivefold map; the minimap has its own cache.
+  const gx = clamp(Math.floor(-view.x / view.s) - 5, 0, W - 1),
+    gy = clamp(Math.floor(-view.y / view.s) - 5, 0, H - 1);
+  const gw =
+    clamp(Math.ceil((canvas.width - view.x) / view.s) + 5, gx + 1, W) - gx;
+  const gh =
+    clamp(Math.ceil((canvas.height - view.y) / view.s) + 5, gy + 1, H) - gy;
+  c.drawImage(ground, gx, gy, gw, gh, gx, gy, gw, gh);
+  const visible = (x, y) =>
+    x >= gx - 55 && x <= gx + gw + 55 && y >= gy - 55 && y <= gy + gh + 55;
+  for (const r of g.relays) if (visible(r.x, r.y)) relay(c, r);
   const marked = new Set(
     selected(g)
       .filter((a) => a.order?.kind === "target")
@@ -632,6 +708,7 @@ function render(now) {
   );
   const ordered = [...g.actors].sort((a, b) => a.y - b.y);
   for (const u of ordered) {
+    if (!visible(u.x, u.y)) continue;
     const s = catalog[u.type];
     if (units[u.type])
       vehicle(
@@ -646,6 +723,13 @@ function render(now) {
         u.salvoLane,
       );
     else structure(c, u.type, u.team, u.x, u.y, u.aim, u.recoil);
+    if (s.shield && u.shield > 0) {
+      c.strokeStyle = u.shieldFlash > 0 ? "#bce8ffe0" : "#b2b0f593";
+      c.lineWidth = u.shieldFlash > 0 ? 2.3 : 1;
+      c.beginPath();
+      c.ellipse(u.x, u.y, s.size + 5, s.size * 0.7 + 5, 0, 0, Math.PI * 2);
+      c.stroke();
+    }
     if (u.hitFlash > 0)
       brackets(
         c,
@@ -674,20 +758,34 @@ function render(now) {
         c.setLineDash([]);
       }
     }
-    if (g.selected.has(u.id) || u.hp < s.hp) {
+    if (
+      g.selected.has(u.id) ||
+      u.hp < s.hp ||
+      (s.shield && u.shield < s.shield)
+    ) {
       const x = Math.round(u.x - s.size),
         y = Math.round(u.y - s.size - 8);
       c.fillStyle = "#263020";
       c.fillRect(x - 1, y - 1, s.size * 2 + 2, 5);
       c.fillStyle = u.team === 1 ? "#a9c687" : "#db937b";
       c.fillRect(x, y, Math.ceil((s.size * 2 * u.hp) / s.hp), 3);
+      if (s.shield) {
+        c.fillStyle = "#33344e";
+        c.fillRect(x, y - 4, s.size * 2, 2);
+        c.fillStyle = "#a9dbff";
+        c.fillRect(x, y - 4, Math.ceil((s.size * 2 * u.shield) / s.shield), 2);
+      }
     }
   }
   for (const r of g.relays)
-    marker(c, r.x, r.y + 49, "RELAY " + r.name, r.owner);
+    if (visible(r.x, r.y)) marker(c, r.x, r.y + 49, "RELAY " + r.name, r.owner);
   for (const u of g.actors.filter((a) => a.type === "hq"))
     marker(c, u.x, u.y - 46, u.team === 1 ? "BLUE HQ" : "RED HQ", u.team);
-  for (const mine of g.mines) marker(c, mine.x, mine.y + 32, "◆ ORE");
+  for (const mine of g.mines)
+    if (visible(mine.x, mine.y)) {
+      const spec = minerals[mine.kind];
+      marker(c, mine.x, mine.y + 34, "◆ " + spec.label, 0, spec.color);
+    }
   for (const s of g.shots) {
     const p = 1 - s.life / 0.14;
     c.strokeStyle = s.team === 1 ? "#f5de9a" : "#f5ad7b";
@@ -716,7 +814,9 @@ function render(now) {
   }
   drawSmoke(c, g);
   for (const missile of g.missiles) drawMissile(c, missile);
-  for (const burst of g.bursts) drawBurst(c, burst);
+  for (const plasma of g.plasma) drawPlasma(c, plasma);
+  for (const burst of g.bursts)
+    if (visible(burst.x, burst.y)) drawBurst(c, burst);
   if (ping) {
     const p = (now - ping.start) / 680;
     if (p > 1) ping = null;
@@ -735,6 +835,23 @@ function render(now) {
     }
   }
   c.setTransform(1, 0, 0, 1, 0, 0);
+  c.font = "bold 13px monospace";
+  c.textAlign = "center";
+  c.lineWidth = 2.4;
+  c.strokeStyle = "#161813";
+  for (const d of g.damageText)
+    if (visible(d.x, d.y)) {
+      const p = 1 - d.life / d.total,
+        x = d.x * view.s + view.x,
+        y = d.y * view.s + view.y - p * 23;
+      const label = "−" + d.value;
+      c.globalAlpha = 1 - Math.max(0, (p - 0.55) / 0.45);
+      c.fillStyle = d.shield ? "#bcebff" : "#ffd28e";
+      c.strokeText(label, x, y);
+      c.fillText(label, x, y);
+    }
+  c.globalAlpha = 1;
+  c.textAlign = "start";
   const selectionBox =
     touchBox() ||
     (pointer && !pointer.touch && !pointer.pan && isDrag(pointer)
@@ -749,9 +866,13 @@ function render(now) {
     c.strokeRect(a.sx + 0.5, a.sy + 0.5, b.sx - a.sx, b.sy - a.sy);
   }
   mc.imageSmoothingEnabled = true;
-  mc.drawImage(ground, 0, 0, mini.width, mini.height);
+  mc.drawImage(radarGround, 0, 0);
   const mw = mini.width / W,
     mh = mini.height / H;
+  for (const m of g.mines) {
+    mc.fillStyle = minerals[m.kind].color;
+    mc.fillRect(Math.round(m.x * mw) - 1, Math.round(m.y * mh) - 1, 2, 2);
+  }
   for (const a of g.actors) {
     mc.fillStyle = a.team === 1 ? "#8cc5d7" : "#df8d76";
     const size = a.type === "hq" ? 5 : units[a.type] ? 2 : 3;
