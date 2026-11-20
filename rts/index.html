@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#eae7da" />
+    <title>锈土前线 — Rustline Command</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="masthead">
+        <div class="brand">
+          <div class="logo" aria-hidden="true">
+            <svg viewBox="0 0 40 40">
+              <path
+                fill="currentColor"
+                d="M8 7h24v5H8zm4 8h16v5H12zm4 8h8v5h-8zm3 8h2v3h-2z"
+              />
+              <path
+                stroke="currentColor"
+                fill="none"
+                d="M5 14v15l15 7 15-7V14"
+              />
+            </svg>
+          </div>
+          <div>
+            <div class="eyebrow">RUSTLINE COMMAND <span>//</span> RTS</div>
+            <h1>锈土前线<span>.</span></h1>
+          </div>
+        </div>
+        <div class="mast-right">
+          <span class="edition"><i></i> 单人战役 <b> / </b> SKIRMISH</span
+          ><button class="outline" id="help" title="查看操作说明">
+            <b>?</b> 操作指南
+          </button>
+        </div>
+      </header>
+      <main class="console" aria-label="锈土前线游戏">
+        <div class="console-top">
+          <div class="scenario">
+            <span class="scenario-mark" aria-hidden="true"
+              ><svg
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.4"
+              >
+                <circle cx="12" cy="12" r="6" />
+                <path d="M12 2v6m0 8v6M2 12h6m8 0h6" />
+                <circle cx="12" cy="12" r="1" fill="currentColor" /></svg
+            ></span>
+            <div><small>OPERATION 01</small><strong>灰烬盆地</strong></div>
+          </div>
+          <div class="res-group">
+            <div class="resource gold">
+              <span class="res-icon">◆</span>
+              <div>
+                <small>矿石 / ORE</small><strong id="ore">640</strong
+                ><em id="income">+12</em>
+              </div>
+            </div>
+            <div class="resource mint">
+              <span class="res-icon">ϟ</span>
+              <div>
+                <small>电力 / POWER</small
+                ><strong id="power">8 <span>/ 12</span></strong>
+              </div>
+            </div>
+            <div class="resource sand">
+              <span class="res-icon">◈</span>
+              <div>
+                <small>部队 / UNITS</small
+                ><strong id="population">5 <span>/ 30</span></strong>
+              </div>
+            </div>
+          </div>
+          <div class="mission-controls">
+            <time id="clock">00:00</time
+            ><button
+              class="square"
+              id="pause"
+              aria-label="暂停"
+              title="暂停 (P)"
+            >
+              <span class="pause-icon"></span></button
+            ><button
+              class="square"
+              id="restart"
+              aria-label="重新开始"
+              title="重新开始"
+            >
+              ↻
+            </button>
+          </div>
+        </div>
+        <div class="body-grid">
+          <section class="battlefield" aria-label="战场">
+            <canvas
+              id="map"
+              aria-label="战场地图，点击或框选部队，右键下达指令"
+              tabindex="0"
+            ></canvas>
+            <div class="map-top">
+              <span class="live-dot"></span> 战场态势
+              <span class="dim">/</span> SECTOR 07
+            </div>
+            <div class="objective">
+              <div class="objective-title">
+                <span>◇</span> 任务目标 <em>OBJECTIVES</em>
+              </div>
+              <div id="objective-main"><b></b> 摧毁敌方指挥中心</div>
+              <div id="objective-relay">
+                <b></b> 占领中继站 <span id="relay-count">0 / 2</span>
+              </div>
+            </div>
+            <div id="map-message" class="map-message" hidden></div>
+            <div class="map-nav">
+              <div class="zoom">
+                <button id="zoom-in" aria-label="放大">+</button
+                ><button id="zoom-out" aria-label="缩小">−</button>
+              </div>
+              <div class="mini-panel">
+                <div>
+                  战术地图 <span> <i></i> LIVE</span>
+                </div>
+                <canvas
+                  id="mini"
+                  width="150"
+                  height="91"
+                  aria-label="小地图，点击移动镜头"
+                ></canvas>
+              </div>
+            </div>
+            <div class="coords" id="coords">
+              SEC 07 <span>//</span> 048 : 032
+            </div>
+          </section>
+          <aside class="sidebar" aria-label="指挥面板">
+            <div class="side-head">
+              <div>
+                <span class="side-kicker">FIELD OPERATIONS</span>
+                <h2>作战指挥</h2>
+              </div>
+              <div class="side-number">01<span>/</span></div>
+            </div>
+            <div class="tabs" role="group" aria-label="指挥分类">
+              <button id="units-tab" class="active" aria-pressed="true">
+                ▦ 部队</button
+              ><button id="build-tab" aria-pressed="false">⬡ 建筑</button>
+            </div>
+            <div class="side-content">
+              <div class="list-title">
+                <span id="list-title">部署单位</span
+                ><span>生产 <b id="queue">00</b></span>
+              </div>
+              <div class="unit-list" id="unit-list"></div>
+              <div class="wave">
+                <div>
+                  <span>敌方增援 / HOSTILES</span
+                  ><strong id="wave-time">00:55</strong>
+                </div>
+                <div class="wave-track"><i id="wave-progress"></i></div>
+              </div>
+            </div>
+            <div class="selected">
+              <div class="list-title">
+                <span>当前选择</span><span id="select-count">00</span>
+              </div>
+              <div class="selected-body" id="selected-body"></div>
+            </div>
+            <div class="order-row">
+              <button id="move" title="移动 (M)"><span>➜</span> 移动</button
+              ><button id="attack" title="攻击 (F)"><span>⊕</span> 攻击</button
+              ><button id="stop" title="停止 (X)"><span>■</span> 停止</button>
+            </div>
+          </aside>
+        </div>
+        <div class="console-bottom">
+          <div class="status">
+            <i></i><b>战况</b
+            ><span id="status" role="status"
+              >前线就绪。指挥官，等待您的指令。</span
+            >
+          </div>
+          <button id="sound" aria-pressed="false" title="切换战斗音效">
+            ♫ <span>音效 关</span>
+          </button>
+        </div>
+      </main>
+      <footer>
+        <div class="shortcuts">
+          <span><kbd>左键</kbd> 选择 / 框选</span
+          ><span><kbd>右键</kbd> 下达指令</span
+          ><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> 移动镜头</span
+          ><span><kbd>P</kbd> 暂停</span>
+        </div>
+        <div class="footer-index">RUSTLINE <b>◆</b> FIELD MANUAL / 01</div>
+      </footer>
+    </div>
+    <dialog id="guide">
+      <div class="dialog-top">
+        <div>
+          <small>FIELD MANUAL / 01</small>
+          <h2>操作指南</h2>
+        </div>
+        <button id="close-guide" aria-label="关闭">×</button>
+      </div>
+      <p>
+        指挥蓝方夺取灰烬盆地。消灭红方指挥中心即可获胜；保护好自己的指挥中心。
+      </p>
+      <ul>
+        <li>左键点击或拖拽框选单位，按住 Shift 可追加选择。</li>
+        <li>
+          右键移动、攻击或开采。触屏可用底部「移动」「攻击」按钮，再点地图；采矿车可用「移动」点选矿床。
+        </li>
+        <li>
+          派采矿车靠近蓝色矿床赚取矿石，在指挥面板生产部队、建造供电站或防御塔。
+        </li>
+        <li>派部队靠近黄色中继站，清除附近敌人并占领，即可获得额外矿石。</li>
+        <li>
+          方向键或 W A S D 移动镜头，滚轮缩放，P
+          暂停。攻击和停止的键盘快捷键分别为 F 和 X。
+        </li>
+      </ul>
+      <button class="dialog-action" id="guide-ok">返回战场 ↗</button>
+    </dialog>
+    <dialog id="reset-dialog">
+      <div class="dialog-top">
+        <div>
+          <small>OPERATION 01</small>
+          <h2>重新部署？</h2>
+        </div>
+      </div>
+      <p>当前战斗进度将被清除。</p>
+      <div class="dialog-buttons">
+        <button id="cancel-reset">取消</button
+        ><button class="dialog-action" id="confirm-reset">重新开始</button>
+      </div>
+    </dialog>
+    <script src="game.js" type="module"></script>
+  </body>
+</html>

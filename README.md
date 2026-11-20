@@ -100,3 +100,21 @@ tests/             # 单元测试与流程测试
 ## 📄 License
 
 MIT
+
+## 🎮 新增：锈土前线（Rustline Command）
+
+`rts/` 是独立的中文浏览器即时战略游戏，原有 ECHOFALL RPG 不受影响。游戏使用 Canvas 绘制原创像素地形和单位，不需要编译或安装依赖。GitHub Pages 部署后，可从 `/123/rts/` 进入。
+
+```bash
+python3 -m http.server 8000 --directory rts
+# 打开 http://localhost:8000
+node --test tests/rts.test.mjs
+```
+
+在「灰烬盆地」指挥蓝方，派采矿车开采矿石、造兵和建造防御设施，占领中继站以增加收入。电脑会定期派出增援；摧毁敌方指挥中心获胜，己方指挥中心被摧毁则失败。
+
+- **左键 / 拖动**选择或框选，**Shift** 追加选择；**右键**移动、攻击或采矿。
+- **WASD / 方向键**移动镜头，滚轮缩放；小地图可定位。**P** 暂停，**M / F / X** 下达移动、攻击、停止指令。
+- 触屏可点击单位，再使用面板上的指令按钮并点击地图。
+
+中文字体为 [Noto Sans SC](https://github.com/google/fonts/tree/main/ofl/notosanssc) 的离线子集，依据 [SIL Open Font License](rts/fonts/OFL.txt) 分发。

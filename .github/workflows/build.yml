@@ -28,6 +28,11 @@ jobs:
         run: cmake --build build -j2
       - name: Run tests
         run: ctest --test-dir build --output-on-failure
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Test Rustline Command
+        run: node --test tests/rts.test.mjs
 
   web:
     name: WebAssembly build
@@ -66,6 +71,7 @@ jobs:
         run: |
           source emsdk/emsdk_env.sh > /dev/null 2>&1
           cmake --build build-web -j2 --target echofall_web
+          cp -r rts build-web/rts
           ls -la build-web
 
       - name: Build single file bundle
