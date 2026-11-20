@@ -120,7 +120,7 @@
           <section class="battlefield" aria-label="战场">
             <canvas
               id="map"
-              aria-label="战场地图，点击或拖动框选部队，鼠标右键或触屏点按下达指令"
+              aria-label="战场地图，鼠标拖动或双指框选，单指拖动镜头，触屏轻点下达指令"
               tabindex="0"
             ></canvas>
             <div class="map-top">
@@ -192,6 +192,10 @@
               </div>
               <div class="selected-body" id="selected-body"></div>
             </div>
+            <div class="touch-orders">
+              <span>已选编队 <b id="touch-selection">01</b></span
+              ><button id="touch-stop"><span>■</span> 停止</button>
+            </div>
             <div class="order-row">
               <button id="move" title="移动 (M)"><span>➜</span> 移动</button
               ><button id="attack" title="攻击 (F)"><span>⊕</span> 攻击</button
@@ -213,7 +217,7 @@
       </main>
       <footer>
         <div class="touch-shortcuts">
-          <span><kbd>拖动</kbd> 框选</span
+          <span><kbd>双指</kbd> 框选</span
           ><span><kbd>单点</kbd> 移动 / 集火</span
           ><span><kbd>双点</kbd> 进攻区域</span>
         </div>
@@ -244,11 +248,14 @@
           派采矿车靠近蓝色矿床赚取矿石，在指挥面板生产部队、建造供电站或防御塔。
         </li>
         <li>
-          手机建议横屏。单指拖动框选部队，单点空地移动、单点敌军集火、双点空地进攻该区域；双指缩放或平移镜头。
+          手机固定横屏。单指拖动镜头，两指同时按住地图并拉开选框，松开即选中。点空地移动，点敌军集火，双点空地进攻区域。用战场角落的加减键缩放。
         </li>
         <li>
           轻型与重型火炮射程更远，弹着点会伤及附近敌军，但装填较慢。重型火炮需要至少
           20 点供电。
+        </li>
+        <li>
+          导弹坦克每轮射出两枚追踪弹。新建筑包括维修站、精炼厂和迫击炮塔。
         </li>
         <li>派部队靠近黄色中继站，清除附近敌人并占领，即可获得额外矿石。</li>
         <li>

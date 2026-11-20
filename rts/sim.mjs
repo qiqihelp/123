@@ -84,6 +84,21 @@ export const units = {
     time: 14,
     power: 20,
   },
+  missileTank: {
+    name: "导弹坦克",
+    desc: "双发导弹 · 自动追踪",
+    cost: 320,
+    hp: 180,
+    speed: 41,
+    size: 16,
+    range: 183,
+    damage: 38,
+    rate: 2.4,
+    time: 10,
+    missiles: 2,
+    flight: 0.72,
+    splash: 24,
+  },
 };
 export const buildings = {
   generator: {
@@ -100,10 +115,47 @@ export const buildings = {
     cost: 200,
     hp: 280,
     size: 18,
+    powerDraw: 2,
     range: 145,
     damage: 25,
     rate: 0.7,
     time: 8,
+  },
+
+  repair: {
+    name: "维修站",
+    desc: "修复近处友方车辆",
+    cost: 160,
+    hp: 290,
+    size: 23,
+    time: 7,
+    powerDraw: 2,
+    heal: 12,
+    radius: 85,
+  },
+  refinery: {
+    name: "精炼厂",
+    desc: "持续产出矿石 +6",
+    cost: 220,
+    hp: 305,
+    size: 24,
+    time: 8,
+    powerDraw: 2,
+    income: 6,
+  },
+  mortar: {
+    name: "迫击炮塔",
+    desc: "远程轰炸 · 范围防御",
+    cost: 280,
+    hp: 260,
+    size: 20,
+    time: 10,
+    powerDraw: 3,
+    range: 208,
+    damage: 65,
+    rate: 2.55,
+    splash: 34,
+    flight: 0.53,
   },
   hq: {
     name: "指挥中心",
@@ -131,6 +183,8 @@ export function createGame() {
     queue: [],
     shots: [],
     shells: [],
+    missiles: [],
+    smoke: [],
     bursts: [],
     events: [],
     result: null,
@@ -177,6 +231,9 @@ function spawn(g, type, team, x, y, angle = team === 1 ? -0.7 : 2.4) {
     y,
     angle,
     aim: angle,
+    recoil: 0,
+    hitFlash: 0,
+    repairGlow: 0,
     hp: spec.hp,
     cd: 0,
     order: null,
@@ -194,16 +251,25 @@ export const generatorCount = (g) =>
 export const capacity = (g) => 4 + 8 * generatorCount(g);
 export const load = (g) =>
   6 +
-  2 *
-    g.actors.filter((a) => a.team === 1 && a.type === "turret" && a.hp > 0)
-      .length;
+  g.actors.reduce(
+    (sum, a) =>
+      sum + (a.team === 1 && a.hp > 0 ? catalog[a.type].powerDraw || 0 : 0),
+    0,
+  );
 export const mining = (g, a) =>
   a.type === "miner" && a.order?.kind === "mine" && dist(a, a.order) < 32;
 export const relayCount = (g) => g.relays.filter((r) => r.owner === 1).length;
 export const income = (g) =>
   4 +
   8 * g.actors.filter((a) => a.team === 1 && mining(g, a)).length +
-  5 * relayCount(g);
+  5 * relayCount(g) +
+  (load(g) <= capacity(g)
+    ? g.actors.reduce(
+        (sum, a) =>
+          sum + (a.team === 1 && a.hp > 0 ? catalog[a.type].income || 0 : 0),
+        0,
+      )
+    : 0);
 export const selected = (g) =>
   g.actors.filter((a) => g.selected.has(a.id) && a.team === 1 && a.hp > 0);
 export function blocked(g, type) {
@@ -221,8 +287,13 @@ export function blocked(g, type) {
   if (spec.power && capacity(g) < spec.power)
     return "需要至少 " + spec.power + " 点供电";
   if (
-    type === "turret" &&
-    load(g) + 2 * (1 + g.queue.filter((q) => q.type === "turret").length) >
+    spec.powerDraw &&
+    load(g) +
+      spec.powerDraw +
+      g.queue.reduce(
+        (total, q) => total + (catalog[q.type].powerDraw || 0),
+        0,
+      ) >
       capacity(g)
   )
     return "供电不足，请建造供电站";
@@ -329,24 +400,67 @@ function enemyFor(g, a, range, center = null) {
   }
   return best;
 }
+function blast(g, x, y, radius, style) {
+  const total = style === "spark" ? 0.32 : style === "debris" ? 0.75 : 0.63;
+  g.bursts.push({ x, y, radius, style, life: total, total });
+}
 function strike(g, target, damage) {
   if (target.hp <= 0) return;
   target.hp -= damage;
+  target.hitFlash = 0.12;
   if (target.hp <= 0)
-    g.bursts.push({
-      x: target.x,
-      y: target.y,
-      life: 0.65,
-      total: 0.65,
-      radius: 30,
-    });
+    blast(
+      g,
+      target.x,
+      target.y,
+      Math.max(28, catalog[target.type].size * 1.5),
+      "debris",
+    );
+}
+function explode(g, x, y, p) {
+  blast(g, x, y, p.radius, "blast");
+  for (const b of g.actors) {
+    if (b.hp <= 0 || b.team === p.team) continue;
+    const d = dist(b, { x, y });
+    if (d < p.radius)
+      strike(g, b, Math.ceil(p.damage * (1 - (0.6 * d) / p.radius)));
+  }
 }
 function fire(g, a, b, s) {
   a.cd = s.rate;
-  if (s.splash)
+  a.recoil = 0.24;
+  const fx = Math.cos(a.aim),
+    fy = Math.sin(a.aim),
+    barrel = s.missiles ? 13 : s.splash ? 19 : 13;
+  const sx = a.x + fx * barrel,
+    sy = a.y + fy * barrel;
+  if (s.missiles) {
+    a.salvoLane = -1;
+    for (let i = 0; i < s.missiles; i++) {
+      const lane = i === 0 ? -1 : 1,
+        x = sx - fy * lane * 6,
+        y = sy + fx * lane * 6;
+      g.missiles.push({
+        x,
+        y,
+        ox: x,
+        oy: y,
+        tx: b.x,
+        ty: b.y,
+        id: b.id,
+        source: a.id,
+        team: a.team,
+        age: -i * 0.12,
+        total: s.flight + i * 0.04,
+        damage: s.damage,
+        radius: s.splash,
+        lane,
+      });
+    }
+  } else if (s.splash) {
     g.shells.push({
-      x: a.x,
-      y: a.y,
+      x: sx,
+      y: sy,
       tx: b.x,
       ty: b.y,
       team: a.team,
@@ -355,17 +469,45 @@ function fire(g, a, b, s) {
       damage: s.damage,
       radius: s.splash,
     });
-  else {
+  } else {
     strike(g, b, s.damage);
-    g.shots.push({
-      x: a.x,
-      y: a.y,
-      tx: b.x,
-      ty: b.y,
-      team: a.team,
-      life: 0.18,
-    });
+    blast(g, b.x, b.y, s.damage > 30 ? 21 : 15, "spark");
+    g.shots.push({ x: sx, y: sy, tx: b.x, ty: b.y, team: a.team, life: 0.14 });
   }
+}
+function updateMissiles(g, dt) {
+  for (const m of g.missiles) {
+    const previous = m.age;
+    m.age += dt;
+    if (m.age <= 0) continue;
+    if (m.lane === 1 && previous <= 0) {
+      const launcher = g.actors.find((a) => a.id === m.source && a.hp > 0);
+      if (launcher) {
+        launcher.recoil = 0.24;
+        launcher.salvoLane = 1;
+      }
+    }
+    const target = g.actors.find((a) => a.id === m.id && a.hp > 0);
+    if (target) {
+      m.tx = target.x;
+      m.ty = target.y;
+    }
+    const t = Math.min(1, m.age / m.total),
+      dx = m.tx - m.ox,
+      dy = m.ty - m.oy,
+      d = Math.hypot(dx, dy) || 1;
+    const curve = Math.sin(Math.PI * t) * m.lane * 22;
+    const nx = m.ox + dx * t - (dy / d) * curve,
+      ny = m.oy + dy * t + (dx / d) * curve;
+    m.angle = Math.atan2(ny - m.y, nx - m.x);
+    if (Math.floor(m.age / 0.045) !== Math.floor(previous / 0.045)) {
+      g.smoke.push({ x: m.x, y: m.y, life: 0.56, total: 0.56, lane: m.lane });
+    }
+    m.x = nx;
+    m.y = ny;
+    if (t === 1) explode(g, m.x, m.y, m);
+  }
+  g.missiles = g.missiles.filter((m) => m.age < m.total);
 }
 const aiLanes = [location(600, 412), location(478, 203), location(702, 301)];
 function enemyAI(g, dt) {
@@ -489,10 +631,18 @@ export function step(g, dt) {
           [375, 535],
           [325, 554],
           [100, 458],
+          [176, 530],
+          [210, 390],
+          [418, 478],
         ].map(([x, y]) => field(x, y));
         const pos = positions.find(
           ([x, y]) =>
-            !g.actors.some((a) => buildings[a.type] && dist(a, { x, y }) < 37),
+            !g.actors.some(
+              (a) =>
+                buildings[a.type] &&
+                dist(a, { x, y }) <
+                  (catalog[a.type].size + catalog[t].size) * 0.86,
+            ),
         );
         if (pos) spawn(g, t, 1, ...pos);
         else {
@@ -515,7 +665,7 @@ export function step(g, dt) {
       "lightArtillery",
       "tank",
       "heavy",
-      "scout",
+      "missileTank",
       "heavyArtillery",
     ];
     const factory = g.actors.find(
@@ -539,9 +689,24 @@ export function step(g, dt) {
   enemyAI(g, dt);
   const brownout = load(g) > capacity(g);
   for (const a of g.actors) {
-    if (a.hp <= 0 || (brownout && a.team === 1 && a.type === "turret"))
-      continue;
+    a.recoil = Math.max(0, a.recoil - dt);
+    a.hitFlash = Math.max(0, a.hitFlash - dt);
+    a.repairGlow = Math.max(0, a.repairGlow - dt);
     const s = catalog[a.type];
+    if (a.hp <= 0 || (brownout && a.team === 1 && s.powerDraw)) continue;
+    if (s.heal) {
+      for (const ally of g.actors)
+        if (
+          ally.team === a.team &&
+          units[ally.type] &&
+          ally.hp > 0 &&
+          ally.hp < catalog[ally.type].hp &&
+          dist(a, ally) <= s.radius
+        ) {
+          ally.hp = Math.min(catalog[ally.type].hp, ally.hp + s.heal * dt);
+          ally.repairGlow = 0.2;
+        }
+    }
     a.cd -= dt;
     let o = a.order;
     const focus =
@@ -577,15 +742,10 @@ export function step(g, dt) {
   for (const shell of g.shells) {
     shell.life -= dt;
     if (shell.life > 0) continue;
-    const impact = { x: shell.tx, y: shell.ty };
-    for (const b of g.actors) {
-      const d = dist(b, impact);
-      if (b.hp > 0 && b.team !== shell.team && d < shell.radius)
-        strike(g, b, Math.ceil(shell.damage * (1 - (0.6 * d) / shell.radius)));
-    }
-    g.bursts.push({ ...impact, life: 0.5, total: 0.5, radius: shell.radius });
+    explode(g, shell.tx, shell.ty, shell);
   }
   g.shells = g.shells.filter((shell) => shell.life > 0);
+  updateMissiles(g, dt);
   for (let i = 0; i < g.actors.length; i++) {
     const a = g.actors[i];
     if (!units[a.type] || a.hp <= 0) continue;
@@ -633,7 +793,7 @@ export function step(g, dt) {
       }
     }
   }
-  for (const list of [g.shots, g.bursts]) {
+  for (const list of [g.shots, g.bursts, g.smoke]) {
     for (const e of list) e.life -= dt;
     for (let i = list.length - 1; i >= 0; i--)
       if (list[i].life <= 0) list.splice(i, 1);

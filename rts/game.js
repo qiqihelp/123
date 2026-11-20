@@ -27,6 +27,9 @@ import {
   icon,
   marker,
   brackets,
+  drawBurst,
+  drawSmoke,
+  drawMissile,
 } from "./art.js";
 const $ = (id) => document.getElementById(id);
 const canvas = $("map"),
@@ -35,8 +38,14 @@ const canvas = $("map"),
   mc = mini.getContext("2d");
 const divisions = {
   units: { title: "部署单位", types: ["miner", "scout", "tank", "heavy"] },
-  artillery: { title: "火炮支援", types: ["lightArtillery", "heavyArtillery"] },
-  build: { title: "基地建设", types: ["generator", "turret"] },
+  artillery: {
+    title: "火炮支援",
+    types: ["lightArtillery", "heavyArtillery", "missileTank"],
+  },
+  build: {
+    title: "基地建设",
+    types: ["generator", "turret", "repair", "refinery", "mortar"],
+  },
 };
 let g = createGame(),
   ground = terrain(g),
@@ -47,11 +56,12 @@ let g = createGame(),
   mode = "auto",
   pointer = null,
   lastTap = null,
-  pinch = null,
+  boxIds = null,
   ping = null,
   last = 0,
   acc = 0,
   lastUI = -1,
+  lastNoise = -1000,
   shownResult = null,
   selectedKey = "",
   cards = [],
@@ -59,6 +69,8 @@ let g = createGame(),
   audio;
 const keys = new Set();
 const touches = new Map();
+const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+const rotated = matchMedia("(orientation: portrait) and (pointer: coarse)");
 const two = (n) => String(n).padStart(2, "0");
 function status(text) {
   if (text) $("status").textContent = text;
@@ -90,9 +102,10 @@ function calcView() {
   };
 }
 function resize() {
-  const r = canvas.getBoundingClientRect();
-  canvas.width = Math.max(1, Math.round(r.width));
-  canvas.height = Math.max(1, Math.round(r.height));
+  canvas.width = Math.max(1, canvas.clientWidth);
+  canvas.height = Math.max(1, canvas.clientHeight);
+  pointer = boxIds = lastTap = null;
+  touches.clear();
   calcView();
 }
 new ResizeObserver(resize).observe(canvas);
@@ -101,10 +114,17 @@ function zoom(change) {
   camera.z = clamp(camera.z * change, 1, 3.4);
   calcView();
 }
+function fractions(e, el) {
+  const r = el.getBoundingClientRect();
+  // The portrait fallback renders the whole cockpit 90° clockwise.
+  return rotated.matches
+    ? { x: (e.clientY - r.top) / r.height, y: (r.right - e.clientX) / r.width }
+    : { x: (e.clientX - r.left) / r.width, y: (e.clientY - r.top) / r.height };
+}
 function pos(e) {
-  const r = canvas.getBoundingClientRect();
-  const sx = ((e.clientX - r.left) * canvas.width) / r.width,
-    sy = ((e.clientY - r.top) * canvas.height) / r.height;
+  const uv = fractions(e, canvas),
+    sx = uv.x * canvas.width,
+    sy = uv.y * canvas.height;
   return { sx, sy, x: (sx - view.x) / view.s, y: (sy - view.y) / view.s };
 }
 function fit(p) {
@@ -161,16 +181,26 @@ function halt() {
   setMode("auto");
   status("部队已停止，继续警戒。");
 }
-function pinchPose() {
-  const [a, b] = touches.values();
-  return {
-    clientX: (a.clientX + b.clientX) / 2,
-    clientY: (a.clientY + b.clientY) / 2,
-    distance: Math.max(
-      1,
-      Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY),
-    ),
-  };
+function touchBox() {
+  if (!boxIds) return null;
+  const [a, b] = boxIds.map((id) => touches.get(id));
+  return a && b ? { from: pos(a), to: pos(b) } : null;
+}
+function selectBox({ from: a, to: b }, append = false, margin = 0) {
+  if (!append) g.selected.clear();
+  for (const u of g.actors)
+    if (
+      u.team === 1 &&
+      units[u.type] &&
+      u.x >= Math.min(a.x, b.x) - margin &&
+      u.x <= Math.max(a.x, b.x) + margin &&
+      u.y >= Math.min(a.y, b.y) - margin &&
+      u.y <= Math.max(a.y, b.y) + margin
+    )
+      g.selected.add(u.id);
+  setMode("auto");
+  refreshSelection();
+  if (g.selected.size) beep(530, 0.03);
 }
 function hitUnit(pt, touch = false, team = 0) {
   return g.actors
@@ -193,10 +223,7 @@ canvas.addEventListener("pointerdown", (e) => {
   if (touch) {
     touches.set(e.pointerId, e);
     if (touches.size >= 2) {
-      if (touches.size === 2) {
-        const center = pinchPose();
-        pinch = { anchor: pos(center), distance: center.distance, z: camera.z };
-      }
+      if (touches.size === 2) boxIds = [...touches.keys()];
       pointer = lastTap = null;
       return;
     }
@@ -214,35 +241,43 @@ canvas.addEventListener("pointerdown", (e) => {
   };
 });
 canvas.addEventListener("pointermove", (e) => {
-  if (touches.has(e.pointerId)) {
-    touches.set(e.pointerId, e);
-    if (pinch && touches.size >= 2) {
-      const center = pinchPose();
-      camera.z = clamp((pinch.z * center.distance) / pinch.distance, 1, 3.4);
-      calcView();
-      const after = pos(center);
-      camera.x += pinch.anchor.x - after.x;
-      camera.y += pinch.anchor.y - after.y;
-      calcView();
-      return;
-    }
-  }
+  if (touches.has(e.pointerId)) touches.set(e.pointerId, e);
+  if (boxIds) return;
   const p = pos(e);
   $("coords").innerHTML =
     `SEC 07 <span>//</span> ${String(Math.floor(clamp(p.x, 0, W))).padStart(4, "0")} : ${String(Math.floor(clamp(p.y, 0, H))).padStart(3, "0")}`;
   if (pointer?.id !== e.pointerId) return;
   pointer.to = p;
+  if (pointer.touch && isDrag(pointer) && !pointer.pan) {
+    pointer.pan = true;
+    lastTap = null;
+    if (camera.z === 1) {
+      camera.z = 1.45;
+      calcView();
+      // Make the point under the initial finger stay under the moving finger.
+      pointer.cx =
+        camera.x + pointer.from.x - (pointer.from.sx - view.x) / view.s;
+      pointer.cy =
+        camera.y + pointer.from.y - (pointer.from.sy - view.y) / view.s;
+    }
+  }
   if (pointer.pan) {
     camera.x = pointer.cx + (pointer.from.sx - p.sx) / view.s;
     camera.y = pointer.cy + (pointer.from.sy - p.sy) / view.s;
     calcView();
   }
 });
-const isDrag = (p) =>
-  Math.hypot(p.to.sx - p.from.sx, p.to.sy - p.from.sy) > (p.touch ? 10 : 8);
+const isDrag = (p) => Math.hypot(p.to.sx - p.from.sx, p.to.sy - p.from.sy) > 8;
 function finishPointer(e, cancelled = false) {
+  if (boxIds?.includes(e.pointerId)) {
+    if (!cancelled) {
+      touches.set(e.pointerId, e);
+      const box = touchBox();
+      if (box) selectBox(box, false, 5 / view.s);
+    }
+    boxIds = null;
+  }
   touches.delete(e.pointerId);
-  if (touches.size < 2) pinch = null;
   if (pointer?.id !== e.pointerId) return;
   const drag = pointer;
   pointer = null;
@@ -252,7 +287,8 @@ function finishPointer(e, cancelled = false) {
   }
   drag.to = pos(e);
   const { from: a, to: b } = drag;
-  const boxSelection = isDrag(drag);
+  const boxSelection = !drag.touch && isDrag(drag);
+  if (drag.touch && isDrag(drag)) return;
   if (!boxSelection && mode !== "auto") {
     const enemy = mode === "attack" ? hitUnit(b, drag.touch, -1) : null;
     lastTap = null;
@@ -282,19 +318,12 @@ function finishPointer(e, cancelled = false) {
     return;
   }
   lastTap = null;
-  if (!drag.shift) g.selected.clear();
   if (boxSelection) {
-    for (const u of g.actors)
-      if (
-        u.team === 1 &&
-        units[u.type] &&
-        u.x >= Math.min(a.x, b.x) &&
-        u.x <= Math.max(a.x, b.x) &&
-        u.y >= Math.min(a.y, b.y) &&
-        u.y <= Math.max(a.y, b.y)
-      )
-        g.selected.add(u.id);
-  } else if (hit?.team === 1) {
+    selectBox({ from: a, to: b }, drag.shift);
+    return;
+  }
+  if (!drag.shift) g.selected.clear();
+  if (hit?.team === 1) {
     if (drag.shift && g.selected.has(hit.id)) g.selected.delete(hit.id);
     else g.selected.add(hit.id);
   }
@@ -318,17 +347,17 @@ canvas.addEventListener(
   { passive: false },
 );
 mini.addEventListener("pointerdown", (e) => {
-  const r = mini.getBoundingClientRect();
+  const uv = fractions(e, mini);
   if (camera.z === 1) camera.z = 1.45;
-  camera.x = ((e.clientX - r.left) / r.width) * W;
-  camera.y = ((e.clientY - r.top) / r.height) * H;
+  camera.x = uv.x * W;
+  camera.y = uv.y * H;
   calcView();
 });
 $("zoom-in").onclick = () => zoom(1.25);
 $("zoom-out").onclick = () => zoom(0.8);
 $("move").onclick = () => setOrderButton("move");
 $("attack").onclick = () => setOrderButton("attack");
-$("stop").onclick = halt;
+$("stop").onclick = $("touch-stop").onclick = halt;
 function togglePause() {
   if (g.result) return;
   paused = !paused;
@@ -375,8 +404,6 @@ $("landscape").onclick = async () => {
   } catch {
     /* rotation lock is optional. */
   }
-  if (matchMedia("(orientation: portrait)").matches)
-    status("请将手机转为横屏；也可继续在当前画面操作。");
 };
 document.addEventListener("fullscreenchange", () => {
   $("landscape").setAttribute(
@@ -395,7 +422,7 @@ $("confirm-reset").onclick = () => {
   calcView();
   paused = false;
   shownResult = null;
-  pointer = ping = pinch = lastTap = null;
+  pointer = ping = boxIds = lastTap = null;
   touches.clear();
   acc = 0;
   lastUI = -1;
@@ -493,6 +520,9 @@ for (const category of Object.keys(divisions))
   $(category + "-tab").onclick = () => setTab(category);
 function refreshSelection() {
   const sel = selected(g);
+  $("touch-selection").textContent = two(sel.length);
+  $("touch-stop").disabled =
+    !sel.some((u) => units[u.type]) || Boolean(g.result);
   const key = sel.map((a) => a.id).join(",");
   $("select-count").textContent = two(sel.length);
   const parent = $("selected-body");
@@ -576,7 +606,23 @@ function render(now) {
   c.fillStyle = "#363e2e";
   c.fillRect(0, 0, canvas.width, canvas.height);
   c.imageSmoothingEnabled = false;
-  c.setTransform(view.s, 0, 0, view.s, view.x, view.y);
+  const impulse = reducedMotion.matches
+    ? 0
+    : g.bursts.reduce(
+        (k, b) =>
+          b.style !== "spark" &&
+          b.total - b.life < 0.14 &&
+          b.x * view.s + view.x >= 0 &&
+          b.x * view.s + view.x <= canvas.width &&
+          b.y * view.s + view.y >= 0 &&
+          b.y * view.s + view.y <= canvas.height
+            ? Math.max(k, 1 - (b.total - b.life) / 0.14)
+            : k,
+        0,
+      );
+  const shakeX = Math.round(Math.sin(g.time * 210) * impulse * 2.8),
+    shakeY = Math.round(Math.cos(g.time * 168) * impulse * 1.7);
+  c.setTransform(view.s, 0, 0, view.s, view.x + shakeX, view.y + shakeY);
   c.drawImage(ground, 0, 0);
   for (const r of g.relays) relay(c, r);
   const marked = new Set(
@@ -587,8 +633,33 @@ function render(now) {
   const ordered = [...g.actors].sort((a, b) => a.y - b.y);
   for (const u of ordered) {
     const s = catalog[u.type];
-    if (units[u.type]) vehicle(c, u.type, u.team, u.x, u.y, u.angle, u.aim);
-    else structure(c, u.type, u.team, u.x, u.y, u.aim);
+    if (units[u.type])
+      vehicle(
+        c,
+        u.type,
+        u.team,
+        u.x,
+        u.y,
+        u.angle,
+        u.aim,
+        u.recoil,
+        u.salvoLane,
+      );
+    else structure(c, u.type, u.team, u.x, u.y, u.aim, u.recoil);
+    if (u.hitFlash > 0)
+      brackets(
+        c,
+        u.x,
+        u.y,
+        s.size * 0.9,
+        `rgba(255,194,116,${u.hitFlash * 5})`,
+      );
+    if (u.repairGlow > 0) {
+      const y = u.y - s.size - 15 - ((g.time * 11) % 6);
+      c.fillStyle = "#c1ecad";
+      c.fillRect(u.x - 4, y, 8, 2);
+      c.fillRect(u.x - 1, y - 3, 2, 8);
+    }
     if (marked.has(u.id)) brackets(c, u.x, u.y, s.size + 6, "#f4a783");
     if (g.selected.has(u.id)) {
       brackets(c, u.x, u.y, s.size + 5, "#d6e8ae");
@@ -618,7 +689,7 @@ function render(now) {
     marker(c, u.x, u.y - 46, u.team === 1 ? "BLUE HQ" : "RED HQ", u.team);
   for (const mine of g.mines) marker(c, mine.x, mine.y + 32, "◆ ORE");
   for (const s of g.shots) {
-    const p = 1 - s.life / 0.18;
+    const p = 1 - s.life / 0.14;
     c.strokeStyle = s.team === 1 ? "#f5de9a" : "#f5ad7b";
     c.lineWidth = 1.5;
     c.beginPath();
@@ -643,24 +714,9 @@ function render(now) {
     );
     c.stroke();
   }
-  for (const b of g.bursts) {
-    const p = 1 - b.life / b.total;
-    c.strokeStyle = `rgba(245,190,115,${(1 - p) * 0.8})`;
-    c.lineWidth = 1;
-    c.beginPath();
-    c.arc(b.x, b.y, Math.max(1, p * b.radius), 0, Math.PI * 2);
-    c.stroke();
-    c.fillStyle = `rgba(222,169,87,${1 - p})`;
-    for (let i = 0; i < 8; i++) {
-      const a = i * 2.4;
-      c.fillRect(
-        b.x + Math.cos(a) * p * b.radius,
-        b.y + Math.sin(a) * p * b.radius,
-        5 - (i % 3),
-        4 - (i % 3),
-      );
-    }
-  }
+  drawSmoke(c, g);
+  for (const missile of g.missiles) drawMissile(c, missile);
+  for (const burst of g.bursts) drawBurst(c, burst);
   if (ping) {
     const p = (now - ping.start) / 680;
     if (p > 1) ping = null;
@@ -679,8 +735,13 @@ function render(now) {
     }
   }
   c.setTransform(1, 0, 0, 1, 0, 0);
-  if (pointer && !pointer.pan && isDrag(pointer)) {
-    const { from: a, to: b } = pointer;
+  const selectionBox =
+    touchBox() ||
+    (pointer && !pointer.touch && !pointer.pan && isDrag(pointer)
+      ? pointer
+      : null);
+  if (selectionBox) {
+    const { from: a, to: b } = selectionBox;
     c.fillStyle = "#d7efac37";
     c.fillRect(a.sx, a.sy, b.sx - a.sx, b.sy - a.sy);
     c.strokeStyle = "#e0f4bd";
@@ -741,13 +802,23 @@ function frame(now) {
       acc -= 1 / 30;
     }
   }
+  if (
+    sound &&
+    !paused &&
+    !keyboardBlocked() &&
+    !g.result &&
+    now - lastNoise > 110
+  ) {
+    const blast = g.bursts.some(
+      (b) => b.style !== "spark" && b.total - b.life < 0.065,
+    );
+    const fired = g.actors.some((a) => a.recoil > 0.19);
+    if (blast || fired) {
+      beep(blast ? 72 : 166, blast ? 0.065 : 0.027);
+      lastNoise = now;
+    }
+  }
   if (now - lastUI > 120) {
-    if (
-      (g.shots.some((s) => s.life > 0.15) ||
-        g.shells.some((s) => s.life > s.total - 0.1)) &&
-      Math.random() < 0.25
-    )
-      beep(125, 0.024);
     lastUI = now;
     refresh();
   }

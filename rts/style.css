@@ -1064,70 +1064,104 @@ body {
     display: none;
   }
 }
-/* A horizontal cockpit: the map and production are both visible when the phone is rotated. */
-@media (orientation: landscape) and (max-height: 565px) {
+/* Keep the cockpit landscape on phones, even when native orientation lock is unavailable. */
+.touch-orders {
+  display: none;
+}
+@media (orientation: portrait) and (pointer: coarse) {
+  body {
+    overflow: hidden;
+    background: #22281e;
+  }
+  .page {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100dvh;
+    height: 100dvw;
+    transform-origin: top left;
+    transform: translateX(100dvw) rotate(90deg);
+    --cockpit-height: 100dvw;
+  }
+  dialog {
+    transform: rotate(90deg);
+    width: min(520px, calc(100dvh - 28px));
+    max-width: none;
+    max-height: calc(100dvw - 28px);
+  }
+}
+@media (orientation: landscape) and (max-height: 565px),
+  (orientation: portrait) and (pointer: coarse) {
   .page {
     max-width: none;
-    padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom)
-      env(safe-area-inset-left);
+    padding: 0;
   }
   .masthead,
   footer {
     display: none;
   }
   .console {
-    height: calc(100dvh - env(safe-area-inset-bottom));
+    height: var(--cockpit-height, 100dvh);
     display: flex;
     flex-direction: column;
   }
   .console-top {
-    height: 42px;
-    min-height: 42px;
+    height: 52px;
     flex: none;
     flex-wrap: nowrap;
   }
   .scenario {
-    width: 117px;
-    padding-inline: 9px;
-    gap: 6px;
+    width: auto;
+    min-width: 106px;
+    padding: 0 12px;
+    gap: 8px;
   }
   .scenario-mark {
     display: grid;
-    width: 24px;
-    height: 24px;
+    width: 26px;
+    height: 26px;
   }
   .scenario-mark svg {
     width: 16px;
   }
+  .scenario strong {
+    font-size: 14px;
+  }
   .scenario small,
   .resource small {
-    margin-bottom: 3px;
+    margin-bottom: 4px;
     white-space: nowrap;
     letter-spacing: 0.04em;
+    font-size: 9px;
   }
   .resource {
     min-width: 0;
-    padding: 0 7px;
+    padding: 0 10px;
+    gap: 5px;
     flex: none;
   }
-  .res-group {
-    flex: 1;
+  .resource strong,
+  .mission-controls time {
+    font-size: 14px;
+  }
+  .resource em {
+    display: inline;
   }
   .mission-controls {
-    gap: 4px;
-    margin-inline: 5px;
+    gap: 6px;
+    margin: 0 8px 0 auto;
   }
   .mission-controls .square {
-    width: 27px;
-    height: 27px;
+    width: 32px;
+    height: 32px;
   }
   .compact-help {
     display: grid;
-    font: 700 13px var(--mono);
+    font: 700 14px var(--mono);
   }
   .body-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) clamp(173px, 25vw, 245px);
+    grid-template-columns: minmax(0, 1fr) clamp(220px, 35%, 316px);
     flex: 1;
     min-height: 0;
     height: auto;
@@ -1144,79 +1178,138 @@ body {
     display: none;
   }
   .objective {
-    top: 7px;
-    left: 7px;
-    width: 158px;
-    font-size: 10px;
+    top: 10px;
+    left: 10px;
+    width: 152px;
+    font-size: 11px;
   }
   .objective .objective-title,
   .objective > div {
-    padding: 3px 5px;
+    padding: 4px 7px;
   }
   .objective-title em {
     display: none;
   }
   .map-nav {
-    right: 7px;
-    bottom: 7px;
+    right: 10px;
+    bottom: 10px;
   }
   .mini-panel canvas {
-    width: 96px;
-    height: 54px;
+    width: 100px;
+    height: 56px;
   }
-  .tabs {
-    padding-inline: 5px;
-  }
-  .tabs button {
-    padding: 6px 0;
-  }
-  .side-content {
-    padding: 6px;
-  }
-  .side-content > .list-title {
-    margin-bottom: 4px;
-  }
-  .unit-list {
-    grid-template-columns: 1fr;
-    gap: 4px;
-  }
-  .unit-card {
-    min-height: 42px;
-    grid-template-columns: 37px 1fr auto;
-    gap: 4px;
-    padding: 3px 5px 3px 3px;
-  }
-  .unit-card canvas {
-    width: 37px;
+  .zoom button {
+    width: 32px;
     height: 31px;
   }
+  .sidebar {
+    border-top: 0;
+  }
+  .tabs {
+    padding: 8px 10px 0;
+    gap: 6px;
+  }
+  .tabs button {
+    padding: 8px 0;
+    font-size: 12px;
+  }
+  .side-content {
+    padding: 9px 10px;
+  }
+  .side-content > .list-title {
+    margin-bottom: 7px;
+  }
+  .unit-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: start;
+    gap: 7px;
+  }
+  .unit-card {
+    min-height: 55px;
+    grid-template-columns: 35px minmax(0, 1fr);
+    gap: 5px;
+    padding: 5px;
+  }
+  .unit-card canvas {
+    width: 35px;
+    height: 37px;
+    grid-row: span 2;
+  }
   .unit-name {
-    font-size: 11px;
+    font-size: 12px;
   }
   .unit-desc {
-    font-size: 9px;
-  }
-  .wave {
-    margin-top: 4px;
-    padding: 4px;
-  }
-  .wave-track {
-    margin-top: 3px;
-  }
-  .selected {
     display: none;
   }
-  .order-row {
-    order: 0;
-    border: 0;
-    padding: 4px 6px;
+  .unit-cost {
+    margin: 0;
+    font-size: 11px;
   }
-  .order-row button {
-    min-height: 24px;
-    padding: 3px 0;
+  .wave {
+    margin-top: 8px;
+    padding: 5px 7px;
+  }
+  .selected,
+  .order-row {
+    display: none;
+  }
+  .touch-orders {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 10px;
+    gap: 8px;
+    border-top: 1px solid #48523e;
+    color: #d2d6bf;
+    font-size: 11px;
+  }
+  .touch-orders b {
+    color: #e4c47e;
+    margin-left: 4px;
+    font: 700 12px var(--mono);
+  }
+  .touch-orders button {
+    border: 1px solid #5b654c;
+    background: #3c4534;
+    color: #e9e8d7;
+    font-size: 12px;
+    padding: 5px 9px;
+  }
+  .touch-orders button span {
+    color: #d4c381;
   }
   .console-bottom {
-    min-height: 24px;
+    min-height: 28px;
+  }
+}
+@media (orientation: landscape) and (max-width: 670px),
+  (orientation: portrait) and (pointer: coarse) and (max-height: 670px) {
+  .scenario small,
+  .resource em,
+  .resource .res-icon {
+    display: none;
+  }
+  .scenario {
+    min-width: 0;
+    padding-inline: 7px;
+  }
+  .resource {
+    padding-inline: 7px;
+  }
+  .mission-controls {
+    gap: 3px;
+    margin-inline: 4px;
+  }
+  .mission-controls .square {
+    width: 26px;
+    height: 29px;
+  }
+  .mission-controls time {
+    min-width: 43px;
+  }
+  .mini-panel canvas {
+    width: 78px;
+    height: 44px;
   }
 }
 .fullscreen-icon {

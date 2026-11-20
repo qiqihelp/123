@@ -443,10 +443,53 @@ function box(c, x, y, w, h, set) {
   rect(c, x + w - 2, y + 2, 2, h - 2, d);
   rect(c, x + 2, y + h - 2, w - 4, 1, d);
 }
-export function vehicle(c, type, team, x, y, angle, aim = angle) {
+function muzzle(c, x, y, t, size = 1) {
+  if (t < 0.175) return;
+  c.save();
+  c.translate(x, y);
+  c.scale(size, size);
+  poly(
+    c,
+    [
+      [0, -2],
+      [5, -5],
+      [6, -2],
+      [13, 0],
+      [6, 2],
+      [5, 5],
+      [0, 2],
+    ],
+    "#f6a850bb",
+  );
+  poly(
+    c,
+    [
+      [0, -1],
+      [6, -2],
+      [10, 0],
+      [6, 2],
+      [0, 1],
+    ],
+    "#fff4bb",
+  );
+  c.restore();
+}
+const kick = (t, scale) => scale * Math.pow(clamp(t / 0.24, 0, 1), 1.9);
+export function vehicle(
+  c,
+  type,
+  team,
+  x,
+  y,
+  angle,
+  aim = angle,
+  recoil = 0,
+  salvoLane = 0,
+) {
   const set = colors[team],
     [d, m, b, l, hi, k] = set,
-    artillery = Boolean(units[type].splash),
+    missile = Boolean(units[type].missiles),
+    artillery = Boolean(units[type].splash) && !missile,
     big = type === "heavy" || type === "heavyArtillery",
     scout = type === "scout",
     miner = type === "miner",
@@ -472,28 +515,43 @@ export function vehicle(c, type, team, x, y, angle, aim = angle) {
     rect(c, 4, -4, 7, 8, "#7e7145");
     rect(c, 5, -3, 5, 2, "#e8c779");
     rect(c, 8, 0, 3, 3, "#baa16a");
+  } else if (missile) {
+    c.rotate(aim - angle);
+    box(c, -8, -6, 15, 12, set);
+    c.translate(-kick(recoil, 6), 0);
+    for (const y of [-7, 3]) {
+      box(c, -5, y, 19, 5, set);
+      rect(c, -2, y, 12, 1, "#c9bd8a");
+      rect(c, 10, y + 1, 4, 3, "#101b1c");
+      rect(c, 10, y, 2, 4, "#cdd0a7");
+      if (salvoLane === (y < 0 ? -1 : 1)) muzzle(c, 14, y + 2, recoil, 0.82);
+    }
   } else if (artillery) {
     c.rotate(aim - angle);
     box(c, -8, -5, 13, 10, set);
     rect(c, -7, -3, 4, 5, "#b7a16a");
     rect(c, -6, -4, 2, 7, "#f0d392");
+    c.translate(-kick(recoil, big ? 10 : 8), 0);
     rect(c, 2, -2, big ? 21 : 19, 5, k);
     rect(c, 3, -1, big ? 19 : 17, 2, hi);
     rect(c, big ? 19 : 17, -3, 4, 6, d);
     rect(c, big ? 19 : 17, -3, 4, 1, l);
+    muzzle(c, big ? 23 : 21, 0, recoil, 1.45);
   } else {
     c.rotate(aim - angle);
     box(c, -5, -4, 11, 8, set);
     rect(c, -3, -2, 4, 4, d);
     rect(c, -2, -2, 3, 1, hi);
+    c.translate(-kick(recoil, big ? 7 : 6), 0);
     rect(c, 4, -2, big ? 17 : 13, 4, k);
     rect(c, 4, -1, big ? 16 : 12, 2, l);
     rect(c, 8, 0, big ? 10 : 6, 1, b);
     if (big) rect(c, 9, -3, 9, 1, "#c8c8ae");
+    muzzle(c, big ? 21 : 17, 0, recoil);
   }
   c.restore();
 }
-export function structure(c, type, team, x, y, angle = 0) {
+export function structure(c, type, team, x, y, angle = 0, recoil = 0) {
   const set = colors[team],
     [d, m, b, l, hi, k] = set;
   c.save();
@@ -532,6 +590,14 @@ export function structure(c, type, team, x, y, angle = 0) {
     line(c, 11, -22, 11, -37, k, 2);
     rect(c, 10, -37, 8, 3, l);
     rect(c, 5, -29, 12, 1, hi);
+    c.save();
+    c.rotate(angle);
+    box(c, -5, -4, 9, 8, set);
+    c.translate(-kick(recoil, 6), 0);
+    rect(c, 3, -2, 13, 4, k);
+    rect(c, 4, -1, 11, 2, l);
+    muzzle(c, 16, 0, recoil);
+    c.restore();
   } else if (type === "factory") {
     rect(c, -23, -16, 54, 42, "#171e1666");
     box(c, -24, -18, 47, 39, set);
@@ -559,16 +625,45 @@ export function structure(c, type, team, x, y, angle = 0) {
     }
     rect(c, -3, -9, 6, 20, d);
     rect(c, -1, -7, 2, 12, "#cdd794");
+  } else if (type === "repair") {
+    rect(c, -22, -13, 49, 36, "#1b221966");
+    box(c, -22, -16, 44, 34, set);
+    box(c, -18, -15, 36, 12, set);
+    rect(c, -12, -2, 24, 17, k);
+    for (let i = -11; i < 12; i += 3) rect(c, i, 0, 1, 14, "#4c6751");
+    rect(c, -4, -12, 8, 6, "#719b7a");
+    rect(c, -1, -13, 2, 8, "#d1eab9");
+    rect(c, -4, -10, 8, 2, "#d1eab9");
+    for (const x of [-18, 15]) {
+      rect(c, x, 0, 3, 10, "#29372a");
+      rect(c, x, 12, 3, 2, "#aad696");
+    }
+  } else if (type === "refinery") {
+    rect(c, -23, -14, 51, 38, "#1b221966");
+    box(c, -22, -16, 44, 37, set);
+    for (const x of [-16, 4]) {
+      box(c, x, -12, 12, 23, set);
+      rect(c, x + 3, -11, 4, 14, "#5aa5a5");
+      rect(c, x + 4, -10, 2, 8, "#ade0cc");
+    }
+    box(c, -10, 9, 20, 8, set);
+    rect(c, -6, 12, 12, 2, "#dec16e");
+    line(c, 16, 0, 17, -21, k, 4);
+    rect(c, 16, -22, 7, 3, l);
   } else {
+    const mortar = type === "mortar";
     rect(c, -15, -10, 37, 30, "#1b221966");
     box(c, -15, -11, 30, 28, set);
     box(c, -11, -13, 22, 20, set);
     c.save();
     c.rotate(angle);
     box(c, -8, -5, 16, 10, set);
-    rect(c, 4, -3, 19, 6, k);
-    rect(c, 6, -2, 16, 3, l);
+    c.translate(-kick(recoil, mortar ? 10 : 7), 0);
+    rect(c, 4, mortar ? -5 : -3, mortar ? 23 : 19, mortar ? 10 : 6, k);
+    rect(c, 6, mortar ? -3 : -2, mortar ? 19 : 16, mortar ? 6 : 3, l);
     rect(c, 8, 0, 13, 1, m);
+    if (mortar) rect(c, 21, -5, 4, 10, "#b5b48a");
+    muzzle(c, mortar ? 27 : 23, 0, recoil, mortar ? 1.6 : 1);
     c.restore();
     rect(c, -13, 10, 3, 2, "#e8c578");
     rect(c, 10, 10, 3, 2, "#e8c578");
@@ -651,4 +746,95 @@ export function brackets(c, x, y, s, color) {
       rect(c, a - (dx > 0 ? z - 1 : 0), b, z, 1, color);
       rect(c, a, b - (dy > 0 ? z - 1 : 0), 1, z, color);
     }
+}
+
+export function drawSmoke(c, g) {
+  for (const s of g.smoke) {
+    const p = 1 - s.life / s.total,
+      r = 2 + p * 5;
+    c.globalAlpha = (1 - p) * 0.66;
+    const x = Math.round(s.x + s.lane * p * 4),
+      y = Math.round(s.y - p * 5);
+    rect(c, x - r, y - r, r * 2, r * 2, "#a9a998");
+    rect(c, x - r / 2, y - r - 2, r + 1, r, "#e2d8bd");
+  }
+  c.globalAlpha = 1;
+}
+export function drawMissile(c, m) {
+  if (m.age <= 0) return;
+  c.save();
+  c.translate(m.x, m.y);
+  c.rotate(m.angle);
+  poly(
+    c,
+    [
+      [-5, -2],
+      [-13, 0],
+      [-5, 2],
+    ],
+    "#f7ac59",
+  );
+  rect(c, -9, -0.7, 6, 1.4, "#fff3bd");
+  rect(c, -4, -2, 9, 4, "#343b30");
+  rect(c, -3, -1, 8, 2, "#f2e8bc");
+  rect(c, 4, -1, 3, 2, "#d57556");
+  c.restore();
+}
+export function drawBurst(c, b) {
+  const p = clamp(1 - b.life / b.total, 0, 1),
+    spark = b.style === "spark",
+    big = b.style === "debris";
+  const r = b.radius * (1 - Math.pow(1 - p, 2.2)) * (spark ? 1 : 1.55);
+  c.globalAlpha = (1 - p) * (spark ? 0.8 : 0.94);
+  c.strokeStyle = spark ? "#ffdd87" : "#f5dd9a";
+  c.lineWidth = (spark ? 1.25 : 2.6) * (1 - 0.62 * p);
+  c.beginPath();
+  c.ellipse(b.x, b.y, Math.max(1, r), Math.max(1, r * 0.75), 0, 0, Math.PI * 2);
+  c.stroke();
+  if (!spark) {
+    const second = Math.max(1, r * 0.65);
+    c.lineWidth = 1.5;
+    c.strokeStyle = "#eaa068";
+    c.beginPath();
+    c.ellipse(b.x, b.y, second, second * 0.75, 0, 0, Math.PI * 2);
+    c.stroke();
+  }
+  if (p < 0.33) {
+    const f = b.radius * (spark ? 0.27 : 0.45) * (1 - p);
+    c.globalAlpha = (1 - p) * 0.86;
+    poly(
+      c,
+      [
+        [b.x - f, b.y],
+        [b.x, b.y - f],
+        [b.x + f, b.y],
+        [b.x, b.y + f],
+      ],
+      "#ffaf53",
+    );
+    rect(c, b.x - f * 0.36, b.y - f * 0.36, f * 0.72, f * 0.72, "#fff6bd");
+  }
+  for (let i = 0; i < (spark ? 6 : 12); i++) {
+    const angle = i * 2.39997 + b.x * 0.33;
+    const v = (0.32 + (i % 5) * 0.15) * r;
+    const x = b.x + Math.cos(angle) * v,
+      y = b.y + Math.sin(angle) * v * 0.8 - p * ((i % 3) + 1) * 3;
+    const size = (spark ? 1.5 : 3) + (i % 3) * 1.1;
+    c.globalAlpha = (1 - p) * (i % 3 === 1 ? 0.56 : 0.9);
+    rect(
+      c,
+      x - size * 0.5,
+      y - size * 0.5,
+      size,
+      size,
+      i % 3 === 0
+        ? "#ffeab2"
+        : i % 3 === 1 && p > 0.28
+          ? big
+            ? "#424135"
+            : "#a99b7c"
+          : "#e8964f",
+    );
+  }
+  c.globalAlpha = 1;
 }

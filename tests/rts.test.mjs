@@ -181,3 +181,46 @@ test("AI captures a relay and sends wounded armor to its base instead of feeding
   assert.ok(tank.x > 650);
   assert.ok(tank.order.x > redHQ.x - 50);
 });
+
+test("missile tanks fire a staggered pair with separate launcher kicks, smoke and impact rings", () => {
+  const { g, blue, red, wing } = rangeScenario("tank");
+  blue.type = "missileTank";
+  Object.assign(red, { x: 622, y: 360 });
+  Object.assign(wing, { x: 660, y: 360 });
+  order(g, red.x, red.y, "auto", red.id);
+  advance(g, 1 / 30);
+  assert.equal(g.missiles.length, 2);
+  assert.ok(g.missiles[0].age > 0 && g.missiles[1].age < 0);
+  assert.equal(blue.salvoLane, -1);
+  assert.ok(blue.recoil > 0.19);
+  advance(g, 0.13);
+  assert.equal(blue.salvoLane, 1);
+  assert.ok(blue.recoil > 0.19);
+  assert.ok(g.smoke.length > 0);
+  red.y += 12; // The missiles follow their target in flight.
+  advance(g, 0.85);
+  assert.equal(g.missiles.length, 0);
+  assert.equal(g.bursts.filter((b) => b.style === "blast").length, 2);
+  assert.equal(red.hp, catalog.scout.hp - 2 * catalog.missileTank.damage);
+  assert.equal(wing.hp, catalog.scout.hp);
+});
+
+test("new buildings share the power budget, repair vehicles and boost income", () => {
+  const g = createGame();
+  assert.equal(enqueue(g, "repair"), "");
+  assert.equal(enqueue(g, "refinery"), "");
+  advance(g, 2);
+  assert.match(blocked(g, "mortar"), /供电不足/);
+  advance(g, 13.2);
+  assert.equal(income(g), 18);
+  const repair = g.actors.find((a) => a.team === 1 && a.type === "repair");
+  const tank = g.actors.find((a) => a.team === 1 && a.type === "tank");
+  Object.assign(tank, { hp: 70, x: repair.x + 50, y: repair.y });
+  advance(g, 1);
+  assert.ok(tank.hp > 81 && tank.repairGlow > 0);
+  assert.equal(enqueue(g, "generator"), "");
+  advance(g, 6.1);
+  assert.equal(enqueue(g, "mortar"), "");
+  advance(g, 10.1);
+  assert.ok(g.actors.some((a) => a.team === 1 && a.type === "mortar"));
+});
