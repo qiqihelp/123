@@ -2,7 +2,6 @@ import {
   W,
   H,
   units,
-  buildings,
   catalog,
   clamp,
   dist,
@@ -34,6 +33,11 @@ const canvas = $("map"),
   c = canvas.getContext("2d"),
   mini = $("mini"),
   mc = mini.getContext("2d");
+const divisions = {
+  units: { title: "部署单位", types: ["miner", "scout", "tank", "heavy"] },
+  artillery: { title: "火炮支援", types: ["lightArtillery", "heavyArtillery"] },
+  build: { title: "基地建设", types: ["generator", "turret"] },
+};
 let g = createGame(),
   ground = terrain(g),
   camera = { x: W / 2, y: H / 2, z: 1 },
@@ -42,6 +46,8 @@ let g = createGame(),
   tab = "units",
   mode = "auto",
   pointer = null,
+  lastTap = null,
+  pinch = null,
   ping = null,
   last = 0,
   acc = 0,
@@ -52,6 +58,7 @@ let g = createGame(),
   sound = false,
   audio;
 const keys = new Set();
+const touches = new Map();
 const two = (n) => String(n).padStart(2, "0");
 function status(text) {
   if (text) $("status").textContent = text;
@@ -91,7 +98,7 @@ function resize() {
 new ResizeObserver(resize).observe(canvas);
 resize();
 function zoom(change) {
-  camera.z = clamp(camera.z * change, 1, 2.7);
+  camera.z = clamp(camera.z * change, 1, 3.4);
   calcView();
 }
 function pos(e) {
@@ -110,15 +117,19 @@ function setMode(next) {
   $("move").setAttribute("aria-pressed", String(mode === "move"));
   $("attack").setAttribute("aria-pressed", String(mode === "attack"));
 }
-function issue(p, m) {
+function issue(p, m, targetId) {
   if (g.result) return;
   const pt = fit(p);
-  const text = order(g, pt.x, pt.y, m);
+  const text = order(g, pt.x, pt.y, m, targetId);
   if (selected(g).some((a) => units[a.type])) {
     ping = {
       ...pt,
+      sweep: m === "sweep" || (m === "attack" && !text.includes("锁定")),
       start: performance.now(),
-      color: m === "attack" || text.includes("锁定") ? "#f3aa85" : "#cadea0",
+      color:
+        m === "attack" || m === "sweep" || text.includes("锁定")
+          ? "#f3aa85"
+          : "#cadea0",
     };
     beep(430);
   }
@@ -146,31 +157,80 @@ function halt() {
     return;
   }
   stop(g);
+  lastTap = null;
   setMode("auto");
   status("部队已停止，继续警戒。");
 }
+function pinchPose() {
+  const [a, b] = touches.values();
+  return {
+    clientX: (a.clientX + b.clientX) / 2,
+    clientY: (a.clientY + b.clientY) / 2,
+    distance: Math.max(
+      1,
+      Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY),
+    ),
+  };
+}
+function hitUnit(pt, touch = false, team = 0) {
+  return g.actors
+    .filter(
+      (u) =>
+        (!team || u.team === team) &&
+        dist(u, pt) <
+          Math.max(catalog[u.type].size + 5, touch ? 9 / view.s : 0),
+    )
+    .sort((a, b) => dist(a, pt) - dist(b, pt))[0];
+}
 canvas.addEventListener("contextmenu", (e) => {
   e.preventDefault();
-  issue(pos(e), "auto");
+  if (e.pointerType !== "touch" && !touches.size) issue(pos(e), "auto");
 });
 canvas.addEventListener("pointerdown", (e) => {
   if (e.button !== 0 && e.button !== 1) return;
+  canvas.setPointerCapture(e.pointerId);
+  const touch = e.pointerType === "touch";
+  if (touch) {
+    touches.set(e.pointerId, e);
+    if (touches.size >= 2) {
+      if (touches.size === 2) {
+        const center = pinchPose();
+        pinch = { anchor: pos(center), distance: center.distance, z: camera.z };
+      }
+      pointer = lastTap = null;
+      return;
+    }
+  }
   const p = pos(e);
   pointer = {
+    id: e.pointerId,
     from: p,
     to: p,
+    touch,
     shift: e.shiftKey,
     pan: e.button === 1 || e.altKey,
     cx: camera.x,
     cy: camera.y,
   };
-  canvas.setPointerCapture(e.pointerId);
 });
 canvas.addEventListener("pointermove", (e) => {
+  if (touches.has(e.pointerId)) {
+    touches.set(e.pointerId, e);
+    if (pinch && touches.size >= 2) {
+      const center = pinchPose();
+      camera.z = clamp((pinch.z * center.distance) / pinch.distance, 1, 3.4);
+      calcView();
+      const after = pos(center);
+      camera.x += pinch.anchor.x - after.x;
+      camera.y += pinch.anchor.y - after.y;
+      calcView();
+      return;
+    }
+  }
   const p = pos(e);
   $("coords").innerHTML =
-    `SEC 07 <span>//</span> ${String(Math.floor(clamp(p.x, 0, W))).padStart(3, "0")} : ${String(Math.floor(clamp(p.y, 0, H))).padStart(3, "0")}`;
-  if (!pointer) return;
+    `SEC 07 <span>//</span> ${String(Math.floor(clamp(p.x, 0, W))).padStart(4, "0")} : ${String(Math.floor(clamp(p.y, 0, H))).padStart(3, "0")}`;
+  if (pointer?.id !== e.pointerId) return;
   pointer.to = p;
   if (pointer.pan) {
     camera.x = pointer.cx + (pointer.from.sx - p.sx) / view.s;
@@ -178,21 +238,52 @@ canvas.addEventListener("pointermove", (e) => {
     calcView();
   }
 });
-const isDrag = (p) => Math.hypot(p.to.sx - p.from.sx, p.to.sy - p.from.sy) > 8;
-canvas.addEventListener("pointerup", (e) => {
-  if (!pointer) return;
+const isDrag = (p) =>
+  Math.hypot(p.to.sx - p.from.sx, p.to.sy - p.from.sy) > (p.touch ? 10 : 8);
+function finishPointer(e, cancelled = false) {
+  touches.delete(e.pointerId);
+  if (touches.size < 2) pinch = null;
+  if (pointer?.id !== e.pointerId) return;
   const drag = pointer;
   pointer = null;
-  if (drag.pan) return;
-  drag.to = pos(e);
-  if (mode !== "auto" && !isDrag(drag)) {
-    issue(drag.to, mode);
+  if (cancelled || drag.pan) {
+    lastTap = null;
     return;
   }
+  drag.to = pos(e);
+  const { from: a, to: b } = drag;
+  const boxSelection = isDrag(drag);
+  if (!boxSelection && mode !== "auto") {
+    const enemy = mode === "attack" ? hitUnit(b, drag.touch, -1) : null;
+    lastTap = null;
+    issue(enemy || b, mode, enemy?.id);
+    return;
+  }
+  const hit = boxSelection ? null : hitUnit(b, drag.touch, drag.touch ? 0 : 1);
+  if (
+    !boxSelection &&
+    drag.touch &&
+    selected(g).some((u) => units[u.type]) &&
+    hit?.team !== 1
+  ) {
+    if (hit?.team === -1) {
+      lastTap = null;
+      issue(hit, "auto", hit.id);
+    } else if (b.x >= 0 && b.x <= W && b.y >= 0 && b.y <= H) {
+      const now = performance.now();
+      const double =
+        lastTap &&
+        now - lastTap.now <= 350 &&
+        Math.hypot(lastTap.sx - b.sx, lastTap.sy - b.sy) <= 26;
+      lastTap = double ? null : { sx: b.sx, sy: b.sy, now };
+      // The first tap is immediate; a second tap replaces it with a sweep.
+      issue(b, double ? "sweep" : "move");
+    }
+    return;
+  }
+  lastTap = null;
   if (!drag.shift) g.selected.clear();
-  const a = drag.from,
-    b = drag.to;
-  if (isDrag(drag)) {
+  if (boxSelection) {
     for (const u of g.actors)
       if (
         u.team === 1 &&
@@ -203,22 +294,16 @@ canvas.addEventListener("pointerup", (e) => {
         u.y <= Math.max(a.y, b.y)
       )
         g.selected.add(u.id);
-  } else {
-    const hit = g.actors
-      .filter((u) => u.team === 1 && dist(u, b) < catalog[u.type].size + 5)
-      .sort((u, v) => dist(u, b) - dist(v, b))[0];
-    if (hit) {
-      if (drag.shift && g.selected.has(hit.id)) g.selected.delete(hit.id);
-      else g.selected.add(hit.id);
-    }
+  } else if (hit?.team === 1) {
+    if (drag.shift && g.selected.has(hit.id)) g.selected.delete(hit.id);
+    else g.selected.add(hit.id);
   }
   setMode("auto");
   refreshSelection();
   if (g.selected.size) beep(530, 0.03);
-});
-canvas.addEventListener("pointercancel", () => {
-  pointer = null;
-});
+}
+canvas.addEventListener("pointerup", finishPointer);
+canvas.addEventListener("pointercancel", (e) => finishPointer(e, true));
 canvas.addEventListener(
   "wheel",
   (e) => {
@@ -274,7 +359,32 @@ function modal(id) {
   keys.clear();
   $(id).showModal();
 }
-$("help").onclick = () => modal("guide");
+$("help").onclick = $("compact-help").onclick = () => modal("guide");
+$("landscape").onclick = async () => {
+  if (document.fullscreenElement) {
+    await document.exitFullscreen();
+    return;
+  }
+  try {
+    await document.documentElement.requestFullscreen();
+  } catch {
+    /* iOS and some embeds do not support fullscreen. */
+  }
+  try {
+    await screen.orientation?.lock?.("landscape");
+  } catch {
+    /* rotation lock is optional. */
+  }
+  if (matchMedia("(orientation: portrait)").matches)
+    status("请将手机转为横屏；也可继续在当前画面操作。");
+};
+document.addEventListener("fullscreenchange", () => {
+  $("landscape").setAttribute(
+    "aria-pressed",
+    String(Boolean(document.fullscreenElement)),
+  );
+});
+
 $("close-guide").onclick = $("guide-ok").onclick = () => $("guide").close();
 $("restart").onclick = () => modal("reset-dialog");
 $("cancel-reset").onclick = () => $("reset-dialog").close();
@@ -285,7 +395,9 @@ $("confirm-reset").onclick = () => {
   calcView();
   paused = false;
   shownResult = null;
-  pointer = ping = null;
+  pointer = ping = pinch = lastTap = null;
+  touches.clear();
+  acc = 0;
   lastUI = -1;
   selectedKey = "";
   setMode("auto");
@@ -346,18 +458,16 @@ window.addEventListener("keydown", (e) => {
 window.addEventListener("keyup", (e) => keys.delete(e.key.toLowerCase()));
 function setTab(name) {
   tab = name;
-  ["units", "build"].forEach((t) => {
+  Object.keys(divisions).forEach((t) => {
     const el = $(t + "-tab");
     el.classList.toggle("active", t === tab);
     el.setAttribute("aria-pressed", String(t === tab));
   });
-  $("list-title").textContent = tab === "units" ? "部署单位" : "基地建设";
+  $("list-title").textContent = divisions[tab].title;
   const list = $("unit-list");
   list.replaceChildren();
   cards = [];
-  for (const type of tab === "units"
-    ? Object.keys(units)
-    : ["generator", "turret"]) {
+  for (const type of divisions[tab].types) {
     const spec = catalog[type],
       btn = document.createElement("button");
     btn.className = "unit-card";
@@ -379,8 +489,8 @@ function setTab(name) {
   }
   refresh();
 }
-$("units-tab").onclick = () => setTab("units");
-$("build-tab").onclick = () => setTab("build");
+for (const category of Object.keys(divisions))
+  $(category + "-tab").onclick = () => setTab(category);
 function refreshSelection() {
   const sel = selected(g);
   const key = sel.map((a) => a.id).join(",");
@@ -417,10 +527,15 @@ function refresh() {
   $("power").innerHTML = load(g) + ` <span>/ ${capacity(g)}</span>`;
   $("population").innerHTML = fleet(g) + " <span>/ 30</span>";
   const remaining = Math.max(0, Math.ceil(g.nextWave - g.time));
-  $("wave-time").textContent =
-    two(Math.floor(remaining / 60)) + ":" + two(remaining % 60);
-  $("wave-progress").style.width =
-    100 * clamp((g.time - g.lastWave) / (g.nextWave - g.lastWave), 0, 1) + "%";
+  const reinforces = g.actors.some(
+    (a) => a.team === -1 && a.type === "factory",
+  );
+  $("wave-time").textContent = reinforces
+    ? two(Math.floor(remaining / 60)) + ":" + two(remaining % 60)
+    : "—";
+  $("wave-progress").style.width = reinforces
+    ? 100 * clamp((g.time - g.lastWave) / (g.nextWave - g.lastWave), 0, 1) + "%"
+    : "0%";
   const count = relayCount(g);
   $("relay-count").textContent = count + " / 2";
   $("objective-relay").classList.toggle("done", count === 2);
@@ -433,8 +548,12 @@ function refresh() {
   for (const { btn, type } of cards) {
     const reason = blocked(g, type);
     btn.disabled = Boolean(reason);
+    const spec = catalog[type];
     btn.title =
-      reason || `部署${catalog[type].name} · ${catalog[type].time} 秒`;
+      reason ||
+      (spec.splash
+        ? `射程 ${spec.range} · 伤害 ${spec.damage} · 每 ${spec.rate} 秒开火`
+        : `部署${spec.name} · ${spec.time} 秒`);
   }
   if (g.events.length) {
     status(g.events.join(" "));
@@ -460,11 +579,17 @@ function render(now) {
   c.setTransform(view.s, 0, 0, view.s, view.x, view.y);
   c.drawImage(ground, 0, 0);
   for (const r of g.relays) relay(c, r);
+  const marked = new Set(
+    selected(g)
+      .filter((a) => a.order?.kind === "target")
+      .map((a) => a.order.id),
+  );
   const ordered = [...g.actors].sort((a, b) => a.y - b.y);
   for (const u of ordered) {
     const s = catalog[u.type];
-    if (units[u.type]) vehicle(c, u.type, u.team, u.x, u.y, u.angle);
-    else structure(c, u.type, u.team, u.x, u.y, u.angle);
+    if (units[u.type]) vehicle(c, u.type, u.team, u.x, u.y, u.angle, u.aim);
+    else structure(c, u.type, u.team, u.x, u.y, u.aim);
+    if (marked.has(u.id)) brackets(c, u.x, u.y, s.size + 6, "#f4a783");
     if (g.selected.has(u.id)) {
       brackets(c, u.x, u.y, s.size + 5, "#d6e8ae");
       if (u.order && Number.isFinite(u.order.x) && !mining(g, u)) {
@@ -501,14 +626,36 @@ function render(now) {
     c.lineTo(s.x + (s.tx - s.x) * p, s.y + (s.ty - s.y) * p);
     c.stroke();
   }
+  for (const shell of g.shells) {
+    const p = 1 - shell.life / shell.total,
+      tail = Math.max(0, p - 0.11);
+    const curve = (v) => Math.sin(Math.PI * v) * 26;
+    c.strokeStyle = "#f5cea0";
+    c.lineWidth = 2.5;
+    c.beginPath();
+    c.moveTo(
+      shell.x + (shell.tx - shell.x) * tail,
+      shell.y + (shell.ty - shell.y) * tail - curve(tail),
+    );
+    c.lineTo(
+      shell.x + (shell.tx - shell.x) * p,
+      shell.y + (shell.ty - shell.y) * p - curve(p),
+    );
+    c.stroke();
+  }
   for (const b of g.bursts) {
-    const p = 1 - b.life / 0.65;
+    const p = 1 - b.life / b.total;
+    c.strokeStyle = `rgba(245,190,115,${(1 - p) * 0.8})`;
+    c.lineWidth = 1;
+    c.beginPath();
+    c.arc(b.x, b.y, Math.max(1, p * b.radius), 0, Math.PI * 2);
+    c.stroke();
     c.fillStyle = `rgba(222,169,87,${1 - p})`;
     for (let i = 0; i < 8; i++) {
       const a = i * 2.4;
       c.fillRect(
-        b.x + Math.cos(a) * p * 30,
-        b.y + Math.sin(a) * p * 25,
+        b.x + Math.cos(a) * p * b.radius,
+        b.y + Math.sin(a) * p * b.radius,
         5 - (i % 3),
         4 - (i % 3),
       );
@@ -521,7 +668,13 @@ function render(now) {
       c.strokeStyle = ping.color;
       c.lineWidth = 1;
       c.beginPath();
-      c.arc(ping.x, ping.y, 7 + p * 13, 0, 7);
+      c.arc(
+        ping.x,
+        ping.y,
+        ping.sweep ? 15 + p * 31 : 7 + p * 13,
+        0,
+        Math.PI * 2,
+      );
       c.stroke();
     }
   }
@@ -589,7 +742,11 @@ function frame(now) {
     }
   }
   if (now - lastUI > 120) {
-    if (g.shots.some((s) => s.life > 0.15) && Math.random() < 0.25)
+    if (
+      (g.shots.some((s) => s.life > 0.15) ||
+        g.shells.some((s) => s.life > s.total - 0.1)) &&
+      Math.random() < 0.25
+    )
       beep(125, 0.024);
     lastUI = now;
     refresh();

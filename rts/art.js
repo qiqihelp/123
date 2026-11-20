@@ -1,4 +1,4 @@
-import { W, H, catalog, units, clamp } from "./sim.mjs";
+import { W, H, field, catalog, units, clamp } from "./sim.mjs";
 const rect = (c, x, y, w, h, color) => {
   c.fillStyle = color;
   c.fillRect(x, y, w, h);
@@ -70,7 +70,22 @@ const routes = [
     [532, 113],
     [590, 0],
   ],
-];
+  [
+    [0, 344],
+    [133, 312],
+    [241, 215],
+    [298, 162],
+    [385, 129],
+    [530, 114],
+  ],
+  [
+    [267, 488],
+    [385, 475],
+    [485, 483],
+    [571, 449],
+    [631, 384],
+  ],
+].map((line) => line.map(([x, y]) => field(x, y)));
 function seg(x, y, [ax, ay], [bx, by]) {
   const dx = bx - ax,
     dy = by - ay,
@@ -85,6 +100,8 @@ function road(x, y) {
   return r;
 }
 function water(x, y) {
+  x *= 960 / W;
+  y *= 576 / H;
   return Math.max(
     1 - Math.hypot((x - 124) / 196, (y - 24) / 113),
     1 - Math.hypot((x - 832) / 136, (y - 575) / 96),
@@ -99,7 +116,8 @@ const clearings = [
   [167, 354, 28],
   [791, 357, 30],
   [298, 162, 25],
-];
+  [485, 483, 28],
+].map(([x, y, r]) => [...field(x, y), r]);
 function clearing(x, y) {
   return clearings.some(([a, b, r]) => Math.hypot(x - a, y - b) < r);
 }
@@ -263,11 +281,9 @@ export function terrain(g) {
   const c = cv.getContext("2d");
   const im = c.createImageData(W, H),
     d = im.data;
-  for (let y = 0; y < H; y++)
-    for (let x = 0; x < W; x++) {
-      const sx = x & ~1,
-        sy = y & ~1,
-        n =
+  for (let sy = 0; sy < H; sy += 2)
+    for (let sx = 0; sx < W; sx += 2) {
+      const n =
           noise(sx, sy, 83) * 0.51 +
           noise(sx, sy, 30) * 0.29 +
           noise(sx, sy, 11) * 0.2,
@@ -300,15 +316,18 @@ export function terrain(g) {
             : wet > 0.15
               ? [61 + n * 30, 74 + n * 27, 59 + n * 25]
               : [83 + n * 45, 88 + n * 34, 62 + n * 29];
-      const k = (y * W + x) * 4;
-      d[k] = base[0] + j;
-      d[k + 1] = base[1] + j;
-      d[k + 2] = base[2] + j;
-      d[k + 3] = 255;
+      for (let dy = 0; dy < 2; dy++)
+        for (let dx = 0; dx < 2; dx++) {
+          const k = ((sy + dy) * W + sx + dx) * 4;
+          d[k] = base[0] + j;
+          d[k + 1] = base[1] + j;
+          d[k + 2] = base[2] + j;
+          d[k + 3] = 255;
+        }
     }
   c.putImageData(im, 0, 0);
   const r = rng(57193);
-  for (let i = 0; i < 9100; i++) {
+  for (let i = 0; i < 14700; i++) {
     const x = Math.floor(r() * W),
       y = Math.floor(r() * H),
       v = r(),
@@ -365,7 +384,7 @@ export function terrain(g) {
     c.strokeStyle = "#a6a07566";
     c.strokeRect(x - 21.5, y - 16.5, 43, 33);
   }
-  for (let i = 0; i < 325; i++) {
+  for (let i = 0; i < 490; i++) {
     const x = Math.round(r() * W),
       y = Math.round(r() * H);
     if (water(x, y) > 0.1 || road(x, y) < 25 || clearing(x, y)) continue;
@@ -373,7 +392,7 @@ export function terrain(g) {
     if (n > 0.57) rock(c, x, y, 0.32 + r() * 0.95, r() < 0.43);
   }
   const forest = [];
-  for (let i = 0; i < 2100; i++) {
+  for (let i = 0; i < 3380; i++) {
     const x = Math.round(r() * W),
       y = Math.round(r() * H),
       w = water(x, y),
@@ -424,10 +443,11 @@ function box(c, x, y, w, h, set) {
   rect(c, x + w - 2, y + 2, 2, h - 2, d);
   rect(c, x + 2, y + h - 2, w - 4, 1, d);
 }
-export function vehicle(c, type, team, x, y, angle) {
+export function vehicle(c, type, team, x, y, angle, aim = angle) {
   const set = colors[team],
     [d, m, b, l, hi, k] = set,
-    big = type === "heavy",
+    artillery = Boolean(units[type].splash),
+    big = type === "heavy" || type === "heavyArtillery",
     scout = type === "scout",
     miner = type === "miner",
     u = big ? 1.24 : scout ? 0.83 : 1;
@@ -452,7 +472,17 @@ export function vehicle(c, type, team, x, y, angle) {
     rect(c, 4, -4, 7, 8, "#7e7145");
     rect(c, 5, -3, 5, 2, "#e8c779");
     rect(c, 8, 0, 3, 3, "#baa16a");
+  } else if (artillery) {
+    c.rotate(aim - angle);
+    box(c, -8, -5, 13, 10, set);
+    rect(c, -7, -3, 4, 5, "#b7a16a");
+    rect(c, -6, -4, 2, 7, "#f0d392");
+    rect(c, 2, -2, big ? 21 : 19, 5, k);
+    rect(c, 3, -1, big ? 19 : 17, 2, hi);
+    rect(c, big ? 19 : 17, -3, 4, 6, d);
+    rect(c, big ? 19 : 17, -3, 4, 1, l);
   } else {
+    c.rotate(aim - angle);
     box(c, -5, -4, 11, 8, set);
     rect(c, -3, -2, 4, 4, d);
     rect(c, -2, -2, 3, 1, hi);

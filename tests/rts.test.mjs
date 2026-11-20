@@ -11,6 +11,8 @@ import {
   fleet,
   capacity,
   relayCount,
+  catalog,
+  location,
 } from "../rts/sim.mjs";
 
 function advance(g, seconds) {
@@ -27,7 +29,7 @@ function choose(g, types) {
 test("starts with a mining economy and one selected unit; mining can stop and resume", () => {
   const g = createGame();
   assert.equal(g.selected.size, 1);
-  assert.equal(fleet(g), 5);
+  assert.equal(fleet(g), 6);
   assert.equal(income(g), 12);
   advance(g, 3);
   assert.ok(Math.abs(g.ore - 676) < 0.001);
@@ -46,13 +48,13 @@ test("deployment deducts resources and an expanded generator unlocks heavy tanks
   assert.equal(enqueue(g, "generator"), "");
   assert.equal(g.ore, 320);
   advance(g, 7.1);
-  assert.equal(fleet(g), 6);
+  assert.equal(fleet(g), 7);
   assert.equal(capacity(g), 12);
   advance(g, 6.1);
   assert.equal(capacity(g), 20);
   assert.equal(enqueue(g, "heavy"), "");
   advance(g, 11.1);
-  assert.equal(fleet(g), 7);
+  assert.equal(fleet(g), 8);
   assert.equal(g.queue.length, 0);
 });
 
@@ -80,18 +82,102 @@ test("enemy waves arrive and leave the idle blue side vulnerable", () => {
 
 test("a reinforced push can win the skirmish without manipulating unit state", () => {
   const g = createGame();
-  choose(g, ["tank", "scout"]);
-  order(g, 484, 179, "attack");
+  const combat = ["tank", "scout", "heavyArtillery", "lightArtillery"];
+  const send = (x, y) => {
+    choose(g, combat);
+    const p = location(x, y);
+    order(g, p.x, p.y, "sweep");
+  };
+  send(484, 179);
   for (const type of ["tank", "tank", "generator"])
     assert.equal(enqueue(g, type), "");
-  advance(g, 28.1);
-  assert.equal(enqueue(g, "heavy"), "");
-  advance(g, 1.9);
-  choose(g, ["tank", "scout", "heavy"]);
-  order(g, 735, 175, "attack");
-  advance(g, 28);
+  advance(g, 24 + 1 / 30);
+  assert.equal(enqueue(g, "heavyArtillery"), "");
+  advance(g, 6);
+  send(735, 175);
+  advance(g, 6);
+  assert.equal(enqueue(g, "lightArtillery"), "");
+  advance(g, 12);
+  assert.equal(enqueue(g, "lightArtillery"), "");
+  advance(g, 2);
+  send(735, 175);
+  advance(g, 24);
   assert.equal(g.result, "victory");
   const endedAt = g.time;
   advance(g, 10);
   assert.equal(g.time, endedAt);
+});
+
+function rangeScenario(type) {
+  const g = createGame();
+  g.nextThink = Infinity;
+  const blue = g.actors.find((a) => a.team === 1 && a.type === type);
+  const [red, wing] = g.actors.filter(
+    (a) => a.team === -1 && a.type === "scout",
+  );
+  g.actors = g.actors.filter(
+    (a) => a.type === "hq" || [blue, red, wing].includes(a),
+  );
+  Object.assign(blue, { x: 480, y: 360 });
+  Object.assign(red, { x: 568, y: 360, cd: 100 });
+  Object.assign(wing, { x: 590, y: 360, cd: 100 });
+  g.selected = new Set([blue.id]);
+  return { g, blue, red, wing };
+}
+test("a moving vehicle keeps its course while firing, and a focus order prioritizes the tapped target", () => {
+  const { g, blue, red, wing } = rangeScenario("tank");
+  order(g, 500, 510, "move");
+  advance(g, 0.3);
+  assert.ok(blue.y > 369, "the vehicle still moves");
+  assert.ok(red.hp < catalog.scout.hp, "it fires on nearby enemies");
+  assert.ok(
+    blue.angle > 1 && Math.abs(blue.aim) < 0.25,
+    "chassis and aim face independently",
+  );
+  advance(g, 0.58);
+  order(g, wing.x, wing.y, "auto", wing.id);
+  advance(g, 0.2);
+  assert.ok(wing.hp < catalog.scout.hp, "focus fire overrides nearer targets");
+  assert.equal(blue.order.id, wing.id);
+});
+test("an area order stops to engage and continues toward the sweep point after combat", () => {
+  const { g, blue, red, wing } = rangeScenario("tank");
+  red.hp = wing.hp = 10;
+  order(g, 500, 520, "sweep");
+  advance(g, 0.4);
+  assert.equal(blue.y, 360);
+  assert.equal(blue.order.kind, "attack");
+  advance(g, 1.2);
+  assert.ok(!g.actors.includes(red) && !g.actors.includes(wing));
+  assert.ok(blue.y > 365);
+});
+test("artillery outranges tanks, reloads slowly, and splashes enemies after impact", () => {
+  const { g, blue, red, wing } = rangeScenario("lightArtillery");
+  Object.assign(red, { x: 655, y: 360 });
+  Object.assign(wing, { x: 674, y: 360 });
+  const { lightArtillery: light, heavyArtillery: heavy, tank } = catalog;
+  for (const key of ["range", "damage", "rate"])
+    assert.ok(heavy[key] > light[key] && light[key] > tank[key]);
+  order(g, red.x, red.y, "auto", red.id);
+  advance(g, 0.2);
+  assert.equal(red.hp, catalog.scout.hp);
+  assert.equal(g.shells.length, 1);
+  advance(g, 0.5);
+  assert.equal(red.hp, catalog.scout.hp - light.damage);
+  assert.ok(wing.hp < catalog.scout.hp && wing.hp > red.hp);
+  assert.ok(blue.cd > 1.5);
+});
+test("AI captures a relay and sends wounded armor to its base instead of feeding it into the fight", () => {
+  const g = createGame();
+  advance(g, 30);
+  assert.ok(g.relays.some((r) => r.owner === -1));
+  const redHQ = g.actors.find((a) => a.team === -1 && a.type === "hq");
+  const tank = g.actors.find((a) => a.team === -1 && a.type === "tank");
+  const blue = g.actors.find((a) => a.team === 1 && a.type === "tank");
+  Object.assign(tank, { x: 650, y: 365, hp: 50, cd: 0 });
+  Object.assign(blue, { x: 540, y: 365, cd: 50 });
+  advance(g, 1);
+  assert.equal(tank.aiRetreat, true);
+  assert.ok(tank.x > 650);
+  assert.ok(tank.order.x > redHQ.x - 50);
 });

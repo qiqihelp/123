@@ -488,7 +488,7 @@ button:disabled {
   border-bottom: 1px solid #586047;
 }
 .tabs button {
-  width: 50%;
+  flex: 1;
   border: 1px solid #4b543e;
   border-bottom: 0;
   background: #282f24;
@@ -1006,4 +1006,230 @@ body {
   .zoom {
     box-shadow: none;
   }
+}
+#map {
+  -webkit-touch-callout: none;
+}
+#landscape {
+  font-size: 19px;
+}
+.compact-help,
+.touch-shortcuts {
+  display: none;
+}
+.side-content {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.side-content > .list-title,
+.wave {
+  flex: none;
+}
+.unit-list {
+  overflow-y: auto;
+  min-height: 0;
+  scrollbar-width: thin;
+  scrollbar-color: #7d8462 #2a3025;
+}
+.unit-card {
+  min-height: 51px;
+}
+.unit-card canvas {
+  height: 38px;
+}
+.mini-panel canvas {
+  height: 84px;
+}
+@media (pointer: coarse) {
+  .shortcuts {
+    display: none;
+  }
+  .touch-shortcuts {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 780px) {
+  .battlefield {
+    height: auto;
+    aspect-ratio: 16 / 9;
+    min-height: 202px;
+  }
+  .mini-panel canvas {
+    height: 59px;
+  }
+  .coords {
+    display: none;
+  }
+}
+/* A horizontal cockpit: the map and production are both visible when the phone is rotated. */
+@media (orientation: landscape) and (max-height: 565px) {
+  .page {
+    max-width: none;
+    padding: 0 env(safe-area-inset-right) env(safe-area-inset-bottom)
+      env(safe-area-inset-left);
+  }
+  .masthead,
+  footer {
+    display: none;
+  }
+  .console {
+    height: calc(100dvh - env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+  }
+  .console-top {
+    height: 42px;
+    min-height: 42px;
+    flex: none;
+    flex-wrap: nowrap;
+  }
+  .scenario {
+    width: 117px;
+    padding-inline: 9px;
+    gap: 6px;
+  }
+  .scenario-mark {
+    display: grid;
+    width: 24px;
+    height: 24px;
+  }
+  .scenario-mark svg {
+    width: 16px;
+  }
+  .scenario small,
+  .resource small {
+    margin-bottom: 3px;
+    white-space: nowrap;
+    letter-spacing: 0.04em;
+  }
+  .resource {
+    min-width: 0;
+    padding: 0 7px;
+    flex: none;
+  }
+  .res-group {
+    flex: 1;
+  }
+  .mission-controls {
+    gap: 4px;
+    margin-inline: 5px;
+  }
+  .mission-controls .square {
+    width: 27px;
+    height: 27px;
+  }
+  .compact-help {
+    display: grid;
+    font: 700 13px var(--mono);
+  }
+  .body-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(173px, 25vw, 245px);
+    flex: 1;
+    min-height: 0;
+    height: auto;
+  }
+  .battlefield {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    aspect-ratio: auto;
+  }
+  .map-top,
+  .coords,
+  .side-head {
+    display: none;
+  }
+  .objective {
+    top: 7px;
+    left: 7px;
+    width: 158px;
+    font-size: 10px;
+  }
+  .objective .objective-title,
+  .objective > div {
+    padding: 3px 5px;
+  }
+  .objective-title em {
+    display: none;
+  }
+  .map-nav {
+    right: 7px;
+    bottom: 7px;
+  }
+  .mini-panel canvas {
+    width: 96px;
+    height: 54px;
+  }
+  .tabs {
+    padding-inline: 5px;
+  }
+  .tabs button {
+    padding: 6px 0;
+  }
+  .side-content {
+    padding: 6px;
+  }
+  .side-content > .list-title {
+    margin-bottom: 4px;
+  }
+  .unit-list {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .unit-card {
+    min-height: 42px;
+    grid-template-columns: 37px 1fr auto;
+    gap: 4px;
+    padding: 3px 5px 3px 3px;
+  }
+  .unit-card canvas {
+    width: 37px;
+    height: 31px;
+  }
+  .unit-name {
+    font-size: 11px;
+  }
+  .unit-desc {
+    font-size: 9px;
+  }
+  .wave {
+    margin-top: 4px;
+    padding: 4px;
+  }
+  .wave-track {
+    margin-top: 3px;
+  }
+  .selected {
+    display: none;
+  }
+  .order-row {
+    order: 0;
+    border: 0;
+    padding: 4px 6px;
+  }
+  .order-row button {
+    min-height: 24px;
+    padding: 3px 0;
+  }
+  .console-bottom {
+    min-height: 24px;
+  }
+}
+.fullscreen-icon {
+  width: 13px;
+  height: 10px;
+  background:
+    linear-gradient(currentColor, currentColor) top left/4px 1px,
+    linear-gradient(currentColor, currentColor) bottom left/4px 1px,
+    linear-gradient(currentColor, currentColor) top right/4px 1px,
+    linear-gradient(currentColor, currentColor) bottom right/4px 1px,
+    linear-gradient(currentColor, currentColor) top left/1px 4px,
+    linear-gradient(currentColor, currentColor) bottom left/1px 4px,
+    linear-gradient(currentColor, currentColor) top right/1px 4px,
+    linear-gradient(currentColor, currentColor) bottom right/1px 4px;
+  background-repeat: no-repeat;
 }
