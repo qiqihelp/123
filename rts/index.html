@@ -83,7 +83,7 @@
               <span class="res-icon">◈</span>
               <div>
                 <small>部队 / UNITS</small
-                ><strong id="population">6 <span>/ 30</span></strong>
+                ><strong id="population">6 <span>/ 60</span></strong>
               </div>
             </div>
           </div>
@@ -185,15 +185,36 @@
             <div class="side-content">
               <div class="list-title">
                 <span id="list-title">部署单位</span
-                ><span id="production-hud">生产 <b id="queue">00</b></span
+                ><span id="production-hud"
+                  ><span id="queue-prefix">队列</span>
+                  <b id="queue">00</b></span
                 ><span id="research-hud" hidden
                   >等级 <b id="research-tier">T1</b></span
                 >
               </div>
+              <div class="factory-tools" id="factory-tools">
+                <span title="使用中的生产工位 / 兵工厂总数"
+                  >工位 <b id="factory-count">0 / 1</b></span
+                >
+                <button
+                  id="batch"
+                  aria-pressed="false"
+                  title="开关批量生产，也可以按住 Shift 点击单位"
+                >
+                  批量 ×1
+                </button>
+                <button
+                  id="rally-button"
+                  aria-pressed="false"
+                  title="点击战场，所有兵工厂共用这个集结点"
+                >
+                  集结点
+                </button>
+              </div>
               <div class="unit-list" id="unit-list"></div>
               <div class="wave">
                 <div>
-                  <span>敌方增援 / HOSTILES</span
+                  <span>敌方增援 <b id="enemy-count">4 / 11</b></span
                   ><strong id="wave-time">00:55</strong>
                 </div>
                 <div class="wave-track"><i id="wave-progress"></i></div>
@@ -201,13 +222,22 @@
             </div>
             <div class="selected">
               <div class="list-title">
-                <span>当前选择</span><span id="select-count">00</span>
+                <span>当前选择 <b id="select-count">00</b></span
+                ><button id="unit-details" class="detail-button">
+                  查看属性 ↗
+                </button>
               </div>
               <div class="selected-body" id="selected-body"></div>
             </div>
             <div class="touch-orders">
-              <span>已选编队 <b id="touch-selection">01</b></span
-              ><button id="touch-stop"><span>■</span> 停止</button>
+              <span
+                ><span id="touch-unit-name">轻型坦克</span>
+                <b id="touch-selection">01</b></span
+              >
+              <div>
+                <button id="touch-details">属性</button
+                ><button id="touch-stop"><span>■</span> 停止</button>
+              </div>
             </div>
             <div class="order-row">
               <button id="move" title="移动 (M)"><span>➜</span> 移动</button
@@ -278,6 +308,14 @@
           等离子坦克的护盾每 0.5 秒恢复 4
           点，车体不会自行回血。蓝色飘字代表护盾吸收，金色代表车体伤害。
         </li>
+        <li>
+          兵工厂同时各造一台车。开启「批量」或按住 Shift
+          点击单位卡片，就能按兵工厂数量一次下单。设定集结点后，新单位会自动前往。
+        </li>
+        <li>
+          研究中心的「快速生产」可让所有兵工厂的生产耗时减少 30%，不需要先完成
+          T2。选中任何己方单位，可打开「属性」查看详细资料。
+        </li>
         <li>派部队靠近黄色中继站，清除附近敌人并占领，即可获得额外矿石。</li>
         <li>
           方向键或 W A S D 移动镜头，滚轮缩放，P
@@ -285,6 +323,21 @@
         </li>
       </ul>
       <button class="dialog-action" id="guide-ok">返回战场 ↗</button>
+    </dialog>
+    <dialog id="unit-intel" aria-labelledby="intel-name">
+      <div class="dialog-top">
+        <div class="intel-heading">
+          <div id="intel-portrait"></div>
+          <div>
+            <small>FIELD DOSSIER / 单位档案</small>
+            <h2 id="intel-name"></h2>
+          </div>
+        </div>
+        <button id="close-intel" aria-label="关闭单位档案">×</button>
+      </div>
+      <div id="intel-units" class="intel-units"></div>
+      <p id="intel-intro"></p>
+      <dl id="intel-stats" class="intel-stats"></dl>
     </dialog>
     <dialog id="reset-dialog">
       <div class="dialog-top">

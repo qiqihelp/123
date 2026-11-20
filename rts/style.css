@@ -1462,3 +1462,138 @@ body {
     display: none;
   }
 }
+.factory-tools {
+  flex: none;
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  padding: 5px;
+  margin: 0 0 9px;
+  border: 1px solid #515940;
+  background: #292f24;
+}
+.factory-tools[hidden] {
+  display: none;
+}
+.factory-tools > span {
+  color: #c6cbb2;
+  white-space: nowrap;
+  font: 10px var(--mono);
+  flex: 1;
+}
+.factory-tools b,
+#enemy-count {
+  color: #e0c685;
+  font: 700 10px var(--mono);
+}
+#enemy-count {
+  margin-left: 4px;
+}
+.factory-tools button,
+.detail-button,
+.intel-units button {
+  white-space: nowrap;
+  background: #394332;
+  color: #e4e6d1;
+  border: 1px solid #637053;
+  padding: 4px 7px;
+  font-size: 11px;
+}
+.factory-tools button[aria-pressed="true"],
+.intel-units button[aria-pressed="true"] {
+  color: #f6dc9f;
+  background: #514936;
+  border-color: #beaa6d;
+}
+.detail-button:hover,
+.factory-tools button:hover:not(:disabled) {
+  background: #4c563c;
+}
+.unit-card.batch-card {
+  border-left: 2px solid #c4aa6c;
+}
+.research-independent {
+  grid-column: 1 / -1;
+  border-left: 2px solid #a6bd86;
+}
+.selection-details strong {
+  margin-bottom: 3px;
+}
+.selection-role {
+  display: block;
+  font-size: 10px;
+  color: #c1c9ad;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.touch-orders > div {
+  display: flex;
+  flex: none;
+  gap: 5px;
+}
+#touch-unit-name {
+  color: #ede8d6;
+}
+#unit-intel {
+  width: 510px;
+}
+.intel-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+#intel-portrait canvas {
+  width: 60px;
+  height: 54px;
+  background: #252e24;
+  border: 1px solid #5e6a4a;
+  image-rendering: pixelated;
+}
+.intel-units:not(:empty) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 10px;
+}
+#intel-intro {
+  color: #dddec7;
+  margin-block: 10px;
+}
+.intel-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  margin: 0;
+}
+.intel-stats > div {
+  background: #252e24;
+  border: 1px solid #4f5d42;
+  padding: 6px 7px;
+}
+.intel-stats dt {
+  color: #aeb99e;
+  font-size: 11px;
+}
+.intel-stats dd {
+  margin: 3px 0 0;
+  color: #f0dda4;
+  font: 700 12px var(--mono);
+}
+@media (orientation: landscape) and (max-height: 565px),
+  (orientation: portrait) and (pointer: coarse) {
+  .factory-tools {
+    margin-bottom: 6px;
+  }
+  .factory-tools button {
+    padding: 3px 6px;
+  }
+  .intel-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (orientation: portrait) and (pointer: coarse) {
+  #unit-intel {
+    width: min(510px, calc(100dvh - 28px));
+  }
+}

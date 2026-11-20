@@ -236,9 +236,27 @@ export const buildings = {
     damage: 16,
     rate: 0.9,
   },
-  factory: { name: "战车工厂", hp: 560, size: 25 },
+  factory: {
+    name: "兵工厂",
+    desc: "独立生产 · 每厂一个工位",
+    cost: 235,
+    time: 9,
+    hp: 560,
+    size: 25,
+  },
 };
+export const UNIT_LIMIT = 60;
+export const ENEMY_UNIT_LIMIT = 11;
+export const ENEMY_MAX_WAVE = 6;
 export const techs = {
+  rapidProduction: {
+    name: "快速生产",
+    desc: "所有兵工厂生产耗时减少 30%，正在生产的订单也生效；不影响建筑施工。",
+    short: "全厂耗时减少 30%",
+    cost: 240,
+    crystal: 0,
+    time: 12,
+  },
   t2: {
     name: "T2 科技",
     desc: "解锁等离子坦克与 T2 导弹坦克",
@@ -309,6 +327,9 @@ export function createGame() {
     serial: 0,
     actors: [],
     queue: [],
+    construction: [],
+    rally: null,
+    waveWaiting: false,
     shots: [],
     shells: [],
     plasma: [],
@@ -400,6 +421,12 @@ export const owns = (g, type) =>
   g.actors.some((a) => a.type === type && a.team === 1 && a.hp > 0);
 export const fleet = (g) =>
   g.actors.filter((a) => a.team === 1 && units[a.type] && a.hp > 0).length;
+export const factories = (g) =>
+  g.actors.filter((a) => a.team === 1 && a.type === "factory" && a.hp > 0);
+export const enemyFleet = (g) =>
+  g.actors.filter((a) => a.team === -1 && units[a.type] && a.hp > 0).length;
+export const productionFactor = (g) =>
+  g.tech.has("rapidProduction") ? 0.7 : 1;
 export const generatorCount = (g) =>
   g.actors.filter((a) => a.team === 1 && a.type === "generator" && a.hp > 0)
     .length;
@@ -468,16 +495,13 @@ export function blocked(g, type) {
   const spec = catalog[type];
   if (!spec?.cost) return "该单位不能生产";
   if (g.result) return "战斗已结束";
-  if (g.queue.length >= 6) return "生产队列已满";
+  if (buildings[type] && g.construction.length >= 6) return "施工队列已满";
   if (spec.tech && !g.tech.has(spec.tech)) return "需要先完成 T2 科技";
   if (g.ore + 1e-6 < spec.cost) return "矿石不足";
   if (spec.crystal && g.crystal + 1e-6 < spec.crystal)
     return "晶能不足，请开采晶能矿";
-  if (units[type] && !owns(g, "factory")) return "战车工厂已损毁";
-  if (
-    units[type] &&
-    fleet(g) + g.queue.filter((q) => units[q.type]).length >= 30
-  )
+  if (units[type] && !owns(g, "factory")) return "请先建造兵工厂";
+  if (units[type] && fleet(g) + g.queue.length >= UNIT_LIMIT)
     return "部队已达上限";
   if (spec.power && capacity(g) < spec.power)
     return "需要至少 " + spec.power + " 点供电";
@@ -485,7 +509,7 @@ export function blocked(g, type) {
     spec.powerDraw &&
     load(g) +
       spec.powerDraw +
-      g.queue.reduce(
+      g.construction.reduce(
         (total, q) => total + (catalog[q.type].powerDraw || 0),
         0,
       ) >
@@ -500,8 +524,28 @@ export function enqueue(g, type) {
   const spec = catalog[type];
   g.ore -= spec.cost;
   g.crystal -= spec.crystal || 0;
-  g.queue.push({ type, left: spec.time });
+  (units[type] ? g.queue : g.construction).push({ type, left: spec.time });
   return "";
+}
+export function enqueueBatch(g, type) {
+  const requested = factories(g).length;
+  if (!units[type] || !requested)
+    return {
+      added: 0,
+      requested,
+      reason: blocked(g, type) || "只能批量生产单位",
+    };
+  let added = 0;
+  for (; added < requested; added++) {
+    const reason = enqueue(g, type);
+    if (reason) return { added, requested, reason };
+  }
+  return { added, requested, reason: "" };
+}
+export function setRally(g, x, y) {
+  if (g.result || !owns(g, "factory")) return false;
+  g.rally = { x: clamp(x, 12, W - 12), y: clamp(y, 12, H - 12) };
+  return true;
 }
 export function order(g, x, y, mode = "auto", targetId) {
   if (g.result) return "";
@@ -655,15 +699,20 @@ function explode(g, x, y, p) {
       strike(g, b, Math.ceil(p.damage * (1 - (0.6 * d) / p.radius)));
   }
 }
-function fire(g, a, b, s) {
-  a.cd = s.rate;
-  const damage =
-    s.damage +
+export function weaponDamage(g, a) {
+  const s = catalog[a.type];
+  return (
+    (s.damage || 0) +
     (a.team === 1 && s.missiles && g.tech.has("guidance")
       ? 8
       : a.team === 1 && s.plasma && g.tech.has("plasmaFocus")
         ? 18
-        : 0);
+        : 0)
+  );
+}
+function fire(g, a, b, s) {
+  a.cd = s.rate;
+  const damage = weaponDamage(g, a);
   a.recoil = 0.24;
   const fx = Math.cos(a.aim),
     fy = Math.sin(a.aim),
@@ -861,6 +910,175 @@ function enemyAI(g, dt) {
     }
   }
 }
+const buildingSites = [
+  [119, 497],
+  [293, 515],
+  [353, 464],
+  [248, 553],
+  [137, 425],
+  [375, 535],
+  [325, 554],
+  [100, 458],
+  [176, 530],
+  [210, 390],
+  [418, 478],
+  [126, 542],
+  [199, 544],
+  [357, 512],
+  [431, 520],
+  [254, 568],
+  [61, 517],
+  [97, 590],
+  [173, 591],
+  [243, 616],
+  [326, 611],
+  [385, 594],
+].map(([x, y]) => field(x, y));
+function advanceConstruction(g, dt) {
+  const job = g.construction[0];
+  if (!job || (job.left -= dt) > 1e-8) return;
+  const t = job.type,
+    s = catalog[t];
+  g.construction.shift();
+  const pos = buildingSites.find(
+    ([x, y]) =>
+      !g.actors.some(
+        (a) =>
+          a.hp > 0 &&
+          buildings[a.type] &&
+          dist(a, { x, y }) < (catalog[a.type].size + s.size) * 0.86,
+      ),
+  );
+  if (pos) {
+    spawn(g, t, 1, ...pos);
+    g.events.push(s.name + "施工完成。");
+  } else {
+    g.ore += s.cost;
+    g.events.push("基地没有空余建造位置，已退款。");
+  }
+}
+function finishUnit(g, job, factory) {
+  const primary = g.actors.find(
+    (a) => a.team === 1 && a.type === "factory" && a.hp > 0,
+  );
+  const entrance = {
+    x: factory.x + 43 + (g.serial % 3) * 24,
+    y: factory.y + 16 - (g.serial % 5) * 22,
+  };
+  // Additional factories may be adjacent. Pick a free exit instead of spawning inside a building.
+  if (factory !== primary) {
+    for (let i = 0; i < 8; i++) {
+      const angle = (((i + g.serial) % 8) * Math.PI) / 4;
+      const p = {
+        x: factory.x + Math.cos(angle) * 48,
+        y: factory.y + Math.sin(angle) * 48,
+      };
+      if (
+        !g.actors.some(
+          (a) =>
+            a.hp > 0 &&
+            dist(a, p) < catalog[a.type].size + catalog[job.type].size * 0.8,
+        )
+      ) {
+        Object.assign(entrance, p);
+        break;
+      }
+    }
+  }
+  const a = spawn(g, job.type, 1, entrance.x, entrance.y);
+  const point = g.rally
+    ? {
+        x: clamp(g.rally.x + ((a.id % 4) - 1.5) * 17, 12, W - 12),
+        y: clamp(g.rally.y + ((a.id % 3) - 1) * 18, 12, H - 12),
+      }
+    : location(284 + (g.serial % 3) * 25, 461 - (g.serial % 4) * 27);
+  a.order = { kind: "move", ...point };
+}
+function advanceProduction(g, dt) {
+  if (!g.queue.length) return;
+  const available = factories(g);
+  if (!available.length) {
+    for (const job of g.queue) {
+      g.ore += catalog[job.type].cost;
+      g.crystal += catalog[job.type].crystal || 0;
+    }
+    g.queue.length = 0;
+    g.events.push("所有兵工厂损毁，生产订单已退款。");
+    return;
+  }
+  const alive = new Map(available.map((a) => [a.id, a]));
+  const occupied = new Set();
+  for (const job of g.queue) {
+    if (alive.has(job.factory)) occupied.add(job.factory);
+    else job.factory = null;
+  }
+  const idle = available.filter((a) => !occupied.has(a.id));
+  let cursor = 0;
+  for (const job of g.queue)
+    if (job.factory == null && cursor < idle.length)
+      job.factory = idle[cursor++].id;
+  const work = dt / productionFactor(g),
+    complete = new Map();
+  g.queue = g.queue.filter((job) => {
+    if (!job.factory || (job.left -= work) > 1e-8) return true;
+    finishUnit(g, job, alive.get(job.factory));
+    complete.set(job.type, (complete.get(job.type) || 0) + 1);
+    return false;
+  });
+  if (complete.size)
+    g.events.push(
+      [...complete]
+        .map(
+          ([type, count]) =>
+            catalog[type].name + (count > 1 ? " ×" + count : ""),
+        )
+        .join("、") + "已部署。",
+    );
+}
+function reinforce(g) {
+  if (g.time < g.nextWave) return;
+  const base = g.actors.find(
+    (a) => a.team === -1 && a.type === "factory" && a.hp > 0,
+  );
+  if (!base) return;
+  const room = ENEMY_UNIT_LIMIT - enemyFleet(g);
+  if (room <= 0) {
+    g.waveWaiting = true;
+    g.lastWave = g.time;
+    g.nextWave = g.time + 18;
+    return;
+  }
+  g.waveWaiting = false;
+  g.wave++;
+  g.lastWave = g.time;
+  // Keep a recovery interval even in the late game. At most one advanced unit per wave.
+  g.nextWave = g.time + Math.max(54, 66 - (g.wave - 1) * 3);
+  const late =
+    g.wave >= 7
+      ? g.wave % 2
+        ? "missileT2"
+        : "plasmaTank"
+      : g.wave >= 4
+        ? "missileTank"
+        : "tank";
+  const roster =
+    g.wave < 3
+      ? ["tank", "scout", "lightArtillery", "tank"]
+      : ["tank", "scout", "lightArtillery", late, "tank", "heavy"];
+  const n = Math.min(ENEMY_MAX_WAVE, room, 2 + g.wave, roster.length);
+  for (let i = 0; i < n; i++) {
+    const a = spawn(
+      g,
+      roster[i],
+      -1,
+      base.x - 58 + (i % 3) * 28,
+      base.y + 90 + Math.floor(i / 3) * 31,
+    );
+    a.aiWave = true;
+    a.aiLane = aiLanes[(g.wave + (i % 2)) % aiLanes.length];
+  }
+  g.events.push("第 " + g.wave + " 波敌方增援：" + n + " 台。");
+}
 export function step(g, dt) {
   if (g.result) return;
   g.time += dt;
@@ -880,103 +1098,9 @@ export function step(g, dt) {
       g.events.push(spec.name + "已完成。");
     }
   }
-  const job = g.queue[0];
-  if (job) {
-    if (units[job.type] && !owns(g, "factory")) {
-      g.ore += catalog[job.type].cost;
-      g.crystal += catalog[job.type].crystal || 0;
-      g.queue.shift();
-      g.events.push("工厂损毁，生产订单已退款。");
-    } else if ((job.left -= dt) <= 0) {
-      const t = job.type,
-        factory = g.actors.find(
-          (a) => a.team === 1 && a.type === "factory" && a.hp > 0,
-        );
-      let deployed = true;
-      if (units[t]) {
-        const a = spawn(
-          g,
-          t,
-          1,
-          factory.x + 43 + (g.serial % 3) * 24,
-          factory.y + 16 - (g.serial % 5) * 22,
-        );
-        a.order = {
-          kind: "move",
-          ...location(284 + (g.serial % 3) * 25, 461 - (g.serial % 4) * 27),
-        };
-      } else {
-        const positions = [
-          [119, 497],
-          [293, 515],
-          [353, 464],
-          [248, 553],
-          [137, 425],
-          [375, 535],
-          [325, 554],
-          [100, 458],
-          [176, 530],
-          [210, 390],
-          [418, 478],
-          [126, 542],
-          [199, 544],
-          [357, 512],
-          [431, 520],
-          [254, 568],
-        ].map(([x, y]) => field(x, y));
-        const pos = positions.find(
-          ([x, y]) =>
-            !g.actors.some(
-              (a) =>
-                buildings[a.type] &&
-                dist(a, { x, y }) <
-                  (catalog[a.type].size + catalog[t].size) * 0.86,
-            ),
-        );
-        if (pos) spawn(g, t, 1, ...pos);
-        else {
-          g.ore += catalog[t].cost;
-          g.events.push("基地没有空余建造位置，已退款。");
-          deployed = false;
-        }
-      }
-      g.queue.shift();
-      if (deployed) g.events.push(catalog[t].name + "部署完成。");
-    }
-  }
-  if (g.time >= g.nextWave) {
-    g.wave++;
-    g.lastWave = g.time;
-    g.nextWave = g.time + Math.max(32, 54 - g.wave * 4);
-    const roster = [
-      "tank",
-      "scout",
-      "lightArtillery",
-      "tank",
-      "heavy",
-      "missileTank",
-      "heavyArtillery",
-      g.wave >= 7 ? "missileT2" : "assault",
-      g.wave >= 8 ? "plasmaTank" : "raider",
-    ];
-    const factory = g.actors.find(
-      (a) => a.team === -1 && a.type === "factory" && a.hp > 0,
-    );
-    if (factory) {
-      for (let i = 0; i < Math.min(roster.length, 2 + g.wave); i++) {
-        const a = spawn(
-          g,
-          roster[i],
-          -1,
-          factory.x - 58 + (i % 3) * 28,
-          factory.y + 90 + Math.floor(i / 3) * 31,
-        );
-        a.aiWave = true;
-        a.aiLane = aiLanes[(g.wave + (i % 2)) % aiLanes.length];
-      }
-      g.events.push("侦测到第 " + g.wave + " 波敌方增援！");
-    }
-  }
+  advanceConstruction(g, dt);
+  advanceProduction(g, dt);
+  reinforce(g);
   enemyAI(g, dt);
   const brownout = load(g) > capacity(g);
   for (const a of g.actors) {

@@ -1,7 +1,15 @@
+import { unitProfile } from "./briefings.mjs";
 import {
   W,
   H,
   START_VIEW,
+  UNIT_LIMIT,
+  ENEMY_UNIT_LIMIT,
+  enemyFleet,
+  factories,
+  productionFactor,
+  enqueueBatch,
+  setRally,
   techs,
   minerals,
   crystalIncome,
@@ -60,7 +68,15 @@ const divisions = {
   },
   build: {
     title: "基地建设",
-    types: ["generator", "turret", "repair", "refinery", "mortar", "lab"],
+    types: [
+      "factory",
+      "generator",
+      "turret",
+      "repair",
+      "refinery",
+      "mortar",
+      "lab",
+    ],
   },
   tech: { title: "研究中心 · 科技树", types: Object.keys(techs) },
 };
@@ -71,6 +87,7 @@ let g = createGame(),
   view = { x: 0, y: 0, s: 1 },
   paused = false,
   tab = "units",
+  batchMode = false,
   mode = "auto",
   pointer = null,
   lastTap = null,
@@ -155,12 +172,25 @@ function setMode(next) {
   mode = next;
   $("move").classList.toggle("active", mode === "move");
   $("attack").classList.toggle("active", mode === "attack");
+  $("rally-button").setAttribute("aria-pressed", String(mode === "rally"));
   $("move").setAttribute("aria-pressed", String(mode === "move"));
   $("attack").setAttribute("aria-pressed", String(mode === "attack"));
 }
 function issue(p, m, targetId) {
   if (g.result) return;
   const pt = fit(p);
+  const group = selected(g);
+  if (
+    m === "rally" ||
+    (m === "auto" && group.length === 1 && group[0].type === "factory")
+  ) {
+    if (setRally(g, pt.x, pt.y)) {
+      status("集结点已设置：所有新单位都会自动前往。");
+      beep(490);
+    }
+    setMode("auto");
+    return;
+  }
   const text = order(g, pt.x, pt.y, m, targetId);
   if (selected(g).some((a) => units[a.type])) {
     ping = {
@@ -320,6 +350,16 @@ function finishPointer(e, cancelled = false) {
   if (
     !boxSelection &&
     drag.touch &&
+    !hit &&
+    selected(g).some((a) => a.type === "factory")
+  ) {
+    lastTap = null;
+    issue(b, "rally");
+    return;
+  }
+  if (
+    !boxSelection &&
+    drag.touch &&
     selected(g).some((u) => units[u.type]) &&
     hit?.team !== 1
   ) {
@@ -454,6 +494,7 @@ $("confirm-reset").onclick = () => {
   lastUI = -1;
   selectedKey = "";
   setMode("auto");
+  batchMode = false;
   setTab("units");
   updatePause();
   status("前线就绪。指挥官，等待您的指令。");
@@ -476,7 +517,8 @@ $("sound").onclick = () => {
   $("sound").lastElementChild.textContent = sound ? "音效 开" : "音效 关";
 };
 window.addEventListener("blur", () => keys.clear());
-const keyboardBlocked = () => $("guide").open || $("reset-dialog").open;
+const keyboardBlocked = () =>
+  $("guide").open || $("reset-dialog").open || $("unit-intel").open;
 window.addEventListener("keydown", (e) => {
   const k = e.key.toLowerCase();
   if (keyboardBlocked() || e.ctrlKey || e.metaKey || e.altKey) return;
@@ -528,7 +570,11 @@ function setTab(name) {
     btn.type = "button";
     btn.className = isTech
       ? "research-card" +
-        (spec.requires ? " research-branch" : " research-root")
+        (spec.requires
+          ? " research-branch"
+          : type === "t2"
+            ? " research-root"
+            : " research-independent")
       : "unit-card" + (spec.tech ? " tier-unit" : "");
     const info = document.createElement("span");
     info.innerHTML = `<span class="unit-name">${spec.name}</span><span class="unit-desc">${isTech ? spec.short : spec.desc}</span>`;
@@ -540,15 +586,26 @@ function setTab(name) {
     state.className = "research-state";
     btn.append(info, cost);
     if (isTech) btn.append(state);
-    btn.onclick = () => {
-      const err = isTech ? startResearch(g, type) : enqueue(g, type);
-      status(
-        err ||
-          (isTech
-            ? "已开始研究 " + spec.name + "。"
-            : spec.name + "已加入生产队列。"),
-      );
-      if (!err) beep(560, 0.035);
+    btn.onclick = (event) => {
+      if (!isTech && units[type] && (batchMode || event.shiftKey)) {
+        const { added, requested, reason } = enqueueBatch(g, type);
+        status(
+          added
+            ? `${spec.name} ×${added} 已加入队列${added < requested ? "（" + reason + "）" : ""}。`
+            : reason,
+        );
+        if (added) beep(560, 0.035);
+      } else {
+        const err = isTech ? startResearch(g, type) : enqueue(g, type);
+        status(
+          err ||
+            (isTech
+              ? "已开始研究 " + spec.name + "。"
+              : spec.name +
+                (units[type] ? "已加入生产队列。" : "已加入施工队列。")),
+        );
+        if (!err) beep(560, 0.035);
+      }
       refresh();
     };
     list.append(btn);
@@ -558,9 +615,79 @@ function setTab(name) {
 }
 for (const category of Object.keys(divisions))
   $(category + "-tab").onclick = () => setTab(category);
+$("batch").onclick = () => {
+  batchMode = !batchMode;
+  refresh();
+  status(
+    batchMode
+      ? "批量生产已开启：点击单位卡片，按兵工厂数量下单。"
+      : "已切回单台生产。",
+  );
+};
+$("rally-button").onclick = () => {
+  const on = mode !== "rally";
+  lastTap = null;
+  setMode(on ? "rally" : "auto");
+  status(on ? "点击战场设置所有兵工厂的集结点。" : "已取消设置集结点。");
+};
+function showIntel() {
+  const sel = selected(g);
+  if (!sel.length) return;
+  const groups = new Map();
+  for (const u of sel) {
+    if (!groups.has(u.type)) groups.set(u.type, []);
+    groups.get(u.type).push(u);
+  }
+  const types = $("intel-units"),
+    portrait = $("intel-portrait");
+  types.replaceChildren();
+  function inspect(group) {
+    const profile = unitProfile(g, group);
+    $("intel-name").textContent = profile.name;
+    portrait.replaceChildren(icon(group[0].type));
+    $("intel-intro").textContent = profile.note;
+    const stats = $("intel-stats");
+    stats.replaceChildren();
+    for (const [key, value] of profile.stats) {
+      const row = document.createElement("div"),
+        term = document.createElement("dt"),
+        def = document.createElement("dd");
+      term.textContent = key;
+      def.textContent = value;
+      row.append(term, def);
+      stats.append(row);
+    }
+    for (const pill of types.querySelectorAll("button"))
+      pill.setAttribute(
+        "aria-pressed",
+        String(pill.dataset.type === group[0].type),
+      );
+  }
+  if (groups.size > 1)
+    for (const [type, group] of groups) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.dataset.type = type;
+      btn.textContent = catalog[type].name + " ×" + group.length;
+      btn.onclick = () => inspect(group);
+      types.append(btn);
+    }
+  inspect(groups.values().next().value);
+  modal("unit-intel");
+}
+$("unit-details").onclick = $("touch-details").onclick = showIntel;
+$("close-intel").onclick = () => $("unit-intel").close();
 function refreshSelection() {
   const sel = selected(g);
   $("touch-selection").textContent = two(sel.length);
+  for (const id of ["unit-details", "touch-details"])
+    $(id).disabled = !sel.length;
+  $("touch-unit-name").textContent =
+    sel.length === 1
+      ? catalog[sel[0].type].name
+      : sel.length
+        ? "混合编队"
+        : "未选择";
   $("touch-stop").disabled =
     !sel.some((u) => units[u.type]) || Boolean(g.result);
   const key = sel.map((a) => a.id).join(",");
@@ -575,7 +702,7 @@ function refreshSelection() {
       parent.append(icon(sel[0].type));
       const info = document.createElement("div");
       info.className = "selection-details";
-      info.innerHTML = `<strong>${sel.length === 1 ? catalog[sel[0].type].name : "混合编队 × " + sel.length}</strong><span class="health-label"></span><div class="hp"><i></i></div>`;
+      info.innerHTML = `<strong>${sel.length === 1 ? catalog[sel[0].type].name : "混合编队 × " + sel.length}</strong><span class="selection-role">${sel.length === 1 ? catalog[sel[0].type].desc || "基地建筑" : "可分别查看各单位属性"}</span><span class="health-label"></span><div class="hp"><i></i></div>`;
       parent.append(info);
     }
   }
@@ -606,13 +733,16 @@ function refresh() {
   $("production-hud").hidden = tab === "tech";
   $("research-tier").textContent = g.tech.has("t2") ? "T2" : "T1";
   $("power").innerHTML = load(g) + ` <span>/ ${capacity(g)}</span>`;
-  $("population").innerHTML = fleet(g) + " <span>/ 30</span>";
+  $("population").innerHTML = fleet(g) + ` <span>/ ${UNIT_LIMIT}</span>`;
   const remaining = Math.max(0, Math.ceil(g.nextWave - g.time));
   const reinforces = g.actors.some(
     (a) => a.team === -1 && a.type === "factory",
   );
+  $("enemy-count").textContent = `${enemyFleet(g)} / ${ENEMY_UNIT_LIMIT}`;
   $("wave-time").textContent = reinforces
-    ? two(Math.floor(remaining / 60)) + ":" + two(remaining % 60)
+    ? g.waveWaiting
+      ? "整编中"
+      : two(Math.floor(remaining / 60)) + ":" + two(remaining % 60)
     : "—";
   $("wave-progress").style.width = reinforces
     ? 100 * clamp((g.time - g.lastWave) / (g.nextWave - g.lastWave), 0, 1) + "%"
@@ -621,11 +751,44 @@ function refresh() {
   $("relay-count").textContent = count + " / " + g.relays.length;
   $("objective-relay").classList.toggle("done", count === g.relays.length);
   $("objective-main").classList.toggle("done", g.result === "victory");
-  const job = g.queue[0];
-  $("queue").textContent = job
-    ? `${two(g.queue.length)} · ${Math.ceil(job.left)}s`
-    : "00";
-  $("queue").title = job ? catalog[job.type].name : "";
+  const inProduction = tab === "units" || tab === "artillery";
+  const n = factories(g).length,
+    active = g.queue.filter((job) => job.factory).length;
+  $("factory-tools").hidden = !inProduction;
+  $("queue-prefix").textContent = tab === "build" ? "施工" : "队列";
+  const job = (tab === "build" ? g.construction : g.queue)[0];
+  const activeJobs = g.queue.filter((job) => job.factory);
+  const soonest = activeJobs.length
+    ? Math.max(
+        1,
+        Math.ceil(
+          Math.min(...activeJobs.map((j) => j.left)) * productionFactor(g),
+        ),
+      )
+    : 0;
+  $("queue").textContent =
+    tab === "build"
+      ? job
+        ? `${two(g.construction.length)} · ${Math.ceil(job.left)}s`
+        : "00"
+      : two(g.queue.length) + (soonest ? ` · ${soonest}s` : "");
+  $("queue").title =
+    tab === "build"
+      ? job
+        ? catalog[job.type].name
+        : ""
+      : activeJobs
+          .map(
+            (j) =>
+              `${catalog[j.type].name} · ${Math.ceil(j.left * productionFactor(g))}s`,
+          )
+          .join(" / ");
+  $("factory-count").textContent = `${active} / ${n}`;
+  $("batch").textContent = `批量 ×${n}`;
+  $("batch").disabled = n < 2;
+  $("batch").setAttribute("aria-pressed", String(batchMode && n >= 2));
+  if (n < 2) batchMode = false;
+  $("rally-button").disabled = !n;
   for (const { btn, type, isTech, state } of cards) {
     const spec = isTech ? techs[type] : catalog[type];
     const reason = isTech ? researchBlocked(g, type) : blocked(g, type);
@@ -647,9 +810,8 @@ function refresh() {
     } else {
       btn.title =
         reason ||
-        (spec.range
-          ? `射程 ${spec.range} · 单发伤害 ${spec.damage} · 间隔 ${spec.rate} 秒`
-          : `部署${spec.name} · ${spec.time} 秒`);
+        `${spec.name} · ${units[type] ? "生产" : "施工"} ${Number((spec.time * (units[type] ? productionFactor(g) : 1)).toFixed(2))} 秒`;
+      btn.classList.toggle("batch-card", inProduction && batchMode && n >= 2);
     }
   }
   if (g.events.length) {
@@ -700,6 +862,22 @@ function render(now) {
   c.drawImage(ground, gx, gy, gw, gh, gx, gy, gw, gh);
   const visible = (x, y) =>
     x >= gx - 55 && x <= gx + gw + 55 && y >= gy - 55 && y <= gy + gh + 55;
+  if (g.rally && visible(g.rally.x, g.rally.y)) {
+    const { x, y } = g.rally;
+    c.strokeStyle = "#dbcb90";
+    c.lineWidth = 1.6;
+    c.beginPath();
+    c.moveTo(x, y + 8);
+    c.lineTo(x, y - 17);
+    c.stroke();
+    c.fillStyle = "#e7d382";
+    c.beginPath();
+    c.moveTo(x, y - 17);
+    c.lineTo(x + 14, y - 13);
+    c.lineTo(x, y - 8);
+    c.fill();
+    marker(c, x, y + 22, "RALLY", 1);
+  }
   for (const r of g.relays) if (visible(r.x, r.y)) relay(c, r);
   const marked = new Set(
     selected(g)
@@ -872,6 +1050,10 @@ function render(now) {
   for (const m of g.mines) {
     mc.fillStyle = minerals[m.kind].color;
     mc.fillRect(Math.round(m.x * mw) - 1, Math.round(m.y * mh) - 1, 2, 2);
+  }
+  if (g.rally) {
+    mc.fillStyle = "#f2d98b";
+    mc.fillRect(g.rally.x * mw - 1, g.rally.y * mh - 1, 3, 3);
   }
   for (const a of g.actors) {
     mc.fillStyle = a.team === 1 ? "#8cc5d7" : "#df8d76";

@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { unitProfile } from "../rts/briefings.mjs";
 import {
   createGame,
   step,
@@ -10,6 +11,13 @@ import {
   blocked,
   fleet,
   capacity,
+  factories,
+  enqueueBatch,
+  setRally,
+  enemyFleet,
+  ENEMY_UNIT_LIMIT,
+  ENEMY_MAX_WAVE,
+  productionFactor,
   relayCount,
   catalog,
   W,
@@ -55,11 +63,15 @@ test("deployment deducts resources and an expanded generator unlocks heavy tanks
   assert.equal(g.ore, 460);
   assert.equal(enqueue(g, "generator"), "");
   assert.equal(g.ore, 320);
-  advance(g, 7.1);
-  assert.equal(fleet(g), 7);
-  assert.equal(capacity(g), 12);
   advance(g, 6.1);
-  assert.equal(capacity(g), 20);
+  assert.equal(fleet(g), 6);
+  assert.equal(
+    capacity(g),
+    20,
+    "construction runs without blocking vehicle production",
+  );
+  advance(g, 1.1);
+  assert.equal(fleet(g), 7);
   assert.equal(enqueue(g, "heavy"), "");
   advance(g, 11.1);
   assert.equal(fleet(g), 8);
@@ -96,20 +108,19 @@ test("a reinforced push can win the skirmish without manipulating unit state", (
     const p = location(x, y);
     order(g, p.x, p.y, "sweep");
   };
+  const p = location(415, 326);
+  assert.ok(setRally(g, p.x, p.y));
   send(484, 179);
-  for (const type of ["tank", "tank", "generator"])
-    assert.equal(enqueue(g, type), "");
-  advance(g, 24 + 1 / 30);
-  assert.equal(enqueue(g, "heavyArtillery"), "");
-  advance(g, 6);
-  send(735, 175);
-  advance(g, 6);
-  assert.equal(enqueue(g, "lightArtillery"), "");
+  for (const t of ["factory", "tank", "tank"]) assert.equal(enqueue(g, t), "");
+  advance(g, 18 + 1 / 30);
+  assert.equal(enqueue(g, "generator"), "");
   advance(g, 12);
-  assert.equal(enqueue(g, "lightArtillery"), "");
-  advance(g, 2);
+  assert.equal(enqueueBatch(g, "tank").added, 2);
   send(735, 175);
-  advance(g, 24);
+  advance(g, 10);
+  if (g.ore >= 240) assert.equal(enqueue(g, "lightArtillery"), "");
+  send(735, 175);
+  advance(g, 32);
   assert.equal(g.result, "victory");
   const endedAt = g.time;
   advance(g, 10);
@@ -334,4 +345,117 @@ test("T2 missile tanks fire four rounds and benefit from the optional guidance b
   advance(g, 0.1);
   assert.equal(g.missiles.length, 4);
   assert.ok(g.missiles.every((m) => m.damage === catalog.missileT2.damage + 8));
+});
+
+test("eight finished factories deliver eight five-second orders in one cycle and rally the new units", () => {
+  const g = createGame();
+  g.nextWave = Infinity;
+  g.ore = 6000;
+  for (let i = 0; i < 6; i++) assert.equal(enqueue(g, "factory"), "");
+  advance(g, 54.1);
+  assert.equal(enqueue(g, "factory"), "");
+  advance(g, 9.1);
+  assert.equal(factories(g).length, 8);
+  const rally = location(427, 542);
+  assert.ok(setRally(g, rally.x, rally.y));
+  const ids = new Set(g.actors.map((a) => a.id));
+  const before = fleet(g);
+  assert.deepEqual(enqueueBatch(g, "scout"), {
+    added: 8,
+    requested: 8,
+    reason: "",
+  });
+  advance(g, 4.9);
+  assert.equal(fleet(g), before);
+  assert.equal(new Set(g.queue.map((j) => j.factory)).size, 8);
+  advance(g, 0.1);
+  assert.equal(fleet(g), before + 8);
+  assert.ok(
+    g.actors
+      .filter((a) => !ids.has(a.id))
+      .every(
+        (a) =>
+          a.order.kind === "move" &&
+          Math.hypot(a.order.x - rally.x, a.order.y - rally.y) < 35,
+      ),
+  );
+  assert.equal(g.queue.length, 0);
+});
+
+test("remaining factories resume paid orders from destroyed workshops", () => {
+  const g = createGame();
+  g.ore = 3000;
+  assert.equal(enqueue(g, "factory"), "");
+  advance(g, 9.1);
+  for (const t of ["tank", "scout"]) assert.equal(enqueue(g, t), "");
+  advance(g, 2);
+  const [a, b] = factories(g);
+  const scout = g.queue.find((j) => j.type === "scout");
+  assert.equal(scout.factory, b.id);
+  b.hp = 0;
+  advance(g, 1);
+  assert.equal(scout.factory, null);
+  assert.ok(Math.abs(scout.left - 3) < 0.0001);
+  advance(g, 4.1);
+  assert.equal(scout.factory, a.id);
+  advance(g, 3.1);
+  assert.equal(g.queue.length, 0);
+  assert.equal(fleet(g), 8);
+});
+
+test("rapid production works before T2 and shortens factory work by 30%, not construction", () => {
+  const g = createGame();
+  g.ore = 3000;
+  assert.equal(enqueue(g, "lab"), "");
+  advance(g, 9.1);
+  assert.equal(startResearch(g, "rapidProduction"), "");
+  advance(g, 12.1);
+  assert.equal(productionFactor(g), 0.7);
+  assert.ok(!g.tech.has("t2"));
+  assert.equal(enqueue(g, "scout"), "");
+  assert.equal(enqueue(g, "generator"), "");
+  advance(g, 3.4);
+  assert.equal(fleet(g), 6);
+  advance(g, 0.1);
+  assert.equal(fleet(g), 7);
+  advance(g, 2.4);
+  assert.equal(capacity(g), 12);
+  advance(g, 0.1);
+  assert.equal(capacity(g), 20);
+});
+
+test("late reinforcements respect per-wave and field caps and leave at least 54 seconds between waves", () => {
+  const g = createGame();
+  g.nextThink = Infinity;
+  g.wave = 8;
+  g.nextWave = 0;
+  const before = enemyFleet(g);
+  step(g, 1 / 30);
+  assert.ok(enemyFleet(g) - before <= ENEMY_MAX_WAVE);
+  assert.ok(g.nextWave - g.time >= 54);
+  assert.equal(
+    g.actors.filter(
+      (a) =>
+        a.team === -1 && (a.type === "missileT2" || a.type === "plasmaTank"),
+    ).length,
+    1,
+  );
+  for (let i = 0; i < 240; i++) {
+    step(g, 0.5);
+    assert.ok(enemyFleet(g) <= ENEMY_UNIT_LIMIT);
+  }
+  assert.ok(g.waveWaiting, "a full army waits instead of spawning more");
+});
+
+test("unit dossiers display current stats and completed research bonuses", () => {
+  const g = createGame();
+  g.tech.add("rapidProduction");
+  g.tech.add("guidance");
+  const a = { type: "missileT2", team: 1, hp: 221 };
+  const profile = unitProfile(g, [a]);
+  const stats = Object.fromEntries(profile.stats);
+  assert.equal(stats["生命值"], "221 / 245");
+  assert.equal(stats["单枚伤害"], 53);
+  assert.equal(stats["每轮连发"], "4 枚");
+  assert.equal(stats["生产时间"], "10.5 秒");
 });
