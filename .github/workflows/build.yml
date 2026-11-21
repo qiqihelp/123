@@ -38,11 +38,6 @@ jobs:
       contents: write
       pages: write
       id-token: write
-    # deploy-pages 只有在带 github-pages environment 的 job 里才会真正发布；
-    # 缺这一行时步骤会"成功"但什么都不做（没有 deployment 记录）。
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
@@ -100,22 +95,6 @@ jobs:
         with:
           path: build-web
 
-      # 诊断：让 runner 自己报告它看到的 artifact 列表（失败时用于定位）
-      - name: Show artifacts seen by runner
-        if: github.ref == 'refs/heads/main'
-        run: |
-          echo "run id: $GITHUB_RUN_ID / attempt: $GITHUB_RUN_ATTEMPT"
-          curl -sS -H "Authorization: Bearer ${{ github.token }}" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${{ github.repository }}/actions/runs/$GITHUB_RUN_ID/artifacts" \
-            | head -c 800
-
-      # 不加 continue-on-error：部署失败必须让工作流变红，不能再出现"假绿"
-      - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/main'
-        id: deployment
-        uses: actions/deploy-pages@v5
-
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
@@ -130,3 +109,23 @@ jobs:
           name: echofall-single-file
           path: build-web-single
           if-no-files-found: warn
+
+  # 独立的部署 job：github-pages environment 的保护规则只允许 main 分支，
+  # 所以它必须单独存在，并且只在 main 上运行。
+  # （把 environment 挂在 web job 上会让所有非 main 分支的构建直接秒挂）
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: web
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      # 不加 continue-on-error：部署失败必须让工作流变红，不能再出现"假绿"
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
