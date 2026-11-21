@@ -1,0 +1,2518 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<map version="1.2" orientation="orthogonal" renderorder="right-down" width="180" height="140" tilewidth="20" tileheight="20" nextobjectid="0">
+  <properties>
+    <property name="sw1" value="1333" />
+    <property name="sw2" value="1374" />
+    <property name="sw3" value="1376" />
+    <property name="sw4" value="1373" />
+    <property name="sw5" value="1383" />
+    <property name="sw6" value="1390" />
+  </properties>
+  <tileset firstgid="371" name="misc" columns="3" tilecount="18" tileheight="20" tilewidth="20">
+    <image source="bitmaps/misc.png" width="79" height="120" />
+    <tile id="4">
+      <properties>
+        <property name="res_pool" value="" />
+      </properties>
+    </tile>
+    <tile id="9">
+      <properties>
+        <property name="team" value="none" />
+        <property name="unit" value="tree" />
+      </properties>
+    </tile>
+    <tile id="10">
+      <properties>
+        <property name="team" value="none" />
+        <property name="type" value="1.0" />
+        <property name="unit" value="tree" />
+      </properties>
+    </tile>
+    <tile id="11">
+      <properties>
+        <property name="team" value="none" />
+        <property name="type" value="1.1" />
+        <property name="unit" value="tree" />
+      </properties>
+    </tile>
+    <tile id="12">
+      <properties>
+        <property name="team" value="none" />
+        <property name="type" value="1.2" />
+        <property name="unit" value="tree" />
+      </properties>
+    </tile>
+    <tile id="13">
+      <properties>
+        <property name="team" value="none" />
+        <property name="type" value="1.3" />
+        <property name="unit" value="tree" />
+      </properties>
+    </tile>
+    <tile id="14">
+      <properties>
+        <property name="team" value="none" />
+        <property name="type" value="1.4" />
+        <property name="unit" value="tree" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset source="units.tsx" firstgid="509" />
+  <tileset firstgid="1298" name="Mountain" columns="7" tilecount="35" tileheight="20" tilewidth="20">
+    <image source="terrain/bitmaps/mountain.png" width="140" height="100" trans="008a76" />
+    <tile id="7">
+      <properties>
+        <property name="small-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="8">
+      <properties>
+        <property name="small-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="9">
+      <properties>
+        <property name="small-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="21">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="22">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="28">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="29">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset source="terrain/Long Grass.tsx" firstgid="1333" />
+  <tileset source="terrain/Dirt.tsx" firstgid="1373" />
+  <tileset firstgid="1383" name="Shallow Water" columns="3" tilecount="6" tileheight="20" tilewidth="20">
+    <image source="terrain/bitmaps/shallowwater.png" width="60" height="40" trans="008a76" />
+    <tile id="0">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset source="ridges/LongGrass ShallowWater - Ridge.tsx" firstgid="1453" />
+  <tileset source="terrain/Lava.tsx" firstgid="1624" />
+  <tileset firstgid="1639" name="Sand" columns="7" tilecount="42" tileheight="20" tilewidth="20">
+    <image source="terrain/bitmaps/sand.png" width="140" height="120" trans="008a76" />
+    <tile id="28">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="29">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="31">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="35">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="36">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="38">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="40">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="1681" name="misc" columns="3" tilecount="18" tileheight="20" tilewidth="20">
+    <image source="bitmaps/misc.png" width="79" height="120" />
+    <tile id="4">
+      <properties>
+        <property name="res_pool" value="" />
+      </properties>
+    </tile>
+    <tile id="9">
+      <properties>
+        <property name="team" value="none" />
+        <property name="unit" value="tree" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset source="units.tsx" firstgid="1699" />
+  <tileset firstgid="2129" name="浅水" columns="3" tilecount="9" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAACXBIWXMAAFxGAABcRgEUlENBAAAA
+B3RJTUUH6QkeBxYlEprVIgAADiJJREFUaIHNm9tyHEdyhr+s6vNhBiBIAiC1Xq8d3guvH8J+Ah9i
+/Zo+xPohfO0LO6xYxVqUZAAkAQLT5+46+KKnm6SCoihwtAZuSMw0fmRXZ/2Z+U1BHv/jv3mlFM45
+AIZhQCkFgFIK7z1hGGKtRUTw3qOUQkRwzuGcIwiC9X0R4SHrBc45rLWEYUieCsbo9y5wzjGO4/p/
+rTXWWgCcc8RxTN/3aK3Xax6yXrCs0jiOOBegtWaaJrTWRFFElgpNO4tGUbQGsKw+QBzH62pqrR+0
+XqC1xhjDOI6EYbimg7WWrusYhjl9lteUUiil1lWepokwDFl0oij6np4gaKzzB9L7vPjUNE0450iS
+hGmasNZircU5t4qYocM5t+6lk+MUYwzWWrz3eO8pi4AgCPi+Hq7C9C9x4w2x3n223ufGJ8f/8K8+
+CIL14sUcls0+TRNJkjCOI957RASt9fz9NBIk6WoUxph1dbWacOM12FeInxjaEdPdoZOM9OlfM44j
+ihbQiAoZJ/9RvUPFJ9u/+2dvrUVrTRiGbIqAm9t+/SXe+zUthmFAaw2wpkgYhozjCECapgz9HVPz
+HUls0NITBZZhnAPPiwKAalejdMTuuiIqzyB8QhAff1Cv6zoOGV8gImRZNq+4UtzuxtXyp2laN/+y
+smEYYozBe4/Wen09CAKm5ivGu0viyFDkW4Z2Ypz8vMeAutoBgohnd/k1QZqjzBXO1iRpS6efwfiC
+UBWgCrrmBqUUaRbQj/LZ8fV9T5Cm6Wrry34JggDn3GoayyouqSIiGGNwzpEmAdq/xrz5GtfdsH36
+FGs9XVOR5QVNXSGi8Hic8yg1O2eQZoiAnXoenR3j/A25uqGqbnCSobNzsuwpqIRxtIi4e8WXJMn6
+fZIkqL7vWb5+9SdH88beF/AgCNaVWjZ/EAR451BKiPTAuPuS5sW/k+ZC8eSEOIlXPcWIiGJoanaX
+l4xtQ17kc7nwHrzn5Pycpq7ompqhawjTiEePU7Z5ix9f4KcLxL5GfMOf/qL8tPj2ezaO43nfihBF
+0bzQ62YW4etvd2uwZujQUcLRNubmTUcYhmt6iB/xrsW0/4NyNck2x3uHtY62afDeAULdTABMTU2Y
+JggQhZraedLNFu89bVMj3uERuroiLTc09Q4RhXUerW8Rp1Eq49sXNUFQ4IkZBouOErYbzZvb6f34
+nMEym9yS4sYYpmlCKaXWx9431Vq4k7xEKcX1Tbu2csaY/ULk+Pb3HB0p4jxB9g6q1NzNtK9fMTQ1
+7e0bwBNkOToIeXR2zs3NLWNTA+C9o7u7Y+g6RAlHJ8dkec7Ytjhn0UoQLN3rb5iqb+mv/xPf/wE/
+fE1ZTGhlubnpPhBfgtaa0yfle24eRdHs0ouVA2uXshRz59yaKs451PglU3MB3hDnBQKIEvKipK52
+VFeXRHmBKMWj0zPqqkIEsrzYP30PeIpyw/XlBWNVEe7d+9P0ahAFxDj9FCvHOK/X+Ja2cl7Qt2Vq
+6dDUkgpLk744YBRFq+0v/WkWXmGaK/CGfLul3GwQpQCZU1MUcbnBA49Oz2ibhqGuAKHvWkRg2JtY
+XVVMTUO0v9lP19shOLQa0f4lkXqzxrd0YUsJiuN4LV+LU6thGOZGYe9wiwHAXNyjKGKaJjL9gvb6
+91jbk5YbrHU479ZMKLII8DhreXx+Ttc2OGdJyg15ke9XHNLNljRLwXuiosA6d089B64ji3are4vI
+2oIOw7CWLaUUv/xiM19z9Pf/4t+9yaVYL05ojCEIAgr9X+xeXxBlGXlRwjt11XTtvDh5vq+z8jat
+nKN+9RIRCPOCKMvmMuUdU9cdQC8nL7fcdH9BHMdreVpiF5G1E7PWzuPhUryXbmbpQR8dJdxVE7F8
+S9dUBElKUW6oqwqY90d7d4vSAXGWzzfi3Nxl7ANtrl+tabs53hLGGU1dA3IQvWlydE3FcfYlw5Sj
+glNGG6+laepbhn3PHQQBSmu95nlZBGsbZ63l1XUzl5WhQ8m8P2YTEkQUu4sLsiwhLUuycg5C1Pye
+CIShEGQ5SoQoy9FhQlvXszEdSG9eCrh79RKlBOvmB7dMS8++eLzOwiJCsKQywN2+bVvcbZlMvHFo
+AfB0VUW22WCNJd5sSI9OUGvgit3lJUlZEhcF4+iI84KinMtDU1WzKTmHaH1Qvalp6LMJIxNRrOg7
+S5ymXL2s1woEICe//Z1f9siaBnOBXq0+098wthcYM6G12g/mwT4NlxosdLsdiJAUxb6trNfSJiIo
+EXZXF0R5QVwUGGMPpFeCaHzyHImeY6eWJHtbrqZpevvvu8xIROj7HqXUe7Mk2q/lqbq6mFu1vMAD
+cZ7vg/Q8OjsHoGsa2qZmaGqctSRlifeeu6srwizn0dk5dVUdSK/g+Ow5t8OvUXujjdIMj+C9Y6lC
+i2N/EtNabr66/F+icnZU5z1xnqNkXhxRsjejOfWbVy9JNwWjk7WeR3nB0ekp1i16F5+tF+UlwxS9
+h4Q+xrTUgkTGcaRq7NqRLA33yaMMN+0Ymop4s5kN03vivFjLydS1e+vwiEB1dYVOUibjScoNSZYB
+QrrZYqeeoesYmvogenEcooNijffd7vBdprVksVo29DJWLaXJ+z2Dqr/C2n7+9d6DCIhQbja0TYPz
+jqQoKfZpJiJERTGPZvvX+7YFPO3dLbubu3n7HEhvGC2TsSh5C++UUiv/Wh7eMhsH0zThvV+Z0fKG
+c45QtShasjQGX6xBxLHmzc0dfVURFyVeYBrade9578m2R6RZRl1V9HXFWFezWWU5zlqi/DB63jv6
+psLHT1YDPDlOuX7Trb7kvWdT7tn1x5hWHr0i4DWBVlS7HeDXBsA5C85RbLc0dU11dUWYZSRludbN
+eeT1DE2N95603JBm2WxWB9JLshzUEbvh2TvDgjCO5sOMzDlH13X0fY/3nu1+JbTWaJnL0+7uDhFh
+d3FBX1d47xjbFpSmbVp2lxeE+xtJ8xxrzd44PFGoiLKctCzJi+LgeloJbXVJFr7cm6tZ22MVxWvG
+GmNI0xS1MK0l999lRtbui7swB7EPeKjrtQHo96klSs3YBiHQAdXVFYIwTvuBAKGuduu4eFA9DAG3
+pMFLwkD2vfqHmZZK03Td7Av3XS68689Aornv3S+Ks5bj0zO8c1S7u7WDibKMzXbD0Hc479mcnZFk
+Gd7v99GeaS1fh9Xz3Fy+YLj7jmmoV8Y1DMPaUhpjZrf+MablJEdEz9vNe07On831UQSlNNG+kSg3
+896Lk3TV+zSmdSA9BC8RSoV4Zwn1eD+mlRdHvLm4JN1sPsKgqrX+HYZp3UOv3GJkgwpi3GiZbAR2
++ulMq+0h3jcEH2dQh2ZaP10vDDXTYD6PaQVck+hrAm3uyaAOzbQ+pAeiQqw8ZuTZmqX3YlqDPUIp
+qKv6ngzq0EzrQ3rC3LTpwzAt7wx495kM6tBM6129DO8Nyt9+PtOK+QY7XuKdORCDOjTTWvQ8SocE
+8RMmnmBcej+mNTSKJCpoqrsHybTe6nmsMYRphJk0zrv7Mi05KIM6NNNa9MammUuZ9yid/CDTUt9n
+WgvlWOpgMz3DrTTf01W7dTUXBpXlOe1+WN9dXu6NhZVBHZ+ekRcFTVXhvP9Z9Ma2xUlC0wV4b+jb
+liiKuHpZr+0lfCLTKoMv6Zo3GGMeLNOKiyMq95frBwdpmq7d4k9mWkaXeH/7QJlWzqOzM4wLmEyy
+zvbLA7wX09r1j4l4yVBdEebz3nooTOvo9HRf0tQKMD6baSVJQpg8RuvwwTEtO/UM/YAj3jMth3Pm
+/kzrzW0/HwojJcyKB8e0djd3WOcZRsGaAUGjVHA/prV8+uDNiIpDynyLYDl+tHkwTCvKCpwFE5zv
+Y7ecHGf3Y1rfPwdVBF8xtNcPimmlWQaq4G745XvDwg+eI/sY0xIRwjBcN71zS/l6OExLKUVTXa9m
+5b27P9NakM/i1sZHjG334JgWOCIuECxhEOyz4R5Ma2m+gflTdgrCbP4k72ExLaHtRpQKGKcR77k/
+03p7DsphXIyoCO95j0ElZfn/yLQKpn7ETA7nPYEO8fvB4UNMS05++zu/vLiUKBFh6tv3zmktphYE
+AXbs2SZfzo27UuuqL1hmYVBLdtQvLwmSBFGas1885+bmbl1UpQRvLR6hb2rScvOJeimiA5QD2fwZ
+PniC88kan2Ue+hem9U7LfJ9zWgl302/Ynv8N2doK/pGZVpgQb55j0z9HolOQ7Oc5p/X9c1An6X/T
+tc167R+DaSEaL0cYOcWrBO/VD8b3k5nWu+e0PnQOamf+at8SznPr9vz5QZnW9vwZcV6QFCVt0wCa
+aVAQPEWFG7xXP885rY+dg/LEnJ4+wRMSJTlpuaVrO5yDZHNEVhSAfDLTGpsG39yS5iXWCll5TFYc
+EyVbovwZKv8VonO8N58U373OaS22/qFzUGXa0AwlAa9Q4gn1AHisj6lvb9AyEsWeoX5DlKUfYVoV
+Q9MShAnZ8XPa1hHGGUopevt4TlNbo4MUJPzk+N5lWrL523/yS1eltX5vFl7OaS0/vJw5Xt4HmPqW
+MMlWZmTNgNLRB/UK+Q+uv/2OMM8J0wzvHForvFc4CUnTjKqaIPn1qmfMOE9pB4ovWJiW9/MfQuyq
+eYWGYeDVdbMeI1iuWc5RwPxHU8++eMzNm+GtD+joB/Xu+A35s6dYIxAEKHFobRAJMT7jtg85+6J8
+T09rTRiA8+ow8f0Y07LWYvpudb1luvohZvRjekbOcP4Ir07ozZa6P2KwR7SN/wE9wRMcLD717v5d
+HHqZjZf6rONkTRutNX3f74fw2Q2Xa992ZT+il6R4BGMcSsd0vSXOyvvr/YT4/g+stwZ+9tVBqQAA
+AABJRU5ErkJggg==
+</property>
+    </properties>
+    <image source="/storage/emulated/0/NotTiled/sample/RW maps/export202509301522372991.png" width="60" height="60" />
+    <tile id="3">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="0">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="2">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="5">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="8">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="6">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="7">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="10">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="9">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="11">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="12">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="13">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="14">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="4">
+      <properties>
+        <property name="water-bridge" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <layer name="Ground" width="180" height="140">
+    <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAAO3dTWsUQRCH8Vw25Ox3yVkFFdRzwLfVoGg+nVF8OYQcxG9mLygOS5it7p2a7vrXc3huYXeq+kfQbGZyvjk5OV+hr6WrA31b6VqIc2Vu4lyZW72s55p1bvWynmvWudXLeq5Z51Yv67lmnVu9rOeadW71sp5r1rnVy3quWedWL+u5Zp1bvaznmnVu9bKea9a51ct6rlnnVi/ruWadW72s55p1bvWynmvWudXLeq5Z51Yv67lmnVu9rOeadW71sp6rde6r07ZelF5SU68ad74Lz7a5d7uqef3X5evfUFPbyl1PzwbPeB4tPONZKTzjWSk841kpPONZKTzjWSk841kpPONZKTzjWSk841kpPONZKTzjWSk8x/f8qfROtI94Tud5d4b3Npq17ALPeB41PONZKTzjWSk841kpPONZKTzjWSk841kpPONZKTzjWSk841kpPONZKTzjWSk841kpPONZKTzjWSk841kpPOfz/OH08DORD7nxeOb0Eu/7Hs/pPC/x/dvjnsUe74tnPOMZz3ge833xjGc84xnPY74vnvGMZzyP4tnyLJlLg6u3htepban3rXmmjKLnz6Vrx24G8lx7fhHz3Eet51tnW1/uuEbLdXmHZ03Pa7rZv67tJDzHTdnzvlE89/eGZzzPVfN/s8sEnj33Eclzz47xTOvV2/Ocm1GvC8/jFsnzxdn/8Ewjet43imfCM54Jz3jWC894VgrPeFYKz3hWCs94VgrPeFYKz3hWCs94VgrPeFYqkuee4TlGvT3PufnX99IPx35VXletZ+/7H633rR1bhDlqPf/e+Nr6OXOt09+VXvKcvO/v7vF9wuO+5Qhz9L6/u8YonvGMZzzjeUzPXuFZZ47enkcIzzpz4BnPSnPgGc9Kc+AZz0pz4HkMz0v/XH/u5/itLf25Vu3nWHiO41lxrz32gmc8R9m7JTzjOcreLeEZz1H2bgnPeI6yd0t4xnOUvVvCM56j7N0SnvEcZe+W8IznKHu3hGd/z5bP1Tw+zxs9j73g2d8zrRee8awUnvGsFJ7xrBSe8awUnvGsFJ7xrBSe8awUnvGsFJ7xrBSe/T1bnsvp8TzQ0fPYC575faQoe7eEZzxH2bslPOM5yt4t4RnPUfZuCc94jrJ3S3jGc5S9W8IznqPs3RKe8Rxl75bwjOcoe7eE5zE8327y/f3Bm8q94zmO56XjeeZ4xnP8OfCMZ6U58IxnpTnwjGelOfCMZ6U58IxnpTnwjGelOfA8xvNFly7C3x/0mAPP3A+rFJ7xrBSe8awUnvGsVCTPF2fLNX1dPOt0rGcvY3e1nXS/9KD08O8MteFZs2M9t1iaWpwarfH8qPS49KTxGvCsWQ/PU4utnp+WnpWeN14DnjXr4Xlqscaz57+fD339vufozXmIXuu5ehpbs5a5afxGO9c/mh+x68CJAQA=
+  </data>
+  </layer>
+  <layer name="Items" width="180" height="140">
+    <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAAO3cywoDIQwFUP3mvtufr1vBKc3QoSGcA4I7N1lcCNfWAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD479dbO41z6fIeILHN0HW/exrn3+Q4RWeboMd58jvPq8x0izBHVmWcAAAAAfmVr35VlDwYRW/uuLHswiNjad9mDAQAAAAAAAAAAAMDxon0LPQxWssxRtG+hh8FKljmK9i30MFgxRwAAAAAAAAAAAAAAAAAA/7G3V+9fBzLa26v3rwMZ7e3V6+MDHEt+phL5mUrkZ4Cc5GcqkZ+pRH4GyEl+phL5mUrkZwAAAAAAAAAAAAAAAAAA4FtvNnfQQsCJAQA=
+  </data>
+  </layer>
+  <layer name="Units" opacity="0.59" width="180" height="140">
+    <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAAO3aMRGAMBREwT/BYjREDAaYTAYNWEQA19LAbnkKXnFVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPCurT23I2wAAEBVD6089TMAAEQjtPLSzwAAEO2hlU/9DAAAAAAAAADAj13+MwAAAAAAAPAZN2z/w4HAiQEA
+  </data>
+  </layer>
+  <layer name="PathingOverride" width="180" height="140">
+    <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAAO3cMY4TMBQE0EjL/S/DbaiAkyCKFC6seAxLxvg9yUq5kWb+aJvdx6PH94/H44d31Pv58e7W9NLn854+z+nzeU+f5/T5vKfPc/p83tPnOX0+7+nznD6f9/R5Tp/Pe/o8p8/nPX2e0+fznj7P6fN5T5/n9Pm8p89z+nze0+c5fT7v6fOcPp/39HlOn897+jynz+c9fZ7T5/OePs/p83lPn+f0+bynzwCc6tuXd38DXpER3Mnt95MR3Mnt95MR3Mnt95MR3Mnt95MR3Mnt95MR3Mnt95MR3Mnt95MR3Knx9p9/X3TLz32lMSPW6TO7Gm//3X932qYxI9bpM7sab9/vG6PGjFinz+xqvH19HjVmxDp9Zlfj7evzqDEj1ukzuxpvX59HjRmxTp/Z1Xj7+jxqzIh1+syuxtvX51FjRqzTZ3Y13r4+jxozYp0+s6vx9vV51JgR6/SZXY23r8+jxoxYp8/sarx9fR41ZsQ6fWZX4+3r86gxI9bpM7sab1+fR40ZsU6f2dV4+/o8asyIdfrMrsbb1+dRY0as02d2/b79P/3/hd7nPvu87t1ZeWuPNc99ppN9zrj/bvLJ2Odu9jnj/rvJJ2Ofu9nnjPvvJp+Mfe5mnzPuv5t8Mva5m33OuP9u8snY5272OeP+u8knY5+72eeM++8mn4x97mafM+6/m3wy9rmbfc64/27yydjnbvY54/67ySdjn7vZ54z77yafjH3uZp8z7r+bfDL2uZt9zrj/bvLJ2Odu9jnj/rvJJ2Ofu9nnjPvvJp+Mfe5mnzPuv5t8Mva5m33OuP9u8snY5272OeP+u8knY5+72eeM++8mn4x97mafM+6/m3wy9rmbfc64/27yydjnbvY54/67ySdjn7vZ54z77yafjH3uZp8z7r+bfDL2uZt9zrj/bvLJ2Odu9jnj/rvJJ2Ofu9nnjPvvJp+Mfe5mnzPuv5t8Mva5m33OuP9u8snY5272OeP+u8knY5+72eeM++8mn4x97mafM+6/m3wy9rmbfc64/27N+Ty/22e/5+amn1//k8+G7/C3Pnez9LwT3r/cxVfvFx8b4dnAiQEA
+  </data>
+  </layer>
+  <objectgroup name="Triggers">
+    <object name="map_info" id="325" x="0" y="-140" width="200" height="120">
+      <properties>
+        <property name="lostCondition" value="commandCenter" />
+        <property name="survivalWaves">
++0:30 前言【正式版0.3版本】
++2:00 准备时间【正式版0.3版本】
+
++0:15 第一波：杂鱼 - 24 tank,8 scout
++0:05 第一波：杂鱼 - 24 tank,8 scout
++0:05 第一波：杂鱼 - 24 tank,8 scout
++0:05 第一波：杂鱼 - 24 tank,8 scout
++0:05 第一波：杂鱼 - 24 tank,8 scout
++0:05 第一波：杂鱼 - 24 tank,8 scout
+
++0:05 第二波：草上长鱼了 - 6 battleShip,2 attackSubmarine,6 helicopter,4 missileAirship
++0:05 第二波：草上长鱼了 - 6 battleShip,2 attackSubmarine,6 helicopter,4 missileAirship
++0:05 第二波：草上长鱼了 - 6 battleShip,2 attackSubmarine,6 helicopter,4 missileAirship
++0:05 第二波：草上长鱼了 - 6 battleShip,2 attackSubmarine,6 helicopter,4 missileAirship
++0:05 第二波：草上长鱼了 - 6 battleShip,2 attackSubmarine,6 helicopter,4 missileAirship
++0:05 第二波：草上长鱼了 - 6 battleShip,2 attackSubmarine,6 helicopter,4 missileAirship
+
+
++0:15 第三波：重坦大小姐驾到 - 16 heavyTank,8 missileAirship
++0:05 第三波：重坦大小姐驾到 - 16 heavyTank,8 missileAirship
++0:05 第三波：重坦大小姐驾到 - 16 heavyTank,8 missileAirship
++0:05 第三波：重坦大小姐驾到 - 16 heavyTank,8 missileAirship
++0:05 第三波：重坦大小姐驾到 - 16 heavyTank,8 missileAirship
++0:05 第三波：重坦大小姐驾到 - 16 heavyTank,8 missileAirship
+
+
++0:05 第四波：虫王！我们没救了 - 16 heavyTank,2 bugMeleeT31,6 bomber
++0:05 第四波：虫王！我们没救了 - 16 heavyTank,2 bugMeleeT31,6 bomber
++0:05 第四波：虫王！我们没救了 - 16 heavyTank,2 bugMeleeT31,6 bomber
++0:05 第四波：虫王！我们没救了 - 16 heavyTank,2 bugMeleeT31,6 bomber
++0:05 第四波：虫王！我们没救了 - 16 heavyTank,2 bugMeleeT31,6 bomber
++0:05 第四波：虫王！我们没救了 - 16 heavyTank,2 bugMeleeT31,6 bomber
+
+
++0:15 第五波：高科技武装部队 - 4 mammothTank,6 laserTank,10 plasmaTank,24 amphibiousjet
++0:05 第五波：高科技武装部队 - 4 mammothTank,6 laserTank,10 plasmaTank,24 amphibiousjet
++0:05 第五波：高科技武装部队 - 4 mammothTank,6 laserTank,10 plasmaTank,24 amphibiousjet
++0:05 第五波：高科技武装部队 - 4 mammothTank,6 laserTank,10 plasmaTank,24 amphibiousjet
++0:05 第五波：高科技武装部队 - 4 mammothTank,6 laserTank,10 plasmaTank,24 amphibiousjet
++0:05 第五波：高科技武装部队 - 4 mammothTank,6 laserTank,10 plasmaTank,24 amphibiousjet
+
+
++0:05 第六波：激光防御不存在了 - 12 mammothTank,2 experimentalHoverTank,24 amphibiousjet,8 aaBeamGunship
++0:05 第六波：激光防御不存在了 - 12 mammothTank,2 experimentalHoverTank,24 amphibiousjet,8 aaBeamGunship
++0:05 第六波：激光防御不存在了 - 12 mammothTank,2 experimentalHoverTank,24 amphibiousjet,8 aaBeamGunship
++0:05 第六波：激光防御不存在了 - 12 mammothTank,2 experimentalHoverTank,24 amphibiousjet,8 aaBeamGunship
++0:05 第六波：激光防御不存在了 - 12 mammothTank,2 experimentalHoverTank,24 amphibiousjet,8 aaBeamGunship
++0:05 第六波：激光防御不存在了 - 12 mammothTank,2 experimentalHoverTank,24 amphibiousjet,8 aaBeamGunship
+
++2:00 休息
+
++0:15 第七波：海上血腥弥漫 - 8 战列舰T2,2 重型战舰T2
++0:05 第七波：海上血腥弥漫 - 8 战列舰T2,2 重型战舰T2
++0:05 第七波：海上血腥弥漫 - 8 战列舰T2,2 重型战舰T2
++0:05 第七波：海上血腥弥漫 - 8 战列舰T2,2 重型战舰T2
++0:05 第七波：海上血腥弥漫 - 8 战列舰T2,2 重型战舰T2
++0:05 第七波：海上血腥弥漫 - 8 战列舰T2,2 重型战舰T2
+
++0:05 第八波：航空母舰 - 2 航空母舰T2,4 重型战舰T2,2 重型潜艇T2,12 轰炸机T2
++0:05 第八波：航空母舰 - 2 航空母舰T2,4 重型战舰T2,2 重型潜艇T2,12 轰炸机T2
++0:05 第八波：航空母舰 - 2 航空母舰T2,4 重型战舰T2,2 重型潜艇T2,12 轰炸机T2
++0:05 第八波：航空母舰 - 2 航空母舰T2,4 重型战舰T2,2 重型潜艇T2,12 轰炸机T2
++0:05 第八波：航空母舰 - 2 航空母舰T2,4 重型战舰T2,2 重型潜艇T2,12 轰炸机T2
++0:05 第八波：航空母舰 - 2 航空母舰T2,4 重型战舰T2,2 重型潜艇T2,12 轰炸机T2
+
++0:15 第九波：海军总队的最后进攻 - 8 重型战舰T2
++0:05 第九波：海军总队的最后进攻 - 8 重型战舰T2
++0:05 第九波：海军总队的最后进攻 - 8 重型战舰T2
++0:05 第九波：海军总队的最后进攻 - 8 重型战舰T2
++0:05 第九波：海军总队的最后进攻 - 8 重型战舰T2
++0:05 第九波：海军总队的最后进攻 - 8 重型战舰T2
+
++0:05 第十波：十死无生 - 6 重型导弹舰T2,20 轰炸机T2
++0:05 第十波：十死无生 - 6 重型导弹舰T2,20 轰炸机T2
++0:05 第十波：十死无生 - 6 重型导弹舰T2,20 轰炸机T2
++0:05 第十波：十死无生 - 6 重型导弹舰T2,20 轰炸机T2
++0:05 第十波：十死无生 - 6 重型导弹舰T2,20 轰炸机T2
++0:05 第十波：十死无生 - 6 重型导弹舰T2,20 轰炸机T2
+
++0:45 第十一波：绝望空军 - 44 轰炸机T2,4 重型火炮T3,8 重型防空机械装甲T3
++0:05 第十一波：绝望空军 - 44 轰炸机T2,4 重型火炮T3,8 重型防空机械装甲T3
++0:05 第十一波：绝望空军 - 44 轰炸机T2,4 重型火炮T3,8 重型防空机械装甲T3
++0:05 第十一波：绝望空军 - 44 轰炸机T2,4 重型火炮T3,8 重型防空机械装甲T3
++0:05 第十一波：绝望空军 - 44 轰炸机T2,4 重型火炮T3,8 重型防空机械装甲T3
++0:05 第十一波：绝望空军 - 44 轰炸机T2,4 重型火炮T3,8 重型防空机械装甲T3
+
++0:15 第十二波：斩斩不尽，杀杀不完！ - 28 火蜂战机T2,12 等离子机甲T3
++0:05 第十二波：斩斩不尽，杀杀不完！ - 28 火蜂战机T2,12 等离子机甲T3
++0:05 第十二波：斩斩不尽，杀杀不完！ - 28 火蜂战机T2,12 等离子机甲T3
++0:05 第十二波：斩斩不尽，杀杀不完！ - 28 火蜂战机T2,12 等离子机甲T3
++0:05 第十二波：斩斩不尽，杀杀不完！ - 28 火蜂战机T2,12 等离子机甲T3
++0:05 第十二波：斩斩不尽，杀杀不完！ - 28 火蜂战机T2,12 等离子机甲T3
+
++2:00 休息
+
++0:15 第十三波：终焉四重奏_一重 - 10 重型防空机械装甲T2,6 喷火机甲T2,4 重型潜艇T2
++0:05 第十三波：终焉四重奏_一重 - 10 重型防空机械装甲T2,6 喷火机甲T2,4 重型潜艇T2
++0:05 第十三波：终焉四重奏_一重 - 10 重型防空机械装甲T2,6 喷火机甲T2,4 重型潜艇T2
++0:05 第十三波：终焉四重奏_一重 - 10 重型防空机械装甲T2,6 喷火机甲T2,4 重型潜艇T2
+
+
++0:05 第十三波：终焉四重奏_一重 - 12 特斯拉机甲T2,8 mechFlyingLanded
++0:05 第十三波：终焉四重奏_一重 - 12 特斯拉机甲T2,8 mechFlyingLanded
++0:05 第十三波：终焉四重奏_一重 - 12 特斯拉机甲T2,8 mechFlyingLanded
++0:05 第十三波：终焉四重奏_一重 - 12 特斯拉机甲T2,8 mechFlyingLanded
+
+
++0:15 第十四波：终焉四重奏_二重 - 24 mechFlyingLanded,4 概念型悬浮坦克T2,54 mechFlyingTakeoff
++0:05 第十四波：终焉四重奏_二重 - 24 mechFlyingLanded,4 概念型悬浮坦克T2,54 mechFlyingTakeoff
++0:05 第十四波：终焉四重奏_二重 - 24 mechFlyingLanded,4 概念型悬浮坦克T2,54 mechFlyingTakeoff
++0:05 第十四波：终焉四重奏_二重 - 24 mechFlyingLanded,4 概念型悬浮坦克T2,54 mechFlyingTakeoff
+
+
++0:05 第十四波：终焉四重奏_二重 - 12 重型导弹舰T2,4 概念型悬浮坦克T2,34 轰炸机T2
++0:05 第十四波：终焉四重奏_二重 - 12 重型导弹舰T2,4 概念型悬浮坦克T2,34 轰炸机T2
++0:05 第十四波：终焉四重奏_二重 - 12 重型导弹舰T2,4 概念型悬浮坦克T2,34 轰炸机T2
++0:05 第十四波：终焉四重奏_二重 - 12 重型导弹舰T2,4 概念型悬浮坦克T2,34 轰炸机T2
+
+
+
++0:15 第十五波：终焉四重奏_压轴 - 16 概念型悬浮坦克T2,28 AA激光射束战机T2
++0:05 第十五波：终焉四重奏_压轴 - 16 概念型悬浮坦克T2,28 AA激光射束战机T2
++0:05 第十五波：终焉四重奏_压轴 - 16 概念型悬浮坦克T2,28 AA激光射束战机T2
++0:05 第十五波：终焉四重奏_压轴 - 16 概念型悬浮坦克T2,28 AA激光射束战机T2
+
++0:05 第十五波：终焉四重奏_压轴 - 16 概念型悬浮坦克T2,4 概念型悬浮坦克T2,28 火蜂战机T2
++0:05 第十五波：终焉四重奏_压轴 - 16 概念型悬浮坦克T2,4 概念型悬浮坦克T2,28 火蜂战机T2
++0:05 第十五波：终焉四重奏_压轴 - 16 概念型悬浮坦克T2,4 概念型悬浮坦克T2,28 火蜂战机T2
++0:05 第十五波：终焉四重奏_压轴 - 16 概念型悬浮坦克T2,4 概念型悬浮坦克T2,28 火蜂战机T2
+
+
++0:15 第十六波：终焉终章_大轴 - 108 mechFlyingTakeoff
++0:05 第十六波：终焉终章_大轴 - 108 mechFlyingTakeoff
++0:05 第十六波：终焉终章_大轴 - 108 mechFlyingTakeoff
++0:05 第十六波：终焉终章_大轴 - 108 mechFlyingTakeoff
+
+
++0:05 第十六波：终焉终章_大轴 - 12 bugMeleeT311,8 概念型悬浮坦克T2,34 火蜂战机T2
++0:05 第十六波：终焉终章_大轴 - 12 bugMeleeT311,8 概念型悬浮坦克T2,34 火蜂战机T2
++0:05 第十六波：终焉终章_大轴 - 12 bugMeleeT311,8 概念型悬浮坦克T2,34 火蜂战机T2
++0:05 第十六波：终焉终章_大轴 - 12 bugMeleeT311,8 概念型悬浮坦克T2,34 火蜂战机T2
+
+
++0:15 第十六波：终焉终章_大轴 - 24 bugMeleeT311,12 mechFlyingLanded
++0:05 第十六波：终焉终章_大轴 - 24 bugMeleeT311,12 mechFlyingLanded
++0:05 第十六波：终焉终章_大轴 - 24 bugMeleeT311,12 mechFlyingLanded
++0:05 第十六波：终焉终章_大轴 - 24 bugMeleeT311,12 mechFlyingLanded
+
+
++0:05 第十六波：终焉终章_大轴 - 24 bugMeleeT311,12 mechFlyingLanded
++0:05 第十六波：终焉终章_大轴 - 24 bugMeleeT311,12 mechFlyingLanded
++0:05 第十六波：终焉终章_大轴 - 24 bugMeleeT311,12 mechFlyingLanded
++0:05 第十六波：终焉终章_大轴 - 24 bugMeleeT311,12 mechFlyingLanded
+
++2:00 警报：即将开启高级难度
+
++0:45 第十七波：魔王_概念型防空机械装甲 - 4 重型防空机械装甲T3,16 重型火炮T3
++0:01 第十七波：魔王_概念型防空机械装甲 - 4 重型防空机械装甲T3,16 重型火炮T3
++0:01 第十七波：魔王_概念型防空机械装甲 - 4 重型防空机械装甲T3,16 重型火炮T3
++0:01 第十七波：魔王_概念型防空机械装甲 - 4 重型防空机械装甲T3,16 重型火炮T3
++0:01 第十七波：魔王_概念型防空机械装甲 - 4 重型防空机械装甲T3,16 重型火炮T3
++0:01 第十七波：魔王_概念型防空机械装甲 - 4 重型防空机械装甲T3,16 重型火炮T3
++0:00 第十七波：魔王_概念型防空机械装甲 - 1 概念型防空机械装甲
+
++0:25 第十八波：魔王_赤焰机甲 - 4 喷火机甲T3,16 猛犸坦克T3
++0:01 第十八波：魔王_赤焰机甲 - 4 喷火机甲T3,16 猛犸坦克T3
++0:01 第十八波：魔王_赤焰机甲 - 4 喷火机甲T3,16 猛犸坦克T3
++0:01 第十八波：魔王_赤焰机甲 - 4 喷火机甲T3,16 猛犸坦克T3
++0:01 第十八波：魔王_赤焰机甲 - 4 喷火机甲T3,16 猛犸坦克T3
++0:01 第十八波：魔王_赤焰机甲 - 4 喷火机甲T3,16 猛犸坦克T3
++0:00 第十八波：魔王_赤焰机甲 - 1 赤焰机甲
+
++0:45 第十九波：魔王_杀人蜂 - 8 火蜂战机T3,24 AA激光射束战机T3
++0:01 第十九波：魔王_杀人蜂 - 8 火蜂战机T3,24 AA激光射束战机T3
++0:01 第十九波：魔王_杀人蜂 - 8 火蜂战机T3,24 AA激光射束战机T3
++0:01 第十九波：魔王_杀人蜂 - 8 火蜂战机T3,24 AA激光射束战机T3
++0:01 第十九波：魔王_杀人蜂 - 8 火蜂战机T3,24 AA激光射束战机T3
++0:01 第十九波：魔王_杀人蜂 - 8 火蜂战机T3,24 AA激光射束战机T3
++0:00 第十九波：魔王_杀人蜂 - 2 杀人蜂
+
++0:25 第二十波：魔王_泽拉迪 - 8 飞行堡垒T3,24 轰炸机T3
++0:01 第二十波：魔王_泽拉迪 - 8 飞行堡垒T3,24 轰炸机T3
++0:01 第二十波：魔王_泽拉迪 - 8 飞行堡垒T3,24 轰炸机T3
++0:01 第二十波：魔王_泽拉迪 - 8 飞行堡垒T3,24 轰炸机T3
++0:01 第二十波：魔王_泽拉迪 - 8 飞行堡垒T3,24 轰炸机T3
++0:01 第二十波：魔王_泽拉迪 - 8 飞行堡垒T3,24 轰炸机T3
++0:00 第二十波：魔王_泽拉迪 - 2 泽拉迪
+
++0:45 第二十一波：魔王_泰坦型坦克 - 4 概念型坦克T3,16 重型坦克T3
++0:01 第二十一波：魔王_泰坦型坦克 - 4 概念型坦克T3,16 重型坦克T3
++0:01 第二十一波：魔王_泰坦型坦克 - 4 概念型坦克T3,16 重型坦克T3
++0:01 第二十一波：魔王_泰坦型坦克 - 4 概念型坦克T3,16 重型坦克T3
++0:01 第二十一波：魔王_泰坦型坦克 - 4 概念型坦克T3,16 重型坦克T3
++0:01 第二十一波：魔王_泰坦型坦克 - 4 概念型坦克T3,16 重型坦克T3
++0:00 第二十一波：魔王_泰坦型坦克 - 2 泰坦型坦克
+
++0:25 第二十二波：魔王_泰坦型悬浮坦克 - 4 概念型悬浮坦克T3,16 猛犸坦克T3
++0:01 第二十二波：魔王_泰坦型悬浮坦克 - 4 概念型悬浮坦克T3,16 猛犸坦克T3
++0:01 第二十二波：魔王_泰坦型悬浮坦克 - 4 概念型悬浮坦克T3,16 猛犸坦克T3
++0:01 第二十二波：魔王_泰坦型悬浮坦克 - 4 概念型悬浮坦克T3,16 猛犸坦克T3
++0:01 第二十二波：魔王_泰坦型悬浮坦克 - 4 概念型悬浮坦克T3,16 猛犸坦克T3
++0:01 第二十二波：魔王_泰坦型悬浮坦克 - 4 概念型悬浮坦克T3,16 猛犸坦克T3
++0:00 第二十二波：魔王_泰坦型悬浮坦克 - 2 泰坦型悬浮坦克
+
++1:15 第二十三波：魔王_杀戮者 - 4 巨型泵射虫T2,32 bugMeleeT312
++0:01 第二十三波：魔王_杀戮者 - 4 巨型泵射虫T2,32 bugMeleeT312
++0:01 第二十三波：魔王_杀戮者 - 4 巨型泵射虫T2,32 bugMeleeT312
++0:01 第二十三波：魔王_杀戮者 - 4 巨型泵射虫T2,32 bugMeleeT312
++0:01 第二十三波：魔王_杀戮者 - 4 巨型泵射虫T2,32 bugMeleeT312
++0:01 第二十三波：魔王_杀戮者 - 4 巨型泵射虫T2,32 bugMeleeT312
++0:00 第二十三波：魔王_杀戮者 - 2 杀戮者
+
++0:25 第二十四波：魔王_啸颤锚 - 8 实验型悬浮坦克T2,16 等离子机甲T3
++0:01 第二十四波：魔王_啸颤锚 - 8 实验型悬浮坦克T2,16 等离子机甲T3
++0:01 第二十四波：魔王_啸颤锚 - 8 实验型悬浮坦克T2,16 等离子机甲T3
++0:01 第二十四波：魔王_啸颤锚 - 8 实验型悬浮坦克T2,16 等离子机甲T3
++0:01 第二十四波：魔王_啸颤锚 - 8 实验型悬浮坦克T2,16 等离子机甲T3
++0:01 第二十四波：魔王_啸颤锚 - 8 实验型悬浮坦克T2,16 等离子机甲T3
++0:00 第二十四波：魔王_啸颤锚 - 2 啸颤锚
+
++2:00 警报：即将开启终极难度
+
++0:45 第二十五波：火炮组合 - 4 攻城锤坦克,8 概念型防空机械装甲,2 聚能离子机甲
++0:05 第二十五波：火炮组合 - 4 攻城锤坦克,8 概念型防空机械装甲,2 聚能离子机甲
++0:05 第二十五波：火炮组合 - 4 攻城锤坦克,8 概念型防空机械装甲,2 聚能离子机甲
++0:05 第二十五波：火炮组合 - 4 攻城锤坦克,8 概念型防空机械装甲,2 聚能离子机甲
++0:05 第二十五波：火炮组合 - 4 攻城锤坦克,8 概念型防空机械装甲,2 聚能离子机甲
++0:05 第二十五波：火炮组合 - 4 攻城锤坦克,8 概念型防空机械装甲,2 聚能离子机甲
+
++0:30 第二十六波：最佳拍档 - 2 杀戮者,16 星空号,12 导弹战斗机,4 轰炸战斗机
++0:05 第二十六波：最佳拍档 - 2 杀戮者,16 星空号,12 导弹战斗机,4 轰炸战斗机
++0:05 第二十六波：最佳拍档 - 2 杀戮者,16 星空号,12 导弹战斗机,4 轰炸战斗机
++0:05 第二十六波：最佳拍档 - 2 杀戮者,16 星空号,12 导弹战斗机,4 轰炸战斗机
++0:05 第二十六波：最佳拍档 - 2 杀戮者,16 星空号,12 导弹战斗机,4 轰炸战斗机
++0:05 第二十六波：最佳拍档 - 2 杀戮者,16 星空号,12 导弹战斗机,4 轰炸战斗机
+
+
++1:30 第二十七波：前沿科技 - 4 巨象坦克,6 光棱坦克,10 聚能离子坦克,54 两栖战机
++0:05 第二十七波：前沿科技 - 4 巨象坦克,6 光棱坦克,10 聚能离子坦克,54 两栖战机
++0:05 第二十七波：前沿科技 - 4 巨象坦克,6 光棱坦克,10 聚能离子坦克,54 两栖战机
++0:05 第二十七波：前沿科技 - 4 巨象坦克,6 光棱坦克,10 聚能离子坦克,54 两栖战机
++0:05 第二十七波：前沿科技 - 4 巨象坦克,6 光棱坦克,10 聚能离子坦克,54 两栖战机
++0:05 第二十七波：前沿科技 - 4 巨象坦克,6 光棱坦克,10 聚能离子坦克,54 两栖战机
+
++0:30 第二十八波：泰坦之力 - 12 光棱坦克,2 泰坦型防空坦克,24 AA光能射束战机
++0:05 第二十八波：泰坦之力 - 12 光棱坦克,2 泰坦型防空坦克,24 AA光能射束战机
++0:05 第二十八波：泰坦之力 - 12 光棱坦克,2 泰坦型防空坦克,24 AA光能射束战机
++0:05 第二十八波：泰坦之力 - 12 光棱坦克,2 泰坦型防空坦克,24 AA光能射束战机
++0:05 第二十八波：泰坦之力 - 12 光棱坦克,2 泰坦型防空坦克,24 AA光能射束战机
++0:05 第二十八波：泰坦之力 - 12 光棱坦克,2 泰坦型防空坦克,24 AA光能射束战机
+
+
++1:30 第二十九波：我要成为海贼王 - 24 武装导弹战舰
++0:01 第二十九波：我要成为海贼王 - 24 武装导弹战舰
++0:01 第二十九波：我要成为海贼王 - 24 武装导弹战舰
++0:01 第二十九波：我要成为海贼王 - 20 武装导弹战舰
++0:01 第二十九波：我要成为海贼王 - 20 巨型战舰T2
++0:01 第二十九波：我要成为海贼王 - 20 巨型战舰T2
+
++0:15 第三十波：伟大航路 - 12 巨型战列舰
++0:01 第三十波：伟大航路 - 12 巨型战列舰
++0:01 第三十波：伟大航路 - 12 巨型战列舰
++0:01 第三十波：伟大航路 - 12 巨型战列舰
++0:01 第三十波：伟大航路 - 12 巨型战列舰
++0:01 第三十波：伟大航路 - 12 巨型战列舰
++0:05 第三十波：伟大航路 - 1 空天舰,2 导弹战舰,2 巨型防空战舰,8 概念型战舰
+
+
++0:45 第三十一波：跨越星辰大海 - 160 格朗T3
++0:01 第三十一波：跨越星辰大海 - 160 格朗T3
++0:01 第三十一波：跨越星辰大海 - 40 六翼T2
++0:01 第三十一波：跨越星辰大海 - 40 六翼T2
++0:01 第三十一波：跨越星辰大海 - 40 六翼T2
++0:01 第三十一波：跨越星辰大海 - 40 六翼T2
+
++0:15 第三十二波：星辰大海 - 60 六翼T2
++0:01 第三十二波：星辰大海 - 60 六翼T2
++0:01 第三十二波：星辰大海 - 8 星辰
++0:01 第三十二波：星辰大海 - 8 星辰
++0:01 第三十二波：星辰大海 - 8 星辰
++0:01 第三十二波：星辰大海 - 8 星辰
++0:05 第三十二波：星辰大海 - 32 星辰
+
+
++1:30 第三十三波：三神像_烬灭 - 32 巨象坦克
++0:05 第三十三波：三神像_烬灭 - 32 巨象坦克
++0:05 第三十三波：三神像_烬灭 - 32 巨象坦克
++0:05 第三十三波：三神像_烬灭 - 32 巨象坦克
+
++0:25 第三十三波：三神像_烬灭 - 108 两栖战机,4 泽拉迪
++0:05 第三十三波：三神像_烬灭 - 108 两栖战机,4 泽拉迪
++0:05 第三十三波：三神像_烬灭 - 108 两栖战机,4 泽拉迪
++0:05 第三十三波：三神像_烬灭 - 108 两栖战机,4 泽拉迪
+
++0:25 第三十三波：三神像_烬灭 - 36 轰炸战斗机,8 AA光能射束战机
++0:05 第三十三波：三神像_烬灭 - 36 轰炸战斗机,8 AA光能射束战机
++0:05 第三十三波：三神像_烬灭 - 36 轰炸战斗机,8 AA光能射束战机
++0:05 第三十三波：三神像_烬灭 - 36 轰炸战斗机,8 AA光能射束战机
+
+
+
++1:30 第三十四波：三神像_灾厄 - 9 杀人蜂
++0:05 第三十四波：三神像_灾厄 - 9 杀人蜂
++0:05 第三十四波：三神像_灾厄 - 9 杀人蜂
++0:05 第三十四波：三神像_灾厄 - 9 杀人蜂
+
++0:25 第三十四波：三神像_灾厄 - 9 泽拉迪
++0:05 第三十四波：三神像_灾厄 - 9 泽拉迪
++0:05 第三十四波：三神像_灾厄 - 9 泽拉迪
++0:05 第三十四波：三神像_灾厄 - 9 泽拉迪
+
++0:25 第三十四波：三神像_灾厄 - 9 杀戮者
++0:05 第三十四波：三神像_灾厄 - 9 杀戮者
++0:05 第三十四波：三神像_灾厄 - 9 杀戮者
++0:05 第三十四波：三神像_灾厄 - 9 杀戮者
+
+
+
++1:30 第三十五波：三神像_虚妄 - 9 泰坦型防空坦克
++0:05 第三十五波：三神像_虚妄 - 9 泰坦型防空坦克
++0:05 第三十五波：三神像_虚妄 - 9 泰坦型防空坦克
++0:05 第三十五波：三神像_虚妄 - 9 泰坦型防空坦克
+
++0:25 第三十五波：三神像_虚妄 - 9 泰坦型悬浮坦克
++0:05 第三十五波：三神像_虚妄 - 9 泰坦型悬浮坦克
++0:05 第三十五波：三神像_虚妄 - 9 泰坦型悬浮坦克
++0:05 第三十五波：三神像_虚妄 - 9 泰坦型悬浮坦克
+
++0:25 第三十五波：三神像_虚妄 - 9 啸颤锚
++0:05 第三十五波：三神像_虚妄 - 9 啸颤锚
++0:05 第三十五波：三神像_虚妄 - 9 啸颤锚
++0:05 第三十五波：三神像_虚妄 - 9 啸颤锚
+
+
+
++1:40 第三十六波：决战_终末之焉_10 - 2 杀人蜂
++0:01 第三十六波：决战_终末之焉_9 - 2 杀人蜂
++0:01 第三十六波：决战_终末之焉_8 - 2 杀人蜂
++0:01 第三十六波：决战_终末之焉_7 - 2 杀人蜂
++0:01 第三十六波：决战_终末之焉_6 - 2 杀人蜂
++0:01 第三十六波：决战_终末之焉_5 - 2 杀人蜂
++0:01 第三十六波：决战_终末之焉_4 - 2 杀人蜂
++0:01 第三十六波：决战_终末之焉_3 - 2 杀人蜂
++0:01 第三十六波：决战_终末之焉_2 - 2 杀人蜂
++0:01 第三十六波：决战_终末之焉_1 - 2 杀人蜂
++0:01 第三十六波：决战_终末之焉_祂的目光终究投向了我们 - 1 帝空
+
++0:25 第三十六波+：神战_虫灾之害 - 52 猎手阿尔法T2,7 杀戮者
++0:05 第三十六波+：神战_虫灾之害 - 52 猎手阿尔法T2,7 杀戮者
++0:05 第三十六波+：神战_虫灾之害 - 52 猎手阿尔法T2,7 杀戮者
++0:05 第三十六波+：神战_虫灾之害 - 52 猎手阿尔法T2,7 杀戮者
+
++0:25 第三十六波++：神战_四圣同临 - 4 泰坦型悬浮坦克,4 啸颤锚,4 泰坦型防空坦克,4 赤焰机甲
++0:05 第三十六波++：神战_四圣同临 - 4 泰坦型悬浮坦克,4 啸颤锚,4 泰坦型防空坦克,4 赤焰机甲
++0:05 第三十六波++：神战_四圣同临 - 4 泰坦型悬浮坦克,4 啸颤锚,4 泰坦型防空坦克,4 赤焰机甲
++0:05 第三十六波++：神战_四圣同临 - 4 泰坦型悬浮坦克,4 啸颤锚,4 泰坦型防空坦克,4 赤焰机甲
+
++0:25 第三十六波+++：神战_终终之终 - 52 轰炸战斗机
++0:05 第三十六波+++：神战_终终之终 - 52 轰炸战斗机
++0:05 第三十六波+++：神战_终终之终 - 52 轰炸战斗机
++0:05 第三十六波+++：神战_终终之终 - 52 轰炸战斗机
+
++1:00 神像终究是人的模样！
+
++0:20 胜利 [win]
+</property>
+        <property name="type" value="survival" />
+        <property name="winCondition" value="none" />
+      </properties>
+    </object>
+    <object name="team_1_info" type="team_info" id="326" x="0" y="-20" width="20" height="20">
+      <properties>
+        <property name="ai" value="survival" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="attack_point" id="327" x="1790" y="70" width="20" height="20" />
+    <object name="检测失败" type="unitDetect" id="328" x="1770" y="2570" width="60" height="60">
+      <properties>
+        <property name="id" value="1-1-T--" />
+        <property name="maxUnits" value="0" />
+        <property name="unitType" value="概念型实验室" />
+        <property name="warmup" value="2s" />
+      </properties>
+    </object>
+    <object name="生成失败" type="unitRemove" id="329" x="-1440" y="-552" width="6000" height="6000">
+      <properties>
+        <property name="activatedBy" value="1-1-T--" />
+        <property name="id" value="xxx-1" />
+      </properties>
+    </object>
+    <object name="判负提示" type="unitDetect" id="330" x="20" y="-20" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="xxx-1" />
+        <property name="globalMessage" value="触发失败条件：实验室被摧毁" />
+        <property name="globalMessage_textColor" value="#FF0000" />
+        <property name="repeatDelay" value="2s" />
+      </properties>
+    </object>
+    <object name="敌军" type="unitAdd" id="331" x="1780" y="10" width="20" height="20">
+      <properties>
+        <property name="spawnUnits" value="c_turret_t2_artillery*16,turretT3*16,c_antiAirTurretT3*16,antiNukeLauncherC*4" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="敌军" type="unitAdd" id="332" x="1800" y="10" width="20" height="20">
+      <properties>
+        <property name="spawnUnits" value="c_turret_t2_artillery*16,turretT3*16,c_antiAirTurretT3*16,antiNukeLauncherC*4" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="井" type="unitDetect" id="367" x="60" y="1320" width="100" height="280">
+      <properties>
+        <property name="id" value="D-0-5" />
+        <property name="minUnits" value="3" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="航空母舰T2" />
+      </properties>
+    </object>
+    <object name="井" type="unitRemove" id="368" x="60" y="1320" width="100" height="280">
+      <properties>
+        <property name="activatedBy" value="D-0-5" />
+        <property name="resetActivationAfter" value="5s" />
+      </properties>
+    </object>
+    <object name="井" type="unitAdd" id="369" x="80" y="1240" width="60" height="60">
+      <properties>
+        <property name="activatedBy" value="D-0-5" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="spawnUnits" value="nukeLauncherC*1(offsetRandomXY=30,falling=true)" />
+        <property name="team" value="-1" />
+      </properties>
+    </object>
+    <object name="井" type="unitDetect" id="370" x="3440" y="1320" width="100" height="280">
+      <properties>
+        <property name="id" value="D-0-6" />
+        <property name="minUnits" value="3" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="航空母舰T2" />
+      </properties>
+    </object>
+    <object name="井" type="unitRemove" id="371" x="3440" y="1320" width="100" height="280">
+      <properties>
+        <property name="activatedBy" value="D-0-6" />
+        <property name="resetActivationAfter" value="5s" />
+      </properties>
+    </object>
+    <object name="井" type="unitAdd" id="372" x="3460" y="1240" width="60" height="60">
+      <properties>
+        <property name="activatedBy" value="D-0-6" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="spawnUnits" value="nukeLauncherC*1(offsetRandomXY=30,falling=true)" />
+        <property name="team" value="-1" />
+      </properties>
+    </object>
+    <object name="a-1-1" type="point" id="385" x="800" y="340" width="20" height="20" />
+    <object name="移动a-1" type="move" id="386" x="1000" y="300" width="800" height="100">
+      <properties>
+        <property name="resetActivationAfter" value="20s" />
+        <property name="target" value="a-1-1" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="a-1-2" type="point" id="387" x="2780" y="340" width="20" height="20" />
+    <object name="移动a-2" type="move" id="388" x="1800" y="300" width="800" height="100">
+      <properties>
+        <property name="resetActivationAfter" value="20s" />
+        <property name="target" value="a-1-2" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="a-1-3" type="point" id="389" x="740" y="2660" width="20" height="20" />
+    <object name="移动a-3" type="move" id="390" x="540" y="0" width="460" height="600">
+      <properties>
+        <property name="resetActivationAfter" value="5s" />
+        <property name="target" value="a-1-3" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="a-1-4" type="point" id="391" x="2840" y="2660" width="20" height="20" />
+    <object name="移动a-4" type="move" id="392" x="2600" y="0" width="460" height="600">
+      <properties>
+        <property name="resetActivationAfter" value="5s" />
+        <property name="target" value="a-1-4" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="驻兵营" type="mapText" id="396" x="1790" y="200" width="20" height="20">
+      <properties>
+        <property name="deactivatedBy" value="m-1-" />
+        <property name="text" value="驻兵营" />
+        <property name="textColor" value="#FF0000" />
+        <property name="textSize" value="30" />
+      </properties>
+    </object>
+    <object name="公告栏" type="mapText" id="397" x="1790" y="1070" width="20" height="20">
+      <properties>
+        <property name="deactivatedBy" value="m-1-" />
+        <property name="text" value="配置：10000 1x 开雾禁核" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="公告栏" type="mapText" id="398" x="1790" y="1090" width="20" height="20">
+      <properties>
+        <property name="deactivatedBy" value="m-1-" />
+        <property name="text" value="胜利条件：坚持50分钟" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="公告栏" type="mapText" id="399" x="1790" y="1110" width="20" height="20">
+      <properties>
+        <property name="deactivatedBy" value="m-1-" />
+        <property name="text" value="失败条件：实验室被摧毁" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="公告栏" type="mapText" id="400" x="1790" y="1130" width="20" height="20">
+      <properties>
+        <property name="deactivatedBy" value="m-1-" />
+        <property name="text" value="作者：YiYou" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="公告栏" type="mapText" id="401" x="1790" y="1150" width="20" height="20">
+      <properties>
+        <property name="deactivatedBy" value="m-1-" />
+        <property name="text" value="千人铁锈交流群：你不准进" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="800秒启用m1" type="basic" id="412" x="80" y="-20" width="20" height="20">
+      <properties>
+        <property name="delay" value="800.26s" />
+        <property name="id" value="m-1-" />
+      </properties>
+    </object>
+    <object name="1600秒启用m2" type="basic" id="419" x="100" y="-20" width="20" height="20">
+      <properties>
+        <property name="delay" value="1600.26s" />
+        <property name="id" value="m-2-" />
+      </properties>
+    </object>
+    <object name="800" type="unitDetect" id="420" x="40" y="-20" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="m-1-" />
+        <property name="globalMessage" value="你坚持了800秒，地图上的文字消失了" />
+        <property name="globalMessage_textColor" value="#33FFDD" />
+      </properties>
+    </object>
+    <object name="1600" type="unitDetect" id="421" x="60" y="-20" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="m-2-" />
+        <property name="globalMessage" value="你坚持了1600秒，胜利就在眼前" />
+        <property name="globalMessage_textColor" value="#33FFDD" />
+      </properties>
+    </object>
+    <object name="5" type="unitDetect" id="422" x="120" y="-20" width="20" height="20">
+      <properties>
+        <property name="delay" value="5.5s" />
+        <property name="globalMessage" value="欢迎来到保卫王国。（正式版0.3）" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="globalMessage_textColor" value="#FFBB66" />
+      </properties>
+    </object>
+    <object name="10" type="unitDetect" id="423" x="140" y="-20" width="20" height="20">
+      <properties>
+        <property name="delay" value="10.5s" />
+        <property name="globalMessage" value="你们是水之国的子民，邪恶的火之国垂涎我们的土地向我们宣战。" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="globalMessage_textColor" value="#FFBB66" />
+      </properties>
+    </object>
+    <object name="15" type="unitDetect" id="424" x="160" y="-20" width="20" height="20">
+      <properties>
+        <property name="delay" value="15.5s" />
+        <property name="globalMessage" value="敌国极为强大，就连驻兵营都坚固异常。" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="globalMessage_textColor" value="#FFBB66" />
+      </properties>
+    </object>
+    <object name="20" type="unitDetect" id="425" x="180" y="-20" width="20" height="20">
+      <properties>
+        <property name="delay" value="20.5s" />
+        <property name="globalMessage" value="幸运的是，我们掌握了敌国的进军路线，已用黄色沙地标出。" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="globalMessage_textColor" value="#FFBB66" />
+      </properties>
+    </object>
+    <object name="25" type="unitDetect" id="426" x="200" y="-20" width="20" height="20">
+      <properties>
+        <property name="delay" value="25.5s" />
+        <property name="globalMessage" value="进军，在敌军的必经之路上伏击他们，打他们个措手不及！" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="globalMessage_textColor" value="#FFBB66" />
+      </properties>
+    </object>
+    <object name="30" type="unitDetect" id="427" x="220" y="-20" width="20" height="20">
+      <properties>
+        <property name="delay" value="30.5s" />
+        <property name="globalMessage" value="为王国存亡而战！（游戏共36波）" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="globalMessage_textColor" value="#FFBB66" />
+      </properties>
+    </object>
+    <object name="公告栏" type="mapText" id="428" x="850" y="1210" width="20" height="20">
+      <properties>
+        <property name="deactivatedBy" value="m-1-" />
+        <property name="text" value="闸口-慎堵" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="公告栏" type="mapText" id="429" x="2730" y="1210" width="20" height="20">
+      <properties>
+        <property name="deactivatedBy" value="m-1-" />
+        <property name="text" value="闸口-慎堵" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="a-1-20" type="point" id="522" x="1790" y="2780" width="20" height="20" />
+    <object name="移动a-20" type="move" id="523" x="700" y="2400" width="2200" height="400">
+      <properties>
+        <property name="resetActivationAfter" value="35s" />
+        <property name="target" value="a-1-20" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="等级检测" type="unitDetect" id="536" x="80" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-0-1" />
+        <property name="unitType" value="核弹发射井T1" />
+      </properties>
+    </object>
+    <object name="等级检测" type="unitDetect" id="537" x="80" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-0-2" />
+        <property name="unitType" value="核弹发射井T2" />
+      </properties>
+    </object>
+    <object name="等级检测" type="unitDetect" id="538" x="80" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-0-3" />
+        <property name="unitType" value="核弹发射井T3" />
+      </properties>
+    </object>
+    <object name="等级检测" type="unitDetect" id="539" x="80" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-0-4" />
+        <property name="unitType" value="战术核弹发射井T1" />
+      </properties>
+    </object>
+    <object name="等级检测" type="unitDetect" id="540" x="80" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-0-5" />
+        <property name="unitType" value="战术核弹发射井T2" />
+      </properties>
+    </object>
+    <object name="等级检测" type="unitDetect" id="541" x="80" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-0-6" />
+        <property name="unitType" value="泰坦型核弹发射井" />
+      </properties>
+    </object>
+    <object name="井-lv1" type="unitDetect" id="524" x="180" y="1640" width="320" height="20">
+      <properties>
+        <property name="deactivatedBy" value="J-0-1" />
+        <property name="id" value="J-0-1x" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="资源抽取器t3" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="井-lv1" type="unitRemove" id="525" x="180" y="1640" width="320" height="20">
+      <properties>
+        <property name="activatedBy" value="J-0-1x" />
+        <property name="deactivatedBy" value="J-0-1" />
+        <property name="globalMessage" value="警报：核能抽取装置损毁。（错误日志：核能抽取器未能负担相应等级=1）" />
+        <property name="globalMessage_textColor" value="#FF8888" />
+        <property name="resetActivationAfter" value="5s" />
+      </properties>
+    </object>
+    <object name="井-lv2" type="unitDetect" id="526" x="180" y="1640" width="320" height="20">
+      <properties>
+        <property name="deactivatedBy" value="J-0-2" />
+        <property name="id" value="J-0-2x" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="资源抽取器t4" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="井-lv2" type="unitRemove" id="527" x="180" y="1640" width="320" height="20">
+      <properties>
+        <property name="activatedBy" value="J-0-2x" />
+        <property name="deactivatedBy" value="J-0-2" />
+        <property name="globalMessage" value="警报：核能抽取装置损毁。（错误日志：核能抽取器未能负担相应等级=2）" />
+        <property name="globalMessage_textColor" value="#FF8888" />
+        <property name="resetActivationAfter" value="5s" />
+      </properties>
+    </object>
+    <object name="井-lv3" type="unitDetect" id="528" x="180" y="1640" width="320" height="20">
+      <properties>
+        <property name="deactivatedBy" value="J-0-3" />
+        <property name="id" value="J-0-3x" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="资源抽取器t5" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="井-lv3" type="unitRemove" id="529" x="180" y="1640" width="320" height="20">
+      <properties>
+        <property name="activatedBy" value="J-0-3x" />
+        <property name="deactivatedBy" value="J-0-3" />
+        <property name="globalMessage" value="警报：核能抽取装置损毁。（错误日志：核能抽取器未能负担相应等级=3）" />
+        <property name="globalMessage_textColor" value="#FF8888" />
+        <property name="resetActivationAfter" value="5s" />
+      </properties>
+    </object>
+    <object name="井-lv4" type="unitDetect" id="530" x="180" y="1640" width="320" height="20">
+      <properties>
+        <property name="deactivatedBy" value="J-0-4" />
+        <property name="id" value="J-0-4x" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="资源抽取器t6" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="井-lv4" type="unitRemove" id="531" x="180" y="1640" width="320" height="20">
+      <properties>
+        <property name="activatedBy" value="J-0-4x" />
+        <property name="deactivatedBy" value="J-0-4" />
+        <property name="globalMessage" value="警报：核能抽取装置损毁。（错误日志：核能抽取器未能负担相应等级=4）" />
+        <property name="globalMessage_textColor" value="#FF8888" />
+        <property name="resetActivationAfter" value="5s" />
+      </properties>
+    </object>
+    <object name="井-lv5" type="unitDetect" id="532" x="180" y="1640" width="320" height="20">
+      <properties>
+        <property name="deactivatedBy" value="J-0-5" />
+        <property name="id" value="J-0-5x" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="资源抽取器T7" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="井-lv5" type="unitRemove" id="533" x="180" y="1640" width="320" height="20">
+      <properties>
+        <property name="activatedBy" value="J-0-5x" />
+        <property name="deactivatedBy" value="J-0-5" />
+        <property name="globalMessage" value="警报：核能抽取装置损毁。（错误日志：核能抽取器未能负担相应等级=5）" />
+        <property name="globalMessage_textColor" value="#FF8888" />
+        <property name="resetActivationAfter" value="5s" />
+      </properties>
+    </object>
+    <object name="井-lv6" type="unitDetect" id="534" x="180" y="1640" width="320" height="20">
+      <properties>
+        <property name="deactivatedBy" value="J-0-6" />
+        <property name="id" value="J-0-6x" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="资源抽取器T8" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="井-lv6" type="unitRemove" id="535" x="180" y="1640" width="320" height="20">
+      <properties>
+        <property name="activatedBy" value="J-0-6x" />
+        <property name="deactivatedBy" value="J-0-6" />
+        <property name="globalMessage" value="警报：核能抽取装置损毁。（错误日志：核能抽取器未能负担相应等级=6）" />
+        <property name="globalMessage_textColor" value="#FF8888" />
+        <property name="resetActivationAfter" value="5s" />
+      </properties>
+    </object>
+    <object name="文本检测" type="unitDetect" id="556" x="80" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-0-1w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="核弹发射井T1" />
+      </properties>
+    </object>
+    <object name="文本检测" type="unitDetect" id="557" x="80" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-0-2w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="核弹发射井T2" />
+      </properties>
+    </object>
+    <object name="文本检测" type="unitDetect" id="558" x="80" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-0-3w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="核弹发射井T3" />
+      </properties>
+    </object>
+    <object name="文本检测" type="unitDetect" id="559" x="80" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-0-4w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="战术核弹发射井T1" />
+      </properties>
+    </object>
+    <object name="文本检测" type="unitDetect" id="560" x="80" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-0-5w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="战术核弹发射井T2" />
+      </properties>
+    </object>
+    <object name="文本检测" type="unitDetect" id="561" x="80" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-0-6w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="泰坦型核弹发射井" />
+      </properties>
+    </object>
+    <object name="文-lv1" type="mapText" id="542" x="330" y="1680" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-0-1w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="当前核弹研究等级：1级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv1" type="mapText" id="543" x="330" y="1720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-0-1w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="最高生产资源等级：3级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv2" type="mapText" id="546" x="330" y="1680" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-0-2w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="当前核弹研究等级：2级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv2" type="mapText" id="547" x="330" y="1720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-0-2w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="最高生产资源等级：4级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv3" type="mapText" id="548" x="330" y="1680" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-0-3w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="当前核弹研究等级：3级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv3" type="mapText" id="549" x="330" y="1720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-0-3w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="最高生产资源等级：5级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv4" type="mapText" id="550" x="330" y="1680" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-0-4w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="当前核弹研究等级：4级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv4" type="mapText" id="551" x="330" y="1720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-0-4w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="最高生产资源等级：6.5级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv5" type="mapText" id="552" x="330" y="1680" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-0-5w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="当前核弹研究等级：5级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv5" type="mapText" id="553" x="330" y="1720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-0-5w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="最高生产资源等级：7级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv6" type="mapText" id="554" x="330" y="1680" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-0-6w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="当前核弹研究等级：6级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv6" type="mapText" id="555" x="330" y="1720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-0-6w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="最高生产资源等级：满级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="等级检测" type="unitDetect" id="562" x="3460" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-1-1" />
+        <property name="unitType" value="核弹发射井T1" />
+      </properties>
+    </object>
+    <object name="等级检测" type="unitDetect" id="563" x="3460" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-1-2" />
+        <property name="unitType" value="核弹发射井T2" />
+      </properties>
+    </object>
+    <object name="等级检测" type="unitDetect" id="564" x="3460" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-1-3" />
+        <property name="unitType" value="核弹发射井T3" />
+      </properties>
+    </object>
+    <object name="等级检测" type="unitDetect" id="565" x="3460" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-1-4" />
+        <property name="unitType" value="战术核弹发射井T1" />
+      </properties>
+    </object>
+    <object name="等级检测" type="unitDetect" id="566" x="3460" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-1-5" />
+        <property name="unitType" value="战术核弹发射井T2" />
+      </properties>
+    </object>
+    <object name="等级检测" type="unitDetect" id="567" x="3460" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-1-6" />
+        <property name="unitType" value="泰坦型核弹发射井" />
+      </properties>
+    </object>
+    <object name="井-lv1" type="unitDetect" id="568" x="3100" y="1640" width="320" height="20">
+      <properties>
+        <property name="deactivatedBy" value="J-1-1" />
+        <property name="id" value="J-1-1x" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="资源抽取器t3" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="井-lv1" type="unitRemove" id="569" x="3100" y="1640" width="320" height="20">
+      <properties>
+        <property name="activatedBy" value="J-1-1x" />
+        <property name="deactivatedBy" value="J-1-1" />
+        <property name="globalMessage" value="警报：核能抽取装置损毁。（错误日志：核能抽取器未能负担相应等级=1）" />
+        <property name="globalMessage_textColor" value="#FF8888" />
+        <property name="resetActivationAfter" value="5s" />
+      </properties>
+    </object>
+    <object name="井-lv2" type="unitDetect" id="570" x="3100" y="1640" width="320" height="20">
+      <properties>
+        <property name="deactivatedBy" value="J-1-2" />
+        <property name="id" value="J-1-2x" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="资源抽取器t4" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="井-lv2" type="unitRemove" id="571" x="3100" y="1640" width="320" height="20">
+      <properties>
+        <property name="activatedBy" value="J-1-2x" />
+        <property name="deactivatedBy" value="J-1-2" />
+        <property name="globalMessage" value="警报：核能抽取装置损毁。（错误日志：核能抽取器未能负担相应等级=2）" />
+        <property name="globalMessage_textColor" value="#FF8888" />
+        <property name="resetActivationAfter" value="5s" />
+      </properties>
+    </object>
+    <object name="井-lv3" type="unitDetect" id="572" x="3100" y="1640" width="320" height="20">
+      <properties>
+        <property name="deactivatedBy" value="J-1-3" />
+        <property name="id" value="J-1-3x" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="资源抽取器t5" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="井-lv3" type="unitRemove" id="573" x="3100" y="1640" width="320" height="20">
+      <properties>
+        <property name="activatedBy" value="J-1-3x" />
+        <property name="deactivatedBy" value="J-1-3" />
+        <property name="globalMessage" value="警报：核能抽取装置损毁。（错误日志：核能抽取器未能负担相应等级=3）" />
+        <property name="globalMessage_textColor" value="#FF8888" />
+        <property name="resetActivationAfter" value="5s" />
+      </properties>
+    </object>
+    <object name="井-lv4" type="unitDetect" id="574" x="3100" y="1640" width="320" height="20">
+      <properties>
+        <property name="deactivatedBy" value="J-1-4" />
+        <property name="id" value="J-1-4x" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="资源抽取器t6" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="井-lv4" type="unitRemove" id="575" x="3100" y="1640" width="320" height="20">
+      <properties>
+        <property name="activatedBy" value="J-1-4x" />
+        <property name="deactivatedBy" value="J-1-4" />
+        <property name="globalMessage" value="警报：核能抽取装置损毁。（错误日志：核能抽取器未能负担相应等级=4）" />
+        <property name="globalMessage_textColor" value="#FF8888" />
+        <property name="resetActivationAfter" value="5s" />
+      </properties>
+    </object>
+    <object name="井-lv5" type="unitDetect" id="576" x="3100" y="1640" width="320" height="20">
+      <properties>
+        <property name="deactivatedBy" value="J-1-5" />
+        <property name="id" value="J-1-5x" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="资源抽取器T7" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="井-lv5" type="unitRemove" id="577" x="3100" y="1640" width="320" height="20">
+      <properties>
+        <property name="activatedBy" value="J-1-5x" />
+        <property name="deactivatedBy" value="J-1-5" />
+        <property name="globalMessage" value="警报：核能抽取装置损毁。（错误日志：核能抽取器未能负担相应等级=5）" />
+        <property name="globalMessage_textColor" value="#FF8888" />
+        <property name="resetActivationAfter" value="5s" />
+      </properties>
+    </object>
+    <object name="井-lv6" type="unitDetect" id="578" x="3100" y="1640" width="320" height="20">
+      <properties>
+        <property name="deactivatedBy" value="J-1-6" />
+        <property name="id" value="J-1-6x" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="资源抽取器T8" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="井-lv6" type="unitRemove" id="579" x="3100" y="1640" width="320" height="20">
+      <properties>
+        <property name="activatedBy" value="J-1-6x" />
+        <property name="deactivatedBy" value="J-1-6" />
+        <property name="globalMessage" value="警报：核能抽取装置损毁。（错误日志：核能抽取器未能负担相应等级=6）" />
+        <property name="globalMessage_textColor" value="#FF8888" />
+        <property name="resetActivationAfter" value="5s" />
+      </properties>
+    </object>
+    <object name="文本检测" type="unitDetect" id="580" x="3460" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-1-1w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="核弹发射井T1" />
+      </properties>
+    </object>
+    <object name="文本检测" type="unitDetect" id="581" x="3460" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-1-2w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="核弹发射井T2" />
+      </properties>
+    </object>
+    <object name="文本检测" type="unitDetect" id="582" x="3460" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-1-3w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="核弹发射井T3" />
+      </properties>
+    </object>
+    <object name="文本检测" type="unitDetect" id="583" x="3460" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-1-4w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="战术核弹发射井T1" />
+      </properties>
+    </object>
+    <object name="文本检测" type="unitDetect" id="584" x="3460" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-1-5w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="战术核弹发射井T2" />
+      </properties>
+    </object>
+    <object name="文本检测" type="unitDetect" id="585" x="3460" y="1620" width="60" height="60">
+      <properties>
+        <property name="id" value="J-1-6w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="unitType" value="泰坦型核弹发射井" />
+      </properties>
+    </object>
+    <object name="文-lv1" type="mapText" id="586" x="3250" y="1680" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-1-1w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="当前核弹研究等级：1级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv1" type="mapText" id="587" x="3250" y="1720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-1-1w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="最高生产资源等级：3级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv2" type="mapText" id="588" x="3250" y="1680" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-1-2w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="当前核弹研究等级：2级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv2" type="mapText" id="589" x="3250" y="1720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-1-2w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="最高生产资源等级：4级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv3" type="mapText" id="590" x="3250" y="1680" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-1-3w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="当前核弹研究等级：3级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv3" type="mapText" id="591" x="3250" y="1720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-1-3w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="最高生产资源等级：5级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv4" type="mapText" id="592" x="3250" y="1680" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-1-4w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="当前核弹研究等级：4级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv4" type="mapText" id="593" x="3250" y="1720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-1-4w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="最高生产资源等级：6.5级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv5" type="mapText" id="594" x="3250" y="1680" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-1-5w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="当前核弹研究等级：5级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv5" type="mapText" id="595" x="3250" y="1720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-1-5w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="最高生产资源等级：7级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv6" type="mapText" id="596" x="3250" y="1680" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-1-6w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="当前核弹研究等级：6级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="文-lv6" type="mapText" id="597" x="3250" y="1720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-1-6w" />
+        <property name="resetActivationAfter" value="5s" />
+        <property name="text" value="最高生产资源等级：满级" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="公告栏" type="mapText" id="616" x="260" y="2680" width="20" height="20">
+      <properties>
+        <property name="deactivatedBy" value="m-1-" />
+        <property name="text" value="种蛋得蛋，种下一颗T3蛋蛋，将收益35个T1蛋蛋" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="公告栏" type="mapText" id="617" x="260" y="2760" width="20" height="20">
+      <properties>
+        <property name="deactivatedBy" value="m-1-" />
+        <property name="text" value="种下每个等级的蛋蛋，都将收获35个次次级蛋蛋，最高种下T8蛋蛋" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="蛋-lv1" type="unitAdd" id="601" x="200" y="2720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-2-1" />
+        <property name="spawnUnits" value="资源制造仪T1*35" />
+        <property name="team" value="-1" />
+      </properties>
+    </object>
+    <object name="蛋-lv1" type="unitDetect" id="618" x="80" y="2700" width="60" height="60">
+      <properties>
+        <property name="id" value="J-2-1" />
+        <property name="unitType" value="资源制造仪T3" />
+      </properties>
+    </object>
+    <object name="蛋-lv2" type="unitAdd" id="622" x="220" y="2720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-2-2" />
+        <property name="spawnUnits" value="资源制造仪T2*35" />
+        <property name="team" value="-1" />
+      </properties>
+    </object>
+    <object name="蛋-lv2" type="unitDetect" id="623" x="80" y="2700" width="60" height="60">
+      <properties>
+        <property name="id" value="J-2-2" />
+        <property name="unitType" value="资源制造仪T4" />
+      </properties>
+    </object>
+    <object name="蛋-lv3" type="unitAdd" id="624" x="240" y="2720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-2-3" />
+        <property name="spawnUnits" value="资源制造仪T3*35" />
+        <property name="team" value="-1" />
+      </properties>
+    </object>
+    <object name="蛋-lv3" type="unitDetect" id="625" x="80" y="2700" width="60" height="60">
+      <properties>
+        <property name="id" value="J-2-3" />
+        <property name="unitType" value="资源制造仪T5" />
+      </properties>
+    </object>
+    <object name="蛋-lv4" type="unitAdd" id="626" x="260" y="2720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-2-4" />
+        <property name="spawnUnits" value="资源制造仪T4*35" />
+        <property name="team" value="-1" />
+      </properties>
+    </object>
+    <object name="蛋-lv4" type="unitDetect" id="627" x="80" y="2700" width="60" height="60">
+      <properties>
+        <property name="id" value="J-2-4" />
+        <property name="unitType" value="资源制造仪T6" />
+      </properties>
+    </object>
+    <object name="蛋-lv5" type="unitAdd" id="628" x="280" y="2720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-2-5" />
+        <property name="spawnUnits" value="资源制造仪T5*35" />
+        <property name="team" value="-1" />
+      </properties>
+    </object>
+    <object name="蛋-lv5" type="unitDetect" id="629" x="80" y="2700" width="60" height="60">
+      <properties>
+        <property name="id" value="J-2-5" />
+        <property name="unitType" value="资源制造仪T7" />
+      </properties>
+    </object>
+    <object name="蛋-lv6" type="unitAdd" id="630" x="300" y="2720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-2-6" />
+        <property name="spawnUnits" value="资源制造仪T6*35" />
+        <property name="team" value="-1" />
+      </properties>
+    </object>
+    <object name="蛋-lv6" type="unitDetect" id="631" x="80" y="2700" width="60" height="60">
+      <properties>
+        <property name="id" value="J-2-6" />
+        <property name="unitType" value="资源制造仪T8" />
+      </properties>
+    </object>
+    <object name="地" type="unitAdd" id="637" x="190" y="2700" width="260" height="60">
+      <properties>
+        <property name="spawnUnits" value="crystal_mid*7(offsetRandomX=90)" />
+        <property name="team" value="-1" />
+      </properties>
+    </object>
+    <object name="地" type="unitAdd" id="638" x="3130" y="2700" width="260" height="60">
+      <properties>
+        <property name="spawnUnits" value="crystal_mid*7(offsetRandomX=90)" />
+        <property name="team" value="-1" />
+      </properties>
+    </object>
+    <object name="公告栏" type="mapText" id="640" x="3320" y="2680" width="20" height="20">
+      <properties>
+        <property name="deactivatedBy" value="m-1-" />
+        <property name="text" value="种蛋得蛋，种下一颗T3蛋蛋，将收益35个T1蛋蛋" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="公告栏" type="mapText" id="641" x="3320" y="2760" width="20" height="20">
+      <properties>
+        <property name="deactivatedBy" value="m-1-" />
+        <property name="text" value="种下每个等级的蛋蛋，都将收获35个次次级蛋蛋，最高种下T8蛋蛋" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="蛋-lv1" type="unitAdd" id="642" x="3240" y="2720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-3-1" />
+        <property name="spawnUnits" value="资源制造仪T1*35" />
+        <property name="team" value="-1" />
+      </properties>
+    </object>
+    <object name="蛋-lv1" type="unitDetect" id="643" x="3460" y="2700" width="60" height="60">
+      <properties>
+        <property name="id" value="J-3-1" />
+        <property name="unitType" value="资源制造仪T3" />
+      </properties>
+    </object>
+    <object name="蛋-lv2" type="unitAdd" id="644" x="3260" y="2720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-3-2" />
+        <property name="spawnUnits" value="资源制造仪T2*35" />
+        <property name="team" value="-1" />
+      </properties>
+    </object>
+    <object name="蛋-lv2" type="unitDetect" id="645" x="3460" y="2700" width="60" height="60">
+      <properties>
+        <property name="id" value="J-3-2" />
+        <property name="unitType" value="资源制造仪T4" />
+      </properties>
+    </object>
+    <object name="蛋-lv3" type="unitAdd" id="646" x="3280" y="2720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-3-3" />
+        <property name="spawnUnits" value="资源制造仪T3*35" />
+        <property name="team" value="-1" />
+      </properties>
+    </object>
+    <object name="蛋-lv3" type="unitDetect" id="647" x="3460" y="2700" width="60" height="60">
+      <properties>
+        <property name="id" value="J-3-3" />
+        <property name="unitType" value="资源制造仪T5" />
+      </properties>
+    </object>
+    <object name="蛋-lv4" type="unitAdd" id="648" x="3300" y="2720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-3-4" />
+        <property name="spawnUnits" value="资源制造仪T4*35" />
+        <property name="team" value="-1" />
+      </properties>
+    </object>
+    <object name="蛋-lv4" type="unitDetect" id="649" x="3460" y="2700" width="60" height="60">
+      <properties>
+        <property name="id" value="J-3-4" />
+        <property name="unitType" value="资源制造仪T6" />
+      </properties>
+    </object>
+    <object name="蛋-lv5" type="unitAdd" id="650" x="3320" y="2720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-3-5" />
+        <property name="spawnUnits" value="资源制造仪T5*35" />
+        <property name="team" value="-1" />
+      </properties>
+    </object>
+    <object name="蛋-lv5" type="unitDetect" id="651" x="3460" y="2700" width="60" height="60">
+      <properties>
+        <property name="id" value="J-3-5" />
+        <property name="unitType" value="资源制造仪T7" />
+      </properties>
+    </object>
+    <object name="蛋-lv6" type="unitAdd" id="652" x="3340" y="2720" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="J-3-6" />
+        <property name="spawnUnits" value="资源制造仪T6*35" />
+        <property name="team" value="-1" />
+      </properties>
+    </object>
+    <object name="蛋-lv6" type="unitDetect" id="653" x="3460" y="2700" width="60" height="60">
+      <properties>
+        <property name="id" value="J-3-6" />
+        <property name="unitType" value="资源制造仪T8" />
+      </properties>
+    </object>
+    <object name="核" type="mapText" id="658" x="330" y="1370.75" width="20" height="20">
+      <properties>
+        <property name="deactivatedBy" value="m-1-" />
+        <property name="text" value="兑换核弹：核爆物质提取" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="核" type="mapText" id="659" x="330" y="1410" width="20" height="20">
+      <properties>
+        <property name="deactivatedBy" value="m-1-" />
+        <property name="text" value="兑换条件：在浅水处放置3艘T2航空母舰" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="核" type="mapText" id="660" x="3250" y="1371.25" width="20" height="20">
+      <properties>
+        <property name="deactivatedBy" value="m-1-" />
+        <property name="text" value="兑换核弹：核爆物质提取" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="核" type="mapText" id="661" x="3250" y="1410" width="20" height="20">
+      <properties>
+        <property name="deactivatedBy" value="m-1-" />
+        <property name="text" value="兑换条件：在浅水处放置3艘T2航空母舰" />
+        <property name="textColor" value="#FFBB66" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="帝空模块" type="unitAdd" id="685" x="1790" y="-460" width="20" height="20">
+      <properties>
+        <property name="spawnUnits" value="帝空_T,帝空_G,帝空_F" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+  </objectgroup>
+  <objectgroup name="UnitObjects">
+    <object name="11" id="83" x="330" y="1790" width="20" height="20">
+      <properties>
+        <property name="team" value="10" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="12" id="84" x="3420" y="2620" width="20" height="20">
+      <properties>
+        <property name="team" value="11" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="13" id="85" x="3250" y="1790" width="20" height="20">
+      <properties>
+        <property name="team" value="12" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="14" id="86" x="1700" y="1220" width="20" height="20">
+      <properties>
+        <property name="team" value="13" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="15" id="87" x="1760" y="1220" width="20" height="20">
+      <properties>
+        <property name="team" value="14" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="16" id="88" x="1820" y="1220" width="20" height="20">
+      <properties>
+        <property name="team" value="15" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="17" id="89" x="1880" y="1220" width="20" height="20">
+      <properties>
+        <property name="team" value="16" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="实验室" id="90" x="1790" y="2610" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="概念型实验室" />
+      </properties>
+    </object>
+    <object name="1" id="91" x="1790" y="4610" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="3" id="92" x="1790" y="4610" width="20" height="20">
+      <properties>
+        <property name="team" value="2" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="4" id="93" x="1790" y="4610" width="20" height="20">
+      <properties>
+        <property name="team" value="3" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="5" id="94" x="1790" y="4610" width="20" height="20">
+      <properties>
+        <property name="team" value="4" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="6" id="95" x="1790" y="4610" width="20" height="20">
+      <properties>
+        <property name="team" value="5" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="7" id="96" x="1790" y="4610" width="20" height="20">
+      <properties>
+        <property name="team" value="6" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="8" id="97" x="1790" y="4610" width="20" height="20">
+      <properties>
+        <property name="team" value="7" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="9" id="98" x="1790" y="4610" width="20" height="20">
+      <properties>
+        <property name="team" value="8" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="10" id="99" x="1790" y="4610" width="20" height="20">
+      <properties>
+        <property name="team" value="9" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="11" id="100" x="1790" y="4610" width="20" height="20">
+      <properties>
+        <property name="team" value="10" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="12" id="101" x="1790" y="4610" width="20" height="20">
+      <properties>
+        <property name="team" value="11" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="13" id="102" x="1790" y="4610" width="20" height="20">
+      <properties>
+        <property name="team" value="12" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="14" id="103" x="1790" y="4610" width="20" height="20">
+      <properties>
+        <property name="team" value="13" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="15" id="104" x="1790" y="4610" width="20" height="20">
+      <properties>
+        <property name="team" value="14" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="16" id="105" x="1790" y="4610" width="20" height="20">
+      <properties>
+        <property name="team" value="15" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="17" id="106" x="1790" y="4610" width="20" height="20">
+      <properties>
+        <property name="team" value="16" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="18" id="107" x="1790" y="4610" width="20" height="20">
+      <properties>
+        <property name="team" value="17" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="19" id="108" x="1790" y="4610" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="20" id="109" x="1790" y="4610" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="21" id="110" x="1790" y="4610" width="20" height="20">
+      <properties>
+        <property name="team" value="20" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="蛋" id="111" x="1680" y="1160" width="20" height="20">
+      <properties>
+        <property name="team" value="13" />
+        <property name="unit" value="资源制造仪T3" />
+      </properties>
+    </object>
+    <object name="蛋" id="112" x="1700" y="1160" width="20" height="20">
+      <properties>
+        <property name="team" value="13" />
+        <property name="unit" value="资源制造仪T3" />
+      </properties>
+    </object>
+    <object name="蛋" id="113" x="1680" y="1180" width="20" height="20">
+      <properties>
+        <property name="team" value="13" />
+        <property name="unit" value="资源制造仪T3" />
+      </properties>
+    </object>
+    <object name="蛋" id="114" x="1700" y="1180" width="20" height="20">
+      <properties>
+        <property name="team" value="13" />
+        <property name="unit" value="资源制造仪T3" />
+      </properties>
+    </object>
+    <object name="蛋" id="115" x="1880" y="1160" width="20" height="20">
+      <properties>
+        <property name="team" value="16" />
+        <property name="unit" value="资源制造仪T3" />
+      </properties>
+    </object>
+    <object name="蛋" id="116" x="1900" y="1160" width="20" height="20">
+      <properties>
+        <property name="team" value="16" />
+        <property name="unit" value="资源制造仪T3" />
+      </properties>
+    </object>
+    <object name="蛋" id="117" x="1880" y="1180" width="20" height="20">
+      <properties>
+        <property name="team" value="16" />
+        <property name="unit" value="资源制造仪T3" />
+      </properties>
+    </object>
+    <object name="蛋" id="118" x="1900" y="1180" width="20" height="20">
+      <properties>
+        <property name="team" value="16" />
+        <property name="unit" value="资源制造仪T3" />
+      </properties>
+    </object>
+    <object name="蛋" id="119" x="1760" y="1160" width="20" height="20">
+      <properties>
+        <property name="team" value="14" />
+        <property name="unit" value="资源制造仪T3" />
+      </properties>
+    </object>
+    <object name="蛋" id="120" x="1780" y="1160" width="20" height="20">
+      <properties>
+        <property name="team" value="14" />
+        <property name="unit" value="资源制造仪T3" />
+      </properties>
+    </object>
+    <object name="蛋" id="121" x="1760" y="1180" width="20" height="20">
+      <properties>
+        <property name="team" value="14" />
+        <property name="unit" value="资源制造仪T3" />
+      </properties>
+    </object>
+    <object name="蛋" id="122" x="1780" y="1180" width="20" height="20">
+      <properties>
+        <property name="team" value="14" />
+        <property name="unit" value="资源制造仪T3" />
+      </properties>
+    </object>
+    <object name="蛋" id="123" x="1800" y="1160" width="20" height="20">
+      <properties>
+        <property name="team" value="15" />
+        <property name="unit" value="资源制造仪T3" />
+      </properties>
+    </object>
+    <object name="蛋" id="124" x="1820" y="1160" width="20" height="20">
+      <properties>
+        <property name="team" value="15" />
+        <property name="unit" value="资源制造仪T3" />
+      </properties>
+    </object>
+    <object name="蛋" id="125" x="1800" y="1180" width="20" height="20">
+      <properties>
+        <property name="team" value="15" />
+        <property name="unit" value="资源制造仪T3" />
+      </properties>
+    </object>
+    <object name="蛋" id="126" x="1820" y="1180" width="20" height="20">
+      <properties>
+        <property name="team" value="15" />
+        <property name="unit" value="资源制造仪T3" />
+      </properties>
+    </object>
+    <object name="18" id="127" x="300" y="1140" width="20" height="20">
+      <properties>
+        <property name="team" value="17" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="19" id="128" x="360" y="1140" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="20" id="129" x="3220" y="1140" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="21" id="130" x="3280" y="1140" width="20" height="20">
+      <properties>
+        <property name="team" value="20" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="激光防御" id="131" x="480" y="980" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="132" x="500" y="980" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="133" x="480" y="1000" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="134" x="500" y="1000" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="135" x="480" y="980" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="136" x="500" y="980" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="137" x="480" y="1000" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="138" x="500" y="1000" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="139" x="480" y="980" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="140" x="500" y="980" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="141" x="480" y="1000" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="142" x="500" y="1000" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="143" x="480" y="980" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="144" x="500" y="980" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="145" x="480" y="1000" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="146" x="500" y="1000" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="修复湾" id="147" x="490" y="990" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="repairbay" />
+      </properties>
+    </object>
+    <object name="修复湾" id="148" x="490" y="990" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="repairbay" />
+      </properties>
+    </object>
+    <object name="修复湾" id="149" x="490" y="990" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="repairbay" />
+      </properties>
+    </object>
+    <object name="修复湾" id="150" x="490" y="990" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="repairbay" />
+      </properties>
+    </object>
+    <object name="激光防御" id="151" x="3080" y="980" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="152" x="3100" y="980" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="153" x="3080" y="1000" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="154" x="3100" y="1000" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="155" x="3080" y="980" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="156" x="3100" y="980" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="157" x="3080" y="1000" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="158" x="3100" y="1000" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="159" x="3080" y="980" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="160" x="3100" y="980" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="161" x="3080" y="1000" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="162" x="3100" y="1000" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="163" x="3080" y="980" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="164" x="3100" y="980" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="165" x="3080" y="1000" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="激光防御" id="166" x="3100" y="1000" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </object>
+    <object name="修复湾" id="167" x="3090" y="990" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="repairbay" />
+      </properties>
+    </object>
+    <object name="修复湾" id="168" x="3090" y="990" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="repairbay" />
+      </properties>
+    </object>
+    <object name="修复湾" id="169" x="3090" y="990" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="repairbay" />
+      </properties>
+    </object>
+    <object name="修复湾" id="170" x="3090" y="990" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="repairbay" />
+      </properties>
+    </object>
+    <object name="海军" id="171" x="3280" y="1260" width="20" height="20">
+      <properties>
+        <property name="team" value="20" />
+        <property name="unit" value="seaFactory" />
+      </properties>
+    </object>
+    <object name="海军" id="172" x="3300" y="1260" width="20" height="20">
+      <properties>
+        <property name="team" value="20" />
+        <property name="unit" value="seaFactory" />
+      </properties>
+    </object>
+    <object name="海军" id="173" x="3280" y="1280" width="20" height="20">
+      <properties>
+        <property name="team" value="20" />
+        <property name="unit" value="seaFactory" />
+      </properties>
+    </object>
+    <object name="海军" id="174" x="3300" y="1280" width="20" height="20">
+      <properties>
+        <property name="team" value="20" />
+        <property name="unit" value="seaFactory" />
+      </properties>
+    </object>
+    <object name="海军" id="175" x="3280" y="1260" width="20" height="20">
+      <properties>
+        <property name="team" value="20" />
+        <property name="unit" value="seaFactory" />
+      </properties>
+    </object>
+    <object name="海军" id="176" x="3300" y="1260" width="20" height="20">
+      <properties>
+        <property name="team" value="20" />
+        <property name="unit" value="seaFactory" />
+      </properties>
+    </object>
+    <object name="海军" id="177" x="3280" y="1280" width="20" height="20">
+      <properties>
+        <property name="team" value="20" />
+        <property name="unit" value="seaFactory" />
+      </properties>
+    </object>
+    <object name="海军" id="178" x="3300" y="1280" width="20" height="20">
+      <properties>
+        <property name="team" value="20" />
+        <property name="unit" value="seaFactory" />
+      </properties>
+    </object>
+    <object name="海军" id="179" x="280" y="1260" width="20" height="20">
+      <properties>
+        <property name="team" value="17" />
+        <property name="unit" value="seaFactory" />
+      </properties>
+    </object>
+    <object name="海军" id="180" x="300" y="1260" width="20" height="20">
+      <properties>
+        <property name="team" value="17" />
+        <property name="unit" value="seaFactory" />
+      </properties>
+    </object>
+    <object name="海军" id="181" x="280" y="1280" width="20" height="20">
+      <properties>
+        <property name="team" value="17" />
+        <property name="unit" value="seaFactory" />
+      </properties>
+    </object>
+    <object name="海军" id="182" x="300" y="1280" width="20" height="20">
+      <properties>
+        <property name="team" value="17" />
+        <property name="unit" value="seaFactory" />
+      </properties>
+    </object>
+    <object name="海军" id="183" x="280" y="1260" width="20" height="20">
+      <properties>
+        <property name="team" value="17" />
+        <property name="unit" value="seaFactory" />
+      </properties>
+    </object>
+    <object name="海军" id="184" x="300" y="1260" width="20" height="20">
+      <properties>
+        <property name="team" value="17" />
+        <property name="unit" value="seaFactory" />
+      </properties>
+    </object>
+    <object name="海军" id="185" x="280" y="1280" width="20" height="20">
+      <properties>
+        <property name="team" value="17" />
+        <property name="unit" value="seaFactory" />
+      </properties>
+    </object>
+    <object name="海军" id="186" x="300" y="1280" width="20" height="20">
+      <properties>
+        <property name="team" value="17" />
+        <property name="unit" value="seaFactory" />
+      </properties>
+    </object>
+    <object name="模块" id="187" x="3090" y="910" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="模块化蜘蛛T2" />
+      </properties>
+    </object>
+    <object name="航母" id="188" x="3260" y="1360" width="20" height="20">
+      <properties>
+        <property name="team" value="20" />
+        <property name="unit" value="航空母舰T2" />
+      </properties>
+    </object>
+    <object name="航母" id="189" x="3200" y="1360" width="20" height="20">
+      <properties>
+        <property name="team" value="20" />
+        <property name="unit" value="航空母舰T2" />
+      </properties>
+    </object>
+    <object name="航母" id="190" x="3320" y="1360" width="20" height="20">
+      <properties>
+        <property name="team" value="20" />
+        <property name="unit" value="航空母舰T2" />
+      </properties>
+    </object>
+    <object name="航母" id="191" x="3380" y="1360" width="20" height="20">
+      <properties>
+        <property name="team" value="20" />
+        <property name="unit" value="航空母舰T2" />
+      </properties>
+    </object>
+    <object name="航母" id="192" x="260" y="1360" width="20" height="20">
+      <properties>
+        <property name="team" value="17" />
+        <property name="unit" value="航空母舰T2" />
+      </properties>
+    </object>
+    <object name="航母" id="193" x="200" y="1360" width="20" height="20">
+      <properties>
+        <property name="team" value="17" />
+        <property name="unit" value="航空母舰T2" />
+      </properties>
+    </object>
+    <object name="航母" id="194" x="320" y="1360" width="20" height="20">
+      <properties>
+        <property name="team" value="17" />
+        <property name="unit" value="航空母舰T2" />
+      </properties>
+    </object>
+    <object name="航母" id="195" x="380" y="1360" width="20" height="20">
+      <properties>
+        <property name="team" value="17" />
+        <property name="unit" value="航空母舰T2" />
+      </properties>
+    </object>
+    <object name="模块" id="196" x="490" y="910" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="模块化蜘蛛T2" />
+      </properties>
+    </object>
+    <object name="1" id="197" x="3935.33" y="-1547.52" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="初始核弹井" id="544" x="100" y="1640" width="20" height="20">
+      <properties>
+        <property name="team" value="10" />
+        <property name="unit" value="核弹发射井T1" />
+      </properties>
+    </object>
+    <object name="初始核弹井" id="545" x="3480" y="1640" width="20" height="20">
+      <properties>
+        <property name="team" value="12" />
+        <property name="unit" value="核弹发射井T1" />
+      </properties>
+    </object>
+    <object name="初始蛋蛋" id="636" x="100" y="2720" width="20" height="20">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="资源制造仪T1" />
+      </properties>
+    </object>
+    <object name="初始蛋蛋" id="639" x="3480" y="2720" width="20" height="20">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="资源制造仪T1" />
+      </properties>
+    </object>
+    <object name="模块" id="678" x="410" y="910" width="20" height="20">
+      <properties>
+        <property name="team" value="18" />
+        <property name="unit" value="模块化蜘蛛T2" />
+      </properties>
+    </object>
+    <object name="模块" id="679" x="3170" y="910" width="20" height="20">
+      <properties>
+        <property name="team" value="19" />
+        <property name="unit" value="模块化蜘蛛T2" />
+      </properties>
+    </object>
+  </objectgroup>
+</map>

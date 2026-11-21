@@ -1,0 +1,667 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<map version="1.2" orientation="orthogonal" renderorder="right-down" width="210" height="140" tilewidth="20" tileheight="20" nextobjectid="32">
+  <properties>
+    <property name="fill" value="89" />
+    <property name="tag" value="RW" />
+    <property name="sw4" value="143" />
+    <property name="sw5" value="164" />
+    <property name="sw1" value="169" />
+    <property name="sw2" value="168" />
+    <property name="sw3" value="86" />
+    <property name="sw6" value="62" />
+  </properties>
+  <tileset firstgid="1" name="Lava" columns="3" tilecount="15" tileheight="20" tilewidth="20">
+    <image source="bitmaps/lava.png" width="60" height="100" trans="008a76" />
+    <tile id="0">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="1">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="2">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="3">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="4">
+      <properties>
+        <property name="lava" value="" />
+      </properties>
+    </tile>
+    <tile id="5">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="6">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="7">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="8">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="10">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="11">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="13">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="14">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="9">
+      <properties>
+        <property name="lava" value="" />
+      </properties>
+    </tile>
+    <tile id="12">
+      <properties>
+        <property name="lava" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="109" name="longgrass2stone_flat" columns="3" tilecount="21" tileheight="20" tilewidth="20">
+    <image source="../rusted_warfare/assets/tilesets/bitmaps/longgrass2stone_flat.png" width="60" height="140" />
+  </tileset>
+  <tileset source="terrain/Long Grass.tsx" firstgid="130" />
+  <tileset firstgid="1104" name="Lava" columns="3" tilecount="15" tileheight="20" tilewidth="20">
+    <image source="bitmaps/lava.png" width="60" height="100" trans="008a76" />
+    <tile id="0">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="1">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="2">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="3">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="4">
+      <properties>
+        <property name="lava" value="" />
+      </properties>
+    </tile>
+    <tile id="5">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="6">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="7">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="8">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="10">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="11">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="13">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="14">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="1185" name="Stone Lava - Ridge" columns="3" tilecount="15" tileheight="20" tilewidth="20">
+    <image source="bitmaps/stone2lava.png" width="60" height="100" trans="008a76" />
+    <tile id="0">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="1">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="2">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="3">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="5">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="6">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="7">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="8">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="10">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="11">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="13">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="14">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="1200" name="Mountain" columns="7" tilecount="35" tileheight="20" tilewidth="20">
+    <image source="terrain/bitmaps/mountain.png" width="140" height="100" trans="008a76" />
+    <tile id="7">
+      <properties>
+        <property name="small-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="8">
+      <properties>
+        <property name="small-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="9">
+      <properties>
+        <property name="small-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="21">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="22">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="28">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="29">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="1235" name="土" columns="1" tilecount="1" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAACXBIWXMAAFxGAABcRgEUlENBAAAA
+B3RJTUUH6gMFDDs0H2n6TwAAA+lJREFUOI19lMtyG0UARc9097x6ZmQptqW4AkkqVDb8CWv+hL9l
+QwAHR45laZ49r36wMCwoCu7qLm+dqnuin378IVylEctiISs5XBUYL9DCY8zA3d0dx+ORrm/JspT9
+/sC6rKyrZZomAJz3XM7P+OBQ71/f0HYXMplyGUY+ryuFLhDK8fHjRyCQpil9L1mmhXVZcS7QNA3O
+ObTWiGzD27cFAKKqXsp/pe8HhJCockskBYMxnE5PuFiz2WyYppG5fWZaFtI0QzjvyHVJrGIiIXBD
+zdKdKXJN2zY8NgZjBrxp6dqWx9oA8OZ6w93da9bV0a2BIteUZYFopkCWJGhdEILHJwVNU3M2K103
+cPxyRMqI/f6WNx++51AK+qEjLXfUlwsqFmTRQlVVdF2HkuuIE4JVplylEV3X0y8j9fGe+gU5Wu9J
+swRpV1qVEWVXuKnjav8NKk44nZ64v78nrl4hJhQAzeNn2gWiCL5585Y0zwghoGRC3TScuoWH54Fm
+8sjV8Ph45PTwK7vdlnmZKQqNNw3qy6efEVIihSQES5Jpks01uR24xAVuqPHecX56opAenMe6hTTP
+ieOY4/ErsYqJ45hTvyLSq1tUHGNVjhKSd+/ekfoJ7wLvXm/x3nEZLEwdg4u41M846+nbltPphE80
+Zpw49QvOnBHvD1uud69QdmBdLf0akecZAMvsmKYZsfYIIVBupCgKsu2esqxwznN++I2mufB0/wtl
+UaGs82idEycJsZi4rmK8UzRLRNc3SCnQuiBOJIf9AbOu6CQhz3KWZeH+6wURSXxwbLdbVJIktH0P
+AardDU9PJ5I4Qwv4dHri5vaWNMuIlaS3EukmtNYEH8i2txyWGSErmrpGSoEaxhFvHdc314QQqOuG
+srR0S/S/D/o7mzzhNAt8cDjnUUPbouIYY2aaKRAHx/P5grcOgKrcsIiE2PUoaZlmz7osWOthGnAq
+Q9uJEXDOolQcY0aDEJJceL778JHHZsSZhq+PR6IIormlvD0glaDvOrqup2nbFxkIyTxNGDNyNhah
+kgQAKSVCCLpuQAvP6S9+9eTQumRdVz7f/8E0T/z+tSaKAsZKrF241DWvdjv60wNqHAa6JUL0Z4pq
+gxn7f/ArlMOMA13XEULAqZKbzYIZDJnwdG3P9vAthXQYL1EKi1gHAiCI/sWv7WqaKVBIj5SSVAlE
+JNC5RihJtakoyxIRKYwxqH726Lwgy1OiKAAZgx1edBaBtY5ceFwkGGaH6J+xdkFKxXZ3RR/lhCSi
+TF5GqFgpVmvxznHY73n4cmS72wJQT46yqhidJA0Lh+uCaTY467HO4qxDp47YzcwjzMvIn8qDShTI
+gXrAAAAAAElFTkSuQmCC
+</property>
+    </properties>
+    <image source="../../../贴图/土.png" width="20" height="20" />
+  </tileset>
+  <tileset firstgid="1236" name="枯地1" columns="1" tilecount="1" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAACXBIWXMAAFxGAABcRgEUlENBAAAA
+B3RJTUUH6gMFCQoyNpyaIwAABARJREFUOI0l1EdyI2UAQOH3pw5St9SSZcuewUwouMJchh0n4Yws
+XBRMMamMk2JLHf/Ewgd4u1ef+O33j1EIibWWNJFIKQhSM3QjZZ7R2h4QHHY9mTHYEDgeO6ZFQlWm
+HOqeDz8vGazDe4ccfWC7aUBKymKCDQHvHKP1JIkkOs9u2zKbGNDw9s2c9fUM4eF4HlBB8Pnrlqa1
+2BDQznrWlxNO7YB1HnzgeOopp4bHl5pzY5mVKTGC9ILvP3ZUixyTCoRWTEqNMQonIjiLPNUdgwvY
+0XP39zPeCRZlCkqSZQZvA31rUUZyeT1jscgJ3rJaFRSZIcsNIXr6zuKdQCdaoY0mTQyrSrPdd/z6
+cUXddcgI66sCgK4JeE5Y65FKoKVgEAFrLU1jUVKyrTtkVWWcTh1KCYQQKCW4vz/SNo6u9wQiMUbW
+NxlGRXYvLVmaUp96lE5oe0+aaG5/WqGUQHoXaVuL0pL37y745cMlWkmiFzw9tSAE+2OHdbA/Wj59
+uiUhEkLk3PZ464hNxv3j7rU9nEYWRYrdZnwbd0wyjXWeLNWkqUAJz/pqStMOpKni4elMXTdU8wIb
+LGaSM/YjSgoOpw4tQmAMkZA3rGYZdTNQlCk310uuB8/d5/9YLDNs78mmKdUsg+h5fjmhpGBwnpur
+Emstzkq0TiTeOZLEUB97wBO7Offs0FoxKxKEiKSThL6x3D0/YZQEKVksc4KPbHYdV+sp7tiihYTp
+LKNrLOU0JctyzrpHS4H1nsnE4EVARMG57VitCtYXFW3b8/3hwPqyQEqBt55qUSCDhXHwmEQx+kA3
+OJbLDGPAKLi+nJOlGiHBaM3YKR5eDvT+9d1D3TItDVoIusEhL6ucMtMEH6nrhu2mIQY4NiPPh44A
+hNGx3TRURYJQA0aCwFOVCUYrtAKPZLtp0DZErlcz0v2Zv/YNuYz882VD8J55mfHvlxeG0TMvUkKE
+GCQvu5aiyDCpIs/0KygxEJ1HAjR1z+dvB5SUVBclqypnVS5IMoM2ihgip7NFKsn7dyvW64rzqUdp
+xaycMHpPEFBdlMggPO04orRiWcwQMYCSkHq0lCglKcqU6URiDzlff2xQ0nP7ZsY4WEb7CsrTQ42I
+AemiwDqospwgHTrRGC25qFKUBqngzXpOUWboxcAkVbjgcYAbHX/ePRKcYDXL0YlGRhGJIhDSSJEp
+nB8ZRsfoInUzsD8NhBDYbDpiDCgtiICQglNjqQpF0zmsizg/ot7eZn88vLSI4PEhMs0Nows8PtYM
+gyPXkmZw5EVCoiVvV3MGbxEAQZCkhn5wuBEmE42uLiYoIamWOct5zuHcoI1iWmbcrEqOpzP7w4hB
+cI6wzweOB09TDwgNwoGPgWKWYn3gf7R1Q+19j3uOAAAAAElFTkSuQmCC
+</property>
+    </properties>
+    <image source="../../../贴图/枯地1.png" width="20" height="20" />
+  </tileset>
+  <tileset firstgid="1237" name="枯地" columns="1" tilecount="1" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAACXBIWXMAAFxGAABcRgEUlENBAAAA
+B3RJTUUH6gMFCCwC0llDnAAABBpJREFUOI0l00lyG9cBgOH/TT0A3Y2JgEDTJZVUUVWuYN8muxwj
+N8zCXrhsR46ViEUSBIFu9Pj6DVnku8Mn/vb3z1EKibWWNJUoKQlSMw6WMs/o5wEQXM4jmTG4ELhc
+B4oyYV2mXJuRTx92TLMjeIecnOd0ahFKURZL5uBxbmayjjSRROc5v/asFgah4fuHNff3FdJD3U7o
+IPj9j1fazjIHj3az53hY0HQTzqXgA3UzUhaGx5earpupypQYQXrBv7+e2WwX6FQgtGJZGYxReBHB
+WeStHrAuMlvPT78842bBpkpBSfI8wdnA0M/oRHG4X7HdLgjest+XVHlCnhtidPS9xc0CnRqFMpos
+MRw2mtPbwF//sqcZekSMHI8lAuhbj6PBWo9SAi0Fk/DYOdC2M1pKTvWA3Gwybk2PUgIhBEYL/vPf
+K23r6AdPJOJD4PhdjlGR80tPlmU0zYDSKd3gSRPNh/d7jBbIeY50/Yw2ik8f7/j86YBRErzg6akn
+CrjUA7ODt+vMjz+8JyUSQqTtBvzsiF3O18cznz8d0NebZVukTK8ZX6Yzy9xgnSdLNWkq0MJz/25J
+10+kqeLbU0tTt2zWJTZYiuWCaZgwSnK5DWgRAlOIhLzlsMqp25GyTHn4bsf96Pn5129sdxnz6FkU
+GZsqQ0TP00uDloLR9Ty8K7HW4rxE60TinSNJDPV1ADxhWPOVM4nRrMoEKSP5MqVvLT89NSRaIqRk
+s8uJHl7OA++OBe7aoYWEcpXTt5ZlkZFlmqYZSJRk9p5iaXAiIKKg7QYOh5Lj3ZquG/nz8cLxUCKl
+wM+OzbZEhhnG0WESxeQ9wzRzt8vRJqJV5HhYk6UaISPGaGwv+fZ8YfIBO3kudUdZGYyQDNOMPGwW
+VLnG+0hdd5xOHSFA3VqeLwMRCNbxeurYFAmoiVQJBJ5tlWC0QitwSE6nDjn7wH5fsS8TusGD8/z2
+5cTlbaDQit/+9cLLaWJdpIQIBMnzueN2s5hUURWGRGmECOA8EuBWj/z6xxtaSVa7krt1zr7akub/
+fxpCpGlnhJJ8/LjneNxwu40oo1mVS6x3BBFZ7UpkEJ7eTmij2RUVIgaEVojUYaRCKklRphQLyXxd
+8OXPE0p63j+smEaLnT34wNNjg4gBOUfB7GCd5wTpMKnBaMHdJkPpiNbw/XFNUeWYzcgyU/jg8ICz
+jn/+/IifBfsqx6QGGUUkikBMIkWucX5inBzWRep24txMhBB4PfWEGNBaEACkoGlnNqWmGxyzizg/
+od5/yP/x7blDxIALkWJhmFzg8bFmGh0LLWnHmUWZkBjJw37N5C0CIAiS1DBMDmdhudDo9W6BEpL1
+Nme3XnBtW0yiKKqMh33FtbnxdrUkCG4RLvlEffF0zQQapAMfA0WVMrnA/wDfTEbNlZZH3gAAAABJ
+RU5ErkJggg==
+</property>
+    </properties>
+    <image source="../../../贴图/枯地.png" width="20" height="20" />
+  </tileset>
+  <tileset firstgid="1238" name="石头" columns="1" tilecount="1" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAACXBIWXMAAFxGAABcRgEUlENBAAAA
+B3RJTUUH6gMFDBcS9FUUHAAAAWpJREFUOI11lOGRxCAIhb9k8l86oINYQlrY1tPB0gFWcPfjBo8l
+rjNODPqQ9wC31+v1s20bq+HuAIjIwwYwxpjr1hqqyjHGeABEhNbaBGcnsZedujuqiohwxIG4rf4D
+9N4REdwdd//YC0zsHwBm9hGlmTHGoLVG7/2ro8xKVRljsFcaGRiXjDEmtdXIFx1VC4DzPJcOVnLE
+GTMD+IswjKrKdV3LKFbRVBnc/c+hqk7h3+/3UqtvdIEpl6qyqyoA931z3/eHs8hcppsvMLOZuNjb
+zWzyr6BvdLNEUQWRuEeWK6gmp3ZK1tHdOSJrsRmlEt9cTlmKGnXY92qoOgUopogQusN/ucTYcxSV
+cqxVldbanGb20fMPh7VMcutlUI4s7LkSIHVKdpYPxswPwEq/sO8Z5O6c50nvfUYRI56zWgX13J6j
+u64LEXkIHVSzveoXTo8MqG2Xn6XsJP5rqQHs9YmqmtSEVcqBDzl+AeUAYF9w2+aRAAAAAElFTkSu
+QmCC
+</property>
+    </properties>
+    <image source="../../../贴图/石头.png" width="20" height="20" />
+  </tileset>
+  <tileset firstgid="1239" name="桥" columns="3" tilecount="12" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+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
+</property>
+    </properties>
+    <image source="../../../贴图/桥.png" width="60" height="80" />
+  </tileset>
+  <tileset firstgid="1251" name="草" columns="1" tilecount="1" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAACXBIWXMAAFxGAABcRgEUlENBAAAA
+B3RJTUUH6gMFDDU6ZlL6xgAAA/RJREFUOI0llMluG0cYBqv/7tlnOJREyrLhBTGC3HPJA+Whcwgc
+2IbhRRZNiUPO1msOun9VlwI+9eff75MowTmHzgUtCsRgZ0tblVzcAijm40KZZfgYGU8zeZvTdgWX
+YeHl22us84TgERci58OIEqFra1yMOO9xLmByIfnA+GuirTOigd2rnu3dBhPgclnJo+Lbp18sk8PF
+iAku0O9rxmnF+wAhMp0Xyibj8DCwjo66K0gJsqD48eVIc1VBociMpugMTabxKhG9Q5ZhxvlIsIHP
+//5EeUXbFaCFvMxILmInh8qEzd2G9qoiBEe/a6nLjLzKCCmwzg7lFcYYjc4MZZ5htobT48yb9zuG
+eUYl6G9bFBDGyCNnggsordCiWFUkOocdHZkIp2FGmm3JdJ5RWqGUQmvF4esJO3rcEogkYkq0L0tE
+J6aHibIomM4LmcmxSyDLDbevd2itkOgT6+QQI9y9u+H1b3uMFiQohvuJpBTn00zwMJ8cf/z1hpxE
+iolpWojO09qS+x/HZ3Y8WzZtQTuWfLdHitLgfCAvDLpQKBXY3jbM04opNL/uL4zDyKZvSdFR1hXj
+YjGiGM4zRsWIjYmDGtlsSsZxpewK9nfX7NfAhw/faK5L4hIomoJuU5JS4Phwfpb4wM1th3OO5ASj
+ciF4T55nzKcFCPSp5/7HEWM0TZuDSuR1jh0dn37eY7SgRKiuK+qQGI4z/YuG9TQhCJR9iY+RrMpo
+r1pO2YIRhQ+BvM5QRlCimKeZza7h7e8v2d/1nB4mlNYoUQQXaK9aRDlwa0DnmjVE1tXTXZeQgdKw
+2/fkhSEJaGOQWfPw8IQNkWgDwzBRdBm5UqyrR7bbiro0pJAYh5HhMJIiTKPl8WkmAcl6LoeRts2x
+esUIJAJNl5MZjWgICMNhxPiYuN5tyB8vPD2O1JL4+vFACIGmK/n68QFvA21bQAKJwtNxom5LpNBk
+pUGLIqaI8gEBWIaFb5+f0CI0Nx39tuK2u8KUGSbTpJiYLw60cPdux/WLLfN5QYxm09XYEAgKmpsO
+8SowWos2mpt2AymStOCKQCaC0kLZFRS10E0V374cQAL7Vxvc6nDu+VBO3wdIEQlJET1s6gonHp0b
+tBG6bQHmOcz+RU/RlVyalaLQ+BgIQLCe//75gXjF1aZC5waJKhFVxGeJstTYYHHW431iHFeG80qM
+kcthJqSIGEUEkiiW0VG3mnV+3ttgMctx5XKxNK3BljlNX2B94PvnX0CiLDMefg7kfYEWxX7f83MY
+ICaaTYXSimVyJJeo2gLTXNdkoqmuSvptzekyogtD1Vfsdx2PpzPTyVIohU0wjhY/ROxpwRvIZ4BE
+flUQSPwPSaw4gtqGfpoAAAAASUVORK5CYII=
+</property>
+    </properties>
+    <image source="../../../贴图/草.png" width="20" height="20" />
+  </tileset>
+  <layer name="Ground" width="210" height="140">
+    <data encoding="base64" compression="zlib">
+   eJzt3U1uE1sUhVELHATDZQowEhASNJkLP4qUVsREiOQ0bdeFlF17X6/GaeZT9N5eDUrl+G63290555xzzjnnnHPOXeh+7sfu1+Dp/Xvv09N9fr5Xu8O9frqPZ+7PfuyO/eyHIzdz7yX//Tjq6X058v/rDUcc6XEU1OPoNnoccdSw0/QeRxw17DS9d0lHxzY5c4+j2+1xxFHDTtN7HHHUsNP0HkccNew0vcdRv6Pm/c3SO+Xomns59rPpz+Gu0eOop8dRbo+jnh5HuT2Oenoc5fY46ulxlNvjqKeX6uglvVme63HU0+OIo4adpvc44qhhp+m9GR3N0uOop8dRbm/U0ehe3u/G7vd+7PQOd78/f99P3I/BO/Xzt94b9cZRR+9hf/5ad5re42iuHkccNew0vccRRw07Te9xxFHDTtN7HHHUsNP0HkccNew0vccRRw07Te9xxFHDTtN7HM3haPS9lrT9zdJbcpS2v1l6x94Busbnj1p3mt7jiKOGnab3OOKoYafpPY44athpeo8jjhp2mt7jaJve6OdrOeroccRRw07Texxx1LDT9B5HHDXsNL33uHCtO03vre1oq/eCEv/eyFY93w+73Fvb2yzv1zXvniOOOMrrccQRRxxxxFFCjyOOOMp2NPpcKr3HEUccccQRRwk9jjjiiCOOOEropTsa3cva78kk7nmr3lrf29L4HG60t/Z7QaO/H0c9PY444ogjjjhK6HHEEUccccRRQm8NR63P4bZyNPr7cdTT44gjjjjiiKOE3lr/PkraPUccNTpK2/2tORrdi/eCLtfz+aPlXvp7QRxt3+OII4444oijhB5HHHHEEUccJfQ44ogjjjjiKKHHEUccccQRRwk9jvodje7Fe0GX63kvaPnS3wviaPue91Q54ijDUdruOeKIo7weRxxxxBFHHY5OPeca3Wl6b21Ho78fRz09jjjiiCOOOEroccQRRxxxNL4X7wVdrud7W5Z76e8FcbR9jyOOOOKII44SehxxxBFHHHGU0PP5o+UeRxxxxBFHHCX0OOKII4444iihl+5odC9rvxekd7j7hXvpXtbe3yy90eeEHHX0HhaudafpPY7m6nHEUcNO03sccdSw0/QeRxw17DS9x9E2vdHnhBx19DjiqGGn6T2OOGrYaXqPI44adpre42gOR1u9F6R3uCVHafubpTfL+3V6HHHUs9P0HkccNew0vccRRw07Te9xxFHDTtN7HHHUsNP0HkccNew0vccRRw07Te9xxFHDTtN7j/vz17rT9N5Wf58h8e+DzNJb63tb1v57KHocNfU4yu1x1NOb0dHo50236nE0X48jjhp2mt7jiKOGnab3Uh01/t3VtXsc9fQ4yu1x1NPjKLfHUU+Po9weRz09jnJ7o46a9zdLz/fDXv853GiPo54eRxw17DS9xxFHDTtN73HEUcNO03sccdSw0/Se74e9bI+j2+hxxFHDTtN7HHHUsNP0HkccNew0vff16b4939vd4d5xVOXIOeecc84555xz7n/uL3q8jBY=
+  </data>
+  </layer>
+  <layer name="Items" width="210" height="140">
+    <data encoding="base64" compression="zlib">
+   eJztwQENAAAAwqD3T20PBxQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPBmy28AAQ==
+  </data>
+  </layer>
+  <layer name="Units" width="210" height="140">
+    <data encoding="base64" compression="zlib">
+   eJztwQENAAAAwqD3T20PBxQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPBmy28AAQ==
+  </data>
+  </layer>
+  <objectgroup name="UnitObejcts">
+    <object id="1" x="3390" y="800" width="20" height="20">
+      <properties>
+        <property name="team" value="2" />
+        <property name="unit" value="A城塔" />
+      </properties>
+    </object>
+    <object id="2" x="3090" y="320" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="A城塔" />
+      </properties>
+    </object>
+    <object id="10" x="3390" y="1980" width="20" height="20">
+      <properties>
+        <property name="team" value="6" />
+        <property name="unit" value="A城塔" />
+      </properties>
+    </object>
+    <object id="11" x="3090" y="2460" width="20" height="20">
+      <properties>
+        <property name="team" value="8" />
+        <property name="unit" value="A城塔" />
+      </properties>
+    </object>
+    <object id="12" x="1090" y="320" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="A城塔" />
+      </properties>
+    </object>
+    <object id="13" x="790" y="800" width="20" height="20">
+      <properties>
+        <property name="team" value="3" />
+        <property name="unit" value="A城塔" />
+      </properties>
+    </object>
+    <object id="15" x="490" y="1400" width="20" height="20">
+      <properties>
+        <property name="team" value="5" />
+        <property name="unit" value="A城塔" />
+      </properties>
+    </object>
+    <object id="16" x="790" y="1980" width="20" height="20">
+      <properties>
+        <property name="team" value="7" />
+        <property name="unit" value="A城塔" />
+      </properties>
+    </object>
+    <object id="17" x="1090" y="2460" width="20" height="20">
+      <properties>
+        <property name="team" value="9" />
+        <property name="unit" value="A城塔" />
+      </properties>
+    </object>
+    <object id="0" x="3690" y="1400" width="20" height="20">
+      <properties>
+        <property name="team" value="4" />
+        <property name="unit" value="A城塔" />
+      </properties>
+    </object>
+    <object id="18" x="-10000" y="-10000" width="20" height="20">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="JLJ" />
+      </properties>
+    </object>
+    <object id="19" x="-10000" y="-10000" width="20" height="20">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="HKX" />
+      </properties>
+    </object>
+  </objectgroup>
+  <objectgroup name="Triggers">
+    <object name="map_info" id="31" x="2" y="5" width="20" height="20">
+      <properties>
+        <property name="type" value="skirmish" />
+      </properties>
+    </object>
+  </objectgroup>
+</map>

@@ -1,0 +1,3380 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<map version="1.2" orientation="orthogonal" renderorder="right-down" width="280" height="170" tilewidth="20" tileheight="20" nextobjectid="3311">
+  <properties>
+    <property name="sw1" value="5251" />
+    <property name="sw2" value="6423" />
+    <property name="sw3" value="6426" />
+    <property name="sw4" value="6440" />
+    <property name="sw5" value="6448" />
+    <property name="sw6" value="6450" />
+  </properties>
+  <tileset firstgid="1" name="misc" columns="3" tilecount="18" tileheight="20" tilewidth="20">
+    <image source="bitmaps/misc.png" width="79" height="120" />
+    <tile id="4">
+      <properties>
+        <property name="res_pool" value="" />
+      </properties>
+    </tile>
+    <tile id="9">
+      <properties>
+        <property name="team" value="none" />
+        <property name="unit" value="tree" />
+      </properties>
+    </tile>
+    <tile id="10">
+      <properties>
+        <property name="team" value="none" />
+        <property name="type" value="1.0" />
+        <property name="unit" value="tree" />
+      </properties>
+    </tile>
+    <tile id="11">
+      <properties>
+        <property name="team" value="none" />
+        <property name="type" value="1.1" />
+        <property name="unit" value="tree" />
+      </properties>
+    </tile>
+    <tile id="12">
+      <properties>
+        <property name="team" value="none" />
+        <property name="type" value="1.2" />
+        <property name="unit" value="tree" />
+      </properties>
+    </tile>
+    <tile id="13">
+      <properties>
+        <property name="team" value="none" />
+        <property name="type" value="1.3" />
+        <property name="unit" value="tree" />
+      </properties>
+    </tile>
+    <tile id="14">
+      <properties>
+        <property name="team" value="none" />
+        <property name="type" value="1.4" />
+        <property name="unit" value="tree" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="6423" name="沙袋" columns="6" tilecount="12" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+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
+</property>
+    </properties>
+    <image source="../../../贴图/沙袋.png" width="120" height="40" />
+  </tileset>
+  <tileset firstgid="6435" name="地面" columns="4" tilecount="16" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYAAACOEfKtAAAACXBIWXMAAFxGAABcRgEUlENBAAAA
+B3RJTUUH6gcZDxIKd0eIsQAABNxJREFUeJztXL2O1DAQnvxckE67d+g4EAVvwCsggURBB9Jxumeg
+o+ExaOjoaRCioqNAAsErUIMQBTpOCLErQLtyliJMMnbsxE6c2HvxJ602O7G/ZPw3tr9Novv3jjYA
+AEkSA2M54HHxHcFqxSDLElitGABA7RgAgLENMJZz56bCV+QM6IwUD7BEsXQLW1UDWPqrFStrj7EN
+R4Y1NSW+FJtvQcAnoBel55IkgiThu0Pxibh0U+BLaSIsbSx9SoS1hLaClB8BxItOgS+lP7BJUxsl
+Ki6MzZm34UWr42nwhSDSE1wQYQxLnDb1uGzu1EZBa3ZqfNwZeUKejNqLm+Cb/NT4UmqQZ66PFbJQ
+jzc0Nb6URiCaCH/Tpk7teDG8AJ2dT4kvBJGeSMUmLNYKAHBNWjWDx3RT44uzLCkJaB9H4iSJaxGp
+mIBGnI1yTImvbIFYO7KBljF+Zo4XpTfA+IqdDF8KAoqSjsuEuO4TwVhe2/KRdZHzzheCSE+U0xhx
+oV18V4Mp2sQaBAD4+g1t9JzMBgCgntg25x2G79pVc3+LzYVibKxFYTETNmdxMiqOHU+fPNJwxC88
+ePgYFsscLmT8Ug6g2V+6lONaoGongo4JOMjSsQNbwU62Y93JobBerWs2fX8rpLSkAaqBVMwsRjHZ
+/KntBhE6BY35MW0Tny7323cf4NbNG5wtzzfG/gZNxCKsaiIUspawXq21u7ksXV/O2WxWs8Vx1Nlf
+a5qIS5iMu3vzeWsaR5qIzlTCfZA5PLwotTvXRHyESddGBE3EAaxoIqouLE5FqA2hCgx4jqaXTWWa
+8utOffpoItxmgiyhbAGusosQndPtVjQNnQeaRPBuXdjcXyuaSH19Oh66FBRFnm9q4/7omkhfqAqB
+2oeK4HEcQZZVq7CgiYwMK5qIS/RtmXle70UmmkhK+zX2dbrzythG2GCIy7RNc0FVBOxq1y2otqgt
+g6m/GKkBLGkisiBism41tTfBNGrHcQQA/LJtdE1k2yFu5QVNZERY0US2HV5oIq7QdyINYO7vYJqI
+T+hSqF00kZhOWwD4gbRq2lEtI/7dQXZOhT4tRTUl6TK9oUBNxNTfoIlYwmCaCK3xpi0n1e82ziZu
+E05vNZG2riXuEeoU8tCTcADPNRGVUypHx9JQtkYTcS0qtSFoIg4wqCayLfBSEzHdhtKFGN1luovs
+WAdeaSJDjXe60V03Cp8LTUQHXfcF2xA0EcewrokMNfYNhb6aiJXnRLYdpv5af05EFkTa1sKqtBRd
+88nyqtJ6q4kMNeiLeUz+LnJ29hMODi7VzgVNxCFG1URsbL/3wa/FQmr3ShPxOfoul0up3StN5MXL
+VxzHlcsHhm7awen3H8Z5vHhO5OT4rvGNu0R4TsQxrGkinz5/UQ7SPgIfeeiriUQnR8e1tYwsONBd
+WHFX4tR8uPEG+7OIe9gQ0eQv7fJWNZE7t6/b8mtwvH7zsTz2RhNxFXFtIWgiDmBFE5nv5rD4DfDs
++fsRbtke5rvFtxeayP4sgjzf/N/dAO4YgTa6B4e/m+xj8TnTRP78ZdxNik6KEG9c5tyYfM41kf09
+/XdT4d4b/5cSfJtuVJ5zxRc0kZER3p3Vky+8O6snX3h3Vk++8O6s8O4st7CiiVCNYGp8VjQRurSZ
+Gp8lTaTC1Pj+Adl+ZI/liXtpAAAAAElFTkSuQmCC
+</property>
+    </properties>
+    <image source="../../../贴图/地面.png" width="80" height="80" />
+    <tile id="5">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="6">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="9">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="10">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="6451" name="斑马线" columns="6" tilecount="30" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+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
+</property>
+    </properties>
+    <image source="../../../贴图/斑马线.png" width="120" height="100" />
+  </tileset>
+  <tileset firstgid="6481" name="楼房" columns="19" tilecount="342" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+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
+1rSc3otzfe9NTF7sT6mEPS1rSs9bV11YtAUAR8RO6dy//b6q6hHqnu0f9V/v2berxpoA+emLt6Yj
++LqvwTz067duprc8TkxeLL0X05WdNgZ3nXWJ7fBtiMuoLpLZmela6gEUIXgtmU7pDEuM1yzKioet
+pkRsuAe/6roYTeks9royOzNd+r/FXlcWe92+RS7PW/IXZy+9fGNfvf7qI3/Z9zXqmMqXlE691s9T
+1jmS8hZdnu3trbIudbTX85ZyDVqyXIPqWqri2o26frMKxuE9uP94310qcydO+fF5g/+6x18eOKbS
+63n0Y6r8uROn5PWVE/L6ygk/bdR5lLiFUr0dWerSvvIKaV95RSF1ERG5YMuWd58VWe5Yg3+Cff7B
+h2Ws3ZHFXtffm1rRf/vOzr/kH3v6kfv8hnrekr8XdDCfyqMfU3s6b9o8JUcOHZYP3fXn/p+0rdao
+bNo8Jfv27um7YBd7Xb+OIuK/1o/p+eLSqdcqvYj4eYo+R1Leosuzvb1V1qWu9oqcn+YwHeFnuQaV
+Z3Y87J876joM5i36+n3pp8uLjkl7B6n7zf/2G1/3/6K58723xeap246vPCUiy3dhHTl0WH7/ne/y
+39Pbcf21N4iIyOo1rdIW4+PqIiLy5BNfllZrlEVbAHCFUYcfvN89bG4teCxs3tEkXxy1V4dy221/
+0Pc16pjKl5ROvdbPU9Y5kvIWXZ7t7a2yLnW1N48s12CUuq7fNFQMX5v/TYy3E6evVDzhmWNHZP+e
+fbXWRSTDg1dh4cb0Y3pD1Zyl+qHQ84UdSxLc+vOpp77T9zXqmMqXlE691s9T1jmS8hZdnu3trbIu
+dbW3KEnXYNy1VOf1a2pYYvjaGA889ZSOCjc2MXmxjK8b8f+pY1F5kvLpP3BhIyI14tAXQZJGWGPt
+Tl8+k9GZnl7PU+Q54vIWXZ7t7a26LnW2tygm15K6noLXUl3XrykVw7dp/7Zuu8OadgTrojNatJ2d
+mfYXb958zdWhG/CrYw/e9QkREXnLDTfKszufkRtuvV3efM3VfWnC8s2dOCWPP3C/n3f3ruf6Fm3/
+9D9+wPynBrDQY194JPOibZprUB17/IH7+65Dk7xFX79pF21RDhZtAcAxjdk87fvf21l3FQCk5FoM
+Xxvp3/vCO3x9dT/rvGXRi1yADerYFz/ttVTW9UuHbofGjPDZWgFNF3xS3AXMzdsldYeftK2nerpw
+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
+/wHg7U7KAjIVewAAAABJRU5ErkJggg==
+</property>
+    </properties>
+    <image source="../../../贴图/楼房.png" width="380" height="360" />
+    <tile id="0" />
+    <tile id="1" />
+    <tile id="2" />
+    <tile id="3" />
+    <tile id="4" />
+    <tile id="5" />
+    <tile id="6" />
+    <tile id="7" />
+    <tile id="8" />
+    <tile id="9" />
+    <tile id="10" />
+    <tile id="11" />
+    <tile id="12" />
+    <tile id="13" />
+    <tile id="14" />
+    <tile id="15" />
+    <tile id="16" />
+    <tile id="17" />
+    <tile id="18" />
+    <tile id="19" />
+    <tile id="20" />
+    <tile id="21" />
+    <tile id="22" />
+    <tile id="23" />
+    <tile id="24" />
+    <tile id="25" />
+    <tile id="26" />
+    <tile id="27" />
+    <tile id="28" />
+    <tile id="29" />
+    <tile id="30" />
+    <tile id="31" />
+    <tile id="32" />
+    <tile id="33" />
+    <tile id="34" />
+    <tile id="35" />
+    <tile id="36" />
+    <tile id="37" />
+    <tile id="38" />
+    <tile id="39" />
+    <tile id="40" />
+    <tile id="41" />
+    <tile id="42" />
+    <tile id="43" />
+    <tile id="44" />
+    <tile id="45" />
+    <tile id="46" />
+    <tile id="47" />
+    <tile id="48" />
+    <tile id="49" />
+    <tile id="50" />
+    <tile id="51" />
+    <tile id="52" />
+    <tile id="53" />
+    <tile id="54" />
+    <tile id="55" />
+    <tile id="56" />
+    <tile id="57" />
+    <tile id="58" />
+    <tile id="59" />
+    <tile id="60" />
+    <tile id="61" />
+    <tile id="62" />
+    <tile id="63" />
+    <tile id="64" />
+    <tile id="65" />
+    <tile id="66" />
+    <tile id="67" />
+    <tile id="68" />
+    <tile id="69" />
+    <tile id="70" />
+    <tile id="71" />
+    <tile id="72" />
+    <tile id="73" />
+    <tile id="74" />
+    <tile id="75" />
+    <tile id="76" />
+    <tile id="77" />
+    <tile id="78" />
+    <tile id="79" />
+    <tile id="80" />
+    <tile id="81" />
+    <tile id="82" />
+    <tile id="83" />
+    <tile id="84" />
+    <tile id="85" />
+    <tile id="86" />
+    <tile id="87" />
+    <tile id="88" />
+    <tile id="89" />
+    <tile id="90" />
+    <tile id="91" />
+    <tile id="92" />
+    <tile id="93" />
+    <tile id="94" />
+    <tile id="95" />
+    <tile id="96" />
+    <tile id="97" />
+    <tile id="98" />
+    <tile id="99" />
+    <tile id="100" />
+    <tile id="101" />
+    <tile id="102" />
+    <tile id="103" />
+    <tile id="104" />
+    <tile id="105" />
+    <tile id="106" />
+    <tile id="107" />
+    <tile id="108" />
+    <tile id="109" />
+    <tile id="110" />
+    <tile id="111" />
+    <tile id="112" />
+    <tile id="113" />
+    <tile id="114" />
+    <tile id="115" />
+    <tile id="116" />
+    <tile id="117" />
+    <tile id="118" />
+    <tile id="119" />
+    <tile id="120" />
+    <tile id="121" />
+    <tile id="122" />
+    <tile id="123" />
+    <tile id="124" />
+    <tile id="125" />
+    <tile id="126" />
+    <tile id="127" />
+    <tile id="128" />
+    <tile id="129" />
+    <tile id="130" />
+    <tile id="131" />
+    <tile id="132" />
+    <tile id="133" />
+    <tile id="134" />
+    <tile id="135" />
+    <tile id="136" />
+    <tile id="137" />
+    <tile id="138" />
+    <tile id="139" />
+    <tile id="140" />
+    <tile id="141" />
+    <tile id="142" />
+    <tile id="143" />
+    <tile id="144" />
+    <tile id="145" />
+    <tile id="146" />
+    <tile id="147" />
+    <tile id="148" />
+    <tile id="149" />
+    <tile id="150" />
+    <tile id="151" />
+    <tile id="152" />
+    <tile id="153" />
+    <tile id="154" />
+    <tile id="155" />
+    <tile id="156" />
+    <tile id="157" />
+    <tile id="158" />
+    <tile id="159" />
+    <tile id="160" />
+    <tile id="161" />
+    <tile id="162" />
+    <tile id="163" />
+    <tile id="164" />
+    <tile id="165" />
+    <tile id="166" />
+    <tile id="167" />
+    <tile id="168" />
+    <tile id="169" />
+    <tile id="170" />
+    <tile id="171" />
+    <tile id="172" />
+    <tile id="173" />
+    <tile id="174" />
+    <tile id="175" />
+    <tile id="176" />
+    <tile id="177" />
+    <tile id="178" />
+    <tile id="179" />
+    <tile id="180" />
+    <tile id="181" />
+    <tile id="182" />
+    <tile id="183" />
+    <tile id="184" />
+    <tile id="185" />
+    <tile id="186" />
+    <tile id="187" />
+    <tile id="188" />
+    <tile id="189" />
+    <tile id="190" />
+    <tile id="191" />
+    <tile id="192" />
+    <tile id="193" />
+    <tile id="194" />
+    <tile id="195" />
+    <tile id="196" />
+    <tile id="197" />
+    <tile id="198" />
+    <tile id="199" />
+    <tile id="200" />
+    <tile id="201" />
+    <tile id="202" />
+    <tile id="203" />
+    <tile id="204" />
+    <tile id="205" />
+    <tile id="206" />
+    <tile id="207" />
+    <tile id="208" />
+    <tile id="209" />
+    <tile id="210" />
+    <tile id="211" />
+    <tile id="212" />
+    <tile id="213" />
+    <tile id="214" />
+    <tile id="215" />
+    <tile id="216" />
+    <tile id="217" />
+    <tile id="218" />
+    <tile id="219" />
+    <tile id="220" />
+    <tile id="221" />
+    <tile id="222" />
+    <tile id="223" />
+    <tile id="224" />
+    <tile id="225" />
+    <tile id="226" />
+    <tile id="227" />
+    <tile id="228" />
+    <tile id="229" />
+    <tile id="230" />
+    <tile id="231" />
+    <tile id="232" />
+    <tile id="233" />
+    <tile id="234" />
+    <tile id="235" />
+    <tile id="236" />
+    <tile id="237" />
+    <tile id="238" />
+    <tile id="239" />
+    <tile id="240" />
+    <tile id="241" />
+    <tile id="242" />
+    <tile id="243" />
+    <tile id="244" />
+    <tile id="245" />
+    <tile id="246" />
+    <tile id="247" />
+    <tile id="248" />
+    <tile id="249" />
+    <tile id="250" />
+    <tile id="251" />
+    <tile id="252" />
+    <tile id="253" />
+    <tile id="254" />
+    <tile id="255" />
+    <tile id="256" />
+    <tile id="257" />
+    <tile id="258" />
+    <tile id="259" />
+    <tile id="260" />
+    <tile id="261" />
+    <tile id="262" />
+    <tile id="263" />
+    <tile id="264" />
+    <tile id="265" />
+    <tile id="266" />
+    <tile id="267" />
+    <tile id="268" />
+    <tile id="269" />
+    <tile id="270" />
+    <tile id="271" />
+    <tile id="272" />
+    <tile id="273" />
+    <tile id="274" />
+    <tile id="275" />
+    <tile id="276" />
+    <tile id="277" />
+    <tile id="278" />
+    <tile id="279" />
+    <tile id="280" />
+    <tile id="281" />
+    <tile id="282" />
+    <tile id="283" />
+    <tile id="284" />
+    <tile id="285" />
+    <tile id="286" />
+    <tile id="287" />
+    <tile id="288" />
+    <tile id="289" />
+    <tile id="290" />
+    <tile id="291" />
+    <tile id="292" />
+    <tile id="293" />
+    <tile id="294" />
+    <tile id="295" />
+    <tile id="296" />
+    <tile id="297" />
+    <tile id="298" />
+    <tile id="299" />
+    <tile id="300" />
+    <tile id="301" />
+    <tile id="302" />
+    <tile id="303" />
+    <tile id="304" />
+    <tile id="305" />
+    <tile id="306" />
+    <tile id="307" />
+    <tile id="308" />
+    <tile id="309" />
+    <tile id="310" />
+    <tile id="311" />
+    <tile id="312" />
+    <tile id="313" />
+    <tile id="314" />
+    <tile id="315" />
+    <tile id="316" />
+    <tile id="317" />
+    <tile id="318" />
+    <tile id="319" />
+    <tile id="320" />
+    <tile id="321" />
+    <tile id="322" />
+    <tile id="323" />
+    <tile id="324" />
+    <tile id="325" />
+    <tile id="326" />
+    <tile id="327" />
+    <tile id="328" />
+    <tile id="329" />
+    <tile id="330" />
+    <tile id="331" />
+    <tile id="332" />
+    <tile id="333" />
+    <tile id="334" />
+    <tile id="335" />
+    <tile id="336" />
+    <tile id="337" />
+    <tile id="338" />
+    <tile id="339" />
+    <tile id="340" />
+    <tile id="341" />
+  </tileset>
+  <layer name="Ground" width="280" height="170">
+    <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAAO3dzWoTUQCGYW8ja1sRBIuCKOLCVsU/FO//akygBQWFeWGSOTl5Fs82ZOZ8fRuyyPzaPXr0i7+8u7f1++A8vL239fvgPOgLhb5Q6AuFvlDoC4W+UOgLhb5Q6AuFvlDoC4W+UOgLhb5Q6AuFvlDoC4W+UOgLhb5Q6AuFvlDoC4W+UOgLhb5Q6AuFvlDoC4W+UOgLhb5Q6AuFvlDoC4W+UOgLhb5Q6AuFvlDoC4W+UOgLhb5Q6AuFvlDoC4W+UOgLhb5Q6AuFvlDoC4W+UOgLhb7839WFebLivXs8wPVwXGv+rR32cn1hnl6YT3tfVvJ5gOvBXhjH972fK/kxwPVgL4zj+W69z7vPBrge7IVxLNnL0u937WV+S/ay9Ptde5mfvrD2XvSFshd9oexFXyh70RfKXvSFshd9oexFXyh70RfKXvSFshd9oexFXyh70RfKXvSFshd9oexFXyh70RfKXvSFshd9oexFXyh70RfKXvSFshd9oexFXyh70RfKXvSFshd9oexFXyh70RfKXvSFshd9oexFXyh70RfKXvSFshd9oexFXyh70RfKXvSFshd9oexFXyh70RfKXvSFshd9oexFXyh70RfKXvSFspel7GV+9kLhecLYC8fiecLYy+m8uBCv997svdyt93n35o/X3fr6sJcRrXXvRvd179sZvS7bshdGOFd7mZO9MMK52suc7IURztVe5mQvjHCu9jIne2GEc7WXOdkLI5yrvczJXhjhXO1lTvayjtsLcKq9vGIKp9rL1n8X6Av6cs62/vx0Kj7vMsK52suc7IURztVe5mQvjHCu9jIne2GEc7WXOdkLI5yrvczJXhjhXO1lTvbCCOdqL3OyF0Y410vby9WF+LD3ce/Jivfu8R+ve81U7GUdW//+76n5PXjshWPxe/DYC8fieVnYC1vuxfNhKXvxfFjKXvSFshd9oexFXyh70RfKXvSFshd9oexFXyh70RfKXvSFshd9oexFXyh70RfKXvSFshd9oexFXyh70RfKXvSFshd9oexFXyh70RfKXvSFshd9oexFXyh70RfKXvSFshd9oexFXyh70RfKXvSFshd9oexFXyh70RfKXvSFshd9oexFXyh70RfKXvSFshd9oexFXyh70RfKXvSFshd9oexFXyh70RfKXvSFshd9oexlKXuZn71QeJ4w9sKxeJ4w9nI6Ly7My916n3dvBrge7GVka927mSz9fhcOln6/Cwf6QqEvFPpCoS8U+kKhLxT6QqEvFPpCoS8U+kKhLxT6QqEvFIe2vN+75S8P92fr9zGau53/RyynLf/2cH+2fh8jutttt1cAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANb3GwpJkE3A5wIA
+  </data>
+  </layer>
+  <layer name="Items" width="280" height="170">
+    <data encoding="base64" compression="gzip">
+   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
+  </data>
+  </layer>
+  <layer name="Units" opacity="0.59" width="280" height="170">
+    <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAAO3BAQEAAACCIP+vbkhAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPBsMy0VYsDnAgA=
+  </data>
+  </layer>
+  <objectgroup name="Triggers">
+    <object name="map_info" id="325" x="0" y="-120" width="200" height="120">
+      <properties>
+        <property name="lostCondition" value="commandCenter" />
+        <property name="survivalWaves">
++0:30 前言
++2:30 准备时间_作者_YiYou
+
++0:15 第一波：T3低级部队 - 24 坦克T3,8 侦察者T3
++0:05 第一波：T3低级部队 - 24 坦克T3,8 侦察者T3
++0:05 第一波：T3低级部队 - 24 坦克T3,8 侦察者T3
++0:05 第一波：T3低级部队 - 24 坦克T3,8 侦察者T3
++0:05 第一波：T3低级部队 - 24 坦克T3,8 侦察者T3
++0:05 第一波：T3低级部队 - 24 坦克T3,8 侦察者T3
+
+
++0:05 第二波：T3地空综合部队 - 8 重型坦克T3,2 重型火炮T3,2 喷火机甲T3,1 概念型防空坦克T3,4 导弹飞艇T3,2 轰炸机T3,2 间谍无人机T3,1 飞行堡垒T3
++0:05 第二波：T3地空综合部队 - 8 重型坦克T3,2 重型火炮T3,2 喷火机甲T3,1 概念型防空坦克T3,4 导弹飞艇T3,2 轰炸机T3,2 间谍无人机T3,1 飞行堡垒T3
++0:05 第二波：T3地空综合部队 - 8 重型坦克T3,2 重型火炮T3,2 喷火机甲T3,1 概念型防空坦克T3,4 导弹飞艇T3,2 轰炸机T3,2 间谍无人机T3,1 飞行堡垒T3
++0:05 第二波：T3地空综合部队 - 8 重型坦克T3,2 重型火炮T3,2 喷火机甲T3,1 概念型防空坦克T3,4 导弹飞艇T3,2 轰炸机T3,2 间谍无人机T3,1 飞行堡垒T3
++0:05 第二波：T3地空综合部队 - 8 重型坦克T3,2 重型火炮T3,2 喷火机甲T3,1 概念型防空坦克T3,4 导弹飞艇T3,2 轰炸机T3,2 间谍无人机T3,1 飞行堡垒T3
++0:05 第二波：T3地空综合部队 - 8 重型坦克T3,2 重型火炮T3,2 喷火机甲T3,1 概念型防空坦克T3,4 导弹飞艇T3,2 轰炸机T3,2 间谍无人机T3,1 飞行堡垒T3
+
+
++0:15 第三波：灾级能量武装部队 - 4 重型猛犸坦克T1
++0:05 第三波：灾级能量武装部队 - 4 重型猛犸坦克T1
++0:05 第三波：灾级能量武装部队 - 4 重型猛犸坦克T1
++0:05 第三波：灾级能量武装部队 - 4 重型猛犸坦克T1
++0:05 第三波：灾级能量武装部队 - 4 重型猛犸坦克T1,1 实验型悬浮坦克T1,6 两栖喷气战机T2
++0:05 第三波：灾级能量武装部队 - 4 重型猛犸坦克T1,1 实验型悬浮坦克T1,6 两栖喷气战机T2
+
+
++0:05 第四波：灾级猛击攻城部队 - 4 原型坦克T2
++0:05 第四波：灾级猛击攻城部队 - 4 原型坦克T2
++0:05 第四波：灾级猛击攻城部队 - 4 原型坦克T2
++0:05 第四波：灾级猛击攻城部队 - 4 原型坦克T2
++0:05 第四波：灾级猛击攻城部队 - 4 原型坦克T2,1 猎手阿尔法T2,4 轰炸战机T2
++0:05 第四波：灾级猛击攻城部队 - 4 原型坦克T2,1 猎手阿尔法T2,4 轰炸战机T2
+
+
++0:25 第五波：毁级防空预警 - 6 轰炸战机T2
++0:05 第五波：毁级防空预警 - 6 轰炸战机T2
++0:05 第五波：毁级防空预警 - 6 轰炸战机T2
++0:05 第五波：毁级防空预警 - 6 轰炸战机T2
++0:05 第五波：毁级防空预警 - 6 轰炸战机T2
++0:05 第五波：毁级防空预警 - 6 轰炸战机T2
+
+
++0:05 第六波：毁级绝望空军 - 2 实验型悬浮坦克T2,54 mechFlyingTakeoff
++0:05 第六波：毁级绝望空军 - 2 实验型悬浮坦克T2,54 mechFlyingTakeoff
++0:05 第六波：毁级绝望空军 - 2 实验型悬浮坦克T2,54 mechFlyingTakeoff
++0:05 第六波：毁级绝望空军 - 2 实验型悬浮坦克T2,54 mechFlyingTakeoff
++0:05 第六波：毁级绝望空军 - 2 实验型悬浮坦克T2,54 mechFlyingTakeoff
++0:05 第六波：毁级绝望空军 - 2 实验型悬浮坦克T2,54 mechFlyingTakeoff
+
+
++0:45 第七波：十死无生 - 1 概念型防空机械装甲,2 轰炸战斗机,16 飞行堡垒T3
++0:05 第七波：十死无生 - 1 概念型防空机械装甲,2 轰炸战斗机,16 飞行堡垒T3
++0:05 第七波：十死无生 - 1 概念型防空机械装甲,2 轰炸战斗机,16 飞行堡垒T3
++0:05 第七波：十死无生 - 1 概念型防空机械装甲,2 轰炸战斗机,16 飞行堡垒T3
++0:05 第七波：十死无生 - 1 概念型防空机械装甲,2 轰炸战斗机,16 飞行堡垒T3
++0:05 第七波：十死无生 - 1 概念型防空机械装甲,2 轰炸战斗机,16 飞行堡垒T3
+
+
++0:15 第八波：斩斩不尽，杀杀不完！ - 1 聚能离子机甲,1 杀人蜂,16 火蜂战机T3
++0:05 第八波：斩斩不尽，杀杀不完！ - 1 聚能离子机甲,1 杀人蜂,16 火蜂战机T3
++0:05 第八波：斩斩不尽，杀杀不完！ - 1 聚能离子机甲,1 杀人蜂,16 火蜂战机T3
++0:05 第八波：斩斩不尽，杀杀不完！ - 1 聚能离子机甲,1 杀人蜂,16 火蜂战机T3
++0:05 第八波：斩斩不尽，杀杀不完！ - 1 聚能离子机甲,1 杀人蜂,16 火蜂战机T3
++0:05 第八波：斩斩不尽，杀杀不完！ - 1 聚能离子机甲,1 杀人蜂,16 火蜂战机T3
+
+
++2:00 休息
+
++0:15 第九波：终焉四重奏_一重 - 6 巨型嗜骨虫,16 巨型噬咬虫T3
++0:05 第九波：终焉四重奏_一重 - 6 巨型嗜骨虫,16 巨型噬咬虫T3
++0:05 第九波：终焉四重奏_一重 - 6 巨型嗜骨虫,16 巨型噬咬虫T3
++0:05 第九波：终焉四重奏_一重 - 6 巨型嗜骨虫,16 巨型噬咬虫T3
+
++0:05 第九波：终焉四重奏_一重 - 6 迸射虫,16 喷射虫T3
++0:05 第九波：终焉四重奏_一重 - 6 迸射虫,16 喷射虫T3
++0:05 第九波：终焉四重奏_一重 - 6 迸射虫,16 喷射虫T3
++0:05 第九波：终焉四重奏_一重 - 6 迸射虫,16 喷射虫T3
+
+
++0:15 第十波：终焉四重奏_二重 - 42 巨型虫蜂
++0:05 第十波：终焉四重奏_二重 - 42 巨型虫蜂
++0:05 第十波：终焉四重奏_二重 - 42 巨型虫蜂
++0:05 第十波：终焉四重奏_二重 - 42 巨型虫蜂
+
++0:05 第十波：终焉四重奏_二重 - 8 核爆虫,12 剧毒蝠虫
++0:05 第十波：终焉四重奏_二重 - 8 核爆虫,12 剧毒蝠虫
++0:05 第十波：终焉四重奏_二重 - 8 核爆虫,12 剧毒蝠虫
++0:05 第十波：终焉四重奏_二重 - 8 核爆虫,12 剧毒蝠虫
+
+
++0:45 第十一波：终焉四重奏_压轴 - 2 狱岩虫,1 刃螂虫,16 熔岩虫T3
++0:05 第十一波：终焉四重奏_压轴 - 2 狱岩虫,1 刃螂虫,16 熔岩虫T3
++0:05 第十一波：终焉四重奏_压轴 - 2 狱岩虫,1 刃螂虫,16 熔岩虫T3
++0:05 第十一波：终焉四重奏_压轴 - 2 狱岩虫,1 刃螂虫,16 熔岩虫T3
+
++0:05 第十一波：终焉四重奏_压轴 - 2 巨型迸射虫,16 巨型喷射虫T3,1 杀戮者,2 畸弥龙
++0:05 第十一波：终焉四重奏_压轴 - 2 巨型迸射虫,16 巨型喷射虫T3,1 杀戮者,2 畸弥龙
++0:05 第十一波：终焉四重奏_压轴 - 2 巨型迸射虫,16 巨型喷射虫T3,1 杀戮者,2 畸弥龙
++0:05 第十一波：终焉四重奏_压轴 - 2 巨型迸射虫,16 巨型喷射虫T3,1 杀戮者,2 畸弥龙
+
+
++0:15 第十二波：终焉终章_大轴 - 12 原型机甲,2 聚能离子机甲,1 八足魔蛛
++0:05 第十二波：终焉终章_大轴 - 12 原型机甲,2 聚能离子机甲,1 八足魔蛛
++0:05 第十二波：终焉终章_大轴 - 12 原型机甲,2 聚能离子机甲,1 八足魔蛛
++0:05 第十二波：终焉终章_大轴 - 12 原型机甲,2 聚能离子机甲,1 八足魔蛛
+
++0:15 第十二波：终焉终章_大轴 - 12 巨型嗜骨虫,4 巨型迸射虫
++0:05 第十二波：终焉终章_大轴 - 12 巨型嗜骨虫,4 巨型迸射虫
++0:05 第十二波：终焉终章_大轴 - 12 巨型嗜骨虫,4 巨型迸射虫
++0:05 第十二波：终焉终章_大轴 - 12 巨型嗜骨虫,4 巨型迸射虫
+
++2:00 警报：即将开启高级难度
+
++20:00 距离波次结束 [win]
+</property>
+        <property name="type" value="survival" />
+        <property name="winCondition" value="none" />
+      </properties>
+    </object>
+    <object name="team_1_info" type="team_info" id="326" x="160" y="-140" width="20" height="20">
+      <properties>
+        <property name="ai" value="survival" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="attack_point" id="327" x="2780" y="200" width="40" height="40" />
+    <object name="attack_point" id="846" x="1980" y="200" width="40" height="40" />
+    <object name="attack_point" id="847" x="3580" y="200" width="40" height="40" />
+    <object name="attack_point" id="848" x="2780" y="200" width="40" height="40" />
+    <object name="检测失败" type="unitDetect" id="328" x="2760" y="2560" width="80" height="80">
+      <properties>
+        <property name="id" value="1-1-T--" />
+        <property name="maxUnits" value="0" />
+        <property name="unitType" value="概念型实验室" />
+        <property name="warmup" value="2s" />
+      </properties>
+    </object>
+    <object name="生成失败" type="unitRemove" id="329" x="0" y="0" width="5600" height="17600">
+      <properties>
+        <property name="activatedBy" value="1-1-T--" />
+        <property name="id" value="xxx-1" />
+      </properties>
+    </object>
+    <object name="判负提示" type="unitDetect" id="330" x="180" y="-140" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="xxx-1" />
+        <property name="globalMessage" value="触发失败条件：实验室被摧毁" />
+        <property name="globalMessage_textColor" value="#FF0000" />
+        <property name="repeatDelay" value="2s" />
+      </properties>
+    </object>
+    <object name="a-1-3" type="point" id="389" x="1380" y="2060" width="40" height="40" />
+    <object name="移动a-3" type="move" id="390" x="0" y="0" width="1600" height="1200">
+      <properties>
+        <property name="resetActivationAfter" value="5s" />
+        <property name="target" value="a-1-3" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="a-1-4" type="point" id="391" x="4180" y="2060" width="40" height="40" />
+    <object name="移动a-4" type="move" id="392" x="4000" y="0" width="1600" height="1200">
+      <properties>
+        <property name="resetActivationAfter" value="5s" />
+        <property name="target" value="a-1-4" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="a-1-6" type="point" id="2776" x="2780" y="2460" width="40" height="40" />
+    <object name="移动a-6" type="move" id="2777" x="1600" y="0" width="2400" height="1200">
+      <properties>
+        <property name="resetActivationAfter" value="15s" />
+        <property name="target" value="a-1-6" />
+        <property name="team" value="1" />
+        <property name="warmup" value="15s" />
+      </properties>
+    </object>
+    <object name="破产测试模块" type="unitAdd" id="825" x="0" y="-200" width="80" height="80">
+      <properties>
+        <property name="spawnUnits" value="破产测试模块" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="C指挥中心T1（叠加）" type="unitAdd" id="877" x="4320" y="-1280" width="20" height="20">
+      <properties>
+        <property name="delay" value="990.5s" />
+        <property name="globalMessage" value="生成。" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="globalMessage_textColor" value="#FFBB66" />
+        <property name="spawnUnits" value="C指挥中心T1（叠加）,JDJ" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="帝空模块" type="unitAdd" id="1961" x="2780" y="-780" width="40" height="40">
+      <properties>
+        <property name="spawnUnits" value="帝空_T,帝空_G,帝空_F" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="帝空模块" type="unitAdd" id="1962" x="1780" y="-780" width="40" height="40">
+      <properties>
+        <property name="spawnUnits" value="帝空_T,帝空_G,帝空_F" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="帝空模块" type="unitAdd" id="1963" x="3780" y="-780" width="40" height="40">
+      <properties>
+        <property name="spawnUnits" value="帝空_T,帝空_G,帝空_F" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="帝空模块" type="unitAdd" id="1965" x="780" y="-780" width="40" height="40">
+      <properties>
+        <property name="spawnUnits" value="帝空_T,帝空_G,帝空_F" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="帝空模块" type="unitAdd" id="1966" x="4780" y="-780" width="40" height="40">
+      <properties>
+        <property name="spawnUnits" value="帝空_T,帝空_G,帝空_F" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV1-小坦克+导飞" type="unitAdd" id="2469" x="1780" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC1" />
+        <property name="deactivatedBy" value="1-BC2" />
+        <property name="spawnUnits" value="导弹战斗机(offsetHeight=1101010,offsetDir=99.05000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV1-小坦克+导飞" type="unitAdd" id="2470" x="1780" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC1" />
+        <property name="deactivatedBy" value="1-BC2" />
+        <property name="spawnUnits" value="主战坦克(offsetHeight=1002010,offsetDir=99.19000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV2-小坦克+雷鸟" type="unitAdd" id="2483" x="1780" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC2" />
+        <property name="deactivatedBy" value="1-BC3" />
+        <property name="spawnUnits" value="雷鸟(offsetHeight=1002021,offsetDir=99.05000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV2-小坦克+雷鸟" type="unitAdd" id="2484" x="1780" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC2" />
+        <property name="deactivatedBy" value="1-BC3" />
+        <property name="spawnUnits" value="主战坦克(offsetHeight=1002010,offsetDir=99.29000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV3-小坦克+星辰" type="unitAdd" id="2491" x="1780" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC3" />
+        <property name="deactivatedBy" value="1-BC4" />
+        <property name="spawnUnits" value="星辰(offsetHeight=1001010,offsetDir=99.11000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV3-小坦克+星辰" type="unitAdd" id="2492" x="1780" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC3" />
+        <property name="deactivatedBy" value="1-BC4" />
+        <property name="spawnUnits" value="主战坦克(offsetHeight=1002010,offsetDir=99.29000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV4-小坦克+火蜂" type="unitAdd" id="2499" x="1780" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC4" />
+        <property name="deactivatedBy" value="1-BC5" />
+        <property name="spawnUnits" value="杀人蜂(offsetHeight=1101010,offsetDir=99.05000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV4-小坦克+火蜂" type="unitAdd" id="2500" x="1780" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC4" />
+        <property name="deactivatedBy" value="1-BC5" />
+        <property name="spawnUnits" value="主战坦克(offsetHeight=1002010,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV5-平安夜" type="unitAdd" id="2507" x="1780" y="140" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC5" />
+        <property name="deactivatedBy" value="1-BC6" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV6-杀戮者＋核爆虫" type="unitAdd" id="2514" x="1820" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC6" />
+        <property name="deactivatedBy" value="1-BC7" />
+        <property name="spawnUnits" value="核爆虫(offsetHeight=1000100,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV6-杀戮者＋核爆虫" type="unitAdd" id="2515" x="1820" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC6" />
+        <property name="deactivatedBy" value="1-BC7" />
+        <property name="spawnUnits" value="核爆虫(offsetHeight=1000100,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV6-杀戮者＋核爆虫" type="unitAdd" id="2516" x="1820" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC6" />
+        <property name="deactivatedBy" value="1-BC7" />
+        <property name="spawnUnits" value="核爆虫(offsetHeight=1000100,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV6-杀戮者＋核爆虫" type="unitAdd" id="2517" x="1820" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC6" />
+        <property name="deactivatedBy" value="1-BC7" />
+        <property name="spawnUnits" value="核爆虫(offsetHeight=1000100,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="2.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV6-杀戮者＋核爆虫" type="unitAdd" id="2518" x="1820" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC6" />
+        <property name="deactivatedBy" value="1-BC7" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1004010,offsetDir=99.00000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="2.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV7-杀戮者＋激光战机" type="unitAdd" id="2568" x="1820" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC7" />
+        <property name="deactivatedBy" value="1-BC8" />
+        <property name="spawnUnits" value="AA光能射束战机(offsetHeight=1002201,offsetDir=99.090001)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV7-杀戮者＋激光战机" type="unitAdd" id="2569" x="1820" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC7" />
+        <property name="deactivatedBy" value="1-BC8" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1006010,offsetDir=99.00000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV8-杀戮者＋重型火炮坦克" type="unitAdd" id="2574" x="1820" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC8" />
+        <property name="deactivatedBy" value="1-BC9" />
+        <property name="spawnUnits" value="攻城锤坦克(offsetHeight=1400010,offsetDir=99.04000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV8-杀戮者＋重型火炮坦克" type="unitAdd" id="2575" x="1820" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC8" />
+        <property name="deactivatedBy" value="1-BC9" />
+        <property name="spawnUnits" value="攻城锤坦克(offsetHeight=1400010,offsetDir=99.04000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV8-杀戮者＋重型火炮坦克" type="unitAdd" id="2576" x="1820" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC8" />
+        <property name="deactivatedBy" value="1-BC9" />
+        <property name="spawnUnits" value="攻城锤坦克(offsetHeight=1400010,offsetDir=99.04000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV8-杀戮者＋重型火炮坦克" type="unitAdd" id="2577" x="1820" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC8" />
+        <property name="deactivatedBy" value="1-BC9" />
+        <property name="spawnUnits" value="攻城锤坦克(offsetHeight=1400010,offsetDir=99.04000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="2.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV8-杀戮者＋重型火炮坦克" type="unitAdd" id="2578" x="1820" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC8" />
+        <property name="deactivatedBy" value="1-BC9" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1004010,offsetDir=99.00000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="2.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV9-杀戮者＋轰炸机" type="unitAdd" id="2580" x="1820" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC9" />
+        <property name="deactivatedBy" value="1-BC10" />
+        <property name="spawnUnits" value="轰炸战斗机(offsetHeight=1101040,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV9-杀戮者＋轰炸机" type="unitAdd" id="2581" x="1820" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC9" />
+        <property name="deactivatedBy" value="1-BC10" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1008010,offsetDir=99.00000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV10-平安夜" type="unitAdd" id="2586" x="1820" y="140" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC10" />
+        <property name="deactivatedBy" value="1-BC11" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV11-杀戮者+星辰" type="unitAdd" id="2587" x="1860" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC11" />
+        <property name="deactivatedBy" value="1-BC12" />
+        <property name="spawnUnits" value="星辰(offsetHeight=1001100,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV11-杀戮者+星辰" type="unitAdd" id="2588" x="1860" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC11" />
+        <property name="deactivatedBy" value="1-BC12" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1005010,offsetDir=99.01000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV12-杀戮者+火蜂" type="unitAdd" id="2589" x="1860" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC12" />
+        <property name="deactivatedBy" value="1-BC13" />
+        <property name="spawnUnits" value="杀人蜂(offsetHeight=1001100,offsetDir=99.19000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV12-杀戮者+火蜂" type="unitAdd" id="2590" x="1860" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC12" />
+        <property name="deactivatedBy" value="1-BC13" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1005010,offsetDir=99.01000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV13-杀戮者-破袭者" type="unitAdd" id="2591" x="1860" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC13" />
+        <property name="deactivatedBy" value="1-BC14" />
+        <property name="spawnUnits" value="破袭者(offsetHeight=1000100,offsetDir=99.19000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV13-杀戮者-破袭者" type="unitAdd" id="2592" x="1860" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC13" />
+        <property name="deactivatedBy" value="1-BC14" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1005010,offsetDir=99.01000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV14-杀戮者+泰坦型战斗蜘蛛" type="unitAdd" id="2593" x="1860" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC14" />
+        <property name="deactivatedBy" value="1-BC15" />
+        <property name="spawnUnits" value="泰坦型战斗蜘蛛(offsetHeight=1100000,offsetDir=99.19000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV14-杀戮者+泰坦型战斗蜘蛛" type="unitAdd" id="2594" x="1860" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC14" />
+        <property name="deactivatedBy" value="1-BC15" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1005010,offsetDir=99.01000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV15-平安夜" type="unitAdd" id="2595" x="1860" y="140" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC15" />
+        <property name="deactivatedBy" value="1-BC16" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV16-啸颤锚" type="unitAdd" id="2596" x="1900" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC16" />
+        <property name="deactivatedBy" value="1-BC17" />
+        <property name="spawnUnits" value="啸颤锚*8(offsetHeight=1001010,offsetDir=99.03000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV17-杀戮者+地狱" type="unitAdd" id="2598" x="1900" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC17" />
+        <property name="deactivatedBy" value="1-BC18" />
+        <property name="spawnUnits" value="地狱" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV17-杀戮者+地狱" type="unitAdd" id="2599" x="1900" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC17" />
+        <property name="deactivatedBy" value="1-BC18" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1005100,offsetDir=99.03000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV18-畸弥龙" type="unitAdd" id="2600" x="1900" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC18" />
+        <property name="deactivatedBy" value="1-BC19" />
+        <property name="spawnUnits" value="畸弥龙*8(offsetHeight=1001100,offsetDir=99.03000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV19-杀戮者+帝空" type="unitAdd" id="2602" x="1900" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC19" />
+        <property name="deactivatedBy" value="1-BC20" />
+        <property name="spawnUnits" value="帝空" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV19-杀戮者+帝空" type="unitAdd" id="2603" x="1900" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC19" />
+        <property name="deactivatedBy" value="1-BC20" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1005100,offsetDir=99.03000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV20-平安夜" type="unitAdd" id="2604" x="1900" y="140" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC20" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="1-波次1" type="unitDetect" id="2605" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="globalMessage" value="【第一波-坦克合体awhhhh】：小坦克+导弹飞艇" />
+        <property name="globalMessage_textColor" value="#FF44AA" />
+        <property name="id" value="1-BC1" />
+        <property name="minUnits" value="1" />
+        <property name="unitType" value="dropship" />
+      </properties>
+    </object>
+    <object name="1-波次2" type="unitDetect" id="2606" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="globalMessage" value="【第二波-湮雷级空域清理计划】：小坦克＋雷鸟" />
+        <property name="globalMessage_textColor" value="#FF44AA" />
+        <property name="id" value="1-BC2" />
+        <property name="minUnits" value="2" />
+        <property name="unitType" value="dropship" />
+      </properties>
+    </object>
+    <object name="1-波次3" type="unitDetect" id="2607" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="globalMessage" value="【第三波-无敌的星辰大人啊】：小坦克＋星辰" />
+        <property name="globalMessage_textColor" value="#FF44AA" />
+        <property name="id" value="1-BC3" />
+        <property name="minUnits" value="3" />
+        <property name="unitType" value="dropship" />
+      </properties>
+    </object>
+    <object name="1-波次4" type="unitDetect" id="2608" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="globalMessage" value="【第四波-这是我们热血沸腾的组合技口牙！】：小坦克+火蜂" />
+        <property name="globalMessage_textColor" value="#FF44AA" />
+        <property name="id" value="1-BC4" />
+        <property name="minUnits" value="4" />
+        <property name="unitType" value="dropship" />
+      </properties>
+    </object>
+    <object name="1-波次5" type="unitDetect" id="2609" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="globalMessage" value="【第五波-平安夜】：预告-下波刷怪类型为虫王。" />
+        <property name="globalMessage_textColor" value="#FF44AA" />
+        <property name="id" value="1-BC5" />
+        <property name="minUnits" value="5" />
+        <property name="unitType" value="dropship" />
+      </properties>
+    </object>
+    <object name="1-波次6" type="unitDetect" id="2610" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="globalMessage" value="【第六波-哇趣！每一口都是一个核爆！！！】：虫王+核爆虫" />
+        <property name="globalMessage_textColor" value="#FF44AA" />
+        <property name="id" value="1-BC6" />
+        <property name="minUnits" value="6" />
+        <property name="unitType" value="dropship" />
+      </properties>
+    </object>
+    <object name="1-波次7" type="unitDetect" id="2611" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="globalMessage" value="【第七波-我做了一个虫王能咬死帝空的梦】：虫王+激光战机" />
+        <property name="globalMessage_textColor" value="#FF44AA" />
+        <property name="id" value="1-BC7" />
+        <property name="minUnits" value="7" />
+        <property name="unitType" value="dropship" />
+      </properties>
+    </object>
+    <object name="1-波次8" type="unitDetect" id="2612" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="globalMessage" value="【第八波-虫王大人的无敌激光防御】：虫王+重型火炮坦克" />
+        <property name="globalMessage_textColor" value="#FF44AA" />
+        <property name="id" value="1-BC8" />
+        <property name="minUnits" value="8" />
+        <property name="unitType" value="dropship" />
+      </properties>
+    </object>
+    <object name="1-波次9" type="unitDetect" id="2614" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="globalMessage" value="【第九波-核爆爆爆爆！】：虫王+轰炸机" />
+        <property name="globalMessage_textColor" value="#FF44AA" />
+        <property name="id" value="1-BC9" />
+        <property name="minUnits" value="9" />
+        <property name="unitType" value="dropship" />
+      </properties>
+    </object>
+    <object name="1-波次10" type="unitDetect" id="2615" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="globalMessage" value="【第十波-平安夜】：预告-距离游戏结束还有10分钟。" />
+        <property name="globalMessage_textColor" value="#FF44AA" />
+        <property name="id" value="1-BC10" />
+        <property name="minUnits" value="10" />
+        <property name="unitType" value="dropship" />
+      </properties>
+    </object>
+    <object name="1-波次11" type="unitDetect" id="2616" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="globalMessage" value="【第十一波-如果你惹怒了我……】：虫王+星辰" />
+        <property name="globalMessage_textColor" value="#FF44AA" />
+        <property name="id" value="1-BC11" />
+        <property name="minUnits" value="11" />
+        <property name="unitType" value="dropship" />
+      </properties>
+    </object>
+    <object name="1-波次12" type="unitDetect" id="2617" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="globalMessage" value="【第十二波-性感的神秘的迷人的……强大的黄金女皇-火蜂大人！】：虫王＋火蜂" />
+        <property name="globalMessage_textColor" value="#FF44AA" />
+        <property name="id" value="1-BC12" />
+        <property name="minUnits" value="12" />
+        <property name="unitType" value="dropship" />
+      </properties>
+    </object>
+    <object name="1-波次13" type="unitDetect" id="2618" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="globalMessage" value="【第十三波-警告！检测到天基级武器！！！】：虫王＋破袭者" />
+        <property name="globalMessage_textColor" value="#FF44AA" />
+        <property name="id" value="1-BC13" />
+        <property name="minUnits" value="13" />
+        <property name="unitType" value="dropship" />
+      </properties>
+    </object>
+    <object name="1-波次14" type="unitDetect" id="2619" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="globalMessage" value="【第十四波-警告！检测到核爆武器来袭！！！】：虫王＋蜘蛛" />
+        <property name="globalMessage_textColor" value="#FF44AA" />
+        <property name="id" value="1-BC14" />
+        <property name="minUnits" value="14" />
+        <property name="unitType" value="dropship" />
+      </properties>
+    </object>
+    <object name="1-波次15" type="unitDetect" id="2620" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="globalMessage" value="【第十五波-平安夜】：警告-还有最后5分钟游戏结束，不要囤了！" />
+        <property name="globalMessage_textColor" value="#FF44AA" />
+        <property name="id" value="1-BC15" />
+        <property name="minUnits" value="15" />
+        <property name="unitType" value="dropship" />
+      </properties>
+    </object>
+    <object name="1-波次16" type="unitDetect" id="2621" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="globalMessage" value="【第十六波-集群啸颤锚】：啸颤锚*16" />
+        <property name="globalMessage_textColor" value="#FF44AA" />
+        <property name="id" value="1-BC16" />
+        <property name="minUnits" value="16" />
+        <property name="unitType" value="dropship" />
+      </properties>
+    </object>
+    <object name="1-波次17" type="unitDetect" id="2622" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="globalMessage" value="【第十七波-伟大无私而又包容-我赞美您-地狱】：虫王-地狱" />
+        <property name="globalMessage_textColor" value="#FF44AA" />
+        <property name="id" value="1-BC17" />
+        <property name="minUnits" value="17" />
+        <property name="unitType" value="dropship" />
+      </properties>
+    </object>
+    <object name="1-波次18" type="unitDetect" id="2623" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="globalMessage" value="【第十八波-集群畸弥龙】：畸弥龙*16" />
+        <property name="globalMessage_textColor" value="#FF44AA" />
+        <property name="id" value="1-BC18" />
+        <property name="minUnits" value="18" />
+        <property name="unitType" value="dropship" />
+      </properties>
+    </object>
+    <object name="1-波次19" type="unitDetect" id="2624" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="globalMessage" value="【第十九波-神圣博爱而又怜悯-我赞美您-帝空】：虫王-帝空" />
+        <property name="globalMessage_textColor" value="#FF44AA" />
+        <property name="id" value="1-BC19" />
+        <property name="minUnits" value="19" />
+        <property name="unitType" value="dropship" />
+      </properties>
+    </object>
+    <object name="1-波次20" type="unitDetect" id="2625" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="globalMessage" value="第二十波开始，即将获胜。" />
+        <property name="globalMessage_textColor" value="#FF44AA" />
+        <property name="id" value="1-BC20" />
+        <property name="minUnits" value="20" />
+        <property name="unitType" value="dropship" />
+      </properties>
+    </object>
+    <object name="阶段1-210s" type="unitAdd" id="2630" x="0" y="-440" width="80" height="80">
+      <properties>
+        <property name="delay" value="990.5s" />
+        <property name="repeatDelay" value="60s" />
+        <property name="spawnUnits" value="dropship" />
+        <property name="team" value="-1" />
+        <property name="warmup" value="0.2s" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3053" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：1号囤蛋数量超过50，每35秒扣除1亿资金。" />
+        <property name="globalMessage_textColor" value="#FFFF77" />
+        <property name="id" value="t-0" />
+        <property name="minUnits" value="51" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="0" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3055" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：3号囤蛋数量超过50，每35秒扣除1亿资金。" />
+        <property name="globalMessage_textColor" value="#FFFF77" />
+        <property name="id" value="t-2" />
+        <property name="minUnits" value="51" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="2" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3057" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：4号囤蛋数量超过50，每35秒扣除1亿资金。" />
+        <property name="globalMessage_textColor" value="#FFFF77" />
+        <property name="id" value="t-3" />
+        <property name="minUnits" value="51" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="3" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3059" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：5号囤蛋数量超过50，每35秒扣除1亿资金。" />
+        <property name="globalMessage_textColor" value="#FFFF77" />
+        <property name="id" value="t-4" />
+        <property name="minUnits" value="51" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="4" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3061" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：6号囤蛋数量超过50，每35秒扣除1亿资金。" />
+        <property name="globalMessage_textColor" value="#FFFF77" />
+        <property name="id" value="t-5" />
+        <property name="minUnits" value="51" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="5" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3063" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：7号囤蛋数量超过50，每35秒扣除1亿资金。" />
+        <property name="globalMessage_textColor" value="#FFFF77" />
+        <property name="id" value="t-6" />
+        <property name="minUnits" value="51" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="6" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3065" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：8号囤蛋数量超过50，每35秒扣除1亿资金。" />
+        <property name="globalMessage_textColor" value="#FFFF77" />
+        <property name="id" value="t-7" />
+        <property name="minUnits" value="51" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="7" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3067" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：9号囤蛋数量超过50，每35秒扣除1亿资金。" />
+        <property name="globalMessage_textColor" value="#FFFF77" />
+        <property name="id" value="t-8" />
+        <property name="minUnits" value="51" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="8" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3069" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：10号囤蛋数量超过50，每35秒扣除1亿资金。" />
+        <property name="globalMessage_textColor" value="#FFFF77" />
+        <property name="id" value="t-9" />
+        <property name="minUnits" value="51" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="9" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3071" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：11号囤蛋数量超过50，每35秒扣除1亿资金。" />
+        <property name="globalMessage_textColor" value="#FFFF77" />
+        <property name="id" value="t-10" />
+        <property name="minUnits" value="51" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="10" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3073" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：12号囤蛋数量超过50，每35秒扣除1亿资金。" />
+        <property name="globalMessage_textColor" value="#FFFF77" />
+        <property name="id" value="t-11" />
+        <property name="minUnits" value="51" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="11" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3075" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：13号囤蛋数量超过50，每35秒扣除1亿资金。" />
+        <property name="globalMessage_textColor" value="#FFFF77" />
+        <property name="id" value="t-12" />
+        <property name="minUnits" value="51" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="12" />
+      </properties>
+    </object>
+    <object type="changeCredits" id="3076" x="140" y="-140" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="t-0" />
+        <property name="add" value="-100000000" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="0" />
+      </properties>
+    </object>
+    <object type="changeCredits" id="3054" x="140" y="-140" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="t-2" />
+        <property name="add" value="-100000000" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="2" />
+      </properties>
+    </object>
+    <object type="changeCredits" id="3056" x="140" y="-140" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="t-3" />
+        <property name="add" value="-100000000" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="3" />
+      </properties>
+    </object>
+    <object type="changeCredits" id="3058" x="140" y="-140" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="t-4" />
+        <property name="add" value="-100000000" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="4" />
+      </properties>
+    </object>
+    <object type="changeCredits" id="3060" x="140" y="-140" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="t-5" />
+        <property name="add" value="-100000000" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="5" />
+      </properties>
+    </object>
+    <object type="changeCredits" id="3062" x="140" y="-140" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="t-6" />
+        <property name="add" value="-100000000" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="6" />
+      </properties>
+    </object>
+    <object type="changeCredits" id="3064" x="140" y="-140" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="t-7" />
+        <property name="add" value="-100000000" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="7" />
+      </properties>
+    </object>
+    <object type="changeCredits" id="3066" x="140" y="-140" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="t-8" />
+        <property name="add" value="-100000000" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="8" />
+      </properties>
+    </object>
+    <object type="changeCredits" id="3068" x="140" y="-140" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="t-9" />
+        <property name="add" value="-100000000" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="9" />
+      </properties>
+    </object>
+    <object type="changeCredits" id="3070" x="140" y="-140" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="t-10" />
+        <property name="add" value="-100000000" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="10" />
+      </properties>
+    </object>
+    <object type="changeCredits" id="3072" x="140" y="-140" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="t-11" />
+        <property name="add" value="-100000000" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="11" />
+      </properties>
+    </object>
+    <object type="changeCredits" id="3074" x="140" y="-140" width="20" height="20">
+      <properties>
+        <property name="activatedBy" value="t-12" />
+        <property name="add" value="-100000000" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="team" value="12" />
+      </properties>
+    </object>
+    <object name="公告栏" type="mapText" id="3077" x="2780" y="1680" width="40" height="40">
+      <properties>
+        <property name="deactivatedBy" value="txt" />
+        <property name="text" value="公告栏" />
+        <property name="textColor" value="#FF0088" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="公告栏" type="mapText" id="3078" x="2780" y="1760" width="40" height="40">
+      <properties>
+        <property name="deactivatedBy" value="txt" />
+        <property name="text" value="地图配置：2.5倍 20W 允核 关雾" />
+        <property name="textColor" value="#FF0088" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="公告栏" type="mapText" id="3079" x="2780" y="1840" width="40" height="40">
+      <properties>
+        <property name="deactivatedBy" value="txt" />
+        <property name="text" value="游戏玩法1：构建防线，抵御上方敌军的进攻。" />
+        <property name="textColor" value="#FF0088" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="公告栏" type="mapText" id="3080" x="2780" y="1920" width="40" height="40">
+      <properties>
+        <property name="deactivatedBy" value="txt" />
+        <property name="text" value="游戏玩法2：敌军强制寻路，实验室被摧毁则游戏失败。" />
+        <property name="textColor" value="#FF0088" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="公告栏" type="mapText" id="3081" x="2780" y="2000" width="40" height="40">
+      <properties>
+        <property name="deactivatedBy" value="txt" />
+        <property name="text" value="获胜条件：坚持36分钟" />
+        <property name="textColor" value="#FF0088" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="公告栏" type="mapText" id="3082" x="2780" y="2080" width="40" height="40">
+      <properties>
+        <property name="deactivatedBy" value="txt" />
+        <property name="text" value="须知：囤蛋限制，每人囤蛋限制50个，超出扣1亿资金。" />
+        <property name="textColor" value="#FF0088" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object type="basic" id="3192" x="120" y="-140" width="20" height="20">
+      <properties>
+        <property name="delay" value="120s" />
+        <property name="id" value="txt" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3193" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：1号囤蛋数量已达到过45；若数量达到50，扣1亿资金。" />
+        <property name="globalMessage_textColor" value="#BBBB00" />
+        <property name="minUnits" value="45" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="team" value="0" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3194" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：3号囤蛋数量已达到过45；若数量达到50，扣1亿资金。" />
+        <property name="globalMessage_textColor" value="#BBBB00" />
+        <property name="minUnits" value="45" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="team" value="2" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3195" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：4号囤蛋数量已达到过45；若数量达到50，扣1亿资金。" />
+        <property name="globalMessage_textColor" value="#BBBB00" />
+        <property name="minUnits" value="45" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="team" value="3" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3196" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：5号囤蛋数量已达到过45；若数量达到50，扣1亿资金。" />
+        <property name="globalMessage_textColor" value="#BBBB00" />
+        <property name="minUnits" value="45" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="team" value="4" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3197" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：6号囤蛋数量已达到过45；若数量达到50，扣1亿资金。" />
+        <property name="globalMessage_textColor" value="#BBBB00" />
+        <property name="minUnits" value="45" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="team" value="5" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3198" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：7号囤蛋数量已达到过45；若数量达到50，扣1亿资金。" />
+        <property name="globalMessage_textColor" value="#BBBB00" />
+        <property name="minUnits" value="45" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="team" value="6" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3199" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：8号囤蛋数量已达到过45；若数量达到50，扣1亿资金。" />
+        <property name="globalMessage_textColor" value="#BBBB00" />
+        <property name="minUnits" value="45" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="team" value="7" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3200" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：9号囤蛋数量已达到过45；若数量达到50，扣1亿资金。" />
+        <property name="globalMessage_textColor" value="#BBBB00" />
+        <property name="minUnits" value="45" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="team" value="8" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3201" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：10号囤蛋数量已达到过45；若数量达到50，扣1亿资金。" />
+        <property name="globalMessage_textColor" value="#BBBB00" />
+        <property name="minUnits" value="45" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="team" value="9" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3202" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：11号囤蛋数量已达到过45；若数量达到50，扣1亿资金。" />
+        <property name="globalMessage_textColor" value="#BBBB00" />
+        <property name="minUnits" value="45" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="team" value="10" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3203" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：12号囤蛋数量已达到过45；若数量达到50，扣1亿资金。" />
+        <property name="globalMessage_textColor" value="#BBBB00" />
+        <property name="minUnits" value="45" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="team" value="11" />
+      </properties>
+    </object>
+    <object name="限制囤蛋" type="unitDetect" id="3204" x="0" y="0" width="5600" height="3400">
+      <properties>
+        <property name="globalMessage" value="警告-囤蛋限制：13号囤蛋数量已达到过45；若数量达到50，扣1亿资金。" />
+        <property name="globalMessage_textColor" value="#BBBB00" />
+        <property name="minUnits" value="45" />
+        <property name="onlyWithTag" value="dan" />
+        <property name="team" value="12" />
+      </properties>
+    </object>
+    <object name="去除ZZ" type="teamTags" id="743" x="220" y="-140" width="20" height="20">
+      <properties>
+        <property name="removeTeamTags" value="ZZ" />
+        <property name="team" value="0" />
+      </properties>
+    </object>
+    <object name="去除ZZ" type="teamTags" id="3313" x="220" y="-140" width="20" height="20">
+      <properties>
+        <property name="removeTeamTags" value="ZZ" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="去除ZZ" type="teamTags" id="3314" x="220" y="-140" width="20" height="20">
+      <properties>
+        <property name="removeTeamTags" value="ZZ" />
+        <property name="team" value="2" />
+      </properties>
+    </object>
+    <object name="去除ZZ" type="teamTags" id="3315" x="220" y="-140" width="20" height="20">
+      <properties>
+        <property name="removeTeamTags" value="ZZ" />
+        <property name="team" value="3" />
+      </properties>
+    </object>
+    <object name="去除ZZ" type="teamTags" id="3316" x="220" y="-140" width="20" height="20">
+      <properties>
+        <property name="removeTeamTags" value="ZZ" />
+        <property name="team" value="4" />
+      </properties>
+    </object>
+    <object name="去除ZZ" type="teamTags" id="3317" x="220" y="-140" width="20" height="20">
+      <properties>
+        <property name="removeTeamTags" value="ZZ" />
+        <property name="team" value="5" />
+      </properties>
+    </object>
+    <object name="去除ZZ" type="teamTags" id="3318" x="220" y="-140" width="20" height="20">
+      <properties>
+        <property name="removeTeamTags" value="ZZ" />
+        <property name="team" value="6" />
+      </properties>
+    </object>
+    <object name="去除ZZ" type="teamTags" id="3319" x="220" y="-140" width="20" height="20">
+      <properties>
+        <property name="removeTeamTags" value="ZZ" />
+        <property name="team" value="7" />
+      </properties>
+    </object>
+    <object name="去除ZZ" type="teamTags" id="3320" x="220" y="-140" width="20" height="20">
+      <properties>
+        <property name="removeTeamTags" value="ZZ" />
+        <property name="team" value="8" />
+      </properties>
+    </object>
+    <object name="去除ZZ" type="teamTags" id="3321" x="220" y="-140" width="20" height="20">
+      <properties>
+        <property name="removeTeamTags" value="ZZ" />
+        <property name="team" value="9" />
+      </properties>
+    </object>
+    <object name="去除ZZ" type="teamTags" id="3322" x="220" y="-140" width="20" height="20">
+      <properties>
+        <property name="removeTeamTags" value="ZZ" />
+        <property name="team" value="10" />
+      </properties>
+    </object>
+    <object name="去除ZZ" type="teamTags" id="3323" x="220" y="-140" width="20" height="20">
+      <properties>
+        <property name="removeTeamTags" value="ZZ" />
+        <property name="team" value="11" />
+      </properties>
+    </object>
+    <object name="去除ZZ" type="teamTags" id="3324" x="220" y="-140" width="20" height="20">
+      <properties>
+        <property name="removeTeamTags" value="ZZ" />
+        <property name="team" value="12" />
+      </properties>
+    </object>
+    <object name="公告栏" type="mapText" id="3873" x="1380" y="2060" width="40" height="40">
+      <properties>
+        <property name="deactivatedBy" value="txt" />
+        <property name="text" value="【陆军寻路终点】" />
+        <property name="textColor" value="#FF0088" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="公告栏" type="mapText" id="3874" x="4180" y="2060" width="40" height="40">
+      <properties>
+        <property name="deactivatedBy" value="txt" />
+        <property name="text" value="【陆军寻路终点】" />
+        <property name="textColor" value="#FF0088" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="公告栏" type="mapText" id="3877" x="2780" y="2460" width="40" height="40">
+      <properties>
+        <property name="deactivatedBy" value="txt" />
+        <property name="text" value="【空军寻路终点】" />
+        <property name="textColor" value="#FF0088" />
+        <property name="textSize" value="15" />
+      </properties>
+    </object>
+    <object name="a-1-7" type="point" id="3875" x="2780" y="2460" width="40" height="40" />
+    <object name="移动a-7" type="move" id="3876" x="1600" y="1600" width="2400" height="600">
+      <properties>
+        <property name="resetActivationAfter" value="5s" />
+        <property name="target" value="a-1-7" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV2-小坦克+雷鸟" type="unitAdd" id="3995" x="2180" y="140" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC2" />
+        <property name="deactivatedBy" value="1-BC3" />
+        <property name="spawnUnits" value="巨型嗜骨虫*12(offsetHeight=1002000,offsetDir=99.00000),轰炸战斗机*4(offsetHeight=1402000,offsetDir=99.00000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="11.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV4-小坦克+火蜂" type="unitAdd" id="3997" x="2180" y="180" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC4" />
+        <property name="deactivatedBy" value="1-BC5" />
+        <property name="spawnUnits" value="杀戮者*4" />
+        <property name="team" value="1" />
+        <property name="warmup" value="11.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV7-杀戮者＋激光战机" type="unitAdd" id="3999" x="2220" y="140" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC7" />
+        <property name="deactivatedBy" value="1-BC8" />
+        <property name="spawnUnits" value="导弹战斗机*8(offsetHeight=1202000),轰炸战斗机*4(offsetHeight=1202000),勘察无人机*4(offsetHeight=1004000),泽拉迪*2(offsetHeight=1002020)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="6.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV9-杀戮者＋轰炸机" type="unitAdd" id="4001" x="2220" y="180" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC9" />
+        <property name="deactivatedBy" value="1-BC10" />
+        <property name="spawnUnits" value="原型机甲*12(offsetHeight=1002000),聚能离子机甲*2(offsetHeight=1202000),八足魔蛛*1(offsetHeight=1001000),巨型嗜骨虫*12(offsetHeight=1002000),巨型迸射虫*4(offsetHeight=1002200)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="6.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV12-杀戮者+火蜂" type="unitAdd" id="4003" x="2260" y="140" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC12" />
+        <property name="deactivatedBy" value="1-BC13" />
+        <property name="spawnUnits" value="星空号*8(offsetHeight=1002200),重型巨炮*2(offsetHeight=1002200),赤焰机甲*1(offsetHeight=1002200),巨型虫蜂*18(offsetHeight=1004400),巨型虫蜂*6(offsetHeight=1004400,offsetDir=99.03000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="6.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV14-杀戮者+泰坦型战斗蜘蛛" type="unitAdd" id="4056" x="2260" y="180" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC14" />
+        <property name="deactivatedBy" value="1-BC15" />
+        <property name="spawnUnits" value="泰坦型战斗蜘蛛*2,帝空" />
+        <property name="team" value="1" />
+        <property name="warmup" value="6.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV2-小坦克+雷鸟" type="unitAdd" id="4057" x="3180" y="140" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC2" />
+        <property name="deactivatedBy" value="1-BC3" />
+        <property name="spawnUnits" value="巨型嗜骨虫*12(offsetHeight=1002000,offsetDir=99.00000),轰炸战斗机*4(offsetHeight=1402000,offsetDir=99.00000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="11.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV4-小坦克+火蜂" type="unitAdd" id="4058" x="3180" y="180" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC4" />
+        <property name="deactivatedBy" value="1-BC5" />
+        <property name="spawnUnits" value="杀戮者*4" />
+        <property name="team" value="1" />
+        <property name="warmup" value="11.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV7-杀戮者＋激光战机" type="unitAdd" id="4059" x="3140" y="140" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC7" />
+        <property name="deactivatedBy" value="1-BC8" />
+        <property name="spawnUnits" value="导弹战斗机*8(offsetHeight=1202000),轰炸战斗机*4(offsetHeight=1202000),勘察无人机*4(offsetHeight=1004000),泽拉迪*2(offsetHeight=1002020)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="6.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV9-杀戮者＋轰炸机" type="unitAdd" id="4060" x="3140" y="180" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC9" />
+        <property name="deactivatedBy" value="1-BC10" />
+        <property name="spawnUnits" value="原型机甲*12(offsetHeight=1002000),聚能离子机甲*2(offsetHeight=1202000),八足魔蛛*1(offsetHeight=1001000),巨型嗜骨虫*12(offsetHeight=1002000),巨型迸射虫*4(offsetHeight=1002200)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="6.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV12-杀戮者+火蜂" type="unitAdd" id="4061" x="3100" y="140" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC12" />
+        <property name="deactivatedBy" value="1-BC13" />
+        <property name="spawnUnits" value="星空号*8(offsetHeight=1002200),重型巨炮*2(offsetHeight=1002200),赤焰机甲*1(offsetHeight=1002200),巨型虫蜂*18(offsetHeight=1004400),巨型虫蜂*6(offsetHeight=1004400,offsetDir=99.03000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="6.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV14-杀戮者+泰坦型战斗蜘蛛" type="unitAdd" id="4062" x="3100" y="180" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC14" />
+        <property name="deactivatedBy" value="1-BC15" />
+        <property name="spawnUnits" value="泰坦型战斗蜘蛛*2,帝空" />
+        <property name="team" value="1" />
+        <property name="warmup" value="6.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV1-小坦克+导飞" type="unitAdd" id="4063" x="2180" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC1" />
+        <property name="deactivatedBy" value="1-BC2" />
+        <property name="spawnUnits" value="导弹战斗机(offsetHeight=1101010,offsetDir=99.05000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV1-小坦克+导飞" type="unitAdd" id="4064" x="2180" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC1" />
+        <property name="deactivatedBy" value="1-BC2" />
+        <property name="spawnUnits" value="主战坦克(offsetHeight=1002010,offsetDir=99.19000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV2-小坦克+雷鸟" type="unitAdd" id="4065" x="2180" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC2" />
+        <property name="deactivatedBy" value="1-BC3" />
+        <property name="spawnUnits" value="雷鸟(offsetHeight=1002021,offsetDir=99.05000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV2-小坦克+雷鸟" type="unitAdd" id="4066" x="2180" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC2" />
+        <property name="deactivatedBy" value="1-BC3" />
+        <property name="spawnUnits" value="主战坦克(offsetHeight=1002010,offsetDir=99.29000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV3-小坦克+星辰" type="unitAdd" id="4067" x="2180" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC3" />
+        <property name="deactivatedBy" value="1-BC4" />
+        <property name="spawnUnits" value="星辰(offsetHeight=1001010,offsetDir=99.11000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV3-小坦克+星辰" type="unitAdd" id="4068" x="2180" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC3" />
+        <property name="deactivatedBy" value="1-BC4" />
+        <property name="spawnUnits" value="主战坦克(offsetHeight=1002010,offsetDir=99.29000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV4-小坦克+火蜂" type="unitAdd" id="4069" x="2180" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC4" />
+        <property name="deactivatedBy" value="1-BC5" />
+        <property name="spawnUnits" value="杀人蜂(offsetHeight=1101010,offsetDir=99.05000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV4-小坦克+火蜂" type="unitAdd" id="4070" x="2180" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC4" />
+        <property name="deactivatedBy" value="1-BC5" />
+        <property name="spawnUnits" value="主战坦克(offsetHeight=1002010,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV6-杀戮者＋核爆虫" type="unitAdd" id="4071" x="2220" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC6" />
+        <property name="deactivatedBy" value="1-BC7" />
+        <property name="spawnUnits" value="核爆虫(offsetHeight=1000100,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV6-杀戮者＋核爆虫" type="unitAdd" id="4072" x="2220" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC6" />
+        <property name="deactivatedBy" value="1-BC7" />
+        <property name="spawnUnits" value="核爆虫(offsetHeight=1000100,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV6-杀戮者＋核爆虫" type="unitAdd" id="4073" x="2220" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC6" />
+        <property name="deactivatedBy" value="1-BC7" />
+        <property name="spawnUnits" value="核爆虫(offsetHeight=1000100,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV6-杀戮者＋核爆虫" type="unitAdd" id="4074" x="2220" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC6" />
+        <property name="deactivatedBy" value="1-BC7" />
+        <property name="spawnUnits" value="核爆虫(offsetHeight=1000100,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="2.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV6-杀戮者＋核爆虫" type="unitAdd" id="4075" x="2220" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC6" />
+        <property name="deactivatedBy" value="1-BC7" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1004010,offsetDir=99.00000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="2.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV7-杀戮者＋激光战机" type="unitAdd" id="4076" x="2220" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC7" />
+        <property name="deactivatedBy" value="1-BC8" />
+        <property name="spawnUnits" value="AA光能射束战机(offsetHeight=1002201,offsetDir=99.090001)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV7-杀戮者＋激光战机" type="unitAdd" id="4077" x="2220" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC7" />
+        <property name="deactivatedBy" value="1-BC8" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1006010,offsetDir=99.00000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV8-杀戮者＋重型火炮坦克" type="unitAdd" id="4078" x="2220" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC8" />
+        <property name="deactivatedBy" value="1-BC9" />
+        <property name="spawnUnits" value="攻城锤坦克(offsetHeight=1400010,offsetDir=99.04000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV8-杀戮者＋重型火炮坦克" type="unitAdd" id="4079" x="2220" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC8" />
+        <property name="deactivatedBy" value="1-BC9" />
+        <property name="spawnUnits" value="攻城锤坦克(offsetHeight=1400010,offsetDir=99.04000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV8-杀戮者＋重型火炮坦克" type="unitAdd" id="4080" x="2220" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC8" />
+        <property name="deactivatedBy" value="1-BC9" />
+        <property name="spawnUnits" value="攻城锤坦克(offsetHeight=1400010,offsetDir=99.04000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV8-杀戮者＋重型火炮坦克" type="unitAdd" id="4081" x="2220" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC8" />
+        <property name="deactivatedBy" value="1-BC9" />
+        <property name="spawnUnits" value="攻城锤坦克(offsetHeight=1400010,offsetDir=99.04000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="2.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV8-杀戮者＋重型火炮坦克" type="unitAdd" id="4082" x="2220" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC8" />
+        <property name="deactivatedBy" value="1-BC9" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1004010,offsetDir=99.00000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="2.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV9-杀戮者＋轰炸机" type="unitAdd" id="4083" x="2220" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC9" />
+        <property name="deactivatedBy" value="1-BC10" />
+        <property name="spawnUnits" value="轰炸战斗机(offsetHeight=1101040,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV9-杀戮者＋轰炸机" type="unitAdd" id="4084" x="2220" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC9" />
+        <property name="deactivatedBy" value="1-BC10" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1008010,offsetDir=99.00000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV11-杀戮者+星辰" type="unitAdd" id="4085" x="2260" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC11" />
+        <property name="deactivatedBy" value="1-BC12" />
+        <property name="spawnUnits" value="星辰(offsetHeight=1001100,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV11-杀戮者+星辰" type="unitAdd" id="4086" x="2260" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC11" />
+        <property name="deactivatedBy" value="1-BC12" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1005010,offsetDir=99.01000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV12-杀戮者+火蜂" type="unitAdd" id="4087" x="2260" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC12" />
+        <property name="deactivatedBy" value="1-BC13" />
+        <property name="spawnUnits" value="杀人蜂(offsetHeight=1001100,offsetDir=99.19000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV12-杀戮者+火蜂" type="unitAdd" id="4088" x="2260" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC12" />
+        <property name="deactivatedBy" value="1-BC13" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1005010,offsetDir=99.01000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV13-杀戮者-破袭者" type="unitAdd" id="4089" x="2260" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC13" />
+        <property name="deactivatedBy" value="1-BC14" />
+        <property name="spawnUnits" value="破袭者(offsetHeight=1000100,offsetDir=99.19000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV13-杀戮者-破袭者" type="unitAdd" id="4090" x="2260" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC13" />
+        <property name="deactivatedBy" value="1-BC14" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1005010,offsetDir=99.01000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV14-杀戮者+泰坦型战斗蜘蛛" type="unitAdd" id="4091" x="2260" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC14" />
+        <property name="deactivatedBy" value="1-BC15" />
+        <property name="spawnUnits" value="泰坦型战斗蜘蛛(offsetHeight=1100000,offsetDir=99.19000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV14-杀戮者+泰坦型战斗蜘蛛" type="unitAdd" id="4092" x="2260" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC14" />
+        <property name="deactivatedBy" value="1-BC15" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1005010,offsetDir=99.01000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV1-小坦克+导飞" type="unitAdd" id="4099" x="3180" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC1" />
+        <property name="deactivatedBy" value="1-BC2" />
+        <property name="spawnUnits" value="导弹战斗机(offsetHeight=1101010,offsetDir=99.05000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV1-小坦克+导飞" type="unitAdd" id="4100" x="3180" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC1" />
+        <property name="deactivatedBy" value="1-BC2" />
+        <property name="spawnUnits" value="主战坦克(offsetHeight=1002010,offsetDir=99.19000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV2-小坦克+雷鸟" type="unitAdd" id="4101" x="3180" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC2" />
+        <property name="deactivatedBy" value="1-BC3" />
+        <property name="spawnUnits" value="雷鸟(offsetHeight=1002021,offsetDir=99.05000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV2-小坦克+雷鸟" type="unitAdd" id="4102" x="3180" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC2" />
+        <property name="deactivatedBy" value="1-BC3" />
+        <property name="spawnUnits" value="主战坦克(offsetHeight=1002010,offsetDir=99.29000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV3-小坦克+星辰" type="unitAdd" id="4103" x="3180" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC3" />
+        <property name="deactivatedBy" value="1-BC4" />
+        <property name="spawnUnits" value="星辰(offsetHeight=1001010,offsetDir=99.11000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV3-小坦克+星辰" type="unitAdd" id="4104" x="3180" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC3" />
+        <property name="deactivatedBy" value="1-BC4" />
+        <property name="spawnUnits" value="主战坦克(offsetHeight=1002010,offsetDir=99.29000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV4-小坦克+火蜂" type="unitAdd" id="4105" x="3180" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC4" />
+        <property name="deactivatedBy" value="1-BC5" />
+        <property name="spawnUnits" value="杀人蜂(offsetHeight=1101010,offsetDir=99.05000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV4-小坦克+火蜂" type="unitAdd" id="4106" x="3180" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC4" />
+        <property name="deactivatedBy" value="1-BC5" />
+        <property name="spawnUnits" value="主战坦克(offsetHeight=1002010,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV6-杀戮者＋核爆虫" type="unitAdd" id="4107" x="3140" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC6" />
+        <property name="deactivatedBy" value="1-BC7" />
+        <property name="spawnUnits" value="核爆虫(offsetHeight=1000100,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV6-杀戮者＋核爆虫" type="unitAdd" id="4108" x="3140" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC6" />
+        <property name="deactivatedBy" value="1-BC7" />
+        <property name="spawnUnits" value="核爆虫(offsetHeight=1000100,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV6-杀戮者＋核爆虫" type="unitAdd" id="4109" x="3140" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC6" />
+        <property name="deactivatedBy" value="1-BC7" />
+        <property name="spawnUnits" value="核爆虫(offsetHeight=1000100,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV6-杀戮者＋核爆虫" type="unitAdd" id="4110" x="3140" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC6" />
+        <property name="deactivatedBy" value="1-BC7" />
+        <property name="spawnUnits" value="核爆虫(offsetHeight=1000100,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="2.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV6-杀戮者＋核爆虫" type="unitAdd" id="4111" x="3140" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC6" />
+        <property name="deactivatedBy" value="1-BC7" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1004010,offsetDir=99.00000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="2.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV7-杀戮者＋激光战机" type="unitAdd" id="4112" x="3140" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC7" />
+        <property name="deactivatedBy" value="1-BC8" />
+        <property name="spawnUnits" value="AA光能射束战机(offsetHeight=1002201,offsetDir=99.090001)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV7-杀戮者＋激光战机" type="unitAdd" id="4113" x="3140" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC7" />
+        <property name="deactivatedBy" value="1-BC8" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1006010,offsetDir=99.00000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV8-杀戮者＋重型火炮坦克" type="unitAdd" id="4114" x="3140" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC8" />
+        <property name="deactivatedBy" value="1-BC9" />
+        <property name="spawnUnits" value="攻城锤坦克(offsetHeight=1400010,offsetDir=99.04000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV8-杀戮者＋重型火炮坦克" type="unitAdd" id="4115" x="3140" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC8" />
+        <property name="deactivatedBy" value="1-BC9" />
+        <property name="spawnUnits" value="攻城锤坦克(offsetHeight=1400010,offsetDir=99.04000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV8-杀戮者＋重型火炮坦克" type="unitAdd" id="4116" x="3140" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC8" />
+        <property name="deactivatedBy" value="1-BC9" />
+        <property name="spawnUnits" value="攻城锤坦克(offsetHeight=1400010,offsetDir=99.04000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV8-杀戮者＋重型火炮坦克" type="unitAdd" id="4117" x="3140" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC8" />
+        <property name="deactivatedBy" value="1-BC9" />
+        <property name="spawnUnits" value="攻城锤坦克(offsetHeight=1400010,offsetDir=99.04000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="2.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV8-杀戮者＋重型火炮坦克" type="unitAdd" id="4118" x="3140" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC8" />
+        <property name="deactivatedBy" value="1-BC9" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1004010,offsetDir=99.00000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="2.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV9-杀戮者＋轰炸机" type="unitAdd" id="4119" x="3140" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC9" />
+        <property name="deactivatedBy" value="1-BC10" />
+        <property name="spawnUnits" value="轰炸战斗机(offsetHeight=1101040,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV9-杀戮者＋轰炸机" type="unitAdd" id="4120" x="3140" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC9" />
+        <property name="deactivatedBy" value="1-BC10" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1008010,offsetDir=99.00000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV11-杀戮者+星辰" type="unitAdd" id="4121" x="3100" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC11" />
+        <property name="deactivatedBy" value="1-BC12" />
+        <property name="spawnUnits" value="星辰(offsetHeight=1001100,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV11-杀戮者+星辰" type="unitAdd" id="4122" x="3100" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC11" />
+        <property name="deactivatedBy" value="1-BC12" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1005010,offsetDir=99.01000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV12-杀戮者+火蜂" type="unitAdd" id="4123" x="3100" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC12" />
+        <property name="deactivatedBy" value="1-BC13" />
+        <property name="spawnUnits" value="杀人蜂(offsetHeight=1001100,offsetDir=99.19000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV12-杀戮者+火蜂" type="unitAdd" id="4124" x="3100" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC12" />
+        <property name="deactivatedBy" value="1-BC13" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1005010,offsetDir=99.01000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV13-杀戮者-破袭者" type="unitAdd" id="4125" x="3100" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC13" />
+        <property name="deactivatedBy" value="1-BC14" />
+        <property name="spawnUnits" value="破袭者(offsetHeight=1000100,offsetDir=99.19000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV13-杀戮者-破袭者" type="unitAdd" id="4126" x="3100" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC13" />
+        <property name="deactivatedBy" value="1-BC14" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1005010,offsetDir=99.01000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV14-杀戮者+泰坦型战斗蜘蛛" type="unitAdd" id="4127" x="3100" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC14" />
+        <property name="deactivatedBy" value="1-BC15" />
+        <property name="spawnUnits" value="泰坦型战斗蜘蛛(offsetHeight=1100000,offsetDir=99.19000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV14-杀戮者+泰坦型战斗蜘蛛" type="unitAdd" id="4128" x="3100" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC14" />
+        <property name="deactivatedBy" value="1-BC15" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1005010,offsetDir=99.01000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV16-啸颤锚" type="unitAdd" id="4129" x="3060" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC16" />
+        <property name="deactivatedBy" value="1-BC17" />
+        <property name="spawnUnits" value="啸颤锚*8(offsetHeight=1001010,offsetDir=99.03000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV17-杀戮者+地狱" type="unitAdd" id="4130" x="3060" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC17" />
+        <property name="deactivatedBy" value="1-BC18" />
+        <property name="spawnUnits" value="地狱" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV17-杀戮者+地狱" type="unitAdd" id="4131" x="3060" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC17" />
+        <property name="deactivatedBy" value="1-BC18" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1005100,offsetDir=99.03000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV18-畸弥龙" type="unitAdd" id="4132" x="3060" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC18" />
+        <property name="deactivatedBy" value="1-BC19" />
+        <property name="spawnUnits" value="畸弥龙*8(offsetHeight=1001100,offsetDir=99.03000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV19-杀戮者+帝空" type="unitAdd" id="4133" x="3060" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC19" />
+        <property name="deactivatedBy" value="1-BC20" />
+        <property name="spawnUnits" value="帝空" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV19-杀戮者+帝空" type="unitAdd" id="4134" x="3060" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC19" />
+        <property name="deactivatedBy" value="1-BC20" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1005100,offsetDir=99.03000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV1-小坦克+导飞" type="unitAdd" id="4135" x="2780" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC1" />
+        <property name="deactivatedBy" value="1-BC2" />
+        <property name="spawnUnits" value="导弹战斗机(offsetHeight=1101010,offsetDir=99.05000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV1-小坦克+导飞" type="unitAdd" id="4136" x="2780" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC1" />
+        <property name="deactivatedBy" value="1-BC2" />
+        <property name="spawnUnits" value="主战坦克(offsetHeight=1002010,offsetDir=99.19000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV2-小坦克+雷鸟" type="unitAdd" id="4137" x="2780" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC2" />
+        <property name="deactivatedBy" value="1-BC3" />
+        <property name="spawnUnits" value="雷鸟(offsetHeight=1002021,offsetDir=99.05000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV2-小坦克+雷鸟" type="unitAdd" id="4138" x="2780" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC2" />
+        <property name="deactivatedBy" value="1-BC3" />
+        <property name="spawnUnits" value="主战坦克(offsetHeight=1002010,offsetDir=99.29000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV3-小坦克+星辰" type="unitAdd" id="4139" x="2780" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC3" />
+        <property name="deactivatedBy" value="1-BC4" />
+        <property name="spawnUnits" value="星辰(offsetHeight=1001010,offsetDir=99.11000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV3-小坦克+星辰" type="unitAdd" id="4140" x="2780" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC3" />
+        <property name="deactivatedBy" value="1-BC4" />
+        <property name="spawnUnits" value="主战坦克(offsetHeight=1002010,offsetDir=99.29000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV4-小坦克+火蜂" type="unitAdd" id="4141" x="2780" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC4" />
+        <property name="deactivatedBy" value="1-BC5" />
+        <property name="spawnUnits" value="杀人蜂(offsetHeight=1101010,offsetDir=99.05000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV4-小坦克+火蜂" type="unitAdd" id="4142" x="2780" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC4" />
+        <property name="deactivatedBy" value="1-BC5" />
+        <property name="spawnUnits" value="主战坦克(offsetHeight=1002010,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV6-杀戮者＋核爆虫" type="unitAdd" id="4143" x="2740" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC6" />
+        <property name="deactivatedBy" value="1-BC7" />
+        <property name="spawnUnits" value="核爆虫(offsetHeight=1000100,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV6-杀戮者＋核爆虫" type="unitAdd" id="4144" x="2740" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC6" />
+        <property name="deactivatedBy" value="1-BC7" />
+        <property name="spawnUnits" value="核爆虫(offsetHeight=1000100,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV6-杀戮者＋核爆虫" type="unitAdd" id="4145" x="2740" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC6" />
+        <property name="deactivatedBy" value="1-BC7" />
+        <property name="spawnUnits" value="核爆虫(offsetHeight=1000100,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV6-杀戮者＋核爆虫" type="unitAdd" id="4146" x="2740" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC6" />
+        <property name="deactivatedBy" value="1-BC7" />
+        <property name="spawnUnits" value="核爆虫(offsetHeight=1000100,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="2.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV6-杀戮者＋核爆虫" type="unitAdd" id="4147" x="2740" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC6" />
+        <property name="deactivatedBy" value="1-BC7" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1004010,offsetDir=99.00000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="2.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV7-杀戮者＋激光战机" type="unitAdd" id="4148" x="2740" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC7" />
+        <property name="deactivatedBy" value="1-BC8" />
+        <property name="spawnUnits" value="AA光能射束战机(offsetHeight=1002201,offsetDir=99.090001)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV7-杀戮者＋激光战机" type="unitAdd" id="4149" x="2740" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC7" />
+        <property name="deactivatedBy" value="1-BC8" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1006010,offsetDir=99.00000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV8-杀戮者＋重型火炮坦克" type="unitAdd" id="4150" x="2740" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC8" />
+        <property name="deactivatedBy" value="1-BC9" />
+        <property name="spawnUnits" value="攻城锤坦克(offsetHeight=1400010,offsetDir=99.04000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV8-杀戮者＋重型火炮坦克" type="unitAdd" id="4151" x="2740" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC8" />
+        <property name="deactivatedBy" value="1-BC9" />
+        <property name="spawnUnits" value="攻城锤坦克(offsetHeight=1400010,offsetDir=99.04000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV8-杀戮者＋重型火炮坦克" type="unitAdd" id="4152" x="2740" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC8" />
+        <property name="deactivatedBy" value="1-BC9" />
+        <property name="spawnUnits" value="攻城锤坦克(offsetHeight=1400010,offsetDir=99.04000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV8-杀戮者＋重型火炮坦克" type="unitAdd" id="4153" x="2740" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC8" />
+        <property name="deactivatedBy" value="1-BC9" />
+        <property name="spawnUnits" value="攻城锤坦克(offsetHeight=1400010,offsetDir=99.04000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="2.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV8-杀戮者＋重型火炮坦克" type="unitAdd" id="4154" x="2740" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC8" />
+        <property name="deactivatedBy" value="1-BC9" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1004010,offsetDir=99.00000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="2.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV9-杀戮者＋轰炸机" type="unitAdd" id="4155" x="2740" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC9" />
+        <property name="deactivatedBy" value="1-BC10" />
+        <property name="spawnUnits" value="轰炸战斗机(offsetHeight=1101040,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV9-杀戮者＋轰炸机" type="unitAdd" id="4156" x="2740" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC9" />
+        <property name="deactivatedBy" value="1-BC10" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1008010,offsetDir=99.00000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV11-杀戮者+星辰" type="unitAdd" id="4157" x="2700" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC11" />
+        <property name="deactivatedBy" value="1-BC12" />
+        <property name="spawnUnits" value="星辰(offsetHeight=1001100,offsetDir=99.39000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV11-杀戮者+星辰" type="unitAdd" id="4158" x="2700" y="260" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC11" />
+        <property name="deactivatedBy" value="1-BC12" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1005010,offsetDir=99.01000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV12-杀戮者+火蜂" type="unitAdd" id="4159" x="2700" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC12" />
+        <property name="deactivatedBy" value="1-BC13" />
+        <property name="spawnUnits" value="杀人蜂(offsetHeight=1001100,offsetDir=99.19000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV12-杀戮者+火蜂" type="unitAdd" id="4160" x="2700" y="300" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC12" />
+        <property name="deactivatedBy" value="1-BC13" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1005010,offsetDir=99.01000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV13-杀戮者-破袭者" type="unitAdd" id="4161" x="2700" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC13" />
+        <property name="deactivatedBy" value="1-BC14" />
+        <property name="spawnUnits" value="破袭者(offsetHeight=1000100,offsetDir=99.19000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV13-杀戮者-破袭者" type="unitAdd" id="4162" x="2700" y="340" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC13" />
+        <property name="deactivatedBy" value="1-BC14" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1005010,offsetDir=99.01000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV14-杀戮者+泰坦型战斗蜘蛛" type="unitAdd" id="4163" x="2700" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC14" />
+        <property name="deactivatedBy" value="1-BC15" />
+        <property name="spawnUnits" value="泰坦型战斗蜘蛛(offsetHeight=1100000,offsetDir=99.19000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="0.5s" />
+      </properties>
+    </object>
+    <object name="叠罗汉LV14-杀戮者+泰坦型战斗蜘蛛" type="unitAdd" id="4164" x="2700" y="380" width="40" height="40">
+      <properties>
+        <property name="activatedBy" value="1-BC14" />
+        <property name="deactivatedBy" value="1-BC15" />
+        <property name="spawnUnits" value="杀戮者(offsetHeight=1005010,offsetDir=99.01000)" />
+        <property name="team" value="1" />
+        <property name="warmup" value="1.0s" />
+      </properties>
+    </object>
+  </objectgroup>
+  <objectgroup name="UnitObjects">
+    <object name="实验室" id="90" x="2780" y="2580" width="40" height="40">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="概念型实验室" />
+      </properties>
+    </object>
+    <object name="10矿" id="712" x="100" y="1480" width="20" height="20">
+      <properties>
+        <property name="team" value="9" />
+        <property name="unit" value="extractor" />
+      </properties>
+    </object>
+    <object name="10矿" id="713" x="180" y="1480" width="20" height="20">
+      <properties>
+        <property name="team" value="9" />
+        <property name="unit" value="extractor" />
+      </properties>
+    </object>
+    <object name="10矿" id="715" x="100" y="1560" width="20" height="20">
+      <properties>
+        <property name="team" value="9" />
+        <property name="unit" value="extractor" />
+      </properties>
+    </object>
+    <object name="10矿" id="716" x="180" y="1560" width="20" height="20">
+      <properties>
+        <property name="team" value="9" />
+        <property name="unit" value="extractor" />
+      </properties>
+    </object>
+    <object name="11矿" id="725" x="300" y="1480" width="20" height="20">
+      <properties>
+        <property name="team" value="10" />
+        <property name="unit" value="extractor" />
+      </properties>
+    </object>
+    <object name="11矿" id="726" x="380" y="1480" width="20" height="20">
+      <properties>
+        <property name="team" value="10" />
+        <property name="unit" value="extractor" />
+      </properties>
+    </object>
+    <object name="11矿" id="727" x="300" y="1560" width="20" height="20">
+      <properties>
+        <property name="team" value="10" />
+        <property name="unit" value="extractor" />
+      </properties>
+    </object>
+    <object name="11矿" id="728" x="380" y="1560" width="20" height="20">
+      <properties>
+        <property name="team" value="10" />
+        <property name="unit" value="extractor" />
+      </properties>
+    </object>
+    <object name="12矿" id="731" x="5200" y="1480" width="20" height="20">
+      <properties>
+        <property name="team" value="11" />
+        <property name="unit" value="extractor" />
+      </properties>
+    </object>
+    <object name="12矿" id="732" x="5280" y="1480" width="20" height="20">
+      <properties>
+        <property name="team" value="11" />
+        <property name="unit" value="extractor" />
+      </properties>
+    </object>
+    <object name="12矿" id="733" x="5200" y="1560" width="20" height="20">
+      <properties>
+        <property name="team" value="11" />
+        <property name="unit" value="extractor" />
+      </properties>
+    </object>
+    <object name="12矿" id="734" x="5280" y="1560" width="20" height="20">
+      <properties>
+        <property name="team" value="11" />
+        <property name="unit" value="extractor" />
+      </properties>
+    </object>
+    <object name="13矿" id="719" x="5400" y="1480" width="20" height="20">
+      <properties>
+        <property name="team" value="12" />
+        <property name="unit" value="extractor" />
+      </properties>
+    </object>
+    <object name="13矿" id="720" x="5480" y="1480" width="20" height="20">
+      <properties>
+        <property name="team" value="12" />
+        <property name="unit" value="extractor" />
+      </properties>
+    </object>
+    <object name="13矿" id="721" x="5400" y="1560" width="20" height="20">
+      <properties>
+        <property name="team" value="12" />
+        <property name="unit" value="extractor" />
+      </properties>
+    </object>
+    <object name="13矿" id="722" x="5480" y="1560" width="20" height="20">
+      <properties>
+        <property name="team" value="12" />
+        <property name="unit" value="extractor" />
+      </properties>
+    </object>
+    <object name="2" id="826" x="4240" y="-1280" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="2" id="1959" x="4240" y="-1280" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="C指挥中心T1（额外升级）" />
+      </properties>
+    </object>
+    <object name="建造者" id="3217" x="1800" y="2980" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="建造者T3" />
+      </properties>
+    </object>
+    <object name="建造者" id="3218" x="2000" y="2980" width="20" height="20">
+      <properties>
+        <property name="team" value="2" />
+        <property name="unit" value="建造者T3" />
+      </properties>
+    </object>
+    <object name="建造者" id="3219" x="2200" y="2980" width="20" height="20">
+      <properties>
+        <property name="team" value="3" />
+        <property name="unit" value="建造者T3" />
+      </properties>
+    </object>
+    <object name="建造者" id="3220" x="2400" y="2980" width="20" height="20">
+      <properties>
+        <property name="team" value="4" />
+        <property name="unit" value="建造者T3" />
+      </properties>
+    </object>
+    <object name="建造者" id="3221" x="3180" y="2980" width="20" height="20">
+      <properties>
+        <property name="team" value="5" />
+        <property name="unit" value="建造者T3" />
+      </properties>
+    </object>
+    <object name="建造者" id="3222" x="3380" y="2980" width="20" height="20">
+      <properties>
+        <property name="team" value="6" />
+        <property name="unit" value="建造者T3" />
+      </properties>
+    </object>
+    <object name="建造者" id="3223" x="3580" y="2980" width="20" height="20">
+      <properties>
+        <property name="team" value="7" />
+        <property name="unit" value="建造者T3" />
+      </properties>
+    </object>
+    <object name="建造者" id="3224" x="3780" y="2980" width="20" height="20">
+      <properties>
+        <property name="team" value="8" />
+        <property name="unit" value="建造者T3" />
+      </properties>
+    </object>
+    <object name="1" id="3262" x="1800" y="2900" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="3" id="3263" x="2000" y="2900" width="20" height="20">
+      <properties>
+        <property name="team" value="2" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="4" id="3264" x="2200" y="2900" width="20" height="20">
+      <properties>
+        <property name="team" value="3" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="5" id="3265" x="2400" y="2900" width="20" height="20">
+      <properties>
+        <property name="team" value="4" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="6" id="3266" x="3180" y="2900" width="20" height="20">
+      <properties>
+        <property name="team" value="5" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="7" id="3267" x="3380" y="2900" width="20" height="20">
+      <properties>
+        <property name="team" value="6" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="8" id="3268" x="3580" y="2900" width="20" height="20">
+      <properties>
+        <property name="team" value="7" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="9" id="3269" x="3780" y="2900" width="20" height="20">
+      <properties>
+        <property name="team" value="8" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="10" id="3270" x="140" y="1380" width="20" height="20">
+      <properties>
+        <property name="team" value="9" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="11" id="3271" x="340" y="1380" width="20" height="20">
+      <properties>
+        <property name="team" value="10" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="12" id="3272" x="5240" y="1380" width="20" height="20">
+      <properties>
+        <property name="team" value="11" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="13" id="3273" x="5440" y="1380" width="20" height="20">
+      <properties>
+        <property name="team" value="12" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="额外基地-原版" id="3289" x="2780" y="15500" width="40" height="40">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="额外基地-原版" id="3290" x="2780" y="15500" width="40" height="40">
+      <properties>
+        <property name="team" value="2" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="额外基地-原版" id="3291" x="2780" y="15500" width="40" height="40">
+      <properties>
+        <property name="team" value="3" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="额外基地-原版" id="3292" x="2780" y="15500" width="40" height="40">
+      <properties>
+        <property name="team" value="4" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="额外基地-原版" id="3293" x="2780" y="15500" width="40" height="40">
+      <properties>
+        <property name="team" value="5" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="额外基地-原版" id="3294" x="2780" y="15500" width="40" height="40">
+      <properties>
+        <property name="team" value="6" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="额外基地-原版" id="3295" x="2780" y="15500" width="40" height="40">
+      <properties>
+        <property name="team" value="7" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="额外基地-原版" id="3296" x="2780" y="15500" width="40" height="40">
+      <properties>
+        <property name="team" value="8" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="额外基地-原版" id="3297" x="2780" y="15500" width="40" height="40">
+      <properties>
+        <property name="team" value="9" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="额外基地-原版" id="3298" x="2780" y="15500" width="40" height="40">
+      <properties>
+        <property name="team" value="10" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="额外基地-原版" id="3299" x="2780" y="15500" width="40" height="40">
+      <properties>
+        <property name="team" value="11" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="额外基地-原版" id="3300" x="2780" y="15500" width="40" height="40">
+      <properties>
+        <property name="team" value="12" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object name="1" id="3301" x="2780" y="15620" width="40" height="40">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="C指挥中心T1（额外升级）" />
+      </properties>
+    </object>
+    <object name="3" id="3302" x="2780" y="15620" width="40" height="40">
+      <properties>
+        <property name="team" value="2" />
+        <property name="unit" value="C指挥中心T1（额外升级）" />
+      </properties>
+    </object>
+    <object name="4" id="3303" x="2780" y="15620" width="40" height="40">
+      <properties>
+        <property name="team" value="3" />
+        <property name="unit" value="C指挥中心T1（额外升级）" />
+      </properties>
+    </object>
+    <object name="5" id="3304" x="2780" y="15620" width="40" height="40">
+      <properties>
+        <property name="team" value="4" />
+        <property name="unit" value="C指挥中心T1（额外升级）" />
+      </properties>
+    </object>
+    <object name="6" id="3305" x="2780" y="15620" width="40" height="40">
+      <properties>
+        <property name="team" value="5" />
+        <property name="unit" value="C指挥中心T1（额外升级）" />
+      </properties>
+    </object>
+    <object name="7" id="3306" x="2780" y="15620" width="40" height="40">
+      <properties>
+        <property name="team" value="6" />
+        <property name="unit" value="C指挥中心T1（额外升级）" />
+      </properties>
+    </object>
+    <object name="8" id="3307" x="2780" y="15620" width="40" height="40">
+      <properties>
+        <property name="team" value="7" />
+        <property name="unit" value="C指挥中心T1（额外升级）" />
+      </properties>
+    </object>
+    <object name="9" id="3308" x="2780" y="15620" width="40" height="40">
+      <properties>
+        <property name="team" value="8" />
+        <property name="unit" value="C指挥中心T1（额外升级）" />
+      </properties>
+    </object>
+    <object name="10" id="3309" x="2780" y="15620" width="40" height="40">
+      <properties>
+        <property name="team" value="9" />
+        <property name="unit" value="C指挥中心T1（额外升级）" />
+      </properties>
+    </object>
+    <object name="11" id="3311" x="2780" y="15620" width="40" height="40">
+      <properties>
+        <property name="team" value="10" />
+        <property name="unit" value="C指挥中心T1（额外升级）" />
+      </properties>
+    </object>
+    <object name="12" id="3312" x="2780" y="15620" width="40" height="40">
+      <properties>
+        <property name="team" value="11" />
+        <property name="unit" value="C指挥中心T1（额外升级）" />
+      </properties>
+    </object>
+    <object name="13" id="3310" x="2780" y="15620" width="40" height="40">
+      <properties>
+        <property name="team" value="12" />
+        <property name="unit" value="C指挥中心T1（额外升级）" />
+      </properties>
+    </object>
+  </objectgroup>
+</map>

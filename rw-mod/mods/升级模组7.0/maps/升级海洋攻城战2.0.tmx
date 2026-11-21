@@ -1,0 +1,455 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<map version="1.2" orientation="orthogonal" renderorder="right-down" width="210" height="140" tilewidth="20" tileheight="20" nextobjectid="32">
+  <properties>
+    <property name="fill" value="89" />
+    <property name="tag" value="RW" />
+    <property name="sw4" value="143" />
+    <property name="sw5" value="164" />
+    <property name="sw1" value="169" />
+    <property name="sw2" value="168" />
+    <property name="sw3" value="86" />
+    <property name="sw6" value="62" />
+  </properties>
+  <tileset firstgid="1" name="Lava" columns="3" tilecount="15" tileheight="20" tilewidth="20">
+    <image source="bitmaps/lava.png" width="60" height="100" trans="008a76" />
+    <tile id="0">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="1">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="2">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="3">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="4">
+      <properties>
+        <property name="lava" value="" />
+      </properties>
+    </tile>
+    <tile id="5">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="6">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="7">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="8">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="10">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="11">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="13">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="14">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="9">
+      <properties>
+        <property name="lava" value="" />
+      </properties>
+    </tile>
+    <tile id="12">
+      <properties>
+        <property name="lava" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="1104" name="Lava" columns="3" tilecount="15" tileheight="20" tilewidth="20">
+    <image source="bitmaps/lava.png" width="60" height="100" trans="008a76" />
+    <tile id="0">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="1">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="2">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="3">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="4">
+      <properties>
+        <property name="lava" value="" />
+      </properties>
+    </tile>
+    <tile id="5">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="6">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="7">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="8">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="10">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="11">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="13">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="14">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="1185" name="Stone Lava - Ridge" columns="3" tilecount="15" tileheight="20" tilewidth="20">
+    <image source="bitmaps/stone2lava.png" width="60" height="100" trans="008a76" />
+    <tile id="0">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="1">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="2">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="3">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="5">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="6">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="7">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="8">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="10">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="11">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="13">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="14">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="1252" name="Shallow Water" columns="3" tilecount="6" tileheight="20" tilewidth="20">
+    <image source="terrain/bitmaps/shallowwater.png" width="60" height="40" trans="008a76" />
+    <tile id="0">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="1258" name="水" columns="1" tilecount="1" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAACXBIWXMAAFxGAABcRgEUlENBAAAA
+B3RJTUUH6gMGBxAKtphaggAAAuJJREFUOI1VlOuO5EQMhT/bVUl66NkBFiEtAvFKvCdPhVghActl
+ZtjupC42PyoJbPe/iuvU8fE5lrc//BgiQkQAsG0bqgqAqhIe5Jzo7hx1qooAHoG7k8zO78ndiQhS
+Snx2EVo1Uk703hERHKfUiiB4OGZG7x0Ad2eaJrZtw8wGoKoSEdRS+ScSloxaK2ZGzpmnNxMfb06t
+lckm3H08tv8B5mk62erRXqkF2dvMORMRrOvK388btVZE5GQ9ahJqSmsN9jN3R1truDvLslBrOxm4
+O8IAaeWOdz8vffn5Quud3jvhARE8XhMpJTQiSGaklMg5ncM4WYjycH1CbYCJCC+vFXcnahkse+f5
+pdBaQ92d+7qybRsBvLkmeuuYGYiQc2JbN0x1MIqg9U7OGc0ztrNurbEsCyoIl8tlSCzC82sFQERo
+rQ07qOC7rVJKp30s2Sfn27qhy2UZregO0DuWbDBpDZExyWPytdThilrZtg2RMe3WGtM8odu2cfy+
+//bpEwYppcHExgPhQcqJ8EBFmeeZVhuiwpTzof8YfXjw8y+vJ3grd0SEpzcTrTbyfgFAouExvGnJ
+hoa9c7vdUBVhnmdEhfX2etpmvlxRVf78647a8GrrjVbu2LRgZnz91XVEL6Vh/GkiHbGyZCwPj/TW
+EZXTzIcXh60yvXdKKQD8+vvrqfHwcUVzzngMf+n+8UiLqhIMDXvrYyn8D2Ce52HmPW0ppTGU47Ds
+mhybx92ZcqbWej5aSiHnTNnK2YWK8N03jyN6pnZ6zszOoiMVZddGZPh0WRZEhkTAYG7GT++fB6CH
+4+4AmOp5ISL44mlmmiZ0D/+6riQbU903C63eKaWchNTMSGaoKtdrOgt763z447b7REhmmI5kmOpY
+qr3z7t3bcxeKCBoep79eXkcKImKP22DStxWAYCQkgPV2Z5omfvvw8ewQQC0Z/0GCilDL0HGe56HX
+NBNwtrWuK8vD5Zz2URsR/AuJpv16g8m61gAAAABJRU5ErkJggg==
+</property>
+    </properties>
+    <image source="../../../贴图/水.png" width="20" height="20" />
+    <tile id="0">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="1259" name="Water" columns="3" tilecount="3" tileheight="20" tilewidth="20">
+    <image source="terrain/bitmaps/water.png" width="60" height="20" trans="008a76" />
+    <tile id="0">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="1262" name="水1" columns="1" tilecount="1" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAACXBIWXMAAFxGAABcRgEUlENBAAAA
+B3RJTUUH6gMGBzYd9pVcYQAAAzlJREFUOI1FlMGSHDUQRF+WpG717MB6HcHBfAQfyA9zwdjYnml1
+S6ri0AvoXCGlsjKf8m+/h/wgCLCKpwXyBqOh8ytWNgIREShXon1BaYOyQd+xeseffxKpolyxyBXX
+gu6/kjiQhPmJRgNbmecT1wJjx88nWCVyJeornlb6/jczgFSRHJOElg1/fGZS0Pk3fvwAb9j6wrLd
+SX4CQH0Fu9TSGxJkyySBRmOwYtI16wRYQvUNo8P6RqkLPRY8rZA31L6heVmhecA88LSi+yckoXli
+3neifcFyJWxhKhNaibFznJcatwIhFAcRQUmJOJ/vSnfixx+kLGweGB6o3LD+Hckwy++vNTSP61vz
+AfNJLB/w5SPDVkKALf9Z0FVxghwCzz8hd+z4QvYbPRylDQmYJ96fkG5EBItNxunYciNGR3nDI+B8
+kFLClCu5fwdA6yvnnKCE/MCPJzEnLG+IuLxWBm9EbyhnICBVrGz4mGRbXogu1A98OshQKsx+AgOL
+SQzhc0fo/+iMBx6TJEP1A7lk5hW5J/QGeaVuGcsrjBNTQT6I5QOKA8oLzB2lDc83VN9IcV6LGY3R
+HtAbWedX3FaWWjmmgB3Khs+BBKV/oy+vhC3I/cpnWogQkTasP3AzcGcSZNY30mj01nCf2DyhbKT6
+E9F3jmHvcRCeVnKq+JxoniglYn3FZmcSWLmR3R25o2gkILxBBweYDUsrMRrME1Ni9omVgs+TGAMS
+MHdS/YjbgpnZBQa4Cv/yCS0bNg80GzEakW7IJ1rvoGCeO6QFljsiLlgA5gfm5wP5BQW3BR1/Ee/3
+R/kZU0LHZyJXzBvhgyQhSzCeKFe0viAczYMsP1B9w/uB5oHbhp1fCUAReFqxfMMJ4mwYgrIRliEg
+SCicMSY5ZXLYCv0A7zAgecPTHcWg1NtVs3aicTDnjpkR3VBeQcJllKUwp+N9x7R9hOWGGFBuuFVs
+Poi8crJcoB0NLTeUNma5434S/QcRQbXJmIJ5zWTO7+8lr6g/iPICA+iN6DshI1QIKyDQODEmnn+G
+8eCYBenJv8dIGxr7+5YrSwFfL5CaBMsLihP6gwhD5casv2CWMGWSNzQbSUYE/AOepPqdPQaCogAA
+AABJRU5ErkJggg==
+</property>
+    </properties>
+    <image source="../../../贴图/水1.png" width="20" height="20" />
+    <tile id="0">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <layer name="Ground" width="210" height="140">
+    <data encoding="base64" compression="zlib">
+   eJzt3UFq3FgUhWFhJ429/xXYBOyF9agDvYauomqYtK+Ngs55+gZ3+qH3dH88sKC+b9v23RhjjDHGGGOMMeYPzT/fZvP3cHif914u83qfh+02jx+8m+bzNnk66vF+/OJ9/aWjCE9HPZ6Ocj0d9Xg6yvV01OPpKNfTUY+no1xPRz2ejnI9HfV4Osr1dNTj6SjX01GPp6Ncb9rRKudt9n7XUcrzndk7W0fTv62J512xo+b3ceaOmr0VO1rF01GPp6NcT0c9no5yPR31eDrK9XTU4+ko19NRj6ejXE9HPZ6Ocj0d9Xhvl3m/z9N2m2cdRXjTjqbez+H8Oxwe70hv2puOeDwd8Xg66r9n3tqejng8HbXcM29tT0c8no5a7pm3tqcjHk9HLffMW9vbu6Opt8r98XjX2fu7IB3xzujpiMfTUcs989b2dMTj6ej/7uX6PCn3zDvOu+6BjvreG+98no54PB213DNvbU9HPF5eR0d9FzTtd/p8zd7LZV7v87Dd5vGDd9N83q94R+2fjno8v3+Uu3866vF0lLt/OurxdJS7fzrq8XSUu3866vF0lLt/OurxdJS7fzrq8XSUu3866vF0lLt/OurxdJS7f9OOpt70+abnXeX97uH5/aPc/dNRj6ej3P3TUY+no9z901GPp6Pc/dNRj6ej3P3TUY+no9z901GPp6Pc/dNRj6ej3P3TUY+no9z901GPp6Pc/Zt2NPWmzzc97yrvdw/Pd0G5+6ejHk9Hufunox5PR7n7p6MeT0e5+6ejHk9Huft3VEdXU0c6OqqjvffP36MeT0e5+6ejHk9Hufunox5PR7n7p6MeT0e5+zftaOpNn2963lXe7x6e74Jy909HPZ6OcvdPRz2ejnL3T0c9no5y909HPZ6OcvdPRz2ejnL3T0c9no5y909HPZ6OcvdPRz2ejnL3T0c9no5y92/a0dSbPt/0vKu83z083wXl7p+Oejwd5e6fjno8HeXun456PB3l7p+Oejwd5e6fjno8HeXun456PB3l7p+Oejwd5e6fjno8HeXun456vLfLvN/nabvNs44i9m/a0dSbPt/e5+Xx/oQ37VdHPJ6OeDwd9d8zb21v5Y6uz5Nyz7zjvOse6KjvvfHO5+mIx9NRyz3z1vZ0xOPpqOWeeWt7e3d01HcZPN6R3t7fBemId0ZPRzyejlrumbe2pyMeT0ct98xb29MRj6ejlnvmre3piMfTUcs989b29u5o6k17433ee7nM630etts8fvBums/b5Omox/P7R7mejno8HeV6OurxdJTr6ajH01Gup6MeT0e5no56PB3lejrq8XSU652to+n/lBPPu2JHze/jzB01eyt2tIo37WiV8zZ7fv8o19NRj6ejXE9HPZ6Ocj0d9Xg6yvV01OPpKNfTUY+no1xPRz2ejnI9HfV4Osr1dNTj6SjX01GP93aZ9/s8bbd51lGEN+3IGGOMMcYYY4wx5ivzH1Ezm6k=
+  </data>
+  </layer>
+  <layer name="Items" width="210" height="140">
+    <data encoding="base64" compression="zlib">
+   eJztwQENAAAAwqD3T20PBxQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPBmy28AAQ==
+  </data>
+  </layer>
+  <layer name="Units" width="210" height="140">
+    <data encoding="base64" compression="zlib">
+   eJztwQENAAAAwqD3T20PBxQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPBmy28AAQ==
+  </data>
+  </layer>
+  <objectgroup name="UnitObejcts">
+    <object id="19" x="10000" y="10000" width="20" height="20">
+      <properties>
+        <property name="team" value="5" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object id="20" x="10000" y="10000" width="20" height="20">
+      <properties>
+        <property name="team" value="4" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object id="21" x="10000" y="10000" width="20" height="20">
+      <properties>
+        <property name="team" value="3" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object id="22" x="10000" y="10000" width="20" height="20">
+      <properties>
+        <property name="team" value="2" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object id="23" x="10000" y="10000" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object id="24" x="10000" y="10000" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object id="25" x="10000" y="10000" width="20" height="20">
+      <properties>
+        <property name="team" value="6" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object id="26" x="10000" y="10000" width="20" height="20">
+      <properties>
+        <property name="team" value="7" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object id="27" x="10000" y="10000" width="20" height="20">
+      <properties>
+        <property name="team" value="8" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object id="28" x="10000" y="10000" width="20" height="20">
+      <properties>
+        <property name="team" value="9" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </object>
+    <object id="1" x="3390" y="800" width="20" height="20">
+      <properties>
+        <property name="team" value="2" />
+        <property name="unit" value="A城塔" />
+      </properties>
+    </object>
+    <object id="2" x="3090" y="320" width="20" height="20">
+      <properties>
+        <property name="team" value="6" />
+        <property name="unit" value="A城塔" />
+      </properties>
+    </object>
+    <object id="10" x="3390" y="1980" width="20" height="20">
+      <properties>
+        <property name="team" value="4" />
+        <property name="unit" value="A城塔" />
+      </properties>
+    </object>
+    <object id="11" x="3090" y="2460" width="20" height="20">
+      <properties>
+        <property name="team" value="8" />
+        <property name="unit" value="A城塔" />
+      </properties>
+    </object>
+    <object id="12" x="1090" y="320" width="20" height="20">
+      <properties>
+        <property name="team" value="7" />
+        <property name="unit" value="A城塔" />
+      </properties>
+    </object>
+    <object id="13" x="790" y="800" width="20" height="20">
+      <properties>
+        <property name="team" value="3" />
+        <property name="unit" value="A城塔" />
+      </properties>
+    </object>
+    <object id="15" x="490" y="1400" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="A城塔" />
+      </properties>
+    </object>
+    <object id="16" x="790" y="1980" width="20" height="20">
+      <properties>
+        <property name="team" value="5" />
+        <property name="unit" value="A城塔" />
+      </properties>
+    </object>
+    <object id="17" x="1090" y="2460" width="20" height="20">
+      <properties>
+        <property name="team" value="9" />
+        <property name="unit" value="A城塔" />
+      </properties>
+    </object>
+    <object id="0" x="3690" y="1400" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="A城塔" />
+      </properties>
+    </object>
+    <object id="18" x="-10000" y="-10000" width="20" height="20">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="JHJ" />
+      </properties>
+    </object>
+    <object id="19" x="-10000" y="-10000" width="20" height="20">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="HKX" />
+      </properties>
+    </object>
+  </objectgroup>
+  <objectgroup name="Triggers">
+    <object type="unitRemove" id="30" x="9500" y="9500" width="1000" height="1000">
+      <properties>
+        <property name="warmup" value="1s" />
+      </properties>
+    </object>
+    <object name="map_info" id="31" x="2" y="5" width="20" height="20">
+      <properties>
+        <property name="type" value="skirmish" />
+      </properties>
+    </object>
+  </objectgroup>
+</map>

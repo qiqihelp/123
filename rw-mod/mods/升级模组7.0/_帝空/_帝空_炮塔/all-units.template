@@ -1,0 +1,98 @@
+[core]
+selfBuildRate:0.001
+[action_reclaim]
+attachments_deleteNumUnits:1
+buildSpeed:3s
+text:Reclaim Slot
+description:-Free up slot for another turret type.\n-Returns ${core.price * 0.5} credits
+convertTo:终极闲置中
+addResources:15000000
+iconExtraImage:SHARED:icon_sell_top.png
+iconExtraColor:#AAFFFFFF
+isVisible: if self.completed and self.globalTeamTags(includes="cjdk")
+[global_resource_pfcd]
+hidden:true
+[resource_DS]
+hidden:true
+[resource_DSK]
+hidden:true
+[resource_DSZJ]
+hidden:true
+[resource_SHDS]
+hidden:true
+[resource_SCDS]
+hidden:true
+[resource_SSDS]
+hidden:true
+[hiddenAction_aiEW]
+alsoTriggerAction:KB2
+autoTriggerOnEvent:created
+setResourcesWithLogic:SHDS=(int((self.dir*100)%10)+10*int((self.dir*10)%10)+1)*(int(self.height/100)%10),SSDS=(int((self.dir*100)%10)+10*int((self.dir*10)%10)+1)*(int(self.height/10)%10)/((int(self.dir*100000)%10)+1),SCDS=(int((self.dir*100)%10)+10*int((self.dir*10)%10)+1)*(int(self.height/1)%10)/((int(self.dir*10000)%10)+1),DSZJ=${core.price},DS=int(self.dir)-1
+setHeight:0
+setBodyRotation:select(self.maxMoveSpeed()>0,0,-90)
+requireConditional:if self.globalTeamTags(includes="EW") and self.height>999999
+[hiddenAction_伤害同步]
+autoTrigger:if self.resource.SHDS!=customTarget1.resource.SHDS and customTarget1!=nullUnit
+setResourcesWithLogic:SHDS=customTarget1.resource.SHDS
+alsoTriggerAction:KB2
+[hiddenAction_射程同步]
+autoTrigger:if self.resource.SCDS!=customTarget1.resource.SCDS and customTarget1!=nullUnit
+setResourcesWithLogic:SCDS=customTarget1.resource.SCDS
+alsoTriggerAction:KB2
+[hiddenAction_射速同步]
+autoTrigger:if self.resource.SSDS!=customTarget1.resource.SSDS and customTarget1!=nullUnit
+setResourcesWithLogic:SSDS=customTarget1.resource.SSDS
+alsoTriggerAction:KB2
+[decal_伤害升级]
+total_frames:5
+layer:beforeUI
+onlyWhileAlive:true
+alwaysStartDirAtZero:true
+isVisible:if self.resource.SHDS!=0
+frame:min(self.resource.SHDS-1,4)
+image:ROOT:素材/伤害.png
+xOffsetAbsolute:0.5*${core.radius}
+yOffsetAbsolute:1.1*${core.radius}
+imageScale:${core.radius}/70
+[decal_射程升级]
+@copyFromSection:decal_伤害升级
+isVisible:if self.resource.SCDS!=0
+frame:min(self.resource.SCDS-1,4)
+image:ROOT:素材/射程.png
+xOffsetAbsolute:0.9*${core.radius}
+imageScale:${core.radius}/80
+[decal_射速升级]
+@copyFromSection:decal_伤害升级
+isVisible:if self.resource.SSDS!=0
+frame:min(self.resource.SSDS-1,4)
+image:ROOT:素材/射速.png
+xOffsetAbsolute:0.7*${core.radius}
+imageScale:${core.radius}/70
+[global_resource_pfcd]
+hidden:true
+[resource_BF]
+hidden:true
+[resource_stk]
+hidden:true
+[hiddenAction_BF]
+autoTrigger:if (lastDamagedBy.hasTags(includes='BF') and lastDamagedBy!=nullUnit or numberOfUnitsInAllTeams(withTag="ST")>0) and self.resource.stk==0 
+setCustomTarget2:lastDamagedBy
+setUnitStats:selfRegenRate=0,shieldRegen=0,shootDelayMultiplier=999999999,movespeed=0,maxTurnSpeed=0,nanoRange=0,nanoFactorySpeed=0,maxAttackRange=0
+setResourcesWithLogic:stk=1
+[hiddenAction_ST2]
+autoTrigger:if (CustomTarget2==nullUnit or distanceBetweenSquared(self, CustomTarget2)>CustomTarget2.ammo) and self.resource.stk==1 and numberOfUnitsInAllTeams(withTag="ST")<1
+alsoTriggerAction:KB2
+setResourcesWithLogic:stk=0,BF=0
+[hiddenAction_KB2]
+setUnitStats:shootDamageMultiplier=1+1.4*self.resource.SHDS,maxAttackRange=${attack.maxAttackRange}*(1+0.1*self.resource.SCDS),shootDelayMultiplier=1/(self.resource.SSDS+1),maxTurnSpeed=${movement.maxTurnSpeed}
+[hiddenAction_DEk]
+deleteSelf:true
+autoTrigger:if self.globalTeamTags(includes="QC")
+[resource_CHZ]
+hidden:true
+[hiddenAction_JY]
+autoTriggerOnEvent:killedAnyUnit
+autoTrigger:if self.resource.CHZ>0
+takeResources_includeReference:customTarget1
+takeResources_directTransferStoppingAtZero:true
+takeResources:CHZ=-999999999

@@ -1,0 +1,1207 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<map version="1.2" orientation="orthogonal" renderorder="right-down" width="240" height="240" tilewidth="20" tileheight="20" nextobjectid="2">
+  <properties>
+    <property name="sw1" value="381" />
+    <property name="sw2" value="382" />
+    <property name="sw3" value="383" />
+    <property name="sw5" value="394" />
+    <property name="sw4" value="1009" />
+    <property name="sw6" value="1015" />
+  </properties>
+  <tileset firstgid="1" name="Mountain" columns="7" tilecount="35" tileheight="20" tilewidth="20">
+    <image source="terrain/bitmaps/mountain.png" width="140" height="100" trans="008a76" />
+    <tile id="7">
+      <properties>
+        <property name="small-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="8">
+      <properties>
+        <property name="small-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="9">
+      <properties>
+        <property name="small-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="21">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="22">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="28">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="29">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="36" name="Snow" columns="8" tilecount="80" tileheight="20" tilewidth="20">
+    <image source="terrain/bitmaps/snow.png" width="160" height="200" trans="008a76" />
+    <tile id="14">
+      <properties>
+        <property name="tree" value="" />
+      </properties>
+    </tile>
+    <tile id="15">
+      <properties>
+        <property name="tree" value="" />
+      </properties>
+    </tile>
+    <tile id="55">
+      <properties>
+        <property name="tree" value="" />
+      </properties>
+    </tile>
+    <tile id="79">
+      <properties>
+        <property name="tree" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="116" name="Ice" columns="5" tilecount="10" tileheight="20" tilewidth="20">
+    <image source="terrain/bitmaps/ice.png" width="100" height="40" trans="008a76" />
+    <tile id="9">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset source="terrain/Long Grass.tsx" firstgid="126" />
+  <tileset source="terrain/Dirt.tsx" firstgid="176" />
+  <tileset firstgid="186" name="Shallow Water" columns="3" tilecount="6" tileheight="20" tilewidth="20">
+    <image source="terrain/bitmaps/shallowwater.png" width="60" height="40" trans="008a76" />
+    <tile id="0">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="192" name="Water" columns="3" tilecount="3" tileheight="20" tilewidth="20">
+    <image source="terrain/bitmaps/water.png" width="60" height="20" trans="008a76" />
+    <tile id="0">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="195" name="Deep Water" columns="3" tilecount="3" tileheight="20" tilewidth="20">
+    <image source="terrain/bitmaps/deepwater.png" width="60" height="20" trans="008a76" />
+    <tile id="0">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset source="ridges/Mountain Mountain - Hill.tsx" firstgid="198" />
+  <tileset source="ridges/Mountain Snow - Flat.tsx" firstgid="219" />
+  <tileset source="ridges/Snow Ice - Ridge.tsx" firstgid="240" />
+  <tileset firstgid="261" name="Ice ShallowWater - Ridge" columns="3" tilecount="21" tileheight="20" tilewidth="20">
+    <image source="ridges/bitmaps/ice2shallowwater_ridge.png" width="60" height="140" trans="008a76" />
+    <tile id="0">
+      <properties>
+        <property name="cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="1">
+      <properties>
+        <property name="cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="2">
+      <properties>
+        <property name="cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="3">
+      <properties>
+        <property name="cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="5">
+      <properties>
+        <property name="cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="6">
+      <properties>
+        <property name="cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="7">
+      <properties>
+        <property name="cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="8">
+      <properties>
+        <property name="cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="12">
+      <properties>
+        <property name="cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="14">
+      <properties>
+        <property name="cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="18">
+      <properties>
+        <property name="cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="20">
+      <properties>
+        <property name="cliff" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="282" name="ShallowWater Water - Flat" columns="3" tilecount="21" tileheight="20" tilewidth="20">
+    <image source="ridges/bitmaps/shallowwater2water_flat.png" width="60" height="140" trans="008a76" />
+    <tile id="0">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+    <tile id="1">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+    <tile id="2">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+    <tile id="3">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+    <tile id="5">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+    <tile id="6">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+    <tile id="7">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+    <tile id="8">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+    <tile id="12">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+    <tile id="14">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+    <tile id="18">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+    <tile id="20">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset source="ridges/Water DeepWater - Flat.tsx" firstgid="303" />
+  <tileset source="ridges/LongGrass ShallowWater - Ridge.tsx" firstgid="324" />
+  <tileset source="ridges/LongGrass Dirt - Flat.tsx" firstgid="354" />
+  <tileset firstgid="375" name="misc" columns="3" tilecount="24" tileheight="20" tilewidth="20">
+    <image source="bitmaps/misc.png" width="79" height="160" />
+    <tile id="4">
+      <properties>
+        <property name="res_pool" value="" />
+      </properties>
+    </tile>
+    <tile id="9">
+      <properties>
+        <property name="team" value="none" />
+        <property name="unit" value="tree" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="399" name="Ice Ice - Flat" columns="3" tilecount="21" tileheight="20" tilewidth="20">
+    <image source="ridges/bitmaps/ice2ice_flat.png" width="60" height="140" trans="008a76" />
+    <tile id="0">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="1">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="2">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="3">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="5">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="6">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="7">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="8">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="12">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="14">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="18">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="20">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="420" name="Ice ShallowWater - Broken" columns="3" tilecount="21" tileheight="20" tilewidth="20">
+    <image source="ridges/bitmaps/ice2shallowwater_broken.png" width="60" height="140" trans="008a76" />
+    <tile id="0">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="1">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="2">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="3">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="5">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="6">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="7">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="8">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="12">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="14">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="18">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+    <tile id="20">
+      <properties>
+        <property name="cliff-soft" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset source="ridges/Dirt ShalowWater - Ridge.tsx" firstgid="441" />
+  <tileset source="ridges/Mountain ShallowWater - Ridge.tsx" firstgid="462" />
+  <tileset source="ridges/Sand ShallowWater - Ridge.tsx" firstgid="483" />
+  <tileset source="ridges/Snow Snow - ridge.tsx" firstgid="504" />
+  <tileset firstgid="525" name="units" margin="1" spacing="1" columns="9" tilecount="279" tileheight="20" tilewidth="20">
+    <image source="bitmaps/units.png" width="200" height="665" />
+    <tile id="0">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="builderShip" />
+      </properties>
+    </tile>
+    <tile id="1">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="builder" />
+      </properties>
+    </tile>
+    <tile id="2">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="tank" />
+      </properties>
+    </tile>
+    <tile id="3">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="artillery" />
+      </properties>
+    </tile>
+    <tile id="4">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="heavyTank" />
+      </properties>
+    </tile>
+    <tile id="5">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="hoverTank" />
+      </properties>
+    </tile>
+    <tile id="6">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </tile>
+    <tile id="7">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="turret" />
+      </properties>
+    </tile>
+    <tile id="8">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="antiAirTurret" />
+      </properties>
+    </tile>
+    <tile id="10">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="helicopter" />
+      </properties>
+    </tile>
+    <tile id="11">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="airShip" />
+      </properties>
+    </tile>
+    <tile id="12">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="amphibiousJet" />
+      </properties>
+    </tile>
+    <tile id="14">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="seaFactory" />
+      </properties>
+    </tile>
+    <tile id="15">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="landFactory" />
+      </properties>
+    </tile>
+    <tile id="16">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="airFactory" />
+      </properties>
+    </tile>
+    <tile id="17">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="extractor" />
+      </properties>
+    </tile>
+    <tile id="18">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="attackSubmarine" />
+      </properties>
+    </tile>
+    <tile id="19">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="scoutShip" />
+      </properties>
+    </tile>
+    <tile id="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="hovercraft" />
+      </properties>
+    </tile>
+    <tile id="21">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="gunBoat" />
+      </properties>
+    </tile>
+    <tile id="22">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="battleShip" />
+      </properties>
+    </tile>
+    <tile id="23">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </tile>
+    <tile id="24">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="experimentalLandFactory" />
+      </properties>
+    </tile>
+    <tile id="25">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="repairbay" />
+      </properties>
+    </tile>
+    <tile id="26">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="fabricator" />
+      </properties>
+    </tile>
+    <tile id="28">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="experimentalTank" />
+      </properties>
+    </tile>
+    <tile id="29">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="mammothTank" />
+      </properties>
+    </tile>
+    <tile id="30">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="dropship" />
+      </properties>
+    </tile>
+    <tile id="31">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="gunShip" />
+      </properties>
+    </tile>
+    <tile id="32">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="laserTank" />
+      </properties>
+    </tile>
+    <tile id="33">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="heavyHoverTank" />
+      </properties>
+    </tile>
+    <tile id="45">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="builderShip" />
+      </properties>
+    </tile>
+    <tile id="46">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="builder" />
+      </properties>
+    </tile>
+    <tile id="47">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="tank" />
+      </properties>
+    </tile>
+    <tile id="48">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="artillery" />
+      </properties>
+    </tile>
+    <tile id="49">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="heavyTank" />
+      </properties>
+    </tile>
+    <tile id="50">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="hoverTank" />
+      </properties>
+    </tile>
+    <tile id="51">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </tile>
+    <tile id="52">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="turret" />
+      </properties>
+    </tile>
+    <tile id="53">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="antiAirTurret" />
+      </properties>
+    </tile>
+    <tile id="55">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="helicopter" />
+      </properties>
+    </tile>
+    <tile id="56">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="airShip" />
+      </properties>
+    </tile>
+    <tile id="57">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="amphibiousJet" />
+      </properties>
+    </tile>
+    <tile id="59">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="seaFactory" />
+      </properties>
+    </tile>
+    <tile id="60">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="landFactory" />
+      </properties>
+    </tile>
+    <tile id="61">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="airFactory" />
+      </properties>
+    </tile>
+    <tile id="62">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="extractor" />
+      </properties>
+    </tile>
+    <tile id="63">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="attackSubmarine" />
+      </properties>
+    </tile>
+    <tile id="64">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="scoutShip" />
+      </properties>
+    </tile>
+    <tile id="65">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="hovercraft" />
+      </properties>
+    </tile>
+    <tile id="66">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="gunBoat" />
+      </properties>
+    </tile>
+    <tile id="67">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="battleShip" />
+      </properties>
+    </tile>
+    <tile id="68">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </tile>
+    <tile id="69">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="experimentalLandFactory" />
+      </properties>
+    </tile>
+    <tile id="70">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="repairbay" />
+      </properties>
+    </tile>
+    <tile id="71">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="fabricator" />
+      </properties>
+    </tile>
+    <tile id="73">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="experimentalTank" />
+      </properties>
+    </tile>
+    <tile id="74">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="mammothTank" />
+      </properties>
+    </tile>
+    <tile id="75">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="dropship" />
+      </properties>
+    </tile>
+    <tile id="76">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="gunShip" />
+      </properties>
+    </tile>
+    <tile id="77">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="laserTank" />
+      </properties>
+    </tile>
+    <tile id="78">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="heavyHoverTank" />
+      </properties>
+    </tile>
+    <tile id="82">
+      <properties>
+        <property name="team" value="2" />
+        <property name="unit" value="builder" />
+      </properties>
+    </tile>
+    <tile id="83">
+      <properties>
+        <property name="team" value="2" />
+        <property name="unit" value="tank" />
+      </properties>
+    </tile>
+    <tile id="84">
+      <properties>
+        <property name="team" value="2" />
+        <property name="unit" value="heavyHoverTank" />
+      </properties>
+    </tile>
+    <tile id="85">
+      <properties>
+        <property name="team" value="2" />
+        <property name="unit" value="heavyTank" />
+      </properties>
+    </tile>
+    <tile id="87">
+      <properties>
+        <property name="team" value="2" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </tile>
+    <tile id="88">
+      <properties>
+        <property name="team" value="2" />
+        <property name="unit" value="turret" />
+      </properties>
+    </tile>
+    <tile id="89">
+      <properties>
+        <property name="team" value="2" />
+        <property name="unit" value="antiAirTurret" />
+      </properties>
+    </tile>
+    <tile id="96">
+      <properties>
+        <property name="team" value="2" />
+        <property name="unit" value="landFactory" />
+      </properties>
+    </tile>
+    <tile id="97">
+      <properties>
+        <property name="team" value="2" />
+        <property name="unit" value="airFactory" />
+      </properties>
+    </tile>
+    <tile id="98">
+      <properties>
+        <property name="team" value="2" />
+        <property name="unit" value="extractor" />
+      </properties>
+    </tile>
+    <tile id="99">
+      <properties>
+        <property name="showFog" value="5" />
+      </properties>
+    </tile>
+    <tile id="100">
+      <properties>
+        <property name="team" value="3" />
+        <property name="unit" value="builder" />
+      </properties>
+    </tile>
+    <tile id="102">
+      <properties>
+        <property name="team" value="3" />
+        <property name="unit" value="heavyHoverTank" />
+      </properties>
+    </tile>
+    <tile id="105">
+      <properties>
+        <property name="team" value="3" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </tile>
+    <tile id="108">
+      <properties>
+        <property name="showFog" value="10" />
+      </properties>
+    </tile>
+    <tile id="109">
+      <properties>
+        <property name="team" value="3" />
+        <property name="unit" value="helicopter" />
+      </properties>
+    </tile>
+    <tile id="117">
+      <properties>
+        <property name="showFog" value="20" />
+      </properties>
+    </tile>
+    <tile id="118">
+      <properties>
+        <property name="team" value="3" />
+        <property name="unit" value="scoutShip" />
+      </properties>
+    </tile>
+    <tile id="119">
+      <properties>
+        <property name="team" value="3" />
+        <property name="unit" value="hovercraft" />
+      </properties>
+    </tile>
+    <tile id="120">
+      <properties>
+        <property name="team" value="3" />
+        <property name="unit" value="gunBoat" />
+      </properties>
+    </tile>
+    <tile id="126">
+      <properties>
+        <property name="showFog" value="40" />
+      </properties>
+    </tile>
+    <tile id="136">
+      <properties>
+        <property name="team" value="4" />
+        <property name="unit" value="builder" />
+      </properties>
+    </tile>
+    <tile id="141">
+      <properties>
+        <property name="team" value="4" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </tile>
+    <tile id="144">
+      <properties>
+        <property name="team" value="4" />
+        <property name="unit" value="ladyBug" />
+      </properties>
+    </tile>
+    <tile id="153">
+      <properties>
+        <property name="team" value="5" />
+        <property name="unit" value="builder" />
+      </properties>
+    </tile>
+    <tile id="154">
+      <properties>
+        <property name="team" value="5" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </tile>
+    <tile id="155">
+      <properties>
+        <property name="team" value="6" />
+        <property name="unit" value="builder" />
+      </properties>
+    </tile>
+    <tile id="156">
+      <properties>
+        <property name="team" value="6" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </tile>
+    <tile id="157">
+      <properties>
+        <property name="team" value="7" />
+        <property name="unit" value="builder" />
+      </properties>
+    </tile>
+    <tile id="158">
+      <properties>
+        <property name="team" value="7" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </tile>
+    <tile id="171">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="ladyBug" />
+      </properties>
+    </tile>
+    <tile id="180">
+      <properties>
+        <property name="team" value="1" />
+        <property name="unit" value="ladyBug" />
+      </properties>
+    </tile>
+    <tile id="188">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="crystalResource" />
+      </properties>
+    </tile>
+    <tile id="207">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="builderShip" />
+      </properties>
+    </tile>
+    <tile id="208">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="builder" />
+      </properties>
+    </tile>
+    <tile id="209">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="tank" />
+      </properties>
+    </tile>
+    <tile id="210">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="artillery" />
+      </properties>
+    </tile>
+    <tile id="211">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="heavyTank" />
+      </properties>
+    </tile>
+    <tile id="212">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="hoverTank" />
+      </properties>
+    </tile>
+    <tile id="213">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="commandCenter" />
+      </properties>
+    </tile>
+    <tile id="214">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="turret" />
+      </properties>
+    </tile>
+    <tile id="215">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="antiAirTurret" />
+      </properties>
+    </tile>
+    <tile id="217">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="helicopter" />
+      </properties>
+    </tile>
+    <tile id="218">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="airShip" />
+      </properties>
+    </tile>
+    <tile id="219">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="amphibiousJet" />
+      </properties>
+    </tile>
+    <tile id="221">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="" />
+      </properties>
+    </tile>
+    <tile id="222">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="landFactory" />
+      </properties>
+    </tile>
+    <tile id="223">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="airFactory" />
+      </properties>
+    </tile>
+    <tile id="224">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="extractor" />
+      </properties>
+    </tile>
+    <tile id="225">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="attackSubmarine" />
+      </properties>
+    </tile>
+    <tile id="226">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="scoutShip" />
+      </properties>
+    </tile>
+    <tile id="227">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="hovercraft" />
+      </properties>
+    </tile>
+    <tile id="228">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="gunBoat" />
+      </properties>
+    </tile>
+    <tile id="229">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="battleShip" />
+      </properties>
+    </tile>
+    <tile id="230">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="laserDefence" />
+      </properties>
+    </tile>
+    <tile id="231">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="experimentalLandFactory" />
+      </properties>
+    </tile>
+    <tile id="232">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="repairbay" />
+      </properties>
+    </tile>
+    <tile id="233">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="fabricator" />
+      </properties>
+    </tile>
+    <tile id="235">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="experimentalTank" />
+      </properties>
+    </tile>
+    <tile id="236">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="mammothTank" />
+      </properties>
+    </tile>
+    <tile id="237">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="dropship" />
+      </properties>
+    </tile>
+    <tile id="238">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="gunShip" />
+      </properties>
+    </tile>
+    <tile id="239">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="laserTank" />
+      </properties>
+    </tile>
+    <tile id="240">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="unit" value="heavyHoverTank" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="804" name="Sand" columns="7" tilecount="42" tileheight="20" tilewidth="20">
+    <image source="terrain/bitmaps/sand.png" width="140" height="120" trans="008a76" />
+    <tile id="28">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="29">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="31">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="35">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="36">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="38">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="40">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset source="ridges/LongGrass ShallowWater - Flat.tsx" firstgid="846" />
+  <tileset source="ridges/Mountain LongGrass - Flat.tsx" firstgid="867" />
+  <tileset source="ridges/Mountain Sand - Flat.tsx" firstgid="888" />
+  <tileset source="terrain/Sand.tsx" firstgid="909" />
+  <tileset source="ridges/Mountain ShallowWater - Flat.tsx" firstgid="951" />
+  <tileset source="terrain/Stone.tsx" firstgid="972" />
+  <tileset source="ridges/Stone Lava - Ridge.tsx" firstgid="1008" />
+  <tileset source="terrain/Lava.tsx" firstgid="1023" />
+  <tileset source="ridges/Stone Sand - Flat.tsx" firstgid="1044" />
+  <tileset source="ridges/Sand LandGrass - Flat.tsx" firstgid="1065" />
+  <layer name="Ground" width="240" height="240">
+    <data encoding="base64" compression="gzip">
+   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
+  </data>
+  </layer>
+  <layer name="Items" width="240" height="240">
+    <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAAO3d3W6CQBAG0N30ofmHvmNfqJO0Sb1oozYGGPacZG4VhA+cIaulAAAAAAAAAAAAAAC0oaul9FFDPXpL4Mf7i8/HV7/eWYyxX1PUfNH9gytbIrdr1Ca/AAAAwDfzesjLvL5NV33+1Brz+scMvqNAWvIL+ZgPQF6Z5wN6XFp3Ox8wI4Cc5BcA2nF0D3v0+wMAAAAAAHAMz4kAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALiyrpbSRw3+zxfSGSO3U9Qsv5DOErldozb5BQAAAAAAAAAAAAAAAAAAAAAAAAAA4J/8xjwA7OPj7auAnOQXAAAAAAAAAADgvq6W0ldrFSCjMXI7Rc3yC+kskds1apNfgFPQF0Fe+iLIS18EAAAAAAAAAAAAAMCeBmvIAGA31m+3zfHPzfrttjn+uVm/3TbHHwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPbT1VL6qKEevSXAs8bI7RQ1yy+ks0Ru16hNfgEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP7U1VL6qKEevSXAs8bI7RQ1yy+ks0Ru16hNfgGAnej/IS/9P+Sl/wcAzu52XjCYG0Aq5gWQl3kBAADAa7zrq+AUZBEAAMhMT8OZOT8BuCL3N2jbo9cA1woAuM/9sg2OM2fgPIRzkcnf+VzgXGQS2Msnwmlv+gCEAwA=
+  </data>
+  </layer>
+  <layer name="Units" width="240" height="240">
+    <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAAO3csQ2DMBBAUeQBaBiHJpvQZAEaNknDAEkIS7KAqSJzwn5vgtM1Z/3CXQcAAAAAAAAAAAAAAFCvR4qeAAAAAIi26wMAFDC6LwAAANC8nz4AAAAAAACX++jzAAAAAAAU8NafAQAAAAAAAAAAAAAAAAAAAAAAAAAAAJq2+K8aAAAAAIACZv0ZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACaMKXoCQAAAADg3FO/AgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIDi1hQ9AQAAAAAANXrpzwBAkM07JGuwFwAAAACAv3x11qzeXgAAAAAAAAAAAAAAAAAAAOB2DilUgQsAhAMA
+  </data>
+  </layer>
+  <objectgroup name="Triggers">
+    <object name="map_info" id="1" x="40" y="41" width="203" height="122">
+      <properties>
+        <property name="type" value="skirmish" />
+      </properties>
+    </object>
+  </objectgroup>
+</map>

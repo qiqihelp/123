@@ -31,6 +31,14 @@ REQUIRED_GRAPHICS = ["image"]
 REQUIRED_MOVEMENT = ["movementType"]
 IMAGE_KEYS = ["image", "image_wreak", "image_turret", "image_dead"]
 MOVEMENT_TYPES = {"NONE", "LAND", "BUILDING", "AIR", "WATER", "HOVER", "OVER_CLIFF", "OVER_CLIFF_WATER"}
+# 非文件哨兵值：NONE/AUTO/IGNORE 表示无图/自动，SHARED:/CUSTOM: 为引擎共享资源
+SENTINEL_VALUES = {"NONE", "AUTO", "IGNORE"}
+# 攻击目标旗：兼容新旧两种命名
+ATTACK_FLAGS = (
+    "canAttackLand", "canAttackAir", "canAttackWater",
+    "canAttackFlyingUnits", "canAttackLandUnits", "canAttackUnderwaterUnits",
+    "canAttackSeaUnits", "canAttackGroundUnits",
+)
 
 
 def parse_ini(path: Path):
@@ -67,6 +75,23 @@ def check_root_ref(mod_root: Path, ref: str):
     rel = ref.replace("ROOT:", "").replace("ROOT:\\", "").lstrip("\\/")
     rel = rel.replace("\\", "/")
     return mod_root / rel
+
+
+def file_exists_ci(path: Path) -> bool:
+    """大小写不敏感的存在检查（游戏在 Windows 上运行，FB.PNG == FB.png）。"""
+    if path.is_file():
+        return True
+    parent = path.parent
+    if not parent.is_dir():
+        return False
+    target = path.name.lower()
+    try:
+        for child in parent.iterdir():
+            if child.name.lower() == target and child.is_file():
+                return True
+    except OSError:
+        return False
+    return False
 
 
 def validate_mod(mod_dir: Path, strict: bool = False):
@@ -121,32 +146,42 @@ def validate_mod(mod_dir: Path, strict: bool = False):
         attack = sections.get("attack", {})
         movement = sections.get("movement", {})
 
-        for k in REQUIRED_CORE:
-            if k not in core:
-                errors.append(f"{rel}: [core] 缺少必填键 {k}")
-        for k in REQUIRED_GRAPHICS:
-            if k not in graphics:
-                errors.append(f"{rel}: [graphics] 缺少必填键 {k}")
-        for k in REQUIRED_MOVEMENT:
-            if k not in movement:
-                errors.append(f"{rel}: [movement] 缺少必填键 {k}")
+        # copyFrom / dont_load / name:NULL 的模板/补丁式 INI 不强制必填
+        is_partial = (
+            "copyFrom" in core
+            or core.get("dont_load", "").lower() == "true"
+            or core.get("name", "").upper() == "NULL"
+        )
+        if not is_partial:
+            for k in REQUIRED_CORE:
+                if k not in core:
+                    errors.append(f"{rel}: [core] 缺少必填键 {k}")
+            for k in REQUIRED_GRAPHICS:
+                if k not in graphics:
+                    errors.append(f"{rel}: [graphics] 缺少必填键 {k}")
+            for k in REQUIRED_MOVEMENT:
+                if k not in movement:
+                    errors.append(f"{rel}: [movement] 缺少必填键 {k}")
 
-        # canAttack + 目标旗
-        if "canAttack" not in attack:
-            errors.append(f"{rel}: [attack] 缺少 canAttack")
-        else:
-            flags = [attack.get(f, "") for f in ("canAttackLand", "canAttackAir", "canAttackWater")]
-            if attack.get("canAttack", "").lower() == "true" and not any(f.lower() == "true" for f in flags):
-                warnings.append(f"{rel}: canAttack=true 但未开启任何目标旗（Land/Air/Water）")
+        # canAttack + 目标旗（兼容新旧命名；条件表达式 if ... 也算开启）
+        if not is_partial:
+            if "canAttack" not in attack:
+                errors.append(f"{rel}: [attack] 缺少 canAttack")
+            else:
+                def _enabled(v: str) -> bool:
+                    return v.strip().lower() not in ("", "false", "0", "no")
+                flags = [attack.get(f, "") for f in ATTACK_FLAGS]
+                if _enabled(attack.get("canAttack", "")) and not any(_enabled(f) for f in flags):
+                    warnings.append(f"{rel}: canAttack=true 但未开启任何目标旗（{','.join(ATTACK_FLAGS)}）")
 
-        # movementType 合法性
+        # movementType 合法性（游戏大小写不敏感）
         mt = movement.get("movementType", "")
-        if mt and mt not in MOVEMENT_TYPES:
+        if mt and mt.upper() not in MOVEMENT_TYPES:
             errors.append(f"{rel}: movementType 非法: {mt}（应为 {sorted(MOVEMENT_TYPES)} 之一）")
 
-        # name 唯一性
+        # name 唯一性（模板文件 NULL 不计入）
         name = core.get("name", "")
-        if name:
+        if name and name.upper() != "NULL":
             if name in VANILLA_NAMES:
                 warnings.append(f"{rel}: name '{name}' 与原版常见单位重名，可能冲突")
             if name in seen_names:
@@ -154,36 +189,46 @@ def validate_mod(mod_dir: Path, strict: bool = False):
             else:
                 seen_names[name] = str(rel)
 
-        # 图片引用存在性（相对 INI 目录）
-        for sec_name, sec in sections.items():
-            for key in IMAGE_KEYS:
-                if key in sec:
-                    img = sec[key].strip()
-                    if not img or img.startswith("ROOT:"):
-                        continue
-                    # 去掉可能的引号
-                    img = img.strip('"').strip("'")
-                    p = (ini_path.parent / img.replace("\\", "/"))
-                    if not p.is_file():
-                        errors.append(f"{rel}: [{sec_name}] {key} 引用缺失: {img}")
+        # 图片引用存在性（相对 INI 目录；模板/补丁文件跳过）
+        if not is_partial:
+            for sec_name, sec in sections.items():
+                for key in IMAGE_KEYS:
+                    if key in sec:
+                        img = sec[key].strip()
+                        if not img or img.startswith("ROOT:"):
+                            continue
+                        # 变量引用 ${...} 不是文件名
+                        if "${" in img:
+                            continue
+                        # 哨兵值与引擎共享资源不是本地文件（SHARED:/CUSTOM:/SHADOW: 等前缀）
+                        upper = img.strip('"').strip("'").upper()
+                        if upper in SENTINEL_VALUES or ":" in img:
+                            continue
+                        # 去掉可能的引号
+                        img = img.strip('"').strip("'")
+                        p = (ini_path.parent / img.replace("\\", "/"))
+                        if not file_exists_ci(p):
+                            errors.append(f"{rel}: [{sec_name}] {key} 引用缺失: {img}")
 
         # ROOT:\ 引用存在性（全文件扫描）
         text = ini_path.read_text(encoding="utf-8", errors="replace")
         for m in re.finditer(r"ROOT:[^\s\"']+", text):
             ref = m.group(0).strip().rstrip(",;")
             target = check_root_ref(mod_dir, ref)
-            if not target.is_file():
+            if not file_exists_ci(target):
                 errors.append(f"{rel}: ROOT 引用缺失: {ref} -> {target.relative_to(mod_dir) if target.is_relative_to(mod_dir) else target}")
 
-        # turret -> projectile 指向
-        turret_secs = [s for s in sections if re.match(r"^turret_\d+$", s)]
-        proj_secs = {s for s in sections if re.match(r"^projectile_\d+$", s)}
-        for t in turret_secs:
-            proj = sections[t].get("projectile", "")
-            if proj:
-                expected = f"projectile_{proj}"
-                if expected not in proj_secs:
-                    errors.append(f"{rel}: [{t}] projectile={proj} 指向不存在的 [{expected}]")
+        # turret -> projectile 指向（支持命名弹丸，如 projectile: beam -> [projectile_beam]）
+        # copyFrom 补丁文件继承基文件的 projectile 定义，跳过此检查
+        if not is_partial:
+            turret_secs = [s for s in sections if re.match(r"^turret_.+$", s)]
+            proj_secs = {s for s in sections if re.match(r"^projectile_.+$", s)}
+            for t in turret_secs:
+                proj = sections[t].get("projectile", "").strip()
+                if proj:
+                    expected = f"projectile_{proj}"
+                    if expected not in proj_secs:
+                        errors.append(f"{rel}: [{t}] projectile={proj} 指向不存在的 [{expected}]")
 
         # builtFrom/canBuild 槽位重复（简单提示）
         built_from = core.get("builtFrom", "")
