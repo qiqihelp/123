@@ -555,6 +555,7 @@ function muzzle(c, x, y, t, size = 1) {
 }
 const kick = (t, scale) => scale * Math.pow(clamp(t / 0.24, 0, 1), 1.9);
 const advancedStyles = {
+  flak: [12, 8, 12, 5, "#83d9d3"],
   vanguard: [15, 10, 14, 6, "#d8bc7b"],
   interceptor: [12, 7, 14, 2, "#a7eddb"],
   railgun: [13, 8, 25, 4, "#bca9f4"],
@@ -685,6 +686,113 @@ function multiTurretTank(c, type, set, x, y, angle, mountState) {
   }
   c.restore();
 }
+function aircraft(c, type, set, x, y, angle, time) {
+  const [d, m, b, l, hi, k] = set,
+    bomber = type === "stormBomber";
+  c.save();
+  c.translate(Math.round(x), Math.round(y));
+  c.rotate(angle);
+  const wing = bomber ? 20 : 14,
+    length = bomber ? 20 : 16;
+  poly(
+    c,
+    [
+      [length, 0],
+      [5, -4],
+      [-5, -wing],
+      [-15, -wing],
+      [-10, -5],
+      [-length, -6],
+      [-length, 6],
+      [-10, 5],
+      [-15, wing],
+      [-5, wing],
+      [5, 4],
+    ],
+    k,
+  );
+  poly(
+    c,
+    [
+      [length - 2, 0],
+      [4, -3],
+      [-6, -wing + 2],
+      [-13, -wing + 2],
+      [-8, -4],
+      [-length + 2, -4],
+      [-length + 2, 4],
+      [-8, 4],
+      [-13, wing - 2],
+      [-6, wing - 2],
+      [4, 3],
+    ],
+    m,
+  );
+  poly(
+    c,
+    [
+      [length, 0],
+      [5, -3],
+      [-length + 2, -3],
+      [-length + 2, 3],
+      [5, 3],
+    ],
+    l,
+  );
+  rect(c, 5, -2, 6, 3, "#d0f8ee");
+  for (const side of [-1, 1]) {
+    const sy = side * (bomber ? 10 : 6);
+    box(c, -13, sy - 2, bomber ? 12 : 9, 4, set);
+    rect(c, -15, sy - 1, 4, 2, "#8ce9f3");
+    rect(
+      c,
+      -20 - (Math.floor(time * 15) % 3),
+      sy,
+      5 + (Math.floor(time * 15) % 3),
+      1,
+      "#c4fafe",
+    );
+    rect(c, -8, side * (wing - 3), 3, 1, hi);
+  }
+  c.restore();
+}
+function pulseVehicle(c, set, x, y, angle, aim, recoil, charge) {
+  const [d, m, b, l, hi, k] = set;
+  c.save();
+  c.translate(Math.round(x), Math.round(y));
+  c.rotate(angle);
+  rect(c, -22, -15, 47, 34, "#161b1b68");
+  for (const side of [-1, 1]) {
+    box(c, -20, side * 13 - 4, 41, 8, set);
+    for (let i = -18; i < 20; i += 4) rect(c, i, side * 13 - 3, 2, 5, k);
+  }
+  box(c, -19, -10, 38, 20, set);
+  rect(c, -17, -7, 5, 14, d);
+  rect(c, 15, -7, 3, 3, hi);
+  rect(c, 15, 5, 3, 3, hi);
+  c.rotate(aim - angle);
+  box(c, -12, -9, 20, 18, set);
+  c.translate(-kick(recoil, 11), 0);
+  box(c, 1, -7, 30, 14, set);
+  rect(c, 8, -5, 16, 10, k);
+  rect(c, 25, -9, 7, 18, k);
+  rect(c, 26, -8, 4, 16, l);
+  rect(c, 30, -4, 3, 8, "#487180");
+  for (const side of [-1, 1])
+    rect(c, 8, side * 4 - 1, 17, 2, charge > 0 ? "#9cf6ff" : "#608f9b");
+  if (charge > 0) {
+    c.fillStyle = `rgba(99,237,255,${0.16 + charge * 0.36})`;
+    c.beginPath();
+    c.arc(32, 0, 5 + charge * 9, 0, Math.PI * 2);
+    c.fill();
+    c.fillStyle = "#dcfdff";
+    c.beginPath();
+    c.arc(32, 0, 2 + charge * 3, 0, Math.PI * 2);
+    c.fill();
+  }
+  muzzle(c, 32, 0, recoil, 1.5);
+  c.restore();
+}
 export function vehicle(
   c,
   type,
@@ -696,7 +804,17 @@ export function vehicle(
   recoil = 0,
   salvoLane = 0,
   mountState,
+  charge = 0,
+  time = 0,
 ) {
+  if (units[type].air) {
+    aircraft(c, type, colors[team], x, y, angle, time);
+    return;
+  }
+  if (type === "pulseTank") {
+    pulseVehicle(c, colors[team], x, y, angle, aim, recoil, charge);
+    return;
+  }
   if (units[type].mounts) {
     multiTurretTank(c, type, colors[team], x, y, angle, mountState);
     return;
@@ -816,7 +934,20 @@ export function structure(c, type, team, x, y, angle = 0, recoil = 0) {
     [d, m, b, l, hi, k] = set;
   c.save();
   c.translate(Math.round(x), Math.round(y));
-  if (type === "hq") {
+  if (type === "flakTower") {
+    rect(c, -19, -11, 42, 29, "#20281d66");
+    box(c, -17, -13, 34, 28, set);
+    rect(c, -14, -11, 28, 3, "#77b9b2");
+    rect(c, -14, 10, 28, 3, "#89cfc5");
+    c.rotate(angle);
+    box(c, -10, -9, 18, 18, set);
+    c.translate(-kick(recoil, 5), 0);
+    for (const y of [-5, 3]) {
+      rect(c, 2, y, 16, 3, k);
+      rect(c, 5, y, 12, 1, "#a0ded2");
+      muzzle(c, 18, y + 1, recoil, 0.65);
+    }
+  } else if (type === "hq") {
     poly(
       c,
       [
@@ -1018,7 +1149,13 @@ export function icon(type) {
   cv.height = 42;
   cv.setAttribute("aria-hidden", "true");
   const c = cv.getContext("2d");
-  if (units[type]?.mounts || type === "railgun" || type === "siegeBreaker") {
+  if (
+    units[type]?.mounts ||
+    units[type]?.air ||
+    type === "pulseTank" ||
+    type === "railgun" ||
+    type === "siegeBreaker"
+  ) {
     c.translate(23, 21);
     c.scale(0.8, 0.8);
     vehicle(c, type, 1, 0, 0, -0.42);

@@ -1,6 +1,8 @@
 import { unitProfile } from "./briefings.mjs";
 import {
   W,
+  AIR_HEIGHT,
+  isAir,
   H,
   START_VIEW,
   UNIT_LIMIT,
@@ -19,7 +21,6 @@ import {
   units,
   catalog,
   clamp,
-  dist,
   createGame,
   blocked,
   enqueue,
@@ -64,6 +65,7 @@ const divisions = {
       "raider",
       "assault",
       "uraniumTank",
+      "flak",
     ],
   },
   artillery: {
@@ -80,6 +82,7 @@ const divisions = {
       "factory",
       "generator",
       "turret",
+      "flakTower",
       "repair",
       "refinery",
       "mortar",
@@ -292,6 +295,7 @@ function touchBox() {
   const [a, b] = boxIds.map((id) => touches.get(id));
   return a && b ? { from: pos(a), to: pos(b) } : null;
 }
+const visualY = (a) => a.y - (isAir(a) ? AIR_HEIGHT : 0);
 function selectBox({ from: a, to: b }, append = false, margin = 0) {
   if (!append) g.selected.clear();
   for (const u of g.actors)
@@ -300,8 +304,8 @@ function selectBox({ from: a, to: b }, append = false, margin = 0) {
       units[u.type] &&
       u.x >= Math.min(a.x, b.x) - margin &&
       u.x <= Math.max(a.x, b.x) + margin &&
-      u.y >= Math.min(a.y, b.y) - margin &&
-      u.y <= Math.max(a.y, b.y) + margin
+      visualY(u) >= Math.min(a.y, b.y) - margin &&
+      visualY(u) <= Math.max(a.y, b.y) + margin
     )
       g.selected.add(u.id);
   setMode("auto");
@@ -309,20 +313,29 @@ function selectBox({ from: a, to: b }, append = false, margin = 0) {
   if (g.selected.size) beep(530, 0.03);
 }
 function hitUnit(pt, touch = false, team = 0) {
+  const pixelDistance = (u) => Math.hypot(u.x - pt.x, visualY(u) - pt.y);
   return g.actors
     .filter(
       (u) =>
         (!team || u.team === team) &&
-        dist(u, pt) <
+        pixelDistance(u) <
           Math.max(catalog[u.type].size + 5, touch ? 9 / view.s : 0),
     )
-    .sort((a, b) => dist(a, pt) - dist(b, pt))[0];
+    .sort(
+      (a, b) =>
+        pixelDistance(a) - pixelDistance(b) ||
+        Number(isAir(b)) - Number(isAir(a)),
+    )[0];
 }
 canvas.addEventListener("contextmenu", (e) => {
   e.preventDefault();
   if (e.pointerType === "touch" || touches.size) return;
   if (placement) $("placement-cancel").click();
-  else issue(pos(e), "auto");
+  else {
+    const point = pos(e),
+      target = hitUnit(point, false, -1);
+    issue(target || point, "auto", target?.id);
+  }
 });
 canvas.addEventListener("pointerdown", (e) => {
   if (e.button !== 0 && e.button !== 1) return;
@@ -659,6 +672,8 @@ function setTab(name) {
             : spec.uranium
               ? " uranium-unit"
               : "");
+    if (!isTech && (spec.air || spec.targets === "air"))
+      btn.classList.add(spec.air ? "air-card" : "aa-card");
     const info = document.createElement("span");
     info.innerHTML = `<span class="unit-name">${spec.name}</span><span class="unit-desc">${isTech ? spec.short : spec.desc}</span>`;
     const cost = document.createElement("span");
@@ -1025,7 +1040,24 @@ function render(now) {
       .filter((a) => a.order?.kind === "target")
       .map((a) => a.order.id),
   );
-  const ordered = [...g.actors].sort((a, b) => a.y - b.y);
+  for (const a of g.actors) {
+    if (!isAir(a) || !visible(a.x, a.y)) continue;
+    c.fillStyle = "#171d245c";
+    c.beginPath();
+    c.ellipse(
+      a.x + 5,
+      a.y + 1,
+      catalog[a.type].size * 0.8,
+      catalog[a.type].size * 0.39,
+      a.angle,
+      0,
+      Math.PI * 2,
+    );
+    c.fill();
+  }
+  const ordered = [...g.actors].sort(
+    (a, b) => Number(isAir(a)) - Number(isAir(b)) || a.y - b.y,
+  );
   for (const u of ordered) {
     if (!visible(u.x, u.y)) continue;
     const s = catalog[u.type];
@@ -1045,6 +1077,14 @@ function render(now) {
       c.lineDashOffset = 0;
       c.globalAlpha = 1;
     }
+    const air = isAir(u),
+      charge = u.pulseCharge
+        ? clamp((g.time - u.pulseCharge.started) / s.pulse.charge, 0, 1)
+        : 0;
+    if (air) {
+      c.save();
+      c.translate(0, -AIR_HEIGHT);
+    }
     if (units[u.type])
       vehicle(
         c,
@@ -1057,6 +1097,8 @@ function render(now) {
         u.recoil,
         u.salvoLane,
         u.mountState,
+        charge,
+        reducedMotion.matches ? 0 : g.time,
       );
     else structure(c, u.type, u.team, u.x, u.y, u.aim, u.recoil);
     if (s.shield && u.shield > 0) {
@@ -1101,6 +1143,17 @@ function render(now) {
         c.setLineDash([]);
       }
     }
+    if (u.pulseCharge) {
+      const x = u.x - s.size,
+        y = u.y - s.size - 17,
+        w = s.size * 2;
+      c.fillStyle = "#282d39";
+      c.fillRect(x - 1, y - 1, w + 2, 5);
+      c.fillStyle = "#2f5a72";
+      c.fillRect(x, y, w, 3);
+      c.fillStyle = "#7defff";
+      c.fillRect(x, y, w * charge, 3);
+    }
     if (
       g.selected.has(u.id) ||
       u.hp < s.hp ||
@@ -1128,6 +1181,7 @@ function render(now) {
         c.fillRect(x, y - 4, Math.ceil((s.size * 2 * u.shield) / s.shield), 2);
       }
     }
+    if (air) c.restore();
   }
   for (const r of g.relays)
     if (visible(r.x, r.y)) marker(c, r.x, r.y + 49, "RELAY " + r.name, r.owner);
@@ -1144,7 +1198,7 @@ function render(now) {
     }
   for (const s of g.shots) {
     const p = 1 - s.life / (s.light ? 0.08 : 0.14);
-    c.strokeStyle = s.team === 1 ? "#f5de9a" : "#f5ad7b";
+    c.strokeStyle = s.aa ? "#b3fcff" : s.team === 1 ? "#f5de9a" : "#f5ad7b";
     c.lineWidth = s.light ? 1 : 1.5;
     c.beginPath();
     c.moveTo(s.x + (s.tx - s.x) * p * 0.75, s.y + (s.ty - s.y) * p * 0.75);
@@ -1171,6 +1225,52 @@ function render(now) {
   drawSmoke(c, g);
   for (const missile of g.missiles) drawMissile(c, missile);
   for (const plasma of g.plasma) drawPlasma(c, plasma);
+  c.save();
+  for (const p of g.pulses) {
+    if (
+      p.x + p.radius < gx ||
+      p.x - p.radius > gx + gw ||
+      p.y + p.radius < gy ||
+      p.y - p.radius > gy + gh
+    )
+      continue;
+    const color = p.team === 1 ? "#73dbff" : "#e689fa";
+    c.globalAlpha = 0.2;
+    c.strokeStyle = color;
+    c.lineWidth = 1.2;
+    c.setLineDash([6, 7]);
+    c.beginPath();
+    c.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    c.stroke();
+    c.setLineDash([]);
+    c.globalAlpha = 0.34;
+    c.fillStyle = color;
+    c.beginPath();
+    c.arc(p.x, p.y, 13, 0, Math.PI * 2);
+    c.fill();
+    c.globalAlpha = 0.92;
+    c.beginPath();
+    c.arc(p.x, p.y, 7.5, 0, Math.PI * 2);
+    c.fill();
+    c.fillStyle = "#e8fcff";
+    c.beginPath();
+    c.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+    c.fill();
+  }
+  for (const beam of g.pulseBeams) {
+    c.beginPath();
+    c.moveTo(beam.x, beam.y);
+    c.lineTo(beam.tx, beam.ty);
+    c.globalAlpha = (0.4 * beam.life) / beam.total;
+    c.strokeStyle = "#755eff";
+    c.lineWidth = 5;
+    c.stroke();
+    c.globalAlpha = beam.life / beam.total;
+    c.strokeStyle = "#a6f9ff";
+    c.lineWidth = 1.5;
+    c.stroke();
+  }
+  c.restore();
   for (const burst of g.bursts)
     if (visible(burst.x, burst.y)) drawBurst(c, burst);
   if (ping) {
@@ -1250,7 +1350,13 @@ function render(now) {
     mc.fillRect(g.rally.x * mw - 1, g.rally.y * mh - 1, 3, 3);
   }
   for (const a of g.actors) {
-    mc.fillStyle = a.team === 1 ? "#8cc5d7" : "#df8d76";
+    mc.fillStyle = isAir(a)
+      ? a.team === 1
+        ? "#b0f6ff"
+        : "#efadff"
+      : a.team === 1
+        ? "#8cc5d7"
+        : "#df8d76";
     const size = a.type === "hq" ? 5 : units[a.type] ? 2 : 3;
     mc.fillRect(
       Math.round(a.x * mw - size / 2),

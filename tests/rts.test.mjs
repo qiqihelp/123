@@ -642,13 +642,20 @@ test("building placement reserves exact coordinates; invalid attempts do not cha
   );
 });
 
-test("ten T2 vehicles and three multi-turret T3 tanks unlock at their own research tier", () => {
+test("ten T2 vehicles and six T3 units unlock at their own research tier", () => {
   const g = createGame();
   Object.assign(g, { ore: 20000, crystal: 600, uranium: 100 });
   const t2 = Object.keys(units).filter((key) => units[key].tech === "t2");
   const t3 = Object.keys(units).filter((key) => units[key].tech === "t3");
   assert.equal(t2.length, 10);
-  assert.deepEqual(t3, ["titan", "aegis", "skySiege"]);
+  assert.deepEqual(t3, [
+    "pulseTank",
+    "skyHunter",
+    "stormBomber",
+    "titan",
+    "aegis",
+    "skySiege",
+  ]);
   assert.ok(t2.every((k) => /T2/.test(submit(g, k))));
   assert.match(submit(g, "titan"), /T3/);
   assert.equal(enqueue(g, "lab"), "");
@@ -667,9 +674,9 @@ test("ten T2 vehicles and three multi-turret T3 tanks unlock at their own resear
   advance(g, 0.2);
   assert.equal(submit(g, "titan"), "");
   assert.equal(g.uranium, 38);
-  g.uranium = 200;
-  assert.equal(submit(g, "aegis"), "");
-  assert.equal(submit(g, "skySiege"), "");
+  g.uranium = 300;
+  for (const type of t3.filter((t) => t !== "titan"))
+    assert.equal(submit(g, type), "");
 });
 
 test("losing a research center refunds all T3 research resources, including uranium", () => {
@@ -880,4 +887,177 @@ test("self-repair waits after hull damage and remains independent of shield rech
   advance(g, 1);
   assert.ok(tank.hp > damaged);
   assert.ok(!g.repairLinks.some((r) => r.source === tank.id));
+});
+
+test("ground guns and splash miss aircraft, while patrol vehicles and turrets defend the air", () => {
+  const g = createGame();
+  g.nextThink = Infinity;
+  g.red.nextEconomy = Infinity;
+  g.nextWave = Infinity;
+  const gun = g.actors.find((a) => a.team === 1 && a.type === "tank");
+  const [bomber, ground] = g.actors.filter(
+    (a) => a.team === -1 && a.type === "scout",
+  );
+  Object.assign(gun, { x: 300, y: 300 });
+  Object.assign(bomber, {
+    type: "stormBomber",
+    x: 380,
+    y: 300,
+    hp: 275,
+    cd: 100,
+  });
+  Object.assign(ground, { x: 400, y: 300, hp: 175, cd: 100 });
+  g.selected = new Set([gun.id]);
+  assert.match(order(g, bomber.x, bomber.y, "attack", bomber.id), /没有防空/);
+  assert.equal(gun.order, null);
+  step(g, 1 / 30);
+  assert.equal(bomber.hp, 275);
+  assert.ok(ground.hp < 175);
+  g.shells.push({
+    x: 300,
+    y: 300,
+    tx: bomber.x,
+    ty: bomber.y,
+    life: 0.01,
+    damage: 70,
+    radius: 50,
+    team: 1,
+  });
+  const groundBefore = ground.hp;
+  step(g, 1 / 30);
+  assert.equal(bomber.hp, 275);
+  assert.ok(ground.hp < groundBefore);
+  Object.assign(gun, { type: "flak", cd: 0 });
+  assert.match(order(g, bomber.x, bomber.y, "attack", bomber.id), /已锁定/);
+  const groundAfter = ground.hp;
+  step(g, 1 / 30);
+  assert.equal(bomber.hp, 275 - catalog.flak.damage);
+  assert.equal(ground.hp, groundAfter);
+  gun.x = 1000;
+  g.ore = 1000;
+  assert.equal(submit(g, "flakTower", { x: 300, y: 300 }), "");
+  const old = bomber.hp;
+  advance(g, 8);
+  assert.equal(bomber.hp, old - catalog.flakTower.damage);
+});
+
+test("aircraft fly across ground actors without colliding or taking relays", () => {
+  const g = createGame();
+  g.nextThink = Infinity;
+  g.red.nextEconomy = Infinity;
+  const plane = g.actors.find((a) => a.team === 1 && a.type === "scout");
+  const r = g.relays[0];
+  const hq = g.actors.find((a) => a.team === 1 && a.type === "hq");
+  Object.assign(hq, { x: r.x, y: r.y });
+  Object.assign(plane, { x: r.x - 100, y: r.y, type: "skyHunter" });
+  g.selected = new Set([plane.id]);
+  order(g, r.x, r.y, "move");
+  advance(g, 1.5);
+  assert.ok(Math.hypot(plane.x - r.x, plane.y - r.y) < 3);
+  assert.equal(hq.x, r.x);
+  assert.equal(hq.y, r.y);
+  advance(g, 5);
+  assert.equal(r.owner, 0);
+  assert.equal(r.progress, 0);
+});
+
+test("pulse waits five seconds, sweeps multiple ground targets, then detonates at twenty seconds", () => {
+  const g = createGame();
+  g.nextThink = Infinity;
+  g.red.nextEconomy = Infinity;
+  g.nextWave = Infinity;
+  const tank = g.actors.find((a) => a.team === 1 && a.type === "tank");
+  const ally = g.actors.find((a) => a.team === 1 && a.type === "scout");
+  const [first, second, plane, final] = g.actors.filter(
+    (a) => a.team === -1 && units[a.type],
+  );
+  Object.assign(tank, {
+    type: "pulseTank",
+    x: 300,
+    y: 320,
+    angle: 0,
+    hp: 460,
+    cd: 0,
+  });
+  Object.assign(ally, { x: 370, y: 280, cd: 100, hp: 80 });
+  Object.assign(first, { x: 385, y: 320, cd: 100, hp: 1000 });
+  Object.assign(second, { x: 390, y: 359, cd: 100, hp: 1000 });
+  Object.assign(plane, {
+    type: "stormBomber",
+    x: 375,
+    y: 301,
+    cd: 100,
+    hp: 275,
+  });
+  Object.assign(final, { x: 725, y: 500, cd: 100, hp: 1000 });
+  g.selected = new Set([tank.id]);
+  order(g, first.x, first.y, "attack", first.id);
+  step(g, 1 / 30);
+  assert.ok(tank.pulseCharge);
+  assert.equal(g.pulses.length, 0);
+  advance(g, 149 / 30);
+  assert.equal(g.pulses.length, 0);
+  assert.equal(first.hp, 1000);
+  advance(g, 1 / 30);
+  assert.equal(g.pulses.length, 1);
+  assert.equal(tank.pulseCharge, null);
+  const p = g.pulses[0];
+  const start = p.x;
+  advance(g, 0.5);
+  assert.ok(Math.abs(p.x - start - 8) < 1e-6);
+  assert.equal(g.pulseBeams.length, 2);
+  assert.equal(first.hp, 1000 - catalog.pulseTank.damage);
+  assert.equal(second.hp, first.hp);
+  assert.equal(ally.hp, 80);
+  assert.equal(plane.hp, 275);
+  tank.hp = 0;
+  advance(g, 19.5 - 1 / 30);
+  assert.equal(g.pulses.length, 1);
+  Object.assign(final, {
+    x: p.ox + Math.cos(p.angle) * 320,
+    y: p.oy + Math.sin(p.angle) * 320,
+  });
+  assert.equal(final.hp, 1000);
+  advance(g, 1 / 30);
+  assert.equal(g.pulses.length, 0);
+  assert.equal(
+    final.hp,
+    1000 - catalog.pulseTank.damage - catalog.pulseTank.pulse.blastDamage,
+  );
+  assert.ok(
+    g.bursts.some((e) => e.style === "blast" && Math.abs(e.x - p.x) < 1e-6),
+  );
+  const hull = final.hp;
+  advance(g, 0.5);
+  assert.equal(final.hp, hull);
+});
+
+test("a destroyed charging tank never launches its pulse", () => {
+  const g = createGame();
+  g.nextThink = Infinity;
+  const tank = g.actors.find((a) => a.team === 1 && a.type === "tank"),
+    foe = g.actors.find((a) => a.team === -1 && a.type === "tank");
+  Object.assign(tank, { type: "pulseTank", x: 400, y: 400 });
+  Object.assign(foe, { x: 550, y: 400, cd: 100 });
+  advance(g, 4);
+  assert.ok(tank.pulseCharge);
+  tank.hp = 0;
+  advance(g, 2);
+  assert.equal(g.pulses.length, 0);
+});
+
+test("red spends on powered air defenses when it spots a blue plane", () => {
+  const g = createGame();
+  g.nextThink = Infinity;
+  g.nextWave = Infinity;
+  const plane = g.actors.find((a) => a.team === 1 && a.type === "scout");
+  plane.type = "skyHunter";
+  g.red.nextEconomy = 0;
+  g.red.ore = 500;
+  step(g, 1 / 30); // the opening miner first, then the tower
+  advance(g, 4.1);
+  assert.equal(g.red.construction.type, "flakTower");
+  assert.ok(g.red.ore < 500);
+  advance(g, 8);
+  assert.ok(g.actors.some((a) => a.team === -1 && a.type === "flakTower"));
 });

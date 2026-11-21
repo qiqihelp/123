@@ -36,6 +36,14 @@ const notes = {
   siegeBreaker: "大型直射攻坚炮，对建筑伤害翻倍；移速和装填都较慢。",
   clusterLauncher: "连射三枚溅射范围较大的追踪导弹，适合攻击扎堆的敌军。",
   ionSkirmisher: "在移动中快速发射等离子弹，有一层较薄的自充护盾。",
+  pulseTank:
+    "巨型脉冲主炮锁定地面目标后蓄力五秒。射出的脉冲弹沿直线缓慢前进，同时对范围内所有地面敌军发射激光，二十秒后爆炸。",
+  skyHunter:
+    "高速空中截击机，只攻击敌机。可越过地面部队和建筑，但要避开防空车和防空炮塔。",
+  stormBomber:
+    "从空中投弹，对地面敌军造成范围伤害，无法攻击敌机；最好由截击机护航。",
+  flak: "可移动的早期防空单位，只能打空中目标。与能攻击地面的坦克搭配使用。",
+  flakTower: "专用防空炮塔，只向飞机开火。需要供电，适合保护基地和矿区。",
   titan:
     "一座双发火箭炮塔和两座近程机枪炮塔可同时独立瞄准与开火。护盾自动充能，车体停止受伤一段时间后启动自修。",
   aegis:
@@ -79,7 +87,28 @@ export function unitProfile(g, group) {
   }
   if (spec.speed)
     add("移动速度", Number(movementSpeed(g, a).toFixed(2)) + " / 秒");
-  if (spec.range && !spec.mounts) {
+  if (spec.air) add("单位层级", "空中 · 仅防空武器可命中");
+  if (spec.range)
+    add(
+      "攻击目标",
+      spec.targets === "air"
+        ? "仅空中"
+        : spec.targets === "both"
+          ? "地面及空中"
+          : "仅地面",
+    );
+  if (spec.pulse) {
+    const p = spec.pulse;
+    add("启动射程", spec.range);
+    add("主炮蓄力", p.charge + " 秒");
+    add("脉冲弹", `${p.speed} 速度 · 飞行 ${p.lifetime} 秒`);
+    add(
+      "脉冲激光",
+      `半径 ${p.radius} · 每 ${p.interval} 秒对每个敌人 ${spec.damage} 点`,
+    );
+    add("终点爆炸", `半径 ${p.blastRadius} · 中心 ${p.blastDamage} 点`);
+  }
+  if (spec.range && !spec.mounts && !spec.pulse) {
     add("射程", spec.range);
     add(spec.missiles ? "单枚伤害" : "单发伤害", weaponDamage(g, a));
     add("开火间隔", spec.rate + " 秒");

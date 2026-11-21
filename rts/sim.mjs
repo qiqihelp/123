@@ -307,6 +307,80 @@ export const units = {
     plasma: true,
     flight: 0.24,
   },
+  flak: {
+    name: "猎空防空车",
+    desc: "T1 · 专职防空，不能对地",
+    cost: 225,
+    hp: 155,
+    speed: 47,
+    size: 14,
+    range: 177,
+    damage: 36,
+    rate: 0.75,
+    time: 8,
+    targets: "air",
+  },
+  pulseTank: {
+    name: "脉冲坦克",
+    desc: "T3 · 五秒蓄力 / 移动脉冲场",
+    cost: 1120,
+    crystal: 62,
+    uranium: 44,
+    hp: 460,
+    shield: 110,
+    speed: 24,
+    size: 28,
+    range: 208,
+    damage: 16,
+    rate: 19,
+    time: 29,
+    tech: "t3",
+    pulse: {
+      charge: 5,
+      lifetime: 20,
+      speed: 16,
+      radius: 112,
+      interval: 0.5,
+      blastRadius: 82,
+      blastDamage: 120,
+    },
+  },
+  skyHunter: {
+    name: "苍鹰截击机",
+    desc: "T3 · 空中单位 / 高速截击",
+    cost: 720,
+    crystal: 42,
+    uranium: 22,
+    hp: 195,
+    shield: 48,
+    speed: 95,
+    size: 16,
+    range: 161,
+    damage: 31,
+    rate: 0.55,
+    time: 17,
+    tech: "t3",
+    air: true,
+    targets: "air",
+  },
+  stormBomber: {
+    name: "雷云轰炸机",
+    desc: "T3 · 空中单位 / 对地范围轰炸",
+    cost: 970,
+    crystal: 50,
+    uranium: 36,
+    hp: 275,
+    speed: 65,
+    size: 21,
+    range: 208,
+    damage: 115,
+    rate: 3.4,
+    time: 23,
+    tech: "t3",
+    air: true,
+    splash: 46,
+    flight: 0.53,
+  },
   titan: {
     name: "复合型攻坚坦克",
     desc: "T3 · 双发火箭 / 双机枪 / 自修护盾",
@@ -393,6 +467,19 @@ export const units = {
   },
 };
 export const buildings = {
+  flakTower: {
+    name: "防空炮塔",
+    desc: "防空专用 · 消耗 2 电力",
+    cost: 210,
+    hp: 260,
+    size: 20,
+    time: 8,
+    powerDraw: 2,
+    range: 224,
+    damage: 44,
+    rate: 0.8,
+    targets: "air",
+  },
   generator: {
     name: "供电站",
     desc: "电力上限 +8",
@@ -516,6 +603,10 @@ export const BASE_DAMAGE_FACTOR = 0.75;
 for (const spec of Object.values(buildings))
   spec.hp = Math.round(spec.hp * BUILDING_HP_FACTOR);
 for (const spec of [...Object.values(units), ...Object.values(buildings)]) {
+  if (spec.pulse)
+    spec.pulse.blastDamage = Math.round(
+      spec.pulse.blastDamage * BASE_DAMAGE_FACTOR,
+    );
   if (spec.mounts) spec.range = Math.max(...spec.mounts.map((m) => m.range));
   for (const weapon of spec.mounts || [spec])
     if (weapon.damage)
@@ -596,8 +687,8 @@ export const techs = {
   },
   t3: {
     name: "T3 科技",
-    desc: "完成 T2 后可研究；解锁三种多炮台坦克。",
-    short: "解锁三种多炮台坦克",
+    desc: "完成 T2 后可研究；解锁多炮台坦克、脉冲坦克与空中单位。",
+    short: "解锁脉冲、空军及多炮台",
     cost: 650,
     crystal: 60,
     uranium: 28,
@@ -640,6 +731,20 @@ export const minerals = {
 const mine = (x, y, kind = "ore") => ({ x, y, kind });
 const localMine = (x, y, kind) => ({ ...location(x, y), kind: kind || "ore" });
 export const catalog = { ...units, ...buildings };
+export const AIR_HEIGHT = 25;
+export const isAir = (a) => Boolean(catalog[a.type]?.air);
+function canHit(weapon, target) {
+  return (
+    weapon.targets === "both" ||
+    (isAir(target) ? weapon.targets === "air" : weapon.targets !== "air")
+  );
+}
+function canEngage(a, target) {
+  const spec = catalog[a.type];
+  return Boolean(
+    spec?.range && (spec.mounts || [spec]).some((w) => canHit(w, target)),
+  );
+}
 export const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 export const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 export function createGame() {
@@ -672,6 +777,8 @@ export function createGame() {
     waveWaiting: false,
     shots: [],
     repairLinks: [],
+    pulses: [],
+    pulseBeams: [],
     shells: [],
     plasma: [],
     damageText: [],
@@ -998,17 +1105,21 @@ export function order(g, x, y, mode = "auto", targetId) {
       ),
       y: clamp(y + (Math.floor(i / columns) - (rows - 1) / 2) * 27, 12, H - 12),
     };
-    a.order =
-      enemy && catalog[a.type].range
-        ? { kind: "target", id: enemy.id }
-        : deposit && a.type === "miner"
-          ? mineOrder(deposit)
-          : attack
-            ? { kind: "attack", ...pos, center: point }
-            : { kind: "move", ...pos };
+    if (enemy && !canEngage(a, enemy)) return;
+    a.order = enemy
+      ? { kind: "target", id: enemy.id }
+      : deposit && a.type === "miner"
+        ? mineOrder(deposit)
+        : attack
+          ? { kind: "attack", ...pos, center: point }
+          : { kind: "move", ...pos };
   });
   return enemy
-    ? "集火目标已锁定。"
+    ? group.some((a) => canEngage(a, enemy))
+      ? "集火目标已锁定。"
+      : isAir(enemy)
+        ? "所选部队没有防空武器。"
+        : "所选部队无法攻击地面目标。"
     : deposit && group.some((a) => a.type === "miner")
       ? "采矿车已前往" + minerals[deposit.kind || "ore"].name + "。"
       : attack
@@ -1028,13 +1139,14 @@ function move(a, target, s, dt) {
   return d < 3;
 }
 const rangeTo = (a, b) => dist(a, b) - catalog[b.type].size * 0.55;
-function enemyFor(g, a, range, center = null) {
+function enemyFor(g, a, range, center = null, weapon = null) {
   let best = null,
     bestScore = Infinity;
   for (const b of g.actors) {
     if (
       b.team === a.team ||
       b.hp <= 0 ||
+      !(weapon ? canHit(weapon, b) : canEngage(a, b)) ||
       rangeTo(a, b) > range ||
       (center && dist(center, b) > 138)
     )
@@ -1062,7 +1174,11 @@ function floatDamage(g, target, value, shield) {
   if (g.damageText.length >= 140) g.damageText.shift();
   g.damageText.push({
     x: target.x + (shield ? -10 : 5),
-    y: target.y - catalog[target.type].size - 13,
+    y:
+      target.y -
+      catalog[target.type].size -
+      13 -
+      (isAir(target) ? AIR_HEIGHT : 0),
     life: 0.84,
     total: 0.84,
     value: Math.round(value),
@@ -1129,7 +1245,7 @@ function strike(g, target, damage, effects = {}) {
     blast(
       g,
       target.x,
-      target.y,
+      target.y - (isAir(target) ? AIR_HEIGHT : 0),
       Math.max(28, catalog[target.type].size * 1.5),
       "debris",
     );
@@ -1148,7 +1264,7 @@ export function rechargeShield(a, s, dt) {
 function explode(g, x, y, p) {
   blast(g, x, y, p.radius, "blast");
   for (const b of g.actors) {
-    if (b.hp <= 0 || b.team === p.team) continue;
+    if (b.hp <= 0 || b.team === p.team || !canHit(p, b)) continue;
     const d = dist(b, { x, y });
     if (d < p.radius)
       strike(g, b, Math.ceil(p.damage * (1 - (0.6 * d) / p.radius)), p);
@@ -1205,6 +1321,7 @@ function fire(g, a, b, s, index) {
         age: -i * 0.12,
         total: s.flight + i * 0.04,
         damage,
+        targets: s.targets,
         radius: s.splash,
         lane,
         delayed: i > 0,
@@ -1219,16 +1336,18 @@ function fire(g, a, b, s, index) {
       id: b.id,
       team: a.team,
       damage,
+      targets: s.targets,
       total: s.flight,
       life: s.flight,
     });
   } else if (s.splash) {
     g.shells.push({
       x: sx,
-      y: sy,
+      y: sy - (isAir(a) ? AIR_HEIGHT : 0),
       tx: b.x,
       ty: b.y,
       team: a.team,
+      targets: s.targets,
       life: s.flight,
       total: s.flight,
       damage,
@@ -1242,13 +1361,20 @@ function fire(g, a, b, s, index) {
       Math.round(damage * (buildings[b.type] ? s.structureBonus || 1 : 1)),
       s,
     );
-    blast(g, b.x, b.y, s.damage > 30 ? 21 : 15, "spark");
+    blast(
+      g,
+      b.x,
+      b.y - (isAir(b) ? AIR_HEIGHT : 0),
+      s.damage > 30 ? 21 : 15,
+      "spark",
+    );
     g.shots.push({
       x: sx,
-      y: sy,
+      y: sy - (isAir(a) ? AIR_HEIGHT : 0),
       tx: b.x,
-      ty: b.y,
+      ty: b.y - (isAir(b) ? AIR_HEIGHT : 0),
       team: a.team,
+      aa: s.targets === "air",
       life: s.kind === "mg" ? 0.08 : 0.14,
       light: s.kind === "mg",
     });
@@ -1315,11 +1441,79 @@ function updatePlasma(g, dt) {
       p.ty = target.y;
     }
     if (p.life <= 0) {
-      if (target) strike(g, target, p.damage);
+      if (target && canHit(p, target)) strike(g, target, p.damage);
       blast(g, p.tx, p.ty, 27, "plasma");
     }
   }
   g.plasma = g.plasma.filter((p) => p.life > 0);
+}
+// A pulse has no homing behavior: its fixed direction is set at release.
+function chargePulse(g, a, foe, s) {
+  if (!a.pulseCharge) {
+    if (!foe || a.cd > 0) return;
+    a.pulseCharge = { started: g.time, target: foe.id, aim: a.aim };
+    return;
+  }
+  const state = a.pulseCharge,
+    spec = s.pulse;
+  const locked = g.actors.find(
+    (b) => b.id === state.target && b.hp > 0 && canHit(s, b),
+  );
+  if (locked) state.aim = Math.atan2(locked.y - a.y, locked.x - a.x);
+  a.aim = state.aim;
+  if (g.time - state.started < spec.charge - 1e-8) return;
+  const x = a.x + 31 * Math.cos(a.aim),
+    y = a.y + 31 * Math.sin(a.aim);
+  g.pulses.push({
+    ...spec,
+    x,
+    y,
+    ox: x,
+    oy: y,
+    angle: a.aim,
+    team: a.team,
+    damage: s.damage,
+    launchedAt: g.time,
+    nextTick: spec.interval,
+  });
+  a.pulseCharge = null;
+  a.cd = s.rate;
+  a.recoil = 0.24;
+}
+function updatePulses(g) {
+  for (const p of g.pulses) {
+    const age = Math.min(p.lifetime, g.time - p.launchedAt);
+    const vx = Math.cos(p.angle) * p.speed,
+      vy = Math.sin(p.angle) * p.speed;
+    while (p.nextTick <= age + 1e-8 && p.nextTick <= p.lifetime + 1e-8) {
+      const x = p.ox + vx * p.nextTick,
+        y = p.oy + vy * p.nextTick;
+      for (const a of g.actors) {
+        if (
+          a.hp <= 0 ||
+          a.team === p.team ||
+          !canHit(p, a) ||
+          dist(a, { x, y }) > p.radius
+        )
+          continue;
+        strike(g, a, p.damage);
+        g.pulseBeams.push({ x, y, tx: a.x, ty: a.y, life: 0.29, total: 0.29 });
+      }
+      p.nextTick += p.interval;
+    }
+    p.x = p.ox + vx * age;
+    p.y = p.oy + vy * age;
+    if (age >= p.lifetime - 1e-8) {
+      explode(g, p.x, p.y, {
+        ...p,
+        radius: p.blastRadius,
+        damage: p.blastDamage,
+      });
+      blast(g, p.x, p.y, p.blastRadius + 12, "plasma");
+      p.expired = true;
+    }
+  }
+  g.pulses = g.pulses.filter((p) => !p.expired);
 }
 const aiLanes = [location(600, 412), location(478, 203), location(702, 301)];
 function enemyAI(g, dt) {
@@ -1347,11 +1541,9 @@ function enemyAI(g, dt) {
     (a) =>
       a.team === -1 && units[a.type]?.range && !units[a.type].heal && a.hp > 0,
   );
-  const intruder = g.actors
-    .filter(
-      (a) => a.team === 1 && units[a.type] && a.hp > 0 && dist(a, redHQ) < 224,
-    )
-    .sort((a, b) => dist(a, redHQ) - dist(b, redHQ))[0];
+  const intruders = byTeam(g, 1)
+    .filter((a) => units[a.type] && dist(a, redHQ) < 224)
+    .sort((a, b) => dist(a, redHQ) - dist(b, redHQ));
   const relay = g.relays
     .filter((r) => r.owner !== -1)
     .sort(
@@ -1385,7 +1577,7 @@ function enemyAI(g, dt) {
     enemies.reduce((sum, b) => sum + Math.max(0, 1 - dist(p, b) / 260), 0);
   for (const a of support) {
     const ally = defenders
-      .filter((b) => !b.aiRetreat)
+      .filter((b) => !b.aiRetreat && !isAir(b))
       .sort(
         (b, c) =>
           (1 - c.hp / catalog[c.type].hp) * 125 -
@@ -1403,9 +1595,10 @@ function enemyAI(g, dt) {
   }
   for (const a of defenders) {
     const s = catalog[a.type];
+    const intruder = intruders.find((b) => canEngage(a, b));
     const local = enemyFor(g, a, s.range + 38);
     const specialized = enemies
-      .filter((b) => rangeTo(a, b) <= s.range)
+      .filter((b) => canEngage(a, b) && rangeTo(a, b) <= s.range)
       .sort((b, c) => {
         const score = (v) =>
           (1 - v.hp / catalog[v.type].hp) * 100 +
@@ -1445,7 +1638,7 @@ function enemyAI(g, dt) {
         x: exposedMiner.x - 20,
         y: exposedMiner.y + 22,
       };
-    } else if (s.tech && specialized) {
+    } else if ((s.tech || s.targets === "air") && specialized) {
       a.order = { kind: "target", id: specialized.id };
     } else if (a.aiWave) {
       if (a.aiWave === currentWave && staging && !a.aiPassedLane) {
@@ -1463,12 +1656,29 @@ function enemyAI(g, dt) {
           ? raid
           : blueHQ
         : a.aiLane;
+      const intercept =
+        s.targets === "air" &&
+        enemies.filter(isAir).sort((b, c) => dist(a, b) - dist(a, c))[0];
+      if (intercept) {
+        a.order = { kind: "target", id: intercept.id };
+        continue;
+      }
+      if (s.targets === "air") {
+        a.order = null;
+        continue;
+      }
       a.order = {
         kind: "attack",
         x: goal.x + ((a.id % 3) - 1) * 25,
         y: goal.y + ((a.id % 4) - 1.5) * 24,
       };
-    } else if (relay && g.time > 12 && s.speed >= 60 && a.id % 2 === 0) {
+    } else if (
+      relay &&
+      !isAir(a) &&
+      g.time > 12 &&
+      s.speed >= 60 &&
+      a.id % 2 === 0
+    ) {
       const target = g.relays
         .filter((r) => r.owner !== -1)
         .sort(
@@ -1752,6 +1962,21 @@ function manageEnemyBase(g) {
     redBuild(g, "generator");
     return;
   }
+  const blueAir = blue.filter(isAir).length;
+  if (
+    blueAir &&
+    byTeam(g, -1, "flakTower").length < Math.min(2, blueAir) &&
+    redBuild(g, "flakTower")
+  )
+    return;
+  if (
+    blueAir &&
+    byTeam(g, -1, "flak").length +
+      r.production.filter((q) => q.type === "flak").length <
+      Math.min(2, blueAir) &&
+    redOrder(g, "flak")
+  )
+    return;
   if (g.time > 64 && !byTeam(g, -1, "outpost").length && redBuild(g, "outpost"))
     return;
   if (g.time > 98 && workshop < 2 && r.ore >= 420 && redBuild(g, "factory"))
@@ -1844,25 +2069,31 @@ function reinforce(g) {
     r.production.some((q) => q.type === "fieldMedic")
       ? "vanguard"
       : "fieldMedic";
+  const enemyAircraft = arms.some(isAir);
+  let advanced;
+  if (
+    r.tech.has("t3") &&
+    !byTeam(g, -1).some((a) => units[a.type]?.tech === "t3") &&
+    !r.production.some((q) => units[q.type].tech === "t3")
+  ) {
+    const choices = enemyAircraft
+      ? ["skyHunter", "titan"]
+      : defenses >= 2
+        ? ["pulseTank", "skySiege"]
+        : wave % 3 === 0
+          ? ["stormBomber", "aegis"]
+          : ["titan", "skySiege"];
+    advanced = [...choices, "aegis"].find((type) =>
+      redEligible(g, units[type]),
+    );
+  }
   const roster =
     wave < 3
       ? ["tank", "scout", "lightArtillery", "tank"]
       : r.tech.has("t2")
         ? [
-            ...(r.tech.has("t3") &&
-            !byTeam(g, -1).some((a) => units[a.type]?.tech === "t3") &&
-            !r.production.some((q) => units[q.type].tech === "t3")
-              ? [
-                  ...(defenses >= 2
-                    ? ["skySiege", "titan", "aegis"]
-                    : wave % 3 === 0
-                      ? ["aegis", "titan", "skySiege"]
-                      : ["titan", "skySiege", "aegis"]
-                  )
-                    .filter((type) => redEligible(g, units[type]))
-                    .slice(0, 1),
-                ]
-              : []),
+            ...(advanced ? [advanced] : []),
+            ...(enemyAircraft ? ["flak"] : []),
             counter,
             support,
             "vanguard",
@@ -1973,6 +2204,7 @@ export function step(g, dt) {
         if (
           ally !== a &&
           ally.team === a.team &&
+          !isAir(ally) &&
           units[ally.type] &&
           dist(a, ally) <= s.radius
         )
@@ -1984,7 +2216,8 @@ export function step(g, dt) {
       o?.kind === "target"
         ? g.actors.find((b) => b.id === o.id && b.hp > 0)
         : null;
-    if (o?.kind === "target" && !focus) o = a.order = null;
+    if (o?.kind === "target" && (!focus || !canEngage(a, focus)))
+      o = a.order = null;
     let foe = null,
       focusInRange = false;
     if (s.mounts) {
@@ -1995,11 +2228,12 @@ export function step(g, dt) {
         state.recoil = Math.max(0, state.recoil - dt);
         const p = mountPoint(a, weapon);
         // An out-of-range focus command doesn't prevent other mounts from defending the vehicle.
-        const canFocus = focus && rangeTo(p, focus) <= weapon.range;
+        const canFocus =
+          focus && canHit(weapon, focus) && rangeTo(p, focus) <= weapon.range;
         focusInRange ||= Boolean(canFocus);
         const target = canFocus
           ? focus
-          : enemyFor(g, { ...p, team: a.team }, weapon.range);
+          : enemyFor(g, { ...p, team: a.team }, weapon.range, null, weapon);
         foe ||= target;
         state.target = target?.id;
         state.aim = target
@@ -2008,13 +2242,16 @@ export function step(g, dt) {
         if (target && state.cd <= 1e-8) fire(g, a, target, weapon, i);
       }
     } else if (s.range) {
-      focusInRange = Boolean(focus && rangeTo(a, focus) <= s.range);
+      focusInRange = Boolean(
+        focus && canEngage(a, focus) && rangeTo(a, focus) <= s.range,
+      );
       foe = focusInRange ? focus : enemyFor(g, a, s.range);
       if (foe) {
         a.aim = Math.atan2(foe.y - a.y, foe.x - a.x);
-        if (a.cd <= 0) fire(g, a, foe, s);
+        if (!s.pulse && a.cd <= 0) fire(g, a, foe, s);
       }
     }
+    if (s.pulse) chargePulse(g, a, foe, s);
     if (speed && o && !mining(g, a)) {
       if (o.kind === "target") {
         if (!focusInRange && s.range) move(a, focus, speed, dt);
@@ -2029,7 +2266,7 @@ export function step(g, dt) {
         } else if (move(a, o, speed, dt) && o.kind !== "mine") a.order = null;
       }
     }
-    if (!foe) a.aim = a.angle;
+    if (!foe && !a.pulseCharge && !a.recoil) a.aim = a.angle;
   }
   for (const shell of g.shells) {
     shell.life -= dt;
@@ -2039,12 +2276,19 @@ export function step(g, dt) {
   g.shells = g.shells.filter((shell) => shell.life > 0);
   updateMissiles(g, dt);
   updatePlasma(g, dt);
+  updatePulses(g);
   for (let i = 0; i < g.actors.length; i++) {
     const a = g.actors[i];
     if (!units[a.type] || a.hp <= 0) continue;
     for (let j = 0; j < g.actors.length; j++) {
       const b = g.actors[j];
-      if (i === j || b.hp <= 0 || (units[b.type] && j < i)) continue;
+      if (
+        i === j ||
+        b.hp <= 0 ||
+        isAir(a) !== isAir(b) ||
+        (units[b.type] && j < i)
+      )
+        continue;
       const dx = a.x - b.x,
         dy = a.y - b.y,
         d = Math.hypot(dx, dy),
@@ -2069,10 +2313,10 @@ export function step(g, dt) {
   });
   for (const r of g.relays) {
     const blue = g.actors.some(
-        (a) => a.team === 1 && units[a.type] && dist(a, r) < 49,
+        (a) => a.team === 1 && units[a.type] && !isAir(a) && dist(a, r) < 49,
       ),
       red = g.actors.some(
-        (a) => a.team === -1 && units[a.type] && dist(a, r) < 49,
+        (a) => a.team === -1 && units[a.type] && !isAir(a) && dist(a, r) < 49,
       );
     if (blue !== red) {
       const goal = blue ? 1 : -1;
@@ -2087,7 +2331,7 @@ export function step(g, dt) {
       }
     }
   }
-  for (const list of [g.shots, g.bursts, g.smoke, g.damageText]) {
+  for (const list of [g.shots, g.bursts, g.smoke, g.damageText, g.pulseBeams]) {
     for (const e of list) e.life -= dt;
     for (let i = list.length - 1; i >= 0; i--)
       if (list[i].life <= 0) list.splice(i, 1);

@@ -1728,3 +1728,9 @@ body {
 .placement-panel button {
   pointer-events: auto;
 }
+.unit-card.air-card {
+  border-left-color: #73d1e4;
+}
+.unit-card.aa-card {
+  border-left-color: #6eb5a8;
+}
