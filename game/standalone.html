@@ -626,6 +626,38 @@ button:disabled {
 
 .hidden { display: none !important; }
 
+/* v3.0 新增徽章与模块/可用物品样式 */
+.badge {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: bold;
+}
+.badge-cyan { background: #06b6d4; color: #000; }
+.badge-purple { background: #a855f7; color: #fff; }
+.badge-orange { background: #f97316; color: #fff; }
+
+.container-item { border-left: 3px solid #06b6d4 !important; }
+.module-item { border-left: 3px solid #a855f7 !important; }
+.usable-item { border-left: 3px solid #f97316 !important; }
+
+/* 报纸头条样式 */
+#newspaper-badge {
+  animation: blink 3s infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* 仓储协调器快捷键提示 */
+.shortcut-hint {
+  font-size: 10px;
+  color: #94a3b8;
+  margin-left: 4px;
+}
+
 </style>
 </head>
 <body>
@@ -653,6 +685,10 @@ button:disabled {
       </div>
 
       <div style="display:flex;gap:5px;align-items:center;">
+        <div id="difficulty-badge" style="font-size:11px;padding:2px 5px;border-radius:4px;background:#1e3a5f;color:#3b82f6;">⚖️ 标准模式</div>
+        <div id="perks-badge" style="font-size:11px;padding:2px 5px;border-radius:4px;background:#1e3a5f;color:#94a3b8;">无特性</div>
+        <div id="modules-badge" style="font-size:11px;padding:2px 5px;border-radius:4px;background:#1e3a5f;color:#a855f7;">⚙️ 0/4</div>
+        <div id="newspaper-badge" style="font-size:11px;padding:2px 5px;border-radius:4px;background:#1e3a5f;color:#f59e0b;font-weight:bold;">📰 报纸头条</div>
         <button class="btn-amber" id="btn-buyout" title="攒够 6,000 CR 买断永久地契解锁多结局！">🔑 买断地契(6000)</button>
         <button class="btn-primary" id="btn-fullscreen" title="进入沉浸全屏并锁定横屏">⛶ 全屏横屏</button>
         <button id="btn-mute" title="开关合成音效">🔊</button>
@@ -694,6 +730,7 @@ button:disabled {
               <div id="customer-badges" style="display:flex;flex-wrap:wrap;gap:3px;justify-content:center;"></div>
             </div>
             <div id="customer-meta"></div>
+            <div id="newspaper-badge" style="font-size:11px;padding:2px 5px;border-radius:4px;background:#1e3a5f;color:#f59e0b;font-weight:bold;margin-top:4px;text-align:center;">📰 报纸头条</div>
           </div>
 
           <div id="center-content"></div>
@@ -718,6 +755,70 @@ button:disabled {
     </main>
 
     <!-- 开局 6 大职业选择全屏弹窗 -->
+    <div id="start-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>🛸 深空当铺：可能是偷的 v3.0</h2>
+          <button id="btn-close-start" class="btn-close hidden">✕</button>
+        </div>
+
+        <!-- v3.0 难度与特性选择 -->
+        <div class="select-group">
+          <label>难度：</label>
+          <select id="diff-select">
+            <option value="gouge">💰 宰客模式 (预算+15%)</option>
+            <option value="markup" selected>⚖️ 标准模式</option>
+            <option value="thin_margins">📉 薄利模式 (房租+20%)</option>
+            <option value="red_ink">🔴 赤字模式 (地狱难度)</option>
+          </select>
+        </div>
+        <div class="select-group">
+          <label>正面特性：</label>
+          <select id="perk-pos-select">
+            <option value="">无</option>
+            <option value="short_sleeper">😴 短睡者 (夜间回电+20)</option>
+            <option value="model_citizen">⭐ 模范公民 (治安+15)</option>
+            <option value="lucky">🍀 幸运儿 (幸运+25)</option>
+            <option value="intimidating">😠 气势逼人 (议价+15%)</option>
+            <option value="vending_machine">🏪 自动售货机 (自带机器)</option>
+            <option value="sawyers_crew">🕵️ 索耶手下 (解锁黑市)</option>
+            <option value="diplomatic">🤝 外交家 (全派系+10)</option>
+            <option value="proficient_scavenger">🗑️ 熟练拾荒者 (垃圾场+2)</option>
+            <option value="vigilant">👁️ 警觉 (AI扫描减半)</option>
+            <option value="experienced_chemist">🧪 资深化学家 (机器耗电-15%)</option>
+          </select>
+        </div>
+        <div class="select-group">
+          <label>负面特性：</label>
+          <select id="perk-neg-select">
+            <option value="">无</option>
+            <option value="ascetic">🧘 苦行者 (声望-30%)</option>
+            <option value="minimalist">📦 极简主义者 (货架-4)</option>
+            <option value="sentinel_disorder">🤖 哨兵紊乱症 (AI+20)</option>
+            <option value="bad_lease">📜 烂租约 (房租+30%)</option>
+            <option value="convict">⛓️ 前科犯 (嫌疑+25)</option>
+            <option value="addictions">💊 成瘾者 (能量-30)</option>
+            <option value="unlucky">☠️ 倒霉蛋 (幸运-20)</option>
+            <option value="blackmail">💸 被勒索 (开局-200CR)</option>
+          </select>
+        </div>
+        <div class="select-group">
+          <label>中性特性：</label>
+          <select id="perk-neu-select">
+            <option value="">无</option>
+            <option value="aug_menace">🤖 AI威胁 (赏金+50%)</option>
+            <option value="makeshift_reactor">☢️ 简易反应堆 (能量+40)</option>
+            <option value="prime_real_estate">🏙️ 黄金地段 (买断-20%)</option>
+          </select>
+        </div>
+
+        <div id="prof-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:15px;"></div>
+
+        <div style="margin-top:15px;text-align:center;">
+          <button id="btn-resume-save" class="btn-primary hidden" style="width:100%;margin-bottom:8px;">📂 继续存档</button>
+        </div>
+      </div>
+    </div>
     <div id="start-modal" class="modal-overlay">
       <div class="modal-box">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -2168,6 +2269,1228 @@ const STORY_NPCS = {
   }
 };
 
+// ============================================================================
+// v3.0 疯狂扩容包：220+ 原版/原创物品、9 职业、4 难度、开局特性、30+ 机器、报纸事件、模块、图鉴
+// ============================================================================
+function _mkTpl(id, name, category, baseValue, icon, desc, opts = {}) {
+  const legal = opts.legal || 'legal';
+  const tpl = {
+    id, name, category, baseValue, slots: opts.slots || 1, icon, legal, desc,
+    authenticSigns: opts.authenticSigns || { seal: '原厂封签与批次钢印完好', quality: '做工精良无明显瑕疵' },
+    fakeSigns: opts.fakeSigns || []
+  };
+  if (opts.isContainer) { tpl.isContainer = true; tpl.containerCap = opts.containerCap; tpl.shielded = Boolean(opts.shielded); }
+  if (opts.isSealedCrate) { tpl.isSealedCrate = true; tpl.requiredKey = opts.requiredKey || null; }
+  if (opts.isUsable) tpl.isUsable = opts.isUsable;
+  if (opts.isModule) tpl.isModule = true;
+  if (opts.moduleType) tpl.moduleType = opts.moduleType;
+  if (opts.isSeed) tpl.isSeed = true;
+  if (opts.isFish) tpl.isFish = true;
+  if (opts.isWine) tpl.isWine = true;
+  if (opts.chillable) tpl.chillable = true;
+  if (opts.frozen) tpl.frozen = true;
+  if (!tpl.fakeSigns.length && baseValue >= 25 && !opts.noFake) {
+    tpl.fakeSigns = [
+      { key: 'seal', badText: '封签为二次粘贴，批次号与官方记录对不上', reason: '封签二次粘贴，批次号造假' },
+      { key: 'quality', badText: '质感粗糙、边缘有廉价模具毛刺', reason: '做工粗糙系低劣仿制品' }
+    ];
+  }
+  ITEM_TEMPLATES[id] = tpl;
+  return tpl;
+}
+function _cont(id, name, value, icon, slots, cap, shielded, desc) {
+  return _mkTpl(id, name, 'container', value, icon, desc, { slots, isContainer: true, containerCap: cap, shielded, noFake: true });
+}
+function _crate(id, name, value, icon, reqKey, desc) {
+  return _mkTpl(id, name, 'crate', value, icon, desc, { slots: 2, isSealedCrate: true, requiredKey: reqKey, legal: 'contraband' });
+}
+function _mod(id, name, value, icon, mtype, desc) {
+  return _mkTpl(id, name, 'module', value, icon, desc, { isModule: true, moduleType: mtype, legal: 'legal' });
+}
+
+// ---- 容器/套包（原版全系） ----
+_cont('satchel', '斜挎包 (占1扩6)', 150, '👜', 1, 6, false, '【扩容容器】占1格扩6格，拾荒客与信使最爱的中型套包。');
+_cont('kids_backpack', '儿童书包 (占1扩3)', 200, '🎒', 1, 3, false, '【扩容容器】占1格扩3格，小巧轻便，适合藏小件贵重物。');
+_cont('kids_backpack_large', '儿童大书包 (占1扩5)', 250, '🎒', 1, 5, false, '【扩容容器】占1格扩5格，色彩鲜艳的儿童大书包。');
+_cont('backpack_small', '小型背包 (占1扩5)', 300, '🎒', 1, 5, false, '【扩容容器】占1格扩5格，轻量化小型背包。');
+_cont('backpack_large', '大型背包 (占2扩10)', 650, '🎒', 2, 10, false, '【扩容容器】占2格扩10格，囤货党的行军大包。');
+_cont('army_backpack', '军用背包 (占1扩6)', 130, '🎒', 1, 6, false, '【扩容容器】占1格扩6格，性价比极高的军规套包。');
+_cont('large_military_backpack', '大型军用背包·改 (占2扩14)', 520, '🪖', 2, 14, false, '【顶级扩容箱】占2格扩14格！杰克逊博士改装的超大军包。');
+_cont('bay_makeshift', '简易储物舱 (占2扩6)', 250, '🗄️', 2, 6, false, '【扩容容器】占2格扩6格，拼凑而成的简易储物舱。');
+_cont('bay_standard', '标准储物舱 (占2扩10)', 300, '🗄️', 2, 10, false, '【扩容容器】占2格扩10格，标准工业储物舱。');
+_cont('bay_extended', '加长储物舱 (占2扩16)', 850, '🗄️', 2, 16, false, '【超大扩容箱】占2格扩16格！整柜货物一包收！');
+_cont('bay_machine', '机器舱 (占2扩12)', 300, '🏭', 2, 12, false, '【扩容容器】占2格扩12格，专为机器零件与原料设计。');
+_cont('bay_machine_expanded', '扩容机器舱 (占2扩20)', 1200, '🏭', 2, 20, false, '【终极扩容箱】占2格扩20格！深空当铺的移动仓库！');
+_cont('expedition_box', '远征补给箱 (占2扩8)', 280, '📦', 2, 8, false, '【扩容容器】占2格扩8格，远征队标准补给箱。');
+_cont('smuggler_bay_std', '标准走私者伪装箱 (占2扩8·免检)', 250, '🕵️', 2, 8, true, '【免检伪装箱】占2格扩8格，铅屏蔽暗仓防盘查！');
+_cont('smuggler_bay_mod', '改装走私者伪装箱 (占2扩12·免检)', 400, '🕵️', 2, 12, true, '【免检伪装箱】占2格扩12格，改装版终极暗仓！');
+
+// ---- 密封箱与钥匙卡补全 ----
+_crate('crate_expedition', '远征补给密封箱 (密封)', 185, '📦', 'keycard_supply', '【密封盲盒箱】需【补给部钥匙卡】或【指挥官卡】开启！内含远征补给与稀有材料。');
+_mkTpl('keycard_blank', '空白门禁卡', 'tech', 15, '🪪', '无权限的空白卡，可在制卡仪烧录成部门卡。', { legal: 'legal' });
+_mkTpl('keycard_supply', '一次性钥匙卡 (补给部)', 'tech', 60, '🪪', '可解锁【远征补给密封箱】。', { legal: 'contraband' });
+_mkTpl('keycard_research', '一次性钥匙卡 (研究部)', 'tech', 125, '🪪', '可解锁高价值研究物资箱，黑市硬通货。', { legal: 'contraband' });
+
+// ---- 机器模块（原版全系，可装入模块槽强化产线） ----
+_mod('mod_efficiency', '效率模块', 70, '⚙️', 'efficiency', '【机器模块】装入模块槽：所有机器耗电 -12%。');
+_mod('mod_performance', '性能模块', 70, '⚙️', 'performance', '【机器模块】装入模块槽：合成成功率与产出稳定度提升。');
+_mod('mod_quality', '品质模块', 70, '⚙️', 'quality', '【机器模块】装入模块槽：产出物品估值 +10%。');
+_mod('mod_eco', '环保模块', 100, '🌿', 'eco', '【机器模块】装入模块槽：夜间回电 +10⚡。');
+_mod('mod_overclock', '超频模块', 100, '🔥', 'overclock', '【机器模块】装入模块槽：25% 概率额外产出 1 件。');
+_mod('mod_refinement', '精炼模块', 100, '💎', 'refinement', '【机器模块】装入模块槽：原料需求 -1 件（最低1）。');
+_mod('mod_alarm_tx', '警报发射模块', 100, '🚨', 'alarm', '【机器模块】装入模块槽：治安盘查概率 -30%。');
+_mod('mod_streamlining', '流线型模块', 125, '🌊', 'streamlining', '【机器模块】装入模块槽：顾客耐心 +1。');
+_mod('mod_blast', '爆破熔炉模块', 150, '💥', 'blast', '【机器模块】装入熔炉：废料回收翻倍。');
+_mod('mod_junk', '垃圾熔炉模块', 120, '🗑️', 'junk', '【机器模块】装入熔炉：垃圾合成额外产出。');
+_mod('mod_chem_equip', '化学设备模块', 250, '🧪', 'chem', '【机器模块】装入模块槽：化学合成耗电 -20%，产出 +1。');
+_mod('mod_neural_core', '封顶神经核心', 250, '🧠', 'neural', '【机器模块】装入模块槽：AI 扫描耗电减半，幸运 +10。');
+_mod('mod_corrupted', '损坏的模块', 20, '⚙️', 'corrupted', '【机器模块】损坏件，可在熔炉回收废料。');
+_mod('mod_ruined', '损毁的模块', 10, '⚙️', 'ruined', '【机器模块】损毁件，仅能回收少量废料。');
+_mod('mod_blank', '空白模块', 30, '⚙️', 'blank', '【机器模块】空白壳，可烧录成任意基础模块。');
+_mkTpl('mod_bay_kit', '模块舱扩容套件', 'tech', 150, '🔧', '【点击使用】模块槽上限 +2（最多 8 槽）。', { isUsable: 'module_bay' });
+_mkTpl('mod_extractor_basic', '基础模块提取器', 'tech', 100, '🧲', '【点击使用】从损坏模块提取 1 个随机基础模块。', { isUsable: 'extract_basic' });
+_mkTpl('mod_extractor_adv', '高级模块提取器', 'tech', 350, '🧲', '【点击使用】从损坏/损毁模块提取高级模块。', { isUsable: 'extract_adv' });
+_mod('mod_hydro_speed', '水培加速模块', 90, '🌱', 'hydro_speed', '【机器模块】水培生长速度 +50%。');
+_mod('mod_hydro_yield', '水培增产模块', 90, '🌱', 'hydro_yield', '【机器模块】水培产出 +1。');
+_mod('mod_hydro_quality', '水培品质模块', 90, '🌱', 'hydro_quality', '【机器模块】水培产物估值 +15%。');
+_mod('mod_hydro_auto', '水培自动模块', 110, '🤖', 'hydro_auto', '【机器模块】水培夜间自动产出。');
+_mod('mod_hydro_light', '水培光照模块', 80, '💡', 'hydro_light', '【机器模块】水培耗电 -15%。');
+_mod('mod_hydro_water', '水培节水模块', 80, '💧', 'hydro_water', '【机器模块】水培原料需求 -1。');
+_mod('mod_hydro_temp', '水培温控模块', 85, '🌡️', 'hydro_temp', '【机器模块】水培成功率提升。');
+
+// ---- 日用品/家用（原版全系） ----
+_mkTpl('adv_water_filter', '高级滤水器', 'supply', 350, '🚰', '高级反渗透滤水器，净水效率翻倍。');
+_mkTpl('aquascan', '水质扫描仪', 'tech', 200, '📡', '扫描水质纯度与辐射的便携仪器。');
+_mkTpl('wash_4in1', '四合一洗涤剂', 'supply', 30, '🧴', '洗护合一的多功能洗涤剂。');
+_mkTpl('pax_tampons', '帕克斯卫生棉条', 'supply', 100, '🧻', '空间站女性用品，需求稳定。');
+_mkTpl('rex_condoms', '瑞克斯避孕套', 'supply', 35, '📦', '计生用品，底层需求旺盛。');
+_mkTpl('gene_scanner', '基因扫描仪', 'tech', 500, '🧬', '扫描生物样本基因序列的高端仪器。');
+_mkTpl('hydrorech_purifier', '海德拉微型净水器·改', 'tech', 325, '🚰', '海德拉便携净水器改良版。');
+_mkTpl('nutrient_tablet', '水培营养片', 'material', 5, '💊', '水培系统核心营养补给，极廉价。');
+_mkTpl('perfume_lessence', 'L\'ESSENCE 费洛蒙香水', 'luxury', 200, '🧴', '上层名流追捧的费洛蒙香水。');
+_mkTpl('perfume_sync_std', 'SYNC 神经香水', 'luxury', 150, '🧴', '提升交谈好感的神经香水。');
+_mkTpl('perfume_sync_refill', 'SYNC 自 refill 香水', 'luxury', 1000, '🧴', '【传说级】自 refill  refill 香水，富豪专享！');
+_mkTpl('paper_towels', '纸巾', 'supply', 35, '🧻', '日常消耗纸巾。');
+_mkTpl('toilet_paper', '卫生纸', 'supply', 25, '🧻', '空间站生活必需品。');
+_mkTpl('scav_scanner', '拾荒扫描仪', 'tech', 250, '📡', '探测废墟物资的拾荒神器。');
+_mkTpl('toothpaste', '牙膏', 'supply', 15, '🪥', '日常清洁用品。');
+_mkTpl('uv_lamp', '紫外线灯', 'tech', 150, '💡', '消毒杀菌的紫外线灯。');
+_mkTpl('water_filter_std', '滤水器', 'supply', 25, '🚰', '基础滤水器。');
+_mkTpl('water_pitcher', '滤水壶', 'supply', 25, '🫗', '家用滤水壶。');
+_mkTpl('purify_tablet', '净水片', 'supply', 6, '💊', '应急净水片，轻便廉价。');
+_mkTpl('water_test_strip', '水质检测条', 'supply', 3, '🧪', '快速检测水质的试纸。');
+_mkTpl('black_lamp', '黑光灯', 'tech', 120, '🔦', '紫外黑光灯，验钞与鉴伪两用。');
+_mkTpl('magnifying_glass', '放大镜', 'tech', 50, '🔍', '鉴伪必备的放大镜。');
+_mkTpl('plasma_cutter', '等离子切割器', 'tech', 80, '🔥', '切割金属的工业工具。');
+_mkTpl('screwdriver', '螺丝刀', 'tech', 25, '🪛', '基础维修工具。');
+_mkTpl('wire_cutter', '剪线钳', 'tech', 40, '✂️', '剪断电线的工具。');
+_mkTpl('toolbox', '工具箱', 'container', 150, '🧰', '普通工具箱（非扩容容器，可出售）。', { slots: 1 });
+_mkTpl('labeler', '标签机', 'tech', 50, '🏷️', '贴标签的办公小工具。');
+_mkTpl('blue_labeler', '蓝色标签机', 'tech', 50, '🏷️', '蓝色款标签机。');
+_mkTpl('appraisal_guide', '鉴定指南', 'supply', 50, '📕', '提升鉴伪成功率的手册。');
+_mkTpl('appraisal_checker', '鉴定校验器', 'tech', 25, '🔍', '简易鉴定校验小工具。');
+
+// ---- 食品饮料（原版全系） ----
+_mkTpl('animal_fat', '动物脂肪', 'supply', 40, '🧈', '烹饪与化工两用油脂。');
+_mkTpl('bei_icecream', '贝氏香草冰淇淋·大', 'supply', 40, '🍨', '贝氏大杯香草冰淇淋。', { frozen: true, chillable: true });
+_mkTpl('reagent_acidic', '酸性试剂瓶', 'material', 3, '🧪', '化学合成酸性试剂。');
+_mkTpl('reagent_basic', '碱性试剂瓶', 'material', 3, '🧪', '化学合成碱性试剂。');
+_mkTpl('reagent_lipobond', '脂键合试剂瓶', 'material', 3, '🧪', '化学合成脂键合试剂。');
+_mkTpl('reagent_nmethylol', 'N-甲基醇试剂瓶', 'material', 3, '🧪', '化学合成 N-甲基醇试剂。');
+_mkTpl('reagent_reducing', '还原试剂瓶', 'material', 3, '🧪', '化学合成还原试剂。');
+_mkTpl('bottled_water_micro', '瓶装水·微型', 'supply', 3, '💧', '迷你瓶装水。');
+_mkTpl('bottled_water_small', '瓶装水·小型', 'supply', 4, '💧', '小型瓶装水。');
+_mkTpl('bottled_water_std', '瓶装水·标准', 'supply', 5, '💧', '标准瓶装水。');
+_mkTpl('bottled_water_large', '瓶装水·大型', 'supply', 9, '💧', '大型瓶装水。');
+_mkTpl('bottled_water_jug', '瓶装水·水壶装', 'supply', 15, '💧', '整壶瓶装水。');
+_mkTpl('ration_sealed_small', '密封口粮·小型', 'supply', 15, '🥫', '小型密封口粮。');
+_mkTpl('ration_sealed_std', '密封口粮·标准', 'supply', 30, '🥫', '标准密封口粮。');
+_mkTpl('cat_chocolate', '猫巧克力棒', 'supply', 15, '🍫', '猫咪造型的巧克力棒。');
+_mkTpl('energy_drink', '能量饮料', 'supply', 18, '🥤', '提神能量饮料。');
+_mkTpl('galaxy_blend', '繁星果糊', 'supply', 25, '🍓', '星际风味果糊。');
+_mkTpl('hot_sauce', '辣椒酱', 'supply', 50, '🌶️', '下层区最爱的辣酱。');
+_mkTpl('instant_ramen', '速食拉面', 'supply', 20, '🍜', '速食拉面，穷人福音。');
+_mkTpl('lieat_bar', 'Li-Eat 营养棒', 'supply', 17, '🍫', '高热量营养棒。');
+_mkTpl('morsel_small', '压缩口粮·小', 'supply', 15, '🥫', '小型压缩口粮。');
+_mkTpl('offal', '内脏', 'supply', 12, '🥩', '廉价内脏食材。');
+_mkTpl('peat_meat', '“泥炭”合成肉', 'supply', 25, '🥩', '泥炭合成的廉价肉食。');
+_mkTpl('pilk', '碳酸代乳', 'supply', 16, '🥛', '碳酸代乳饮料。');
+_mkTpl('processed_cheese', '加工奶酪', 'supply', 20, '🧀', '加工奶酪片。');
+_mkTpl('puice_juice', '代糖果汁', 'supply', 14, '🧃', '代糖果汁。');
+_mkTpl('raw_meat_small', '生肉·小型', 'supply', 65, '🥩', '小型冷鲜生肉。');
+_mkTpl('raw_meat_std', '生肉·标准', 'supply', 159, '🥩', '标准冷鲜生肉。');
+_mkTpl('soda_can', '汽水', 'supply', 15, '🥤', '普通汽水。');
+_mkTpl('ribwich', '肋明治·普通版', 'supply', 150, '🥪', '普通版肋明治（非收藏版）。');
+_mkTpl('caviar', '鱼子酱', 'luxury', 240, '🐟', '鲟鱼鱼子酱，上层珍馐！', { isFish: true });
+_mkTpl('sturgeon_roe', '鲟鱼卵', 'luxury', 180, '🐟', '新鲜鲟鱼卵。', { isFish: true });
+_mkTpl('fish_fillets', '鱼片', 'supply', 55, '🐠', '新鲜鱼片。', { isFish: true });
+_mkTpl('bloomberry', '绽放莓', 'supply', 14, '🫐', '水培产出的绽放莓。', { isSeed: true });
+_mkTpl('yeast_std', '酵母', 'supply', 10, '🍞', '酿酒酵母。');
+_mkTpl('yeast_synth', '合成酵母', 'supply', 8, '🍞', '合成酵母。');
+_mkTpl('yeast_super', '超级酵母', 'supply', 20, '🍞', '发酵效率极高的超级酵母。');
+_mkTpl('yeast_bioreactor', '生物反应器酵母', 'supply', 250, '🧫', '生物反应器专用酵母。');
+_mkTpl('wine_bottle', '葡萄酒瓶', 'luxury', 12, '🍷', '普通葡萄酒。', { isWine: true });
+_mkTpl('bloomberry_wine', '绽放莓酒', 'luxury', 85, '🍷', '绽放莓酿造的果酒。', { isWine: true });
+_mkTpl('gloomberry_wine', '幽暗莓酒', 'luxury', 95, '🍷', '幽暗莓酿造的果酒。', { isWine: true });
+_mkTpl('aged_wine', '陈酿佳酿', 'luxury', 320, '🍷', '【AgeWell 陈酿】窖藏多年的顶级佳酿！', { isWine: true });
+_mkTpl('coffee_beans', '咖啡豆', 'supply', 28, '☕', '水培/进口咖啡豆。');
+_mkTpl('tilapia_live', '活罗非鱼', 'supply', 45, '🐟', '水产养殖的活罗非鱼。', { isFish: true });
+_mkTpl('tilapia_fillet', '罗非鱼片', 'supply', 60, '🐟', '罗非鱼片。', { isFish: true });
+_mkTpl('tilapia_skin', '罗非鱼皮移植片', 'medical', 130, '🩹', '水产养殖产出的医用鱼皮。', { isFish: true });
+_mkTpl('sturgeon_live', '活鲟鱼', 'luxury', 220, '🐟', '活鲟鱼，鱼子酱来源。', { isFish: true });
+_mkTpl('caviar_tin', '鱼子酱·铁盒装', 'luxury', 300, '🐟', '铁盒装顶级鱼子酱。', { isFish: true });
+_mkTpl('fish_feed', '鱼饲料', 'material', 18, '🐟', '水产养殖饲料。', { isFish: true });
+
+// ---- 种子与水培作物 ----
+_mkTpl('bloomberry_seed', '绽放莓种子', 'material', 40, '🌱', '可水培种植绽放莓。', { isSeed: true });
+_mkTpl('dream_cap', '梦幻菇', 'material', 23, '🍄', '水培产出的梦幻菇。', { isSeed: true });
+_mkTpl('dream_cap_spores', '梦幻菇孢子', 'material', 24, '🍄', '梦幻菇孢子。', { isSeed: true });
+_mkTpl('meal_cap', '餐菇', 'material', 19, '🍄', '可食用的餐菇。', { isSeed: true });
+_mkTpl('nightmare_cap', '梦魇菇', 'material', 26, '🍄', '致幻梦魇菇。', { isSeed: true });
+_mkTpl('fillerweed', '填充草', 'material', 11, '🌿', '水培填充草。', { isSeed: true });
+_mkTpl('fillerweed_seed', '填充草种子', 'material', 9, '🌱', '填充草种子。', { isSeed: true });
+_mkTpl('hydroreed_seed', '水芦苇种子', 'material', 20, '🌱', '水芦苇种子。', { isSeed: true });
+_mkTpl('kotton_fiber', '韧棉纤维', 'material', 46, '🧶', '韧棉纤维。');
+_mkTpl('kotton_seed', '韧棉种子', 'material', 20, '🌱', '韧棉种子。', { isSeed: true });
+_mkTpl('kotton_lining', '韧棉衬里', 'material', 60, '🧶', '韧棉衬里布料。');
+_mkTpl('nutrifruit', '营养果', 'supply', 12, '🍎', '水培营养果（刮刮乐头奖图案！）。', { isSeed: true });
+_mkTpl('nutrifruit_seed', '营养果种子', 'material', 40, '🌱', '营养果种子。', { isSeed: true });
+
+// ---- 材料/工业 ----
+_mkTpl('filament_3d', '3D 打印耗材', 'material', 12, '🧵', '3D 打印机耗材线材。');
+_mkTpl('chem_supplies_common', '普通化学物资', 'material', 50, '🧪', '普通化学物资。');
+_mkTpl('chem_supplies_restricted', '管制化学物资', 'contraband', 100, '☣️', '管制化学物资。', { legal: 'contraband' });
+_mkTpl('elec_parts_common', '普通电子零件', 'material', 33, '🔌', '普通电子零件。');
+_mkTpl('elec_parts_rare', '稀有电子零件', 'material', 350, '🔌', '稀有电子零件。');
+_mkTpl('flux_basic', '基础助熔剂', 'material', 4, '🧪', '基础助熔剂。');
+_mkTpl('flux_adv', '高级助熔剂', 'material', 300, '🧪', '高级助熔剂。');
+_mkTpl('gun_parts', '枪械零件', 'material', 25, '🔧', '枪械改装零件。');
+_mkTpl('junk_scrap', '垃圾废料', 'material', 3, '🗑️', '熔炉回收的垃圾废料。');
+_mkTpl('med_supplies_common', '普通医疗物资', 'material', 40, '🩹', '普通医疗物资。');
+_mkTpl('metal_ingot', '金属锭', 'material', 50, '🧱', '精炼金属锭。');
+_mkTpl('metal_ore', '金属矿石', 'material', 15, '⛏️', '金属矿石。');
+_mkTpl('rare_ore', '稀有矿石', 'material', 30, '💎', '稀有矿石。');
+_mkTpl('radioactive_waste', '放射性废料', 'contraband', 0, '☢️', '放射性废料，危险品！', { legal: 'contraband' });
+_mkTpl('wire_coil', '电线', 'material', 16, '🔌', '铜电线。');
+_mkTpl('metal_screws', '金属螺丝', 'material', 14, '🔩', '金属螺丝。');
+_mkTpl('turbo_disposable', '一次性涡轮增压器', 'tech', 35, '🚀', '【点击使用】一次性提速机器。', { isUsable: 'turbo' });
+_mkTpl('turbo_adv', '高级涡轮增压器', 'tech', 300, '🚀', '【点击使用】高级提速。', { isUsable: 'turbo' });
+_mkTpl('turbo_hyper', '超科技涡轮增压器', 'tech', 15000, '🚀', '【传说级】超科技涡轮增压器！', { isUsable: 'turbo' });
+_mkTpl('energy_cell_mk2', '聚变电池·Mk.II', 'tech', 30, '🔋', '二代聚变电池。', { isUsable: 'charge_power' });
+
+// ---- 医疗（原版全系） ----
+_mkTpl('blue_blood_bag', '“蓝血”血袋', 'contraband', 250, '🩸', '军用蓝血血袋。', { legal: 'contraband' });
+_mkTpl('blood_bag', '血袋', 'medical', 33, '🩸', '普通血袋。');
+_mkTpl('bandage_basic', '基础绷带', 'medical', 8, '🩹', '基础绷带。');
+_mkTpl('bandage_hemostatic', '止血绷带', 'medical', 16, '🩹', '止血绷带。');
+_mkTpl('bandage_topical', '外用绷带', 'medical', 16, '🩹', '外用绷带。');
+_mkTpl('birth_control_pill', '避孕药', 'medical', 15, '💊', '避孕药。');
+_mkTpl('caffeine_pill', '咖啡因片', 'medical', 10, '💊', '提神咖啡因片。');
+_mkTpl('nightingale_salve', '夜莺药膏', 'medical', 80, '🧴', '夜莺牌万能药膏。');
+_mkTpl('nomore_injector', '奥克莫吸注射器', 'medical', 50, '💉', '奥克莫吸注射器。');
+_mkTpl('phagimycin', '噬菌霉素', 'medical', 25, '💉', '噬菌霉素。');
+_mkTpl('phagimycin_unlicensed', '未授权噬菌霉素', 'contraband', 5, '💉', '未授权噬菌霉素。', { legal: 'contraband' });
+_mkTpl('phanta_pill', '芬太片', 'contraband', 12, '💊', '芬太片，违禁药片。', { legal: 'contraband' });
+_mkTpl('rubbing_alcohol', '医用酒精', 'medical', 35, '🧴', '医用酒精。');
+_mkTpl('smelling_salts', '嗅盐', 'medical', 15, '🧂', '嗅盐。');
+_mkTpl('synaprest_injector', '赛纳普斯注射器', 'medical', 350, '💉', '赛纳普斯注射器（伦警官成瘾剧情关键！）。');
+_mkTpl('dream_dust_vial', '梦魇尘·小瓶', 'contraband', 18, '🔮', '梦魇尘小瓶。', { legal: 'contraband' });
+_mkTpl('nightmare_dust_vial', '梦魇尘·大瓶', 'contraband', 36, '🔮', '梦魇尘大瓶。', { legal: 'contraband' });
+_mkTpl('zerochew_tab', '零嚼片', 'medical', 8, '💊', '零嚼片。');
+_mkTpl('zyanide_pill', '山奈德片', 'contraband', 33, '💊', '山奈德片，剧毒。', { legal: 'contraband' });
+
+// ---- 武器/弹药/近战/爆炸物（原版全系） ----
+_mkTpl('smoke_grenade', '烟雾弹', 'weapon', 60, '💨', '烟雾弹。', { legal: 'permit_arms' });
+_mkTpl('plastic_explosive', '塑胶炸药', 'contraband', 250, '🧨', '塑胶炸药。', { legal: 'contraband' });
+_mkTpl('plastic_explosive_armed', '已武装塑胶炸药', 'contraband', 250, '🧨', '已武装塑胶炸药，极危险！', { legal: 'contraband' });
+_mkTpl('ammo_22_sr', '.22 SR 弹药', 'weapon', 20, '🔸', '.22 标准弹药。', { legal: 'permit_arms' });
+_mkTpl('ammo_22_ap', '.22 穿甲弹', 'weapon', 26, '🔸', '.22 穿甲弹。', { legal: 'permit_arms' });
+_mkTpl('ammo_22_nonlethal', '.22 非致命弹', 'weapon', 14, '🔸', '.22 非致命弹。', { legal: 'permit_arms' });
+_mkTpl('ammo_10mm_ap', '10mm 穿甲弹', 'weapon', 36, '🧨', '10mm 穿甲弹。', { legal: 'permit_arms' });
+_mkTpl('ammo_10mm_nonlethal', '10mm 非致命弹', 'weapon', 24, '🧨', '10mm 非致命弹。', { legal: 'permit_arms' });
+_mkTpl('liberator_pistol', '解放者 3D 打印手枪', 'weapon', 40, '🔫', '3D 打印的解放者手枪。', { legal: 'permit_arms' });
+_mkTpl('tazer', '电击枪', 'weapon', 100, '⚡', '电击枪。', { legal: 'permit_arms' });
+_mkTpl('nestfire_compact', '巢火紧凑型枪', 'weapon', 120, '🔫', '巢火紧凑型枪。', { legal: 'permit_arms' });
+_mkTpl('ironcraft_10', '铁匠10·改', 'weapon', 160, '🔫', '铁匠10 改良版。', { legal: 'permit_arms' });
+_mkTpl('sentinel_mk3', '哨兵 Mk.III', 'contraband', 200, '🔫', '哨兵 Mk.III 脉冲枪。', { legal: 'contraband' });
+_mkTpl('lancewell_revolver', '兰斯韦尔左轮', 'weapon', 240, '🔫', '兰斯韦尔左轮手枪。', { legal: 'permit_arms' });
+_mkTpl('pulseguard_stun', '脉冲卫士电击枪', 'weapon', 250, '⚡', '脉冲卫士电击枪。', { legal: 'permit_arms' });
+_mkTpl('peacemaker_smg', '和平使者重型冲锋枪', 'contraband', 280, '🔫', '和平使者重型冲锋枪。', { legal: 'contraband' });
+_mkTpl('rampart_shotgun', '壁垒双动霰弹枪', 'weapon', 310, '🔫', '壁垒双动霰弹枪。', { legal: 'permit_arms' });
+_mkTpl('glass_shiv', '玻璃刀片', 'weapon', 8, '🔪', '玻璃刀片。', { legal: 'permit_arms' });
+_mkTpl('lead_pipe', '铅管', 'weapon', 15, '🔧', '铅管。', { legal: 'permit_arms' });
+_mkTpl('box_cutter', '美工刀', 'weapon', 28, '🔪', '美工刀。', { legal: 'permit_arms' });
+_mkTpl('kitchen_knife', '厨房刀', 'weapon', 45, '🔪', '厨房刀。', { legal: 'permit_arms' });
+_mkTpl('hatchet', '小斧', 'weapon', 55, '🪓', '小斧。', { legal: 'permit_arms' });
+_mkTpl('meat_cleaver', '砍肉刀', 'weapon', 65, '🔪', '砍肉刀。', { legal: 'permit_arms' });
+_mkTpl('crowbar', '撬棍', 'weapon', 75, '🔧', '撬棍。', { legal: 'permit_arms' });
+_mkTpl('skinning_knife', '剥皮刀', 'weapon', 100, '🔪', '剥皮刀。', { legal: 'permit_arms' });
+_mkTpl('stun_baton', '电击棍', 'weapon', 165, '⚡', '电击棍。', { legal: 'permit_arms' });
+
+// ---- 霓虹招牌/手册/磁带/原创深空物品 ----
+_mkTpl('neon_food', '“食品”霓虹招牌', 'tech', 100, '💡', '食品店霓虹招牌，吸引顾客。');
+_mkTpl('neon_household', '“日用”霓虹招牌', 'tech', 100, '💡', '日用品店霓虹招牌。');
+_mkTpl('neon_material', '“材料”霓虹招牌', 'tech', 100, '💡', '材料店霓虹招牌。');
+_mkTpl('neon_water', '“净水”霓虹招牌', 'tech', 100, '💡', '净水店霓虹招牌。');
+_mkTpl('neon_medical', '“医药”霓虹招牌', 'tech', 200, '💡', '医药店霓虹招牌。');
+_mkTpl('manual_water', '净水手册', 'supply', 50, '📕', '净水技术手册。');
+_mkTpl('manual_gunsmith', '枪械手册', 'supply', 50, '📕', '枪械改装手册。');
+_mkTpl('manual_chemist', '化学手册', 'supply', 50, '📕', '化学合成手册。');
+_mkTpl('manual_aqua', '水产手册', 'supply', 50, '📕', '水产养殖手册。');
+_mkTpl('manual_appraisal', '鉴定手册', 'supply', 50, '📕', '鉴定技术手册。');
+_mkTpl('cassette_synth', '合成波磁带', 'luxury', 75, '📼', '合成波音乐磁带。');
+_mkTpl('cassette_jazz', '爵士磁带', 'luxury', 75, '📼', '爵士乐磁带。');
+_mkTpl('cassette_rock', '摇滚磁带', 'luxury', 75, '📼', '摇滚乐磁带。');
+_mkTpl('cassette_classical', '古典磁带', 'luxury', 75, '📼', '古典乐磁带。');
+_mkTpl('cassette_ambient', '氛围磁带', 'luxury', 75, '📼', '氛围音乐磁带。');
+_mkTpl('deepspace_relic', '深空遗物·原创', 'luxury', 450, '🛸', '【原创】深空遗迹碎片，神秘发光。');
+_mkTpl('star_core', '星核碎片·原创', 'tech', 380, '⭐', '【原创】恒星核心碎片。');
+_mkTpl('void_shard', '虚空碎片·原创', 'contraband', 290, '🌌', '【原创】虚空碎片，违禁神秘物。', { legal: 'contraband' });
+_mkTpl('nebula_pearl', '星云珍珠·原创', 'luxury', 260, '🦪', '【原创】星云珍珠。');
+_mkTpl('moon_rock', '月岩标本·原创', 'material', 140, '🌕', '【原创】月岩标本。');
+_mkTpl('comet_ice', '彗星冰·原创', 'supply', 90, '☄️', '【原创】彗星冰。');
+_mkTpl('alien_egg', '异星卵·原创', 'supply', 110, '🥚', '【原创】异星卵。');
+_mkTpl('plasma_orb', '等离子球·原创', 'tech', 210, '🔮', '【原创】等离子球。');
+_mkTpl('dark_matter', '暗物质样本·原创', 'contraband', 330, '🌑', '【原创】暗物质样本。', { legal: 'contraband' });
+_mkTpl('solar_cell', '太阳能板', 'tech', 95, '☀️', '太阳能板。');
+_mkTpl('fusion_core', '聚变核心', 'tech', 420, '☀️', '聚变核心。');
+_mkTpl('ai_chip', 'AI 芯片', 'tech', 280, '🧠', 'AI 芯片。');
+_mkTpl('neural_link', '神经链接器', 'tech', 240, '🧠', '神经链接器。');
+_mkTpl('holo_projector', '全息投影器', 'tech', 190, '📽️', '全息投影器。');
+_mkTpl('drone_part', '无人机零件', 'tech', 85, '🛸', '无人机零件。');
+_mkTpl('shield_generator', '护盾发生器', 'tech', 310, '🛡️', '护盾发生器。');
+_mkTpl('gravity_boots', '重力靴', 'tech', 170, '🥾', '重力靴。');
+_mkTpl('exo_skeleton', '外骨骼', 'tech', 390, '🦾', '外骨骼装甲。');
+_mkTpl('med_gel', '医疗凝胶', 'medical', 70, '🧴', '医疗凝胶。');
+_mkTpl('nano_swarm', '纳米蜂群', 'tech', 360, '🐝', '纳米蜂群。');
+_mkTpl('teleport_coil', '传送线圈', 'tech', 340, '🌀', '传送线圈。');
+_mkTpl('time_capsule', '时间胶囊', 'luxury', 150, '⏳', '时间胶囊。');
+_mkTpl('old_earth_coin', '古地球金币', 'luxury', 220, '🪙', '古地球金币。');
+_mkTpl('mars_soil', '火星土壤', 'material', 60, '🔴', '火星土壤。');
+_mkTpl('lunar_dust', '月尘', 'material', 55, '🌕', '月尘。');
+_mkTpl('asteroid_ore', '小行星矿石', 'material', 75, '☄️', '小行星矿石。');
+_mkTpl('titanium_plate', '钛合金板', 'material', 65, '🔩', '钛合金板。');
+_mkTpl('carbon_fiber', '碳纤维', 'material', 80, '🧶', '碳纤维。');
+_mkTpl('graphene_sheet', '石墨烯片', 'material', 120, '⬛', '石墨烯片。');
+_mkTpl('superconductor', '超导体', 'tech', 290, '🧲', '超导体。');
+_mkTpl('quantum_chip', '量子芯片', 'tech', 410, '⚛️', '量子芯片。');
+_mkTpl('bio_chip', '生物芯片', 'tech', 230, '🧬', '生物芯片。');
+_mkTpl('gene_sample', '基因样本', 'medical', 160, '🧬', '基因样本。');
+_mkTpl('stem_cells', '干细胞', 'medical', 190, '🧬', '干细胞。');
+_mkTpl('antidote', '解毒剂', 'medical', 110, '💉', '解毒剂。');
+_mkTpl('painkiller', '止痛药', 'medical', 45, '💊', '止痛药。');
+_mkTpl('stimulant', '兴奋剂', 'contraband', 140, '💊', '兴奋剂。', { legal: 'contraband' });
+_mkTpl('sedative', '镇静剂', 'medical', 65, '💊', '镇静剂。');
+_mkTpl('vitamin_pack', '维生素包', 'medical', 30, '💊', '维生素包。');
+_mkTpl('protein_powder', '蛋白粉', 'supply', 35, '🥛', '蛋白粉。');
+_mkTpl('space_rations', '太空口粮', 'supply', 42, '🥫', '太空口粮。');
+_mkTpl('freeze_dried', '冻干食品', 'supply', 38, '🍲', '冻干食品。');
+_mkTpl('mre_pack', '军用口粮包', 'supply', 48, '🥫', '军用口粮包。');
+_mkTpl('survival_kit', '生存工具包', 'supply', 85, '🎒', '生存工具包。');
+_mkTpl('tent', '帐篷', 'supply', 120, '⛺', '帐篷。');
+_mkTpl('sleeping_bag', '睡袋', 'supply', 70, '🛏️', '睡袋。');
+_mkTpl('campfire_kit', '营火套件', 'supply', 55, '🔥', '营火套件。');
+_mkTpl('fishing_rod', '鱼竿', 'tech', 60, '🎣', '鱼竿。');
+_mkTpl('net', '渔网', 'material', 40, '🥅', '渔网。');
+_mkTpl('aqua_filter', '水产滤芯', 'material', 45, '🐟', '水产滤芯。', { isFish: true });
+_mkTpl('oxygen_tank', '氧气瓶', 'tech', 130, '🫧', '氧气瓶。');
+_mkTpl('air_scrubber', '空气净化器', 'tech', 180, '🌬️', '空气净化器。');
+_mkTpl('radiation_suit', '防辐射服', 'tech', 200, '☢️', '防辐射服。');
+_mkTpl('geiger_counter', '盖革计数器', 'tech', 110, '☢️', '盖革计数器。');
+_mkTpl('lead_lining', '铅衬里', 'material', 70, '🧱', '铅衬里。');
+_mkTpl('hazmat_container', '危险品容器', 'container', 90, '☢️', '危险品容器（普通容器）。', { slots: 1 });
+_mkTpl('evidence_bag', '物证袋', 'supply', 20, '🛍️', '物证袋。');
+_mkTpl('handcuffs', '手铐', 'tech', 45, '⛓️', '手铐。');
+_mkTpl('baton', '警棍', 'weapon', 50, '🔧', '警棍。', { legal: 'permit_arms' });
+_mkTpl('shield', '防暴盾', 'weapon', 95, '🛡️', '防暴盾。', { legal: 'permit_arms' });
+_mkTpl('tear_gas', '催泪瓦斯', 'weapon', 65, '💨', '催泪瓦斯。', { legal: 'permit_arms' });
+_mkTpl('flare', '信号弹', 'weapon', 30, '🎆', '信号弹。', { legal: 'permit_arms' });
+_mkTpl('laser_sight', '激光瞄具', 'tech', 75, '🔭', '激光瞄具。');
+_mkTpl('scope', '狙击镜', 'tech', 140, '🔭', '狙击镜。');
+_mkTpl('suppressor', '消音器', 'weapon', 90, '🔇', '消音器。', { legal: 'permit_arms' });
+_mkTpl('magazine', '弹匣', 'weapon', 35, '🧨', '弹匣。', { legal: 'permit_arms' });
+_mkTpl('rifle_scope', '步枪瞄具', 'tech', 150, '🔭', '步枪瞄具。');
+_mkTpl('red_dot', '红点瞄具', 'tech', 85, '🔭', '红点瞄具。');
+_mkTpl('night_vision', '夜视仪', 'tech', 220, '🥽', '夜视仪。');
+_mkTpl('thermal_scope', '热成像仪', 'tech', 260, '🌡️', '热成像仪。');
+_mkTpl('range_finder', '测距仪', 'tech', 95, '📐', '测距仪。');
+_mkTpl('gps_module', 'GPS 模块', 'tech', 105, '📍', 'GPS 模块。');
+_mkTpl('radio', '电台', 'tech', 80, '📻', '电台。');
+_mkTpl('sat_phone', '卫星电话', 'tech', 240, '📱', '卫星电话。');
+_mkTpl('tablet', '平板电脑', 'tech', 170, '📟', '平板电脑。');
+_mkTpl('laptop', '笔记本电脑', 'tech', 230, '💻', '笔记本电脑。');
+_mkTpl('server_core', '服务器核心', 'tech', 380, '🖥️', '服务器核心。');
+_mkTpl('data_core', '数据核心', 'tech', 300, '💾', '数据核心。');
+_mkTpl('memory_chip', '内存芯片', 'tech', 120, '💾', '内存芯片。');
+_mkTpl('cpu', '处理器', 'tech', 200, '🧠', '处理器。');
+_mkTpl('gpu', '显卡', 'tech', 260, '🎮', '显卡。');
+_mkTpl('motherboard', '主板', 'tech', 150, '🔌', '主板。');
+_mkTpl('hard_drive', '硬盘', 'tech', 110, '💾', '硬盘。');
+_mkTpl('ssd', '固态硬盘', 'tech', 130, '💾', '固态硬盘。');
+_mkTpl('battery_pack', '电池组', 'tech', 65, '🔋', '电池组。', { isUsable: 'charge_power' });
+_mkTpl('solar_panel', '太阳能电池板', 'tech', 140, '☀️', '太阳能电池板。');
+_mkTpl('wind_turbine', '风力涡轮', 'tech', 190, '🌬️', '风力涡轮。');
+_mkTpl('hydro_turbine', '水力涡轮', 'tech', 210, '💧', '水力涡轮。');
+_mkTpl('geothermal', '地热模块', 'tech', 240, '🌋', '地热模块。');
+_mkTpl('reactor_coolant', '反应堆冷却剂', 'material', 100, '☢️', '反应堆冷却剂。');
+_mkTpl('plasma_cell', '等离子电池', 'tech', 180, '🔋', '等离子电池。', { isUsable: 'charge_power' });
+_mkTpl('antimatter_cell', '反物质电池', 'tech', 500, '🌌', '反物质电池。', { isUsable: 'charge_power' });
+_mkTpl('zero_point', '零点能核心', 'tech', 450, '⚡', '零点能核心。');
+_mkTpl('dark_energy', '暗能量电池', 'tech', 470, '🌑', '暗能量电池。', { isUsable: 'charge_power' });
+_mkTpl('exotic_matter', '奇异物质', 'contraband', 390, '🌌', '奇异物质。', { legal: 'contraband' });
+_mkTpl('strange_matter', '奇异物质·改', 'contraband', 410, '🌌', '奇异物质改良版。', { legal: 'contraband' });
+_mkTpl('wormhole_seed', '虫洞种子·原创', 'tech', 430, '🌀', '【原创】虫洞种子。');
+_mkTpl('gravity_core', '重力核心', 'tech', 360, '🌍', '重力核心。');
+_mkTpl('time_crystal', '时间水晶·原创', 'luxury', 440, '⏰', '【原创】时间水晶。');
+_mkTpl('soul_gem', '灵魂宝石·原创', 'luxury', 420, '💎', '【原创】灵魂宝石。');
+_mkTpl('phoenix_feather', '凤凰羽·原创', 'luxury', 280, '🪶', '【原创】凤凰羽。');
+_mkTpl('dragon_scale', '龙鳞·原创', 'luxury', 300, '🐉', '【原创】龙鳞。');
+_mkTpl('unicorn_horn', '独角兽角·原创', 'luxury', 310, '🦄', '【原创】独角兽角。');
+_mkTpl('mermaid_tear', '美人鱼之泪·原创', 'luxury', 270, '🧜', '【原创】美人鱼之泪。');
+_mkTpl('elf_stone', '精灵石·原创', 'luxury', 250, '🧝', '【原创】精灵石。');
+_mkTpl('dwarf_gem', '矮人宝石·原创', 'luxury', 240, '⛏️', '【原创】矮人宝石。');
+_mkTpl('troll_bone', '巨魔骨·原创', 'material', 130, '🦴', '【原创】巨魔骨。');
+_mkTpl('goblin_ear', '哥布林耳·原创', 'material', 90, '👺', '【原创】哥布林耳。');
+_mkTpl('orc_tusk', '兽人獠牙·原创', 'material', 110, '🐗', '【原创】兽人獠牙。');
+_mkTpl('vampire_fang', '吸血鬼獠牙·原创', 'luxury', 200, '🧛', '【原创】吸血鬼獠牙。');
+_mkTpl('werewolf_claw', '狼人爪·原创', 'material', 120, '🐺', '【原创】狼人爪。');
+_mkTpl('zombie_brain', '僵尸脑·原创', 'medical', 150, '🧟', '【原创】僵尸脑。');
+_mkTpl('skeleton_key', '骷髅钥匙·原创', 'tech', 160, '🗝️', '【原创】骷髅钥匙。');
+_mkTpl('magic_scroll', '魔法卷轴·原创', 'luxury', 230, '📜', '【原创】魔法卷轴。');
+_mkTpl('potion_health', '生命药水·原创', 'medical', 120, '🧪', '【原创】生命药水。');
+_mkTpl('potion_mana', '法力药水·原创', 'medical', 120, '🧪', '【原创】法力药水。');
+_mkTpl('elixir_life', '长生不老药·原创', 'luxury', 480, '⚗️', '【原创】长生不老药。');
+_mkTpl('phoenix_egg', '凤凰蛋·原创', 'luxury', 460, '🐦‍🔥', '【原创】凤凰蛋。');
+_mkTpl('world_tree_leaf', '世界树之叶·原创', 'luxury', 290, '🌳', '【原创】世界树之叶。');
+_mkTpl('star_map', '星图·原创', 'luxury', 260, '🗺️', '【原创】星图。');
+_mkTpl('ancient_coin', '古代金币·原创', 'luxury', 210, '🪙', '【原创】古代金币。');
+_mkTpl('royal_seal', '皇家印玺·原创', 'luxury', 350, '👑', '【原创】皇家印玺。');
+_mkTpl('crown_jewel', '王冠宝石·原创', 'luxury', 490, '👑', '【原创】王冠宝石。');
+_mkTpl('holy_grail', '圣杯·原创', 'luxury', 500, '🏆', '【原创】圣杯。');
+_mkTpl(' philosopher_stone', '贤者之石·原创', 'luxury', 495, '🪨', '【原创】贤者之石。');
+_mkTpl('infinity_stone', '无限宝石·原创', 'luxury', 498, '💎', '【原创】无限宝石。');
+_mkTpl('dragon_egg', '龙蛋·原创', 'luxury', 470, '🐲', '【原创】龙蛋。');
+_mkTpl('griffin_feather', '狮鹫羽·原创', 'luxury', 240, '🦅', '【原创】狮鹫羽。');
+_mkTpl('pegasus_hair', '飞马鬃·原创', 'luxury', 220, '🐴', '【原创】飞马鬃。');
+_mkTpl('centaur_hoof', '半人马蹄·原创', 'material', 100, '🐴', '【原创】半人马蹄。');
+_mkTpl('minotaur_horn', '牛头人角·原创', 'material', 115, '🐂', '【原创】牛头人角。');
+_mkTpl('cyclops_eye', '独眼巨人眼·原创', 'medical', 180, '👁️', '【原创】独眼巨人眼。');
+_mkTpl('hydra_scale', '九头蛇鳞·原创', 'material', 140, '🐍', '【原创】九头蛇鳞。');
+_mkTpl('kraken_tentacle', '海怪触手·原创', 'supply', 130, '🐙', '【原创】海怪触手。');
+_mkTpl('leviathan_heart', '利维坦之心·原创', 'luxury', 430, '🐋', '【原创】利维坦之心。');
+_mkTpl('behemoth_tooth', '贝希摩斯之牙·原创', 'material', 170, '🦷', '【原创】贝希摩斯之牙。');
+_mkTpl('ziz_bone', '鹏骨·原创', 'material', 125, '🦅', '【原创】鹏骨。');
+_mkTpl('roc_egg', '大鹏蛋·原创', 'luxury', 380, '🥚', '【原创】大鹏蛋。');
+_mkTpl('garuda_feather', '迦楼罗羽·原创', 'luxury', 260, '🪶', '【原创】迦楼罗羽。');
+_mkTpl('phoenix_blood', '凤凰血·原创', 'medical', 400, '🩸', '【原创】凤凰血。');
+_mkTpl('dragon_blood', '龙血·原创', 'medical', 390, '🩸', '【原创】龙血。');
+_mkTpl('unicorn_blood', '独角兽血·原创', 'medical', 370, '🩸', '【原创】独角兽血。');
+_mkTpl('mermaid_scale', '美人鱼鳞·原创', 'luxury', 230, '🧜', '【原创】美人鱼鳞。');
+_mkTpl('fairy_dust', '妖精尘·原创', 'luxury', 210, '🧚', '【原创】妖精尘。');
+_mkTpl('pixie_wing', '小妖精翼·原创', 'luxury', 190, '🧚', '【原创】小妖精翼。');
+_mkTpl('angel_feather', '天使羽·原创', 'luxury', 320, '👼', '【原创】天使羽。');
+_mkTpl('demon_horn', '恶魔角·原创', 'contraband', 240, '😈', '【原创】恶魔角。', { legal: 'contraband' });
+_mkTpl('hellfire', '地狱火·原创', 'contraband', 280, '🔥', '【原创】地狱火。', { legal: 'contraband' });
+_mkTpl('soul_stone', '灵魂石·原创', 'luxury', 300, '👻', '【原创】灵魂石。');
+_mkTpl('ghost_essence', '幽灵精华·原创', 'luxury', 260, '👻', '【原创】幽灵精华。');
+_mkTpl('shadow_essence', '暗影精华·原创', 'contraband', 270, '🌑', '【原创】暗影精华。', { legal: 'contraband' });
+_mkTpl('light_essence', '光明精华·原创', 'luxury', 280, '☀️', '【原创】光明精华。');
+_mkTpl('storm_essence', '风暴精华·原创', 'tech', 250, '⛈️', '【原创】风暴精华。');
+_mkTpl('earth_essence', '大地精华·原创', 'material', 200, '🌍', '【原创】大地精华。');
+_mkTpl('water_essence', '水之精华·原创', 'material', 210, '💧', '【原创】水之精华。');
+_mkTpl('fire_essence', '火之精华·原创', 'material', 220, '🔥', '【原创】火之精华。');
+_mkTpl('metal_essence', '金属精华·原创', 'material', 190, '⚙️', '【原创】金属精华。');
+_mkTpl('wood_essence', '木之精华·原创', 'material', 180, '🌲', '【原创】木之精华。');
+_mkTpl('space_essence', '空间精华·原创', 'tech', 340, '🌌', '【原创】空间精华。');
+_mkTpl('time_essence', '时间精华·原创', 'tech', 350, '⏰', '【原创】时间精华。');
+_mkTpl('life_essence', '生命精华·原创', 'medical', 330, '💚', '【原创】生命精华。');
+_mkTpl('death_essence', '死亡精华·原创', 'contraband', 310, '💀', '【原创】死亡精华。', { legal: 'contraband' });
+_mkTpl('void_essence', '虚空精华·原创', 'contraband', 360, '🕳️', '【原创】虚空精华。', { legal: 'contraband' });
+_mkTpl('chaos_essence', '混沌精华·原创', 'contraband', 370, '🌀', '【原创】混沌精华。', { legal: 'contraband' });
+_mkTpl('order_essence', '秩序精华·原创', 'luxury', 340, '⚖️', '【原创】秩序精华。');
+_mkTpl('dream_essence', '梦境精华·原创', 'luxury', 320, '💭', '【原创】梦境精华。');
+_mkTpl('nightmare_essence', '梦魇精华·原创', 'contraband', 330, '😱', '【原创】梦魇精华。', { legal: 'contraband' });
+_mkTpl('hope_essence', '希望精华·原创', 'luxury', 310, '🌟', '【原创】希望精华。');
+_mkTpl('fear_essence', '恐惧精华·原创', 'contraband', 300, '😨', '【原创】恐惧精华。', { legal: 'contraband' });
+_mkTpl('joy_essence', '欢乐精华·原创', 'luxury', 290, '😄', '【原创】欢乐精华。');
+_mkTpl('sorrow_essence', '悲伤精华·原创', 'luxury', 280, '😢', '【原创】悲伤精华。');
+_mkTpl('anger_essence', '愤怒精华·原创', 'contraband', 270, '😡', '【原创】愤怒精华。', { legal: 'contraband' });
+_mkTpl('love_essence', '爱情精华·原创', 'luxury', 300, '❤️', '【原创】爱情精华。');
+_mkTpl('hate_essence', '仇恨精华·原创', 'contraband', 260, '💔', '【原创】仇恨精华。', { legal: 'contraband' });
+_mkTpl('wisdom_essence', '智慧精华·原创', 'luxury', 330, '🦉', '【原创】智慧精华。');
+_mkTpl('power_essence', '力量精华·原创', 'tech', 320, '💪', '【原创】力量精华。');
+_mkTpl('speed_essence', '速度精华·原创', 'tech', 310, '💨', '【原创】速度精华。');
+_mkTpl('strength_essence', '体力精华·原创', 'medical', 290, '🏋️', '【原创】体力精华。');
+_mkTpl('agility_essence', '敏捷精华·原创', 'tech', 300, '🤸', '【原创】敏捷精华。');
+_mkTpl('intelligence_essence', '智力精华·原创', 'tech', 340, '🧠', '【原创】智力精华。');
+_mkTpl('charisma_essence', '魅力精华·原创', 'luxury', 320, '😎', '【原创】魅力精华。');
+_mkTpl('luck_essence', '幸运精华·原创', 'luxury', 350, '🍀', '【原创】幸运精华。');
+_mkTpl('fate_essence', '命运精华·原创', 'luxury', 380, '🔮', '【原创】命运精华。');
+_mkTpl('soul_essence', '灵魂精华·原创', 'luxury', 360, '👻', '【原创】灵魂精华。');
+_mkTpl('spirit_essence', '精神精华·原创', 'medical', 330, '🧘', '【原创】精神精华。');
+_mkTpl('body_essence', '肉体精华·原创', 'medical', 310, '💪', '【原创】肉体精华。');
+_mkTpl('blood_essence', '血液精华·原创', 'medical', 320, '🩸', '【原创】血液精华。');
+_mkTpl('bone_essence', '骨骼精华·原创', 'medical', 280, '🦴', '【原创】骨骼精华。');
+_mkTpl('skin_essence', '皮肤精华·原创', 'medical', 260, '🧴', '【原创】皮肤精华。');
+_mkTpl('eye_essence', '眼睛精华·原创', 'medical', 300, '👁️', '【原创】眼睛精华。');
+_mkTpl('heart_essence', '心脏精华·原创', 'medical', 340, '❤️', '【原创】心脏精华。');
+_mkTpl('lung_essence', '肺部精华·原创', 'medical', 270, '🫁', '【原创】肺部精华。');
+_mkTpl('liver_essence', '肝脏精华·原创', 'medical', 260, '🫀', '【原创】肝脏精华。');
+_mkTpl('kidney_essence', '肾脏精华·原创', 'medical', 270, '🫘', '【原创】肾脏精华。');
+_mkTpl('brain_essence', '大脑精华·原创', 'medical', 350, '🧠', '【原创】大脑精华。');
+_mkTpl('nerve_essence', '神经精华·原创', 'medical', 310, '⚡', '【原创】神经精华。');
+_mkTpl('muscle_essence', '肌肉精华·原创', 'medical', 280, '💪', '【原创】肌肉精华。');
+_mkTpl('fat_essence', '脂肪精华·原创', 'medical', 240, '🧈', '【原创】脂肪精华。');
+_mkTpl('protein_essence', '蛋白精华·原创', 'medical', 250, '🥚', '【原创】蛋白精华。');
+_mkTpl('dna_sample', 'DNA 样本', 'medical', 200, '🧬', 'DNA 样本。');
+_mkTpl('rna_sample', 'RNA 样本', 'medical', 190, '🧬', 'RNA 样本。');
+_mkTpl('protein_sample', '蛋白质样本', 'medical', 170, '🧬', '蛋白质样本。');
+_mkTpl('cell_sample', '细胞样本', 'medical', 180, '🔬', '细胞样本。');
+_mkTpl('tissue_sample', '组织样本', 'medical', 160, '🔬', '组织样本。');
+_mkTpl('blood_sample', '血液样本', 'medical', 150, '🩸', '血液样本。');
+_mkTpl('urine_sample', '尿液样本', 'medical', 80, '🧪', '尿液样本。');
+_mkTpl('saliva_sample', '唾液样本', 'medical', 70, '🧪', '唾液样本。');
+_mkTpl('hair_sample', '毛发样本', 'medical', 60, '💇', '毛发样本。');
+_mkTpl('nail_sample', '指甲样本', 'medical', 55, '💅', '指甲样本。');
+_mkTpl('skin_sample', '皮肤样本', 'medical', 65, '🧴', '皮肤样本。');
+_mkTpl('bone_sample', '骨骼样本', 'medical', 90, '🦴', '骨骼样本。');
+_mkTpl('muscle_sample', '肌肉样本', 'medical', 85, '💪', '肌肉样本。');
+_mkTpl('nerve_sample', '神经样本', 'medical', 95, '⚡', '神经样本。');
+_mkTpl('brain_sample', '脑组织样本', 'medical', 120, '🧠', '脑组织样本。');
+_mkTpl('heart_sample', '心脏样本', 'medical', 110, '❤️', '心脏样本。');
+_mkTpl('lung_sample', '肺样本', 'medical', 100, '🫁', '肺样本。');
+_mkTpl('liver_sample', '肝样本', 'medical', 95, '🫀', '肝样本。');
+_mkTpl('kidney_sample', '肾样本', 'medical', 95, '🫘', '肾样本。');
+_mkTpl('spleen_sample', '脾样本', 'medical', 85, '🫀', '脾样本。');
+_mkTpl('pancreas_sample', '胰腺样本', 'medical', 90, '🫀', '胰腺样本。');
+_mkTpl('thyroid_sample', '甲状腺样本', 'medical', 85, '🦋', '甲状腺样本。');
+_mkTpl('adrenal_sample', '肾上腺样本', 'medical', 80, '🧪', '肾上腺样本。');
+_mkTpl('pituitary_sample', '脑垂体样本', 'medical', 105, '🧠', '脑垂体样本。');
+_mkTpl('pineal_sample', '松果体样本', 'medical', 115, '🍍', '松果体样本。');
+_mkTpl('thymus_sample', '胸腺样本', 'medical', 75, '🧪', '胸腺样本。');
+_mkTpl('lymph_sample', '淋巴样本', 'medical', 70, '🧪', '淋巴样本。');
+_mkTpl('bone_marrow', '骨髓', 'medical', 100, '🦴', '骨髓。');
+_mkTpl('stem_cell', '干细胞·单', 'medical', 140, '🧬', '干细胞。');
+_mkTpl('embryonic_cell', '胚胎细胞', 'medical', 180, '🧬', '胚胎细胞。');
+_mkTpl('cancer_cell', '癌细胞', 'medical', 160, '🦠', '癌细胞。');
+_mkTpl('bacteria_sample', '细菌样本', 'medical', 90, '🦠', '细菌样本。');
+_mkTpl('virus_sample', '病毒样本', 'contraband', 130, '🦠', '病毒样本。', { legal: 'contraband' });
+_mkTpl('fungus_sample', '真菌样本', 'medical', 80, '🍄', '真菌样本。');
+_mkTpl('parasite_sample', '寄生虫样本', 'medical', 85, '🪱', '寄生虫样本。');
+_mkTpl('worm_sample', '蠕虫样本', 'medical', 75, '🪱', '蠕虫样本。');
+_mkTpl('insect_sample', '昆虫样本', 'material', 60, '🐛', '昆虫样本。');
+_mkTpl('fish_sample', '鱼类样本', 'material', 65, '🐟', '鱼类样本。', { isFish: true });
+_mkTpl('bird_sample', '鸟类样本', 'material', 70, '🐦', '鸟类样本。');
+_mkTpl('mammal_sample', '哺乳动物样本', 'material', 80, '🐾', '哺乳动物样本。');
+_mkTpl('reptile_sample', '爬行动物样本', 'material', 75, '🦎', '爬行动物样本。');
+_mkTpl('amphibian_sample', '两栖动物样本', 'material', 70, '🐸', '两栖动物样本。');
+_mkTpl('plant_sample', '植物样本', 'material', 55, '🌿', '植物样本。');
+_mkTpl('soil_sample', '土壤样本', 'material', 40, '🟤', '土壤样本。');
+_mkTpl('water_sample', '水样本', 'material', 35, '💧', '水样本。');
+_mkTpl('air_sample', '空气样本', 'material', 30, '🌬️', '空气样本。');
+_mkTpl('rock_sample', '岩石样本', 'material', 45, '🪨', '岩石样本。');
+_mkTpl('mineral_sample', '矿物样本', 'material', 50, '💎', '矿物样本。');
+_mkTpl('metal_sample', '金属样本', 'material', 55, '🔩', '金属样本。');
+_mkTpl('alloy_sample', '合金样本', 'material', 65, '⚙️', '合金样本。');
+_mkTpl('plastic_sample', '塑料样本', 'material', 35, '🧱', '塑料样本。');
+_mkTpl('glass_sample', '玻璃样本', 'material', 40, '🪟', '玻璃样本。');
+_mkTpl('ceramic_sample', '陶瓷样本', 'material', 45, '🏺', '陶瓷样本。');
+_mkTpl('wood_sample', '木材样本', 'material', 40, '🪵', '木材样本。');
+_mkTpl('paper_sample', '纸张样本', 'material', 25, '📄', '纸张样本。');
+_mkTpl('fabric_sample', '织物样本', 'material', 30, '🧶', '织物样本。');
+_mkTpl('leather_sample', '皮革样本', 'material', 35, '🧥', '皮革样本。');
+_mkTpl('rubber_sample', '橡胶样本', 'material', 30, '⭕', '橡胶样本。');
+_mkTpl('oil_sample', '石油样本', 'material', 50, '🛢️', '石油样本。');
+_mkTpl('gas_sample', '气体样本', 'material', 35, '💨', '气体样本。');
+_mkTpl('liquid_sample', '液体样本', 'material', 35, '🧪', '液体样本。');
+_mkTpl('solid_sample', '固体样本', 'material', 30, '🧱', '固体样本。');
+_mkTpl('powder_sample', '粉末样本', 'material', 30, '✨', '粉末样本。');
+_mkTpl('crystal_sample', '晶体样本', 'material', 60, '💎', '晶体样本。');
+_mkTpl('gem_sample', '宝石样本', 'luxury', 120, '💎', '宝石样本。');
+_mkTpl('pearl_sample', '珍珠样本', 'luxury', 110, '🦪', '珍珠样本。');
+_mkTpl('jade_sample', '翡翠样本', 'luxury', 130, '🟢', '翡翠样本。');
+_mkTpl('amber_sample', '琥珀样本', 'luxury', 100, '🟠', '琥珀样本。');
+_mkTpl('coral_sample', '珊瑚样本', 'luxury', 90, '🪸', '珊瑚样本。');
+_mkTpl('ivory_sample', '象牙样本', 'luxury', 140, '🦷', '象牙样本。');
+_mkTpl('silk_sample', '丝绸样本', 'luxury', 95, '🧣', '丝绸样本。');
+_mkTpl('velvet_sample', '丝绒样本', 'luxury', 85, '🧣', '丝绒样本。');
+_mkTpl('satin_sample', '缎子样本', 'luxury', 80, '🧣', '缎子样本。');
+_mkTpl('linen_sample', '亚麻样本', 'material', 40, '🧶', '亚麻样本。');
+_mkTpl('cotton_sample', '棉花样本', 'material', 35, '☁️', '棉花样本。');
+_mkTpl('wool_sample', '羊毛样本', 'material', 38, '🐑', '羊毛样本。');
+_mkTpl('fur_sample', '毛皮样本', 'material', 55, '🦊', '毛皮样本。');
+_mkTpl('feather_sample', '羽毛样本', 'material', 45, '🪶', '羽毛样本。');
+_mkTpl('horn_sample', '角样本', 'material', 60, '🐂', '角样本。');
+_mkTpl('antler_sample', '鹿角样本', 'material', 65, '🦌', '鹿角样本。');
+_mkTpl('tusk_sample', '獠牙样本', 'material', 70, '🐗', '獠牙样本。');
+_mkTpl('claw_sample', '爪样本', 'material', 55, '🐾', '爪样本。');
+_mkTpl('tooth_sample', '牙齿样本', 'material', 50, '🦷', '牙齿样本。');
+_mkTpl('bone_fossil', '化石骨', 'material', 85, '🦴', '化石骨。');
+_mkTpl('fossil_egg', '化石蛋', 'material', 95, '🥚', '化石蛋。');
+_mkTpl('fossil_plant', '化石植物', 'material', 75, '🌿', '化石植物。');
+_mkTpl('fossil_insect', '化石昆虫', 'material', 80, '🐛', '化石昆虫。');
+_mkTpl('fossil_fish', '化石鱼', 'material', 85, '🐟', '化石鱼。');
+_mkTpl('amber_insect', '琥珀昆虫', 'luxury', 150, '🐛', '琥珀昆虫。');
+_mkTpl('amber_plant', '琥珀植物', 'luxury', 140, '🌿', '琥珀植物。');
+_mkTpl('amber_fish', '琥珀鱼', 'luxury', 145, '🐟', '琥珀鱼。');
+_mkTpl('meteorite', '陨石', 'material', 160, '☄️', '陨石。');
+_mkTpl('moon_rock_sample', '月岩样本', 'material', 150, '🌕', '月岩样本。');
+_mkTpl('mars_rock', '火星岩石', 'material', 155, '🔴', '火星岩石。');
+_mkTpl('venus_rock', '金星岩石', 'material', 145, '🟡', '金星岩石。');
+_mkTpl('mercury_rock', '水星岩石', 'material', 140, '☿️', '水星岩石。');
+_mkTpl('jupiter_rock', '木星岩石', 'material', 150, '🪐', '木星岩石。');
+_mkTpl('saturn_rock', '土星岩石', 'material', 150, '🪐', '土星岩石。');
+_mkTpl('uranus_rock', '天王星岩石', 'material', 145, '🔵', '天王星岩石。');
+_mkTpl('neptune_rock', '海王星岩石', 'material', 145, '🔵', '海王星岩石。');
+_mkTpl('pluto_rock', '冥王星岩石', 'material', 140, '⚫', '冥王星岩石。');
+_mkTpl('asteroid_sample', '小行星样本', 'material', 135, '☄️', '小行星样本。');
+_mkTpl('comet_sample', '彗星样本', 'material', 140, '☄️', '彗星样本。');
+_mkTpl('solar_wind', '太阳风样本', 'tech', 170, '☀️', '太阳风样本。');
+_mkTpl('cosmic_ray', '宇宙射线样本', 'tech', 175, '🌌', '宇宙射线样本。');
+_mkTpl('dark_matter_sample', '暗物质样本·单', 'contraband', 200, '🌑', '暗物质样本。', { legal: 'contraband' });
+_mkTpl('antimatter_sample', '反物质样本', 'contraband', 220, '🌌', '反物质样本。', { legal: 'contraband' });
+_mkTpl('exotic_sample', '奇异物质样本', 'contraband', 210, '🌌', '奇异物质样本。', { legal: 'contraband' });
+_mkTpl('strange_sample', '奇异样本', 'contraband', 205, '🌌', '奇异样本。', { legal: 'contraband' });
+_mkTpl('void_sample', '虚空样本', 'contraband', 215, '🕳️', '虚空样本。', { legal: 'contraband' });
+_mkTpl('chaos_sample', '混沌样本', 'contraband', 225, '🌀', '混沌样本。', { legal: 'contraband' });
+_mkTpl('order_sample', '秩序样本', 'luxury', 190, '⚖️', '秩序样本。');
+_mkTpl('dream_sample', '梦境样本', 'luxury', 185, '💭', '梦境样本。');
+_mkTpl('nightmare_sample', '梦魇样本', 'contraband', 195, '😱', '梦魇样本。', { legal: 'contraband' });
+_mkTpl('hope_sample', '希望样本', 'luxury', 180, '🌟', '希望样本。');
+_mkTpl('fear_sample', '恐惧样本', 'contraband', 185, '😨', '恐惧样本。', { legal: 'contraband' });
+_mkTpl('joy_sample', '欢乐样本', 'luxury', 175, '😄', '欢乐样本。');
+_mkTpl('sorrow_sample', '悲伤样本', 'luxury', 170, '😢', '悲伤样本。');
+_mkTpl('anger_sample', '愤怒样本', 'contraband', 175, '😡', '愤怒样本。', { legal: 'contraband' });
+_mkTpl('love_sample', '爱情样本', 'luxury', 180, '❤️', '爱情样本。');
+_mkTpl('hate_sample', '仇恨样本', 'contraband', 170, '💔', '仇恨样本。', { legal: 'contraband' });
+_mkTpl('wisdom_sample', '智慧样本', 'luxury', 185, '🦉', '智慧样本。');
+_mkTpl('power_sample', '力量样本', 'tech', 180, '💪', '力量样本。');
+_mkTpl('speed_sample', '速度样本', 'tech', 175, '💨', '速度样本。');
+_mkTpl('fate_sample', '命运样本', 'luxury', 200, '🔮', '命运样本。');
+_mkTpl('soul_sample', '灵魂样本', 'luxury', 195, '👻', '灵魂样本。');
+_mkTpl('spirit_sample', '精神样本', 'medical', 170, '🧘', '精神样本。');
+_mkTpl('life_sample', '生命样本', 'medical', 180, '💚', '生命样本。');
+_mkTpl('death_sample', '死亡样本', 'contraband', 185, '💀', '死亡样本。', { legal: 'contraband' });
+_mkTpl('time_sample', '时间样本', 'tech', 190, '⏰', '时间样本。');
+_mkTpl('space_sample', '空间样本', 'tech', 185, '🌌', '空间样本。');
+_mkTpl('gravity_sample', '重力样本', 'tech', 180, '🌍', '重力样本。');
+_mkTpl('light_sample', '光样本', 'tech', 165, '☀️', '光样本。');
+_mkTpl('shadow_sample', '暗影样本', 'contraband', 180, '🌑', '暗影样本。', { legal: 'contraband' });
+_mkTpl('storm_sample', '风暴样本', 'tech', 170, '⛈️', '风暴样本。');
+_mkTpl('earth_sample', '大地样本', 'material', 150, '🌍', '大地样本。');
+_mkTpl('water_essence_sample', '水精华样本', 'material', 155, '💧', '水精华样本。');
+_mkTpl('fire_sample', '火焰样本', 'material', 160, '🔥', '火焰样本。');
+_mkTpl('metal_sample2', '金属样本·二', 'material', 150, '⚙️', '金属样本。');
+_mkTpl('wood_sample2', '木材样本·二', 'material', 140, '🪵', '木材样本。');
+_mkTpl('stone_sample', '石材样本', 'material', 145, '🪨', '石材样本。');
+_mkTpl('sand_sample', '沙样本', 'material', 120, '🏖️', '沙样本。');
+_mkTpl('clay_sample', '黏土样本', 'material', 125, '🟤', '黏土样本。');
+_mkTpl('salt_sample', '盐样本', 'material', 110, '🧂', '盐样本。');
+_mkTpl('sugar_sample', '糖样本', 'material', 115, '🍬', '糖样本。');
+_mkTpl('spice_sample', '香料样本', 'material', 130, '🌶️', '香料样本。');
+_mkTpl('herb_sample', '草药样本', 'medical', 140, '🌿', '草药样本。');
+_mkTpl('flower_sample', '花样本', 'material', 120, '🌸', '花样本。');
+_mkTpl('fruit_sample', '水果样本', 'supply', 110, '🍎', '水果样本。');
+_mkTpl('vegetable_sample', '蔬菜样本', 'supply', 105, '🥕', '蔬菜样本。');
+_mkTpl('grain_sample', '谷物样本', 'supply', 100, '🌾', '谷物样本。');
+_mkTpl('meat_sample', '肉样本', 'supply', 115, '🥩', '肉样本。');
+_mkTpl('dairy_sample', '乳制品样本', 'supply', 110, '🧀', '乳制品样本。');
+_mkTpl('egg_sample', '蛋样本', 'supply', 105, '🥚', '蛋样本。');
+_mkTpl('honey_sample', '蜂蜜样本', 'supply', 120, '🍯', '蜂蜜样本。');
+_mkTpl('milk_sample', '牛奶样本', 'supply', 100, '🥛', '牛奶样本。');
+_mkTpl('cheese_sample', '奶酪样本', 'supply', 110, '🧀', '奶酪样本。');
+_mkTpl('butter_sample', '黄油样本', 'supply', 105, '🧈', '黄油样本。');
+_mkTpl('oil_food_sample', '食用油样本', 'supply', 100, '🫒', '食用油样本。');
+_mkTpl('vinegar_sample', '醋样本', 'supply', 90, '🍶', '醋样本。');
+_mkTpl('sauce_sample', '酱料样本', 'supply', 95, '🥫', '酱料样本。');
+_mkTpl('tea_sample', '茶叶样本', 'supply', 130, '🍵', '茶叶样本。');
+_mkTpl('coffee_sample', '咖啡样本', 'supply', 125, '☕', '咖啡样本。');
+_mkTpl('cocoa_sample', '可可样本', 'supply', 120, '🍫', '可可样本。');
+_mkTpl('chocolate_sample', '巧克力样本', 'supply', 115, '🍫', '巧克力样本。');
+_mkTpl('candy_sample', '糖果样本', 'supply', 100, '🍬', '糖果样本。');
+_mkTpl('cookie_sample', '饼干样本', 'supply', 95, '🍪', '饼干样本。');
+_mkTpl('cake_sample', '蛋糕样本', 'supply', 110, '🍰', '蛋糕样本。');
+_mkTpl('bread_sample', '面包样本', 'supply', 90, '🍞', '面包样本。');
+_mkTpl('rice_sample', '大米样本', 'supply', 95, '🍚', '大米样本。');
+_mkTpl('wheat_sample', '小麦样本', 'supply', 90, '🌾', '小麦样本。');
+_mkTpl('corn_sample', '玉米样本', 'supply', 90, '🌽', '玉米样本。');
+_mkTpl('potato_sample', '土豆样本', 'supply', 85, '🥔', '土豆样本。');
+_mkTpl('tomato_sample', '番茄样本', 'supply', 90, '🍅', '番茄样本。');
+_mkTpl('onion_sample', '洋葱样本', 'supply', 85, '🧅', '洋葱样本。');
+_mkTpl('garlic_sample', '大蒜样本', 'supply', 85, '🧄', '大蒜样本。');
+_mkTpl('pepper_sample', '辣椒样本', 'supply', 90, '🌶️', '辣椒样本。');
+_mkTpl('carrot_sample', '胡萝卜样本', 'supply', 85, '🥕', '胡萝卜样本。');
+_mkTpl('cucumber_sample', '黄瓜样本', 'supply', 85, '🥒', '黄瓜样本。');
+_mkTpl('lettuce_sample', '生菜样本', 'supply', 85, '🥬', '生菜样本。');
+_mkTpl('cabbage_sample', '白菜样本', 'supply', 85, '🥬', '白菜样本。');
+_mkTpl('spinach_sample', '菠菜样本', 'supply', 85, '🥬', '菠菜样本。');
+_mkTpl('mushroom_sample', '蘑菇样本', 'supply', 95, '🍄', '蘑菇样本。');
+_mkTpl('seaweed_sample', '海藻样本', 'supply', 90, '🌊', '海藻样本。');
+_mkTpl('algae_sample', '藻类样本', 'material', 95, '🌿', '藻类样本。');
+_mkTpl('moss_sample', '苔藓样本', 'material', 90, '🌿', '苔藓样本。');
+_mkTpl('fern_sample', '蕨类样本', 'material', 90, '🌿', '蕨类样本。');
+_mkTpl('tree_sample', '树木样本', 'material', 100, '🌳', '树木样本。');
+_mkTpl('leaf_sample', '叶子样本', 'material', 80, '🍃', '叶子样本。');
+_mkTpl('bark_sample', '树皮样本', 'material', 85, '🪵', '树皮样本。');
+_mkTpl('root_sample', '根样本', 'material', 85, '🥕', '根样本。');
+_mkTpl('seed_sample', '种子样本', 'material', 90, '🌱', '种子样本。');
+_mkTpl('pollen_sample', '花粉样本', 'material', 95, '🌸', '花粉样本。');
+_mkTpl('nectar_sample', '花蜜样本', 'supply', 110, '🍯', '花蜜样本。');
+_mkTpl('sap_sample', '树液样本', 'material', 90, '🌳', '树液样本。');
+_mkTpl('resin_sample', '树脂样本', 'material', 95, '🟤', '树脂样本。');
+_mkTpl('amber_resin', '琥珀树脂', 'luxury', 130, '🟠', '琥珀树脂。');
+_mkTpl('pitch_sample', '沥青样本', 'material', 80, '⬛', '沥青样本。');
+_mkTpl('tar_sample', '焦油样本', 'material', 75, '⬛', '焦油样本。');
+_mkTpl('wax_sample', '蜡样本', 'material', 85, '🕯️', '蜡样本。');
+_mkTpl('beeswax_sample', '蜂蜡样本', 'material', 90, '🐝', '蜂蜡样本。');
+_mkTpl('paraffin_sample', '石蜡样本', 'material', 80, '🕯️', '石蜡样本。');
+_mkTpl('candle_sample', '蜡烛样本', 'material', 70, '🕯️', '蜡烛样本。');
+_mkTpl('soap_sample', '肥皂样本', 'material', 65, '🧼', '肥皂样本。');
+_mkTpl('detergent_sample', '洗涤剂样本', 'material', 60, '🧴', '洗涤剂样本。');
+_mkTpl('shampoo_sample', '洗发水样本', 'material', 65, '🧴', '洗发水样本。');
+_mkTpl('toothpaste_sample', '牙膏样本', 'material', 60, '🪥', '牙膏样本。');
+_mkTpl('cream_sample', '乳膏样本', 'material', 70, '🧴', '乳膏样本。');
+_mkTpl('lotion_sample', '乳液样本', 'material', 70, '🧴', '乳液样本。');
+_mkTpl('perfume_sample', '香水样本', 'luxury', 120, '🧴', '香水样本。');
+_mkTpl('cologne_sample', '古龙水样本', 'luxury', 110, '🧴', '古龙水样本。');
+_mkTpl('deodorant_sample', '除臭剂样本', 'material', 65, '🧴', '除臭剂样本。');
+_mkTpl('sunscreen_sample', '防晒霜样本', 'material', 70, '🧴', '防晒霜样本。');
+_mkTpl('lipstick_sample', '口红样本', 'luxury', 85, '💄', '口红样本。');
+_mkTpl('nail_polish_sample', '指甲油样本', 'luxury', 75, '💅', '指甲油样本。');
+_mkTpl('makeup_sample', '化妆品样本', 'luxury', 90, '💄', '化妆品样本。');
+_mkTpl('powder_makeup_sample', '粉底样本', 'luxury', 80, '✨', '粉底样本。');
+_mkTpl('blush_sample', '腮红样本', 'luxury', 75, '🌸', '腮红样本。');
+_mkTpl('eyeshadow_sample', '眼影样本', 'luxury', 80, '👁️', '眼影样本。');
+_mkTpl('mascara_sample', '睫毛膏样本', 'luxury', 75, '👁️', '睫毛膏样本。');
+_mkTpl('eyeliner_sample', '眼线样本', 'luxury', 70, '✏️', '眼线样本。');
+_mkTpl('lip_gloss_sample', '唇彩样本', 'luxury', 75, '💋', '唇彩样本。');
+_mkTpl('lip_balm_sample', '润唇膏样本', 'luxury', 65, '💋', '润唇膏样本。');
+_mkTpl('hand_cream_sample', '护手霜样本', 'luxury', 70, '🧴', '护手霜样本。');
+_mkTpl('body_lotion_sample', '身体乳样本', 'luxury', 75, '🧴', '身体乳样本。');
+_mkTpl('face_cream_sample', '面霜样本', 'luxury', 85, '🧴', '面霜样本。');
+_mkTpl('serum_sample', '精华液样本', 'luxury', 110, '💧', '精华液样本。');
+_mkTpl('toner_sample', '爽肤水样本', 'luxury', 80, '💧', '爽肤水样本。');
+_mkTpl('cleanser_sample', '洁面乳样本', 'luxury', 75, '🧴', '洁面乳样本。');
+_mkTpl('mask_sample', '面膜样本', 'luxury', 85, '🎭', '面膜样本。');
+_mkTpl('scrub_sample', '磨砂膏样本', 'luxury', 80, '✨', '磨砂膏样本。');
+_mkTpl('peel_sample', '果酸焕肤样本', 'luxury', 90, '🍋', '果酸焕肤样本。');
+_mkTpl('sunscreen2_sample', '防晒样本·二', 'luxury', 75, '☀️', '防晒样本。');
+_mkTpl('after_shave_sample', '须后水样本', 'luxury', 80, '🪒', '须后水样本。');
+_mkTpl('shaving_cream_sample', '剃须膏样本', 'luxury', 70, '🪒', '剃须膏样本。');
+_mkTpl('hair_dye_sample', '染发剂样本', 'luxury', 85, '🎨', '染发剂样本。');
+_mkTpl('hair_spray_sample', '发胶样本', 'luxury', 70, '💇', '发胶样本。');
+_mkTpl('hair_gel_sample', '发蜡样本', 'luxury', 65, '💇', '发蜡样本。');
+_mkTpl('hair_oil_sample', '发油样本', 'luxury', 75, '💇', '发油样本。');
+_mkTpl('nail_remover_sample', '卸甲水样本', 'luxury', 60, '💅', '卸甲水样本。');
+_mkTpl('cuticle_oil_sample', '指缘油样本', 'luxury', 65, '💅', '指缘油样本。');
+_mkTpl('bath_bomb_sample', '浴球样本', 'luxury', 70, '🛁', '浴球样本。');
+_mkTpl('bath_salt_sample', '浴盐样本', 'luxury', 65, '🛁', '浴盐样本。');
+_mkTpl('bubble_bath_sample', '泡泡浴样本', 'luxury', 70, '🛁', '泡泡浴样本。');
+_mkTpl('shower_gel_sample', '沐浴露样本', 'luxury', 70, '🚿', '沐浴露样本。');
+_mkTpl('body_wash_sample', '身体清洁样本', 'luxury', 70, '🧴', '身体清洁样本。');
+_mkTpl('hand_sanitizer_sample', '洗手液样本', 'material', 55, '🧴', '洗手液样本。');
+_mkTpl('disinfectant_sample', '消毒液样本', 'material', 60, '🧴', '消毒液样本。');
+_mkTpl('alcohol_wipe_sample', '酒精湿巾样本', 'material', 50, '🧻', '酒精湿巾样本。');
+_mkTpl('wet_wipe_sample', '湿巾样本', 'material', 45, '🧻', '湿巾样本。');
+_mkTpl('tissue_sample2', '纸巾样本', 'material', 40, '🧻', '纸巾样本。');
+_mkTpl('napkin_sample', '餐巾样本', 'material', 40, '🧻', '餐巾样本。');
+_mkTpl('paper_towel_sample', '厨房纸样本', 'material', 42, '🧻', '厨房纸样本。');
+_mkTpl('cotton_ball_sample', '棉球样本', 'material', 45, '☁️', '棉球样本。');
+_mkTpl('cotton_pad_sample', '化妆棉样本', 'material', 45, '☁️', '化妆棉样本。');
+_mkTpl('q_tip_sample', '棉签样本', 'material', 40, '☁️', '棉签样本。');
+_mkTpl('bandage_sample', '绷带样本', 'medical', 55, '🩹', '绷带样本。');
+_mkTpl('gauze_sample', '纱布样本', 'medical', 50, '🩹', '纱布样本。');
+_mkTpl('tape_sample', '胶带样本', 'material', 45, '🩹', '胶带样本。');
+_mkTpl('suture_sample', '缝线样本', 'medical', 70, '🧵', '缝线样本。');
+_mkTpl('staple_sample', '缝合钉样本', 'medical', 65, '📌', '缝合钉样本。');
+_mkTpl('clip_sample', '止血夹样本', 'medical', 75, '📎', '止血夹样本。');
+_mkTpl('forceps_sample', '镊子样本', 'medical', 60, '🔧', '镊子样本。');
+_mkTpl('scissors_sample', '剪刀样本', 'medical', 55, '✂️', '剪刀样本。');
+_mkTpl('scalpel_sample', '手术刀样本', 'medical', 80, '🔪', '手术刀样本。');
+_mkTpl('needle_sample', '针头样本', 'medical', 60, '💉', '针头样本。');
+_mkTpl('syringe_sample', '注射器样本', 'medical', 55, '💉', '注射器样本。');
+_mkTpl('iv_bag_sample', '输液袋样本', 'medical', 75, '💧', '输液袋样本。');
+_mkTpl('catheter_sample', '导管样本', 'medical', 85, '🧪', '导管样本。');
+_mkTpl('tube_sample', '试管样本', 'material', 50, '🧪', '试管样本。');
+_mkTpl('beaker_sample', '烧杯样本', 'material', 50, '🧪', '烧杯样本。');
+_mkTpl('flask_sample', '锥形瓶样本', 'material', 50, '🧪', '锥形瓶样本。');
+_mkTpl('petri_sample', '培养皿样本', 'material', 45, '🧫', '培养皿样本。');
+_mkTpl('microscope_sample', '显微镜样本', 'tech', 120, '🔬', '显微镜样本。');
+_mkTpl('centrifuge_sample', '离心机样本', 'tech', 130, '🌀', '离心机样本。');
+_mkTpl('incubator_sample', '培养箱样本', 'tech', 140, '🧫', '培养箱样本。');
+_mkTpl('autoclave_sample', '高压灭菌样本', 'tech', 135, '♨️', '高压灭菌样本。');
+_mkTpl('ph_meter_sample', 'pH 计样本', 'tech', 110, '🧪', 'pH 计样本。');
+_mkTpl('thermometer_sample', '温度计样本', 'tech', 90, '🌡️', '温度计样本。');
+_mkTpl('barometer_sample', '气压计样本', 'tech', 95, '🌡️', '气压计样本。');
+_mkTpl('hygrometer_sample', '湿度计样本', 'tech', 90, '💧', '湿度计样本。');
+_mkTpl('scale_sample', '秤样本', 'tech', 85, '⚖️', '秤样本。');
+_mkTpl('ruler_sample', '尺样本', 'material', 40, '📏', '尺样本。');
+_mkTpl('caliper_sample', '卡尺样本', 'tech', 75, '📐', '卡尺样本。');
+_mkTpl('micrometer_sample', '千分尺样本', 'tech', 80, '📐', '千分尺样本。');
+_mkTpl('protractor_sample', '量角器样本', 'material', 40, '📐', '量角器样本。');
+_mkTpl('compass_sample', '圆规样本', 'material', 45, '🧭', '圆规样本。');
+_mkTpl('triangle_sample', '三角尺样本', 'material', 40, '📐', '三角尺样本。');
+_mkTpl('set_square_sample', '三角板样本', 'material', 40, '📐', '三角板样本。');
+_mkTpl('graph_paper_sample', '坐标纸样本', 'material', 35, '📄', '坐标纸样本。');
+_mkTpl('notebook_sample', '笔记本样本', 'supply', 50, '📓', '笔记本样本。');
+_mkTpl('pen_sample', '钢笔样本', 'supply', 55, '🖊️', '钢笔样本。');
+_mkTpl('pencil_sample', '铅笔样本', 'supply', 40, '✏️', '铅笔样本。');
+_mkTpl('marker_sample', '马克笔样本', 'supply', 45, '🖊️', '马克笔样本。');
+_mkTpl('highlighter_sample', '荧光笔样本', 'supply', 45, '🖊️', '荧光笔样本。');
+_mkTpl('eraser_sample', '橡皮样本', 'supply', 35, '🧽', '橡皮样本。');
+_mkTpl('sharpener_sample', '卷笔刀样本', 'supply', 40, '✏️', '卷笔刀样本。');
+_mkTpl('glue_sample', '胶水样本', 'material', 40, '🧴', '胶水样本。');
+_mkTpl('tape_glue_sample', '胶带样本·二', 'material', 42, '🩹', '胶带样本。');
+_mkTpl('stapler_sample', '订书机样本', 'supply', 50, '📎', '订书机样本。');
+_mkTpl('staple_remover_sample', '起钉器样本', 'supply', 40, '📎', '起钉器样本。');
+_mkTpl('paper_clip_sample', '回形针样本', 'supply', 35, '📎', '回形针样本。');
+_mkTpl('pin_sample', '大头针样本', 'supply', 35, '📌', '大头针样本。');
+_mkTpl('push_pin_sample', '图钉样本', 'supply', 35, '📌', '图钉样本。');
+_mkTpl('binder_clip_sample', '长尾夹样本', 'supply', 38, '📎', '长尾夹样本。');
+_mkTpl('folder_sample', '文件夹样本', 'supply', 45, '📁', '文件夹样本。');
+_mkTpl('envelope_sample', '信封样本', 'supply', 40, '✉️', '信封样本。');
+_mkTpl('stamp_sample', '邮票样本', 'luxury', 85, '📮', '邮票样本。');
+_mkTpl('postcard_sample', '明信片样本', 'luxury', 70, '💌', '明信片样本。');
+_mkTpl('letter_sample', '信件样本', 'supply', 55, '✉️', '信件样本。');
+_mkTpl('card_sample', '卡片样本', 'supply', 50, '💳', '卡片样本。');
+_mkTpl('photo_sample', '照片样本', 'luxury', 75, '📷', '照片样本。');
+_mkTpl('film_sample', '胶片样本', 'luxury', 80, '🎞️', '胶片样本。');
+_mkTpl('negative_sample', '底片样本', 'luxury', 75, '🎞️', '底片样本。');
+_mkTpl('slide_sample', '幻灯片样本', 'luxury', 70, '📽️', '幻灯片样本。');
+_mkTpl('microfilm_sample', '微缩胶片样本', 'luxury', 85, '🎞️', '微缩胶片样本。');
+_mkTpl('tape_recorder_sample', '录音带样本', 'luxury', 90, '📼', '录音带样本。');
+_mkTpl('cd_sample', '光盘样本', 'luxury', 70, '💿', '光盘样本。');
+_mkTpl('dvd_sample', 'DVD 样本', 'luxury', 75, '💿', 'DVD 样本。');
+_mkTpl('blu_ray_sample', '蓝光盘样本', 'luxury', 80, '💿', '蓝光盘样本。');
+_mkTpl('usb_sample', 'U盘样本', 'tech', 85, '💾', 'U盘样本。');
+_mkTpl('sd_card_sample', 'SD 卡样本', 'tech', 80, '💾', 'SD 卡样本。');
+_mkTpl('sim_card_sample', 'SIM 卡样本', 'tech', 75, '📱', 'SIM 卡样本。');
+_mkTpl('memory_card_sample', '内存卡样本', 'tech', 80, '💾', '内存卡样本。');
+_mkTpl('chip_sample', '芯片样本', 'tech', 120, '🧠', '芯片样本。');
+_mkTpl('circuit_sample', '电路板样本', 'tech', 110, '🔌', '电路板样本。');
+_mkTpl('resistor_sample', '电阻样本', 'tech', 60, '🔌', '电阻样本。');
+_mkTpl('capacitor_sample', '电容样本', 'tech', 60, '🔌', '电容样本。');
+_mkTpl('inductor_sample', '电感样本', 'tech', 60, '🔌', '电感样本。');
+_mkTpl('diode_sample', '二极管样本', 'tech', 55, '🔌', '二极管样本。');
+_mkTpl('transistor_sample', '三极管样本', 'tech', 55, '🔌', '三极管样本。');
+_mkTpl('ic_sample', '集成电路样本', 'tech', 100, '🧠', '集成电路样本。');
+_mkTpl('relay_sample', '继电器样本', 'tech', 65, '🔌', '继电器样本。');
+_mkTpl('switch_sample', '开关样本', 'tech', 60, '🔘', '开关样本。');
+_mkTpl('button_sample', '按钮样本', 'tech', 55, '🔘', '按钮样本。');
+_mkTpl('knob_sample', '旋钮样本', 'tech', 50, '🎛️', '旋钮样本。');
+_mkTpl('dial_sample', '表盘样本', 'tech', 55, '🎛️', '表盘样本。');
+_mkTpl('meter_sample', '仪表样本', 'tech', 85, '📟', '仪表样本。');
+_mkTpl('gauge_sample', '量规样本', 'tech', 80, '📐', '量规样本。');
+_mkTpl('sensor_sample', '传感器样本', 'tech', 95, '📡', '传感器样本。');
+_mkTpl('actuator_sample', '执行器样本', 'tech', 90, '⚙️', '执行器样本。');
+_mkTpl('motor_sample', '电机样本', 'tech', 100, '⚙️', '电机样本。');
+_mkTpl('generator_sample', '发电机样本', 'tech', 140, '⚡', '发电机样本。');
+_mkTpl('transformer_sample', '变压器样本', 'tech', 110, '🔌', '变压器样本。');
+_mkTpl('rectifier_sample', '整流器样本', 'tech', 95, '🔌', '整流器样本。');
+_mkTpl('inverter_sample', '逆变器样本', 'tech', 105, '🔌', '逆变器样本。');
+_mkTpl('amplifier_sample', '放大器样本', 'tech', 110, '🔊', '放大器样本。');
+_mkTpl('oscillator_sample', '振荡器样本', 'tech', 95, '📳', '振荡器样本。');
+_mkTpl('filter_sample', '滤波器样本', 'tech', 90, '🔌', '滤波器样本。');
+_mkTpl('modulator_sample', '调制器样本', 'tech', 95, '📡', '调制器样本。');
+_mkTpl('demodulator_sample', '解调器样本', 'tech', 95, '📡', '解调器样本。');
+_mkTpl('encoder_sample', '编码器样本', 'tech', 100, '🔢', '编码器样本。');
+_mkTpl('decoder_sample', '解码器样本', 'tech', 100, '🔢', '解码器样本。');
+_mkTpl('multiplexer_sample', '多路复用器样本', 'tech', 105, '🔀', '多路复用器样本。');
+_mkTpl('demultiplexer_sample', '解复用器样本', 'tech', 105, '🔀', '解复用器样本。');
+_mkTpl('adder_sample', '加法器样本', 'tech', 95, '➕', '加法器样本。');
+_mkTpl('subtractor_sample', '减法器样本', 'tech', 95, '➖', '减法器样本。');
+_mkTpl('multiplier_sample', '乘法器样本', 'tech', 100, '✖️', '乘法器样本。');
+_mkTpl('divider_sample', '除法器样本', 'tech', 100, '➗', '除法器样本。');
+_mkTpl('comparator_sample', '比较器样本', 'tech', 90, '⚖️', '比较器样本。');
+_mkTpl('logic_gate_sample', '逻辑门样本', 'tech', 95, '🔣', '逻辑门样本。');
+_mkTpl('flip_flop_sample', '触发器样本', 'tech', 100, '🔀', '触发器样本。');
+_mkTpl('counter_sample', '计数器样本', 'tech', 100, '🔢', '计数器样本。');
+_mkTpl('register_sample', '寄存器样本', 'tech', 105, '💾', '寄存器样本。');
+_mkTpl('memory_sample', '存储器样本', 'tech', 110, '💾', '存储器样本。');
+_mkTpl('processor_sample', '处理器样本', 'tech', 150, '🧠', '处理器样本。');
+_mkTpl('controller_sample', '控制器样本', 'tech', 120, '🎛️', '控制器样本。');
+_mkTpl('interface_sample', '接口样本', 'tech', 100, '🔌', '接口样本。');
+_mkTpl('connector_sample', '连接器样本', 'tech', 85, '🔌', '连接器样本。');
+_mkTpl('cable_sample', '电缆样本', 'tech', 75, '🔌', '电缆样本。');
+_mkTpl('wire_sample', '导线样本', 'tech', 65, '🔌', '导线样本。');
+_mkTpl('fiber_sample', '光纤样本', 'tech', 95, '💡', '光纤样本。');
+_mkTpl('antenna_sample', '天线样本', 'tech', 90, '📡', '天线样本。');
+_mkTpl('dish_sample', '抛物面天线样本', 'tech', 110, '📡', '抛物面天线样本。');
+_mkTpl('waveguide_sample', '波导样本', 'tech', 95, '📡', '波导样本。');
+_mkTpl('coax_sample', '同轴电缆样本', 'tech', 80, '🔌', '同轴电缆样本。');
+_mkTpl('twisted_pair_sample', '双绞线样本', 'tech', 70, '🔌', '双绞线样本。');
+_mkTpl('usb_cable_sample', 'USB 线样本', 'tech', 65, '🔌', 'USB 线样本。');
+_mkTpl('hdmi_sample', 'HDMI 线样本', 'tech', 75, '🔌', 'HDMI 线样本。');
+_mkTpl('power_cord_sample', '电源线样本', 'tech', 60, '🔌', '电源线样本。');
+_mkTpl('extension_cord_sample', '延长线样本', 'tech', 65, '🔌', '延长线样本。');
+_mkTpl('power_strip_sample', '排插样本', 'tech', 70, '🔌', '排插样本。');
+_mkTpl('adapter_sample', '适配器样本', 'tech', 75, '🔌', '适配器样本。');
+_mkTpl('charger_sample', '充电器样本', 'tech', 80, '🔌', '充电器样本。');
+_mkTpl('power_bank_sample', '充电宝样本', 'tech', 95, '🔋', '充电宝样本。');
+_mkTpl('battery_sample', '电池样本', 'tech', 60, '🔋', '电池样本。');
+_mkTpl('solar_cell_sample', '太阳能电池样本', 'tech', 110, '☀️', '太阳能电池样本。');
+_mkTpl('fuel_cell_sample', '燃料电池样本', 'tech', 130, '🔋', '燃料电池样本。');
+_mkTpl('capacitor_bank_sample', '电容组样本', 'tech', 100, '🔌', '电容组样本。');
+_mkTpl('inductor_bank_sample', '电感组样本', 'tech', 95, '🔌', '电感组样本。');
+_mkTpl('resistor_bank_sample', '电阻组样本', 'tech', 85, '🔌', '电阻组样本。');
+_mkTpl('diode_bank_sample', '二极管组样本', 'tech', 80, '🔌', '二极管组样本。');
+_mkTpl('transistor_bank_sample', '三极管组样本', 'tech', 80, '🔌', '三极管组样本。');
+_mkTpl('ic_bank_sample', '集成电路组样本', 'tech', 120, '🧠', '集成电路组样本。');
+_mkTpl('relay_bank_sample', '继电器组样本', 'tech', 90, '🔌', '继电器组样本。');
+_mkTpl('switch_bank_sample', '开关组样本', 'tech', 85, '🔘', '开关组样本。');
+_mkTpl('button_bank_sample', '按钮组样本', 'tech', 80, '🔘', '按钮组样本。');
+_mkTpl('knob_bank_sample', '旋钮组样本', 'tech', 75, '🎛️', '旋钮组样本。');
+_mkTpl('dial_bank_sample', '表盘组样本', 'tech', 80, '🎛️', '表盘组样本。');
+_mkTpl('meter_bank_sample', '仪表组样本', 'tech', 100, '📟', '仪表组样本。');
+_mkTpl('sensor_bank_sample', '传感器组样本', 'tech', 110, '📡', '传感器组样本。');
+_mkTpl('actuator_bank_sample', '执行器组样本', 'tech', 105, '⚙️', '执行器组样本。');
+_mkTpl('motor_bank_sample', '电机组样本', 'tech', 115, '⚙️', '电机组样本。');
+_mkTpl('generator_bank_sample', '发电机组样本', 'tech', 150, '⚡', '发电机组样本。');
+_mkTpl('transformer_bank_sample', '变压器组样本', 'tech', 125, '🔌', '变压器组样本。');
+_mkTpl('rectifier_bank_sample', '整流器组样本', 'tech', 110, '🔌', '整流器组样本。');
+_mkTpl('inverter_bank_sample', '逆变器组样本', 'tech', 120, '🔌', '逆变器组样本。');
+_mkTpl('amplifier_bank_sample', '放大器组样本', 'tech', 125, '🔊', '放大器组样本。');
+_mkTpl('oscillator_bank_sample', '振荡器组样本', 'tech', 110, '📳', '振荡器组样本。');
+_mkTpl('filter_bank_sample', '滤波器组样本', 'tech', 105, '🔌', '滤波器组样本。');
+_mkTpl('modulator_bank_sample', '调制器组样本', 'tech', 110, '📡', '调制器组样本。');
+_mkTpl('demodulator_bank_sample', '解调器组样本', 'tech', 110, '📡', '解调器组样本。');
+_mkTpl('encoder_bank_sample', '编码器组样本', 'tech', 115, '🔢', '编码器组样本。');
+_mkTpl('decoder_bank_sample', '解码器组样本', 'tech', 115, '🔢', '解码器组样本。');
+_mkTpl('multiplexer_bank_sample', '多路复用器组样本', 'tech', 120, '🔀', '多路复用器组样本。');
+_mkTpl('demultiplexer_bank_sample', '解复用器组样本', 'tech', 120, '🔀', '解复用器组样本。');
+_mkTpl('adder_bank_sample', '加法器组样本', 'tech', 110, '➕', '加法器组样本。');
+_mkTpl('subtractor_bank_sample', '减法器组样本', 'tech', 110, '➖', '减法器组样本。');
+_mkTpl('multiplier_bank_sample', '乘法器组样本', 'tech', 115, '✖️', '乘法器组样本。');
+_mkTpl('divider_bank_sample', '除法器组样本', 'tech', 115, '➗', '除法器组样本。');
+_mkTpl('comparator_bank_sample', '比较器组样本', 'tech', 105, '⚖️', '比较器组样本。');
+_mkTpl('logic_gate_bank_sample', '逻辑门组样本', 'tech', 110, '🔣', '逻辑门组样本。');
+_mkTpl('flip_flop_bank_sample', '触发器组样本', 'tech', 115, '🔀', '触发器组样本。');
+_mkTpl('counter_bank_sample', '计数器组样本', 'tech', 115, '🔢', '计数器组样本。');
+_mkTpl('register_bank_sample', '寄存器组样本', 'tech', 120, '💾', '寄存器组样本。');
+_mkTpl('memory_bank_sample', '存储器组样本', 'tech', 125, '💾', '存储器组样本。');
+_mkTpl('processor_bank_sample', '处理器组样本', 'tech', 160, '🧠', '处理器组样本。');
+_mkTpl('controller_bank_sample', '控制器组样本', 'tech', 135, '🎛️', '控制器组样本。');
+_mkTpl('interface_bank_sample', '接口组样本', 'tech', 115, '🔌', '接口组样本。');
+_mkTpl('connector_bank_sample', '连接器组样本', 'tech', 100, '🔌', '连接器组样本。');
+_mkTpl('cable_bank_sample', '电缆组样本', 'tech', 90, '🔌', '电缆组样本。');
+_mkTpl('wire_bank_sample', '导线组样本', 'tech', 80, '🔌', '导线组样本。');
+_mkTpl('fiber_bank_sample', '光纤组样本', 'tech', 110, '💡', '光纤组样本。');
+_mkTpl('antenna_bank_sample', '天线组样本', 'tech', 105, '📡', '天线组样本。');
+_mkTpl('dish_bank_sample', '抛物面天线组样本', 'tech', 125, '📡', '抛物面天线组样本。');
+_mkTpl('waveguide_bank_sample', '波导组样本', 'tech', 110, '📡', '波导组样本。');
+_mkTpl('coax_bank_sample', '同轴电缆组样本', 'tech', 95, '🔌', '同轴电缆组样本。');
+_mkTpl('twisted_pair_bank_sample', '双绞线组样本', 'tech', 85, '🔌', '双绞线组样本。');
+_mkTpl('usb_cable_bank_sample', 'USB 线组样本', 'tech', 80, '🔌', 'USB 线组样本。');
+_mkTpl('hdmi_bank_sample', 'HDMI 线组样本', 'tech', 90, '🔌', 'HDMI 线组样本。');
+_mkTpl('power_cord_bank_sample', '电源线组样本', 'tech', 75, '🔌', '电源线组样本。');
+_mkTpl('extension_cord_bank_sample', '延长线组样本', 'tech', 80, '🔌', '延长线组样本。');
+_mkTpl('power_strip_bank_sample', '排插组样本', 'tech', 85, '🔌', '排插组样本。');
+_mkTpl('adapter_bank_sample', '适配器组样本', 'tech', 90, '🔌', '适配器组样本。');
+_mkTpl('charger_bank_sample', '充电器组样本', 'tech', 95, '🔌', '充电器组样本。');
+_mkTpl('power_bank_bank_sample', '充电宝组样本', 'tech', 110, '🔋', '充电宝组样本。');
+_mkTpl('battery_bank_sample', '电池组样本', 'tech', 75, '🔋', '电池组样本。');
+_mkTpl('solar_cell_bank_sample', '太阳能电池组样本', 'tech', 125, '☀️', '太阳能电池组样本。');
+_mkTpl('fuel_cell_bank_sample', '燃料电池组样本', 'tech', 145, '🔋', '燃料电池组样本。');
+
+// ---- v3.0 新增职业（原版9职业补全） ----
+PROFESSIONS.push(
+  { id: 'hydro_farmer', name: '水培农夫', subtitle: '水培种植 · 种子暴利', icon: '🌱', color: '#4ade80', credits: 540, energy: 120, luck: 8,
+    desc: '自带水培系统与种子包，把营养片种成营养果、绽放莓与梦幻菇！',
+    perks: ['自带【水培系统】', '自带【标准储物舱(占2扩10)】', '种子与作物售价 +20%'],
+    startingMachines: ['hydroponics'], startingLicenses: ['general'],
+    startingItems: ['bay_standard', 'nutrifruit_seed', 'bloomberry_seed', 'nutrient_tablet', 'nutrient_tablet'],
+    repMod: { lower: 20, security: 5, blackmarket: 5, rebel: 10, upper: 5 } },
+  { id: 'aquaculturist', name: '水产养殖户', subtitle: '鱼塘养殖 · 鱼子酱暴利', icon: '🐟', color: '#22d3ee', credits: 560, energy: 120, luck: 8,
+    desc: '自带循环水产系统，养罗非鱼、鲟鱼产鱼子酱卖给上层！',
+    perks: ['自带【循环水产系统】', '自带【远征补给箱(占2扩8)】', '鱼类与鱼子酱售价 +25%'],
+    startingMachines: ['aquaculture'], startingLicenses: ['general'],
+    startingItems: ['expedition_box', 'tilapia_live', 'fish_feed', 'fish_feed', 'aqua_filter'],
+    repMod: { lower: 15, security: 5, blackmarket: 10, rebel: 5, upper: 15 } },
+  { id: 'rock_bottom', name: '一无所有者', subtitle: '极限挑战 · 零起步', icon: '🕳️', color: '#94a3b8', credits: 0, energy: 100, luck: 15,
+    desc: '原版 Rock Bottom 挑战：0 CR 开局，只有一件衣服和一颗不服输的心！',
+    perks: ['0 CR 开局，幸运值 15', '自带【腰包(占1扩4)】', '通关奖励翻倍'],
+    startingMachines: [], startingLicenses: ['general'],
+    startingItems: ['fanny_pack', 'morsel_small', 'scratcher_ticket'],
+    repMod: { lower: 10, security: 0, blackmarket: 10, rebel: 5, upper: 0 } }
+);
+
+// ---- v3.0 难度（原版4难度） ----
+const DIFFICULTIES = [
+  { id: 'gouge', name: 'Price Gouge 宰客模式', icon: '💰', creditsMult: 1.15, rentMult: 0.9, buyoutMult: 0.9, budgetMult: 1.15, augMult: 0.8, desc: '顾客预算 +15%，房租 -10%。适合新手暴富。' },
+  { id: 'markup', name: 'Mark Up 标准模式', icon: '⚖️', creditsMult: 1.0, rentMult: 1.0, buyoutMult: 1.0, budgetMult: 1.0, augMult: 1.0, desc: '原版标准难度，平衡体验。' },
+  { id: 'thin_margins', name: 'Thin Margins 薄利模式', icon: '📉', creditsMult: 0.9, rentMult: 1.2, buyoutMult: 1.15, budgetMult: 0.9, augMult: 1.2, desc: '顾客预算 -10%，房租 +20%，AI 威胁 +20%。' },
+  { id: 'red_ink', name: 'Red Ink 赤字模式', icon: '🔴', creditsMult: 0.75, rentMult: 1.45, buyoutMult: 1.35, budgetMult: 0.8, augMult: 1.5, desc: '地狱难度：预算 -20%，房租 +45%，AI 威胁 +50%。' }
+];
+
+// ---- v3.0 开局特性（原版正/负/中性） ----
+const PERKS_POSITIVE = [
+  { id: 'short_sleeper', name: '短睡者', icon: '😴', desc: '夜间回电 +20⚡' },
+  { id: 'model_citizen', name: '模范公民', icon: '⭐', desc: '治安声望 +15，盘查概率 -20%' },
+  { id: 'lucky', name: '幸运儿', icon: '🍀', desc: '幸运值 +25' },
+  { id: 'intimidating', name: '气势逼人', icon: '😠', desc: '议价容忍度 +15%' },
+  { id: 'vending_machine', name: '自动售货机', icon: '🏪', desc: '自带【自动售货机】夜间被动销售' },
+  { id: 'sawyers_crew', name: '索耶手下', icon: '🕵️', desc: '免费解锁索耶黑市专线' },
+  { id: 'diplomatic', name: '外交家', icon: '🤝', desc: '全派系声望 +10' },
+  { id: 'proficient_scavenger', name: '熟练拾荒者', icon: '🗑️', desc: '夜间垃圾场收获 +2 件' },
+  { id: 'vigilant', name: '警觉', icon: '👁️', desc: 'AI 扫描耗电减半' },
+  { id: 'experienced_chemist', name: '资深化学家', icon: '🧪', desc: '所有机器耗电 -15%' }
+];
+const PERKS_NEGATIVE = [
+  { id: 'ascetic', name: '苦行者', icon: '🧘', desc: '声望获取 -30%' },
+  { id: 'minimalist', name: '极简主义者', icon: '📦', desc: '主货架 -4 格' },
+  { id: 'sentinel_disorder', name: '哨兵紊乱症', icon: '🤖', desc: 'AI 威胁 +20' },
+  { id: 'bad_lease', name: '烂租约', icon: '📜', desc: '房租 +30%' },
+  { id: 'convict', name: '前科犯', icon: '⛓️', desc: '初始嫌疑 +25' },
+  { id: 'addictions', name: '成瘾者', icon: '💊', desc: '能量上限 -30' },
+  { id: 'unlucky', name: '倒霉蛋', icon: '☠️', desc: '幸运值 -20' },
+  { id: 'blackmail', name: '被勒索', icon: '💸', desc: '开局信用点 -200' }
+];
+const PERKS_NEUTRAL = [
+  { id: 'aug_menace', name: 'AI 威胁', icon: '🤖', desc: 'AI 改造体更频繁来访（赏金 +50%）' },
+  { id: 'makeshift_reactor', name: '简易反应堆', icon: '☢️', desc: '能量上限 +40，夜间回电 +10' },
+  { id: 'prime_real_estate', name: '黄金地段', icon: '🏙️', desc: '买断地契价格 -20%' }
+];
+
+// ---- v3.0 每日新闻事件（原版报纸市场事件） ----
+const NEWSPAPER_EVENTS = [
+  { id: 'nutrifruit_blight', headline: '📰《星环日报》：营养果枯萎病爆发！营养果价格暴涨！', category: 'supply', mult: 1.6, desc: '营养果与种子价格 +60%' },
+  { id: 'seed_heist', headline: '📰《星环日报》：种子仓库遭劫！种子价格飙升！', category: 'material', mult: 1.5, desc: '材料价格 +50%' },
+  { id: 'blackout', headline: '📰《星环日报》：全站停电！电池与能源价格暴涨！', category: 'tech', mult: 1.55, desc: '科技品价格 +55%' },
+  { id: 'pastel_leak', headline: '📰《星环日报》：艾莉诺 Pastel 种子泄露！种子价格暴跌！', category: 'material', mult: 0.6, desc: '材料价格 -40%' },
+  { id: 'relief_aid', headline: '📰《星环日报》：救济物资抵达！食品价格下跌！', category: 'supply', mult: 0.65, desc: '食品价格 -35%' },
+  { id: 'war_surge', headline: '📰《星环日报》：前线战事吃紧！军火价格暴涨！', category: 'weapon', mult: 1.6, desc: '武器价格 +60%' },
+  { id: 'med_shortage', headline: '📰《星环日报》：医疗物资短缺！药品价格暴涨！', category: 'medical', mult: 1.5, desc: '医疗价格 +50%' },
+  { id: 'luxury_boom', headline: '📰《星环日报》：上层区奢侈品热销！奢侈品价格暴涨！', category: 'luxury', mult: 1.55, desc: '奢侈品价格 +55%' },
+  { id: 'contraband_crackdown', headline: '📰《星环日报》：治安部严打违禁品！黑市价格暴涨！', category: 'contraband', mult: 1.7, desc: '违禁品价格 +70%' },
+  { id: 'crate_rush', headline: '📰《星环日报》：开箱热潮席卷全站！密封箱价格暴涨！', category: 'crate', mult: 1.5, desc: '密封箱价格 +50%' }
+];
+
+// ---- v3.0 新增机器（原版30+机器补全） ----
+Object.assign(MACHINES, {
+  hydroponics: { id: 'hydroponics', name: '水培系统', icon: '🌱', cost: 280, desc: '用种子+营养片种出营养果、绽放莓、梦幻菇等作物。', recipes: [
+    { id: 'grow_nutrifruit', name: '种植营养果 (产3)', inputs: ['nutrifruit_seed', 'nutrient_tablet'], output: 'nutrifruit', outputCount: 3, power: 14, note: '1 营养果种子 + 1 营养片 → 3 颗营养果' },
+    { id: 'grow_bloomberry', name: '种植绽放莓 (产3)', inputs: ['bloomberry_seed', 'nutrient_tablet'], output: 'bloomberry', outputCount: 3, power: 14, note: '1 绽放莓种子 + 1 营养片 → 3 颗绽放莓' },
+    { id: 'grow_dreamcap', name: '种植梦幻菇 (产2)', inputs: ['dream_cap_spores', 'nutrient_tablet'], output: 'dream_cap', outputCount: 2, power: 16, note: '1 梦幻菇孢子 + 1 营养片 → 2 朵梦幻菇' },
+    { id: 'grow_fillerweed', name: '种植填充草 (产4)', inputs: ['fillerweed_seed', 'nutrient_tablet'], output: 'fillerweed', outputCount: 4, power: 10, note: '1 填充草种子 + 1 营养片 → 4 株填充草' }
+  ]},
+  dna_manipulator: { id: 'dna_manipulator', name: 'DNA 操纵器', icon: '🧬', cost: 340, desc: '操纵基因序列，产出超级酵母与基因样本。', recipes: [
+    { id: 'dna_super_yeast', name: '基因改造超级酵母', inputs: ['yeast_std', 'gene_sample'], output: 'yeast_super', outputCount: 2, power: 22, note: '1 酵母 + 1 基因样本 → 2 超级酵母' },
+    { id: 'dna_bioreactor', name: '培育生物反应器酵母', inputs: ['yeast_super', 'bio_moss'], output: 'yeast_bioreactor', outputCount: 1, power: 28, note: '1 超级酵母 + 1 荧光苔藓 → 1 生物反应器酵母 (250 CR)' }
+  ]},
+  printer_3d: { id: 'printer_3d', name: '3D 打印机', icon: '🖨️', cost: 320, desc: '打印枪械零件、瞄具、消音器与解放者手枪。', recipes: [
+    { id: 'print_liberator', name: '打印解放者手枪', inputs: ['filament_3d', 'filament_3d', 'gun_parts'], output: 'liberator_pistol', outputCount: 1, power: 20, note: '2 耗材 + 1 枪械零件 → 1 解放者手枪' },
+    { id: 'print_suppressor', name: '打印消音器', inputs: ['filament_3d', 'scrap_metal'], output: 'suppressor', outputCount: 1, power: 16, note: '1 耗材 + 1 废金属 → 1 消音器' },
+    { id: 'print_scope', name: '打印狙击镜', inputs: ['filament_3d', 'electronic_parts'], output: 'scope', outputCount: 1, power: 18, note: '1 耗材 + 1 电子元件 → 1 狙击镜' },
+    { id: 'print_mag', name: '打印弹匣', inputs: ['filament_3d', 'filament_3d'], output: 'magazine', outputCount: 2, power: 12, note: '2 耗材 → 2 弹匣' }
+  ]},
+  blender: { id: 'blender', name: '搅拌机', icon: '🥤', cost: 180, desc: '搅拌果糊、代乳与营养饮品。', recipes: [
+    { id: 'blend_galaxy', name: '搅拌繁星果糊', inputs: ['nutrifruit', 'bloomberry'], output: 'galaxy_blend', outputCount: 2, power: 10, note: '1 营养果 + 1 绽放莓 → 2 繁星果糊' },
+    { id: 'blend_pilk', name: '调配碳酸代乳', inputs: ['animal_fat', 'bottled_water_std'], output: 'pilk', outputCount: 2, power: 10, note: '1 动物脂肪 + 1 瓶装水 → 2 碳酸代乳' }
+  ]},
+  heating_plate: { id: 'heating_plate', name: '加热板', icon: '🔥', cost: 160, desc: '加热速食、融化脂肪、烹制食材。', recipes: [
+    { id: 'heat_ramen', name: '煮速食拉面', inputs: ['instant_ramen', 'bottled_water_std'], output: 'instant_ramen', outputCount: 1, power: 8, note: '加热后拉面估值提升（原版加热加成）' },
+    { id: 'heat_fat', name: '炼动物脂肪', inputs: ['offal'], output: 'animal_fat', outputCount: 2, power: 10, note: '1 内脏 → 2 动物脂肪' }
+  ]},
+  evaporator: { id: 'evaporator', name: '蒸发器', icon: '💨', cost: 220, desc: '蒸发提纯化学试剂与盐分。', recipes: [
+    { id: 'evap_salt', name: '蒸发提纯盐', inputs: ['dirty_water'], output: 'salt_sample', outputCount: 2, power: 12, note: '1 浑浊水 → 2 盐样本' },
+    { id: 'evap_reagent', name: '蒸发浓缩试剂', inputs: ['reagent_acidic', 'reagent_basic'], output: 'chem_common', outputCount: 1, power: 16, note: '酸+碱试剂 → 1 基础化学试剂' }
+  ]},
+  chem_finisher: { id: 'chem_finisher', name: '化学精制机', icon: '⚗️', cost: 330, desc: '精制梦魇尘、咖啡因、山奈德、芬太片等违禁/药品。', recipes: [
+    { id: 'chem_caffeine', name: '精制咖啡因片', inputs: ['coffee_beans', 'chem_common'], output: 'caffeine_pill', outputCount: 3, power: 14, note: '1 咖啡豆 + 1 化学试剂 → 3 咖啡因片' },
+    { id: 'chem_zyanide', name: '精制山奈德片', inputs: ['chem_restricted', 'reagent_acidic'], output: 'zyanide_pill', outputCount: 2, power: 20, note: '1 管制前体 + 1 酸试剂 → 2 山奈德片' },
+    { id: 'chem_phanta', name: '精制芬太片', inputs: ['chem_restricted', 'reagent_basic'], output: 'phanta_pill', outputCount: 3, power: 20, note: '1 管制前体 + 1 碱试剂 → 3 芬太片' },
+    { id: 'chem_nomore', name: '精制奥克莫吸', inputs: ['chem_common', 'reagent_reducing'], output: 'nomore_injector', outputCount: 2, power: 18, note: '1 化学试剂 + 1 还原试剂 → 2 奥克莫吸' },
+    { id: 'chem_nightmare', name: '精制梦魇尘大瓶', inputs: ['nightmare_cap', 'chem_restricted'], output: 'nightmare_dust_vial', outputCount: 2, power: 24, note: '1 梦魇菇 + 1 管制前体 → 2 梦魇尘大瓶' }
+  ]},
+  agewell: { id: 'agewell', name: 'AgeWell 陈酿窖', icon: '🍷', cost: 300, desc: '把普通葡萄酒窖藏成顶级陈酿佳酿！', recipes: [
+    { id: 'age_wine', name: '窖藏陈酿佳酿', inputs: ['wine_bottle', 'wine_bottle'], output: 'aged_wine', outputCount: 1, power: 15, note: '2 瓶普通葡萄酒 → 1 瓶陈酿佳酿 (320 CR!)' },
+    { id: 'age_bloom', name: '窖藏绽放莓酒', inputs: ['bloomberry_wine', 'wine_bottle'], output: 'aged_wine', outputCount: 1, power: 15, note: '1 绽放莓酒 + 1 普通酒 → 1 陈酿佳酿' }
+  ]},
+  desequencer: { id: 'desequencer', name: 'Desequencer 序列分解器', icon: '🔢', cost: 360, desc: '分解芯片产出部门钥匙卡！', recipes: [
+    { id: 'desq_service', name: '分解出后勤钥匙卡', inputs: ['elec_parts_rare', 'energy_cell'], output: 'keycard_service', outputCount: 1, power: 22, note: '1 稀有电子零件 + 1 电池 → 1 后勤钥匙卡' },
+    { id: 'desq_medical', name: '分解出医疗钥匙卡', inputs: ['elec_parts_rare', 'energy_cell', 'chem_common'], output: 'keycard_medical', outputCount: 1, power: 24, note: '稀有零件+电池+试剂 → 1 医疗钥匙卡' },
+    { id: 'desq_engineering', name: '分解出工程钥匙卡', inputs: ['elec_parts_rare', 'energy_cell', 'scrap_metal'], output: 'keycard_engineering', outputCount: 1, power: 24, note: '稀有零件+电池+废金属 → 1 工程钥匙卡' },
+    { id: 'desq_security', name: '分解出治安钥匙卡', inputs: ['elec_parts_rare', 'energy_cell', 'gun_parts'], output: 'keycard_security', outputCount: 1, power: 26, note: '稀有零件+电池+枪械零件 → 1 治安钥匙卡' },
+    { id: 'desq_supply', name: '分解出补给钥匙卡', inputs: ['elec_parts_common', 'energy_cell'], output: 'keycard_supply', outputCount: 1, power: 20, note: '普通零件+电池 → 1 补给钥匙卡' },
+    { id: 'desq_research', name: '分解出研究钥匙卡', inputs: ['elec_parts_rare', 'elec_parts_rare', 'energy_cell'], output: 'keycard_research', outputCount: 1, power: 30, note: '2 稀有零件 + 1 电池 → 1 研究钥匙卡' }
+  ]},
+  furnace: { id: 'furnace', name: '熔炉', icon: '🔥', cost: 240, desc: '熔炼废料、矿石与垃圾成金属锭。', recipes: [
+    { id: 'smelt_ingot', name: '熔炼金属锭', inputs: ['scrap_metal', 'scrap_metal', 'metal_ore'], output: 'metal_ingot', outputCount: 2, power: 18, note: '2 废金属 + 1 矿石 → 2 金属锭' },
+    { id: 'smelt_junk', name: '熔炼垃圾废料', inputs: ['junk_scrap', 'junk_scrap', 'junk_scrap'], output: 'metal_ingot', outputCount: 1, power: 12, note: '3 垃圾废料 → 1 金属锭' },
+    { id: 'smelt_rare', name: '熔炼稀有矿石', inputs: ['rare_ore', 'metal_ore'], output: 'elec_parts_rare', outputCount: 1, power: 22, note: '1 稀有矿石 + 1 普通矿石 → 1 稀有电子零件' }
+  ]},
+  fridge: { id: 'fridge', name: '冷藏冰箱', icon: '🧊', cost: 200, desc: '冷藏饮料 +20% 估值，冷冻冰淇淋/努特加 +25%！（被动加成）', recipes: [] },
+  vending: { id: 'vending', name: '自动售货机', icon: '🏪', cost: 350, desc: '夜间被动销售货架商品，睡一觉醒来自动进账！', recipes: [] },
+  mirage: { id: 'mirage', name: 'Mirage 投影仪', icon: '📽️', cost: 400, desc: '全息投影吸引顾客：顾客数量与预算 +100% 吸引力！（被动）', recipes: [] },
+  alarm_sys: { id: 'alarm_sys', name: '警报系统', icon: '🚨', cost: 220, desc: '治安盘查概率 -40%，嫌疑增长减半。（被动）', recipes: [] },
+  recharger: { id: 'recharger', name: '充电站', icon: '🔌', cost: 180, desc: '夜间回电 +30⚡。（被动）', recipes: [] },
+  powerbloc: { id: 'powerbloc', name: 'PowerBloc 电源块', icon: '🔋', cost: 260, desc: '能量上限 +60。（被动）', recipes: [] },
+  micro_reactor: { id: 'micro_reactor', name: '微型核反应堆', icon: '☢️', cost: 600, desc: '能量上限 +120，夜间回电 +40⚡。（被动）', recipes: [] },
+  animal_cage: { id: 'animal_cage', name: '动物笼', icon: '🐀', cost: 200, desc: '养殖小动物产肉产蛋。（被动+配方）', recipes: [
+    { id: 'cage_meat', name: '养殖产肉', inputs: ['morsel_food', 'nutrifruit'], output: 'raw_meat_std', outputCount: 1, power: 14, note: '1 口粮 + 1 营养果 → 1 标准生肉' }
+  ]},
+  mouse_trap: { id: 'mouse_trap', name: '捕鼠陷阱', icon: '🐭', cost: 120, desc: '夜间自动捕鼠产肉。（被动）', recipes: [] },
+  auto_butcher: { id: 'auto_butcher', name: '自动屠宰机', icon: '🔪', cost: 280, desc: '把活鱼活物屠宰成鱼片肉片。', recipes: [
+    { id: 'butcher_tilapia', name: '屠宰罗非鱼', inputs: ['tilapia_live'], output: 'tilapia_fillet', outputCount: 2, power: 10, note: '1 活罗非鱼 → 2 罗非鱼片' },
+    { id: 'butcher_sturgeon', name: '屠宰鲟鱼取卵', inputs: ['sturgeon_live'], output: 'sturgeon_roe', outputCount: 2, power: 14, note: '1 活鲟鱼 → 2 鲟鱼卵' }
+  ]},
+  aquaculture: { id: 'aquaculture', name: '循环水产系统', icon: '🐟', cost: 320, desc: '养罗非鱼产鱼皮，养鲟鱼产鱼子酱！', recipes: [
+    { id: 'aqua_tilapia', name: '养殖罗非鱼 (产2)', inputs: ['tilapia_live', 'fish_feed'], output: 'tilapia_live', outputCount: 2, power: 14, note: '1 活鱼 + 1 饲料 → 2 活罗非鱼' },
+    { id: 'aqua_skin', name: '产罗非鱼皮移植片', inputs: ['tilapia_fillet', 'chem_common'], output: 'tilapia_skin', outputCount: 1, power: 18, note: '1 鱼片 + 1 试剂 → 1 鱼皮移植片 (130 CR)' },
+    { id: 'aqua_caviar', name: '产鲟鱼鱼子酱', inputs: ['sturgeon_live', 'fish_feed', 'fish_feed'], output: 'caviar', outputCount: 2, power: 24, note: '1 活鲟鱼 + 2 饲料 → 2 鱼子酱 (480 CR!)' },
+    { id: 'aqua_caviar_tin', name: '精制鱼子酱铁盒', inputs: ['caviar', 'metal_ingot'], output: 'caviar_tin', outputCount: 1, power: 16, note: '1 鱼子酱 + 1 金属锭 → 1 铁盒鱼子酱 (300 CR)' }
+  ]},
+  cassette_player: { id: 'cassette_player', name: '磁带播放器', icon: '📼', cost: 150, desc: '播放磁带：顾客耐心 +1，氛围拉满。（被动）', recipes: [] },
+  storage_coordinator: { id: 'storage_coordinator', name: '仓储协调器', icon: '🗄️', cost: 300, desc: '自动整理库存：主货架 +6 格。（被动）', recipes: [] },
+  moisture_farm: { id: 'moisture_farm', name: '冷凝水农场', icon: '💧', cost: 200, desc: '冷凝收集浑浊水。', recipes: [
+    { id: 'condense_water', name: '冷凝产水 (产2)', inputs: ['energy_cell'], output: 'dirty_water', outputCount: 2, power: 12, note: '1 电池 → 2 浑浊回收水' }
+  ]},
+  bottle_printer: { id: 'bottle_printer', name: '瓶装水打印机', icon: '🖨️', cost: 180, desc: '打印瓶装水。', recipes: [
+    { id: 'print_water', name: '打印瓶装水 (产3)', inputs: ['filament_3d'], output: 'bottled_water_std', outputCount: 3, power: 10, note: '1 耗材 → 3 瓶装水' }
+  ]}
+});
+
+// ---- v3.0 新增批发商 ----
+WHOLESALE_MERCHANTS.push(
+  { id: 'hydro_supply', code: '7719', name: '水培农场直供社', role: '种子 · 营养片 · 水培作物批发', icon: '🌱', faction: 'lower', unlockNote: '默认开放', unlockedByDefault: true,
+    desc: '水培农场源头直供！种子与营养片整批拿货！',
+    catalog: [
+      { tplId: 'nutrifruit_seed', packQty: 3, price: 85, stockPerDay: 3, tag: '3包种子装' },
+      { tplId: 'bloomberry_seed', packQty: 3, price: 85, stockPerDay: 3, tag: '3包种子装' },
+      { tplId: 'nutrient_tablet', packQty: 5, price: 18, stockPerDay: 4, tag: '5片整包' },
+      { tplId: 'nutrifruit', packQty: 4, price: 35, stockPerDay: 3, tag: '4颗整箱' },
+      { tplId: 'kotton_seed', packQty: 3, price: 45, stockPerDay: 3, tag: '3包韧棉种子' }
+    ]},
+  { id: 'aqua_supply', code: '8820', name: '深海水产批发商', role: '活鱼 · 饲料 · 鱼子酱批发', icon: '🐟', faction: 'upper', unlockCost: 180, unlockNote: '花 180 CR 解锁水产专线', unlockedByDefault: false,
+    desc: '活鱼与鱼子酱源头批发！',
+    catalog: [
+      { tplId: 'tilapia_live', packQty: 3, price: 105, stockPerDay: 3, tag: '3条活鱼装' },
+      { tplId: 'fish_feed', packQty: 4, price: 55, stockPerDay: 4, tag: '4包饲料装' },
+      { tplId: 'caviar', packQty: 2, price: 380, stockPerDay: 2, tag: '2罐鱼子酱' },
+      { tplId: 'sturgeon_live', packQty: 1, price: 180, stockPerDay: 1, tag: '1条活鲟鱼' }
+    ]},
+  { id: 'gunsmith_supply', code: '9901', name: '军火商·老炮专线', role: '枪械零件 · 弹药 · 耗材批发', icon: '🔫', faction: 'rebel', unlockCost: 200, unlockNote: '花 200 CR 解锁军火专线', unlockedByDefault: false,
+    desc: '军火零件与弹药整批供应！',
+    catalog: [
+      { tplId: 'gun_parts', packQty: 3, price: 55, stockPerDay: 3, tag: '3包零件装' },
+      { tplId: 'filament_3d', packQty: 4, price: 38, stockPerDay: 3, tag: '4卷耗材装' },
+      { tplId: 'ammo_10mm', packQty: 3, price: 150, stockPerDay: 2, tag: '3匣弹药装' },
+      { tplId: 'mod_efficiency', packQty: 1, price: 60, stockPerDay: 2, tag: '效率模块' },
+      { tplId: 'mod_quality', packQty: 1, price: 60, stockPerDay: 2, tag: '品质模块' }
+    ]}
+);
+// 给现有批发商追加新品
+(function(){
+  const j = WHOLESALE_MERCHANTS.find(m=>m.id==='jackson_tech');
+  if (j) j.catalog.push(
+    { tplId: 'satchel', packQty: 1, price: 125, stockPerDay: 2, tag: '占1扩6' },
+    { tplId: 'bay_extended', packQty: 1, price: 720, stockPerDay: 1, tag: '占2扩16超大' },
+    { tplId: 'bay_machine_expanded', packQty: 1, price: 1000, stockPerDay: 1, tag: '占2扩20终极' },
+    { tplId: 'smuggler_bay_mod', packQty: 1, price: 340, stockPerDay: 1, tag: '占2扩12免检' },
+    { tplId: 'mod_overclock', packQty: 1, price: 85, stockPerDay: 2, tag: '超频模块' },
+    { tplId: 'mod_bay_kit', packQty: 1, price: 130, stockPerDay: 2, tag: '模块槽扩容' }
+  );
+  const s = WHOLESALE_MERCHANTS.find(m=>m.id==='sawyer_exchange');
+  if (s) s.catalog.push(
+    { tplId: 'crate_expedition', packQty: 1, price: 155, stockPerDay: 2, tag: '远征密封箱' },
+    { tplId: 'keycard_supply', packQty: 2, price: 95, stockPerDay: 2, tag: '2张补给卡' },
+    { tplId: 'keycard_research', packQty: 1, price: 105, stockPerDay: 1, tag: '研究部钥匙卡' },
+    { tplId: 'dream_dust', packQty: 2, price: 550, stockPerDay: 2, tag: '2瓶梦魇尘' },
+    { tplId: 'mod_neural_core', packQty: 1, price: 210, stockPerDay: 1, tag: '神经核心模块' }
+  );
+  const d = WHOLESALE_MERCHANTS.find(m=>m.id==='dale_pharma');
+  if (d) d.catalog.push(
+    { tplId: 'synaprest_injector', packQty: 1, price: 290, stockPerDay: 1, tag: '赛纳普斯注射器' },
+    { tplId: 'eternal_serum', packQty: 1, price: 420, stockPerDay: 1, tag: '永恒精华液' },
+    { tplId: 'nightingale_salve', packQty: 2, price: 130, stockPerDay: 2, tag: '2支夜莺药膏' }
+  );
+})();
+
+// ---- v3.0 新增顾客原型 ----
+CUSTOMER_ARCHETYPES.push(
+  { id: 'hydro_farmer_cust', roleName: '水培农夫', faction: 'lower', avatarHue: 120, helmet: 'normal', sellPool: ['nutrifruit', 'bloomberry', 'dream_cap', 'fillerweed', 'nutrifruit_seed'], buyCategories: ['material', 'supply'], preferredTplIds: ['nutrient_tablet', 'nutrifruit_seed', 'bloomberry_seed', 'kotton_seed'], minQty: 2, maxQty: 3, honesty: 0.9, patience: 3, budgetMult: 1.15, greetings: ['我种的水培作物大丰收！营养果和绽放莓便宜卖你！', '急需营养片和种子，扩大水培规模！'] },
+  { id: 'aquaculturist_cust', roleName: '水产养殖户', faction: 'upper', avatarHue: 190, helmet: 'normal', sellPool: ['tilapia_live', 'tilapia_fillet', 'fish_feed', 'sturgeon_roe'], buyCategories: ['supply', 'luxury'], preferredTplIds: ['caviar', 'caviar_tin', 'sturgeon_roe', 'tilapia_skin'], minQty: 2, maxQty: 3, honesty: 0.9, patience: 3, budgetMult: 1.3, greetings: ['我养的鲟鱼产卵了！鱼子酱和鱼片便宜处理！', '上层餐厅急需鱼子酱，有多少要多少！'] },
+  { id: 'gunsmith_cust', roleName: '地下枪械匠', faction: 'rebel', avatarHue: 20, helmet: 'goggles', sellPool: ['gun_parts', 'filament_3d', 'ammo_22_sr', 'liberator_pistol'], buyCategories: ['weapon', 'material'], preferredTplIds: ['gun_parts', 'filament_3d', 'suppressor', 'scope', 'magazine'], minQty: 2, maxQty: 3, honesty: 0.85, patience: 3, budgetMult: 1.25, greetings: ['枪械零件和耗材整批出！', '急需枪械零件和3D耗材！'] },
+  { id: 'chemist_cust', roleName: '合成化学家', faction: 'blackmarket', avatarHue: 270, helmet: 'goggles', sellPool: ['chem_common', 'reagent_acidic', 'reagent_basic', 'coffee_beans'], buyCategories: ['medical', 'material'], preferredTplIds: ['chem_common', 'chem_restricted', 'reagent_acidic', 'reagent_basic', 'reagent_reducing'], minQty: 2, maxQty: 3, honesty: 0.8, patience: 3, budgetMult: 1.2, greetings: ['化学试剂整批转让！', '急需化学试剂与管制前体！'] },
+  { id: 'tourist_collector', roleName: '星际收藏家', faction: 'upper', avatarHue: 310, helmet: 'visor_gold', sellPool: ['cassette_synth', 'old_earth_coin', 'star_map'], buyCategories: ['luxury'], preferredTplIds: ['relic_core', 'deepspace_relic', 'star_core', 'crown_jewel', 'holy_grail'], minQty: 1, maxQty: 2, honesty: 0.92, patience: 2, budgetMult: 1.6, greetings: ['听说你这儿有深空遗物？我出高价收购！', '磁带和古币便宜卖你，换点新鲜藏品。'] },
+  { id: 'station_doctor', roleName: '空间站医生', faction: 'security', avatarHue: 200, helmet: 'collar', sellPool: ['med_supplies_common', 'bandage_basic', 'rubbing_alcohol'], buyCategories: ['medical'], preferredTplIds: ['immuno_med', 'synaprest_injector', 'surgery_kit', 'eternal_serum', 'tilapia_skin'], minQty: 2, maxQty: 3, honesty: 0.95, patience: 3, budgetMult: 1.3, greetings: ['医院急需免疫宁和手术包！', '医疗物资整批采购！'] },
+  { id: 'winemaker', roleName: '酿酒师', faction: 'upper', avatarHue: 330, helmet: 'normal', sellPool: ['wine_bottle', 'bloomberry_wine', 'yeast_std'], buyCategories: ['luxury', 'supply'], preferredTplIds: ['aged_wine', 'synth_wine', 'bloomberry_wine', 'gloomberry_wine', 'nudka_vodka'], minQty: 2, maxQty: 3, honesty: 0.9, patience: 3, budgetMult: 1.4, greetings: ['我酿的果酒便宜卖！', '急需陈酿佳酿和紫酒！'] },
+  { id: 'scavenger_elite', roleName: '精英拾荒者', faction: 'lower', avatarHue: 45, helmet: 'goggles', forceIntent: 'sell_to_shop', sellPool: ['elec_parts_rare', 'plasma_cartridge', 'cyber_arm', 'relic_core', 'quantum_chip', 'superconductor'], buyCategories: ['tech'], minQty: 2, maxQty: 4, honesty: 0.6, patience: 3, budgetMult: 1.1, greetings: ['废墟深处挖到的硬货！稀有零件和遗物整批出！', '精英拾荒，假一赔十！'] },
+  { id: 'blackmarket_broker', roleName: '黑市经纪人', faction: 'blackmarket', avatarHue: 285, helmet: 'hood', sellPool: ['keycard_research', 'mod_neural_core', 'void_shard', 'dark_matter'], buyCategories: ['contraband', 'tech', 'module'], preferredTplIds: ['keycard_command', 'keycard_research', 'mod_neural_core', 'void_shard', 'dream_dust', 'blue_blood'], minQty: 2, maxQty: 3, honesty: 0.75, patience: 2, budgetMult: 1.45, greetings: ['黑市硬货！研究卡和神经核心！', '违禁品与模块全收！'] },
+  { id: 'rebel_medic', roleName: '革命军军医', faction: 'rebel', avatarHue: 150, helmet: 'beret', sellPool: ['med_supplies_common', 'bandage_hemostatic'], buyCategories: ['medical', 'weapon'], preferredTplIds: ['immuno_med', 'surgery_kit', 'bandage_hemostatic', 'synaprest_injector'], minQty: 2, maxQty: 3, honesty: 0.92, patience: 3, budgetMult: 1.35, greetings: ['前线伤员急需医疗物资！', '免疫宁和手术包有多少要多少！'] },
+  { id: 'upper_investor', roleName: '上层区投资人', faction: 'upper', avatarHue: 320, helmet: 'visor_gold', forceIntent: 'buy_from_shop', sellPool: [], buyCategories: ['luxury', 'tech'], preferredTplIds: ['aged_wine', 'eternal_serum', 'relic_core', 'quantum_chip', 'fusion_core', 'caviar_tin'], minQty: 2, maxQty: 4, honesty: 0.9, patience: 2, budgetMult: 1.7, greetings: ['我来投资你的店铺！奢侈品和高端科技全收！', '上层区最抢手的货都给我！'] },
+  { id: 'junk_dealer', roleName: '废品商', faction: 'lower', avatarHue: 35, helmet: 'miner_cap', forceIntent: 'buy_from_shop', isBulkLiquidator: true, sellPool: [], buyCategories: ['material'], minQty: 3, maxQty: 4, honesty: 0.8, patience: 3, budgetMult: 0.85, greetings: ['废料、矿石、垃圾全收！一次清仓！', '破烂都给我，我按公斤收！'] }
+);
+
+// ---- v3.0 通缉犯补全（7人） ----
+WANTED_POOL.push(
+  { id: 'wanted_eleanor', name: '艾莉诺·Pastel', crime: '种子走私与基因窃取', bounty: 280, mark: '粉色短发，戴花环，背着种子包', faction: 'blackmarket' },
+  { id: 'wanted_ren', name: '伦警官（叛变）', crime: '收受贿赂与栽赃平民', bounty: 320, mark: '治安制服，左胸警徽歪斜', faction: 'security' },
+  { id: 'wanted_sawyer', name: '索耶', crime: '地下交易所头目', bounty: 350, mark: '兜帽+墨镜，手指戴多枚戒指', faction: 'blackmarket' },
+  { id: 'wanted_georgio', name: '乔治奥', crime: '放射性废料非法倾倒', bounty: 260, mark: '反应堆外包商，戴防毒面具', faction: 'blackmarket' }
+);
+
+// ---- v3.0 剧情 NPC 补全 ----
+STORY_NPCS.eleanor_seed = { day: 7, id: 'eleanor_seed', name: '艾莉诺·Pastel', role: '种子走私者', faction: 'blackmarket',
+  text: '艾莉诺压低声音：“掌柜的，我这儿有一批从研究部偷来的【营养果种子×3】和【绽放莓种子×3】，只要 150 CR！或者你帮我藏匿一批【梦魇菇】，我付你 200 CR 保管费！”',
+  choices: [
+    { label: '花 150 CR 买下种子包（+3营养果种子 +3绽放莓种子）', effect: 'buy_eleanor_seeds' },
+    { label: '帮她藏匿梦魇菇（+200 CR，嫌疑+10）', effect: 'hide_eleanor_mushroom' },
+    { label: '婉拒（黑市 -5）', effect: 'reject_eleanor' }
+  ]};
+STORY_NPCS.ren_addiction = { day: 8, id: 'ren_addiction', name: '伦警官', role: '治安部警官', faction: 'security',
+  text: '伦警官面色憔悴：“我对赛纳普斯注射器上瘾了……求你卖我一支【赛纳普斯注射器】，我给你 300 CR！或者帮我戒毒，我欠你一个人情！”',
+  choices: [
+    { label: '卖他一支赛纳普斯注射器（+300 CR，治安+10）', effect: 'sell_ren_synaprest' },
+    { label: '帮他戒毒（治安+20，解锁治安特权）', effect: 'cure_ren' },
+    { label: '拒绝（治安-5）', effect: 'reject_ren' }
+  ]};
+STORY_NPCS.sawyer_deal = { day: 9, id: 'sawyer_deal', name: '索耶', role: '地下交易所头目', faction: 'blackmarket',
+  text: '索耶推来一箱货：“老规矩！【远征补给密封箱 + 补给钥匙卡】一套只要 180 CR！或者免费帮你开通【军火商·老炮】专线！”',
+  choices: [
+    { label: '花 180 CR 买远征箱+卡套组', effect: 'buy_sawyer_expedition' },
+    { label: '免费开通军火商专线', effect: 'unlock_gunsmith_line' },
+    { label: '婉拒', effect: 'reject_sawyer' }
+  ]};
+STORY_NPCS.georgio_return = { day: 10, id: 'georgio_return', name: '乔治奥', role: '反应堆外包商', faction: 'blackmarket',
+  text: '乔治奥：“上次那 2 桶废料你倒了吗？这是给你的【液体好运】谢礼！另外我这儿有【放射性废料桶×2】，收 200 CR 帮我处理？”',
+  choices: [
+    { label: '收下液体好运谢礼', effect: 'georgio_gift' },
+    { label: '再接 200 CR 脏活（+2桶废料）', effect: 'accept_waste2' },
+    { label: '拒绝', effect: 'reject_georgio2' }
+  ]};
+
+// ---- v3.0 结局图鉴（17结局） ----
+const ENDINGS = [
+  { id: 'kingdom_key', name: '王国之钥', victory: true, desc: '买下永久地契，自由大掌柜。' },
+  { id: 'rebel_star', name: '自由星环', victory: true, desc: '革命军地下军火库。' },
+  { id: 'shadow_box_king', name: '盲盒教父', victory: true, desc: '第13区开箱之王。' },
+  { id: 'aug_hunter', name: '改造体猎手', victory: true, desc: '肃清 AI 改造体。' },
+  { id: 'hydro_king', name: '水培之王', victory: true, desc: '水培作物垄断全站。' },
+  { id: 'aqua_tycoon', name: '水产大亨', victory: true, desc: '鱼子酱帝国。' },
+  { id: 'chem_master', name: '化学大师', victory: true, desc: '制药酿酒传奇。' },
+  { id: 'gunsmith_legend', name: '枪械传奇', victory: true, desc: '军火改装大师。' },
+  { id: 'evicted', name: '破产违约', victory: false, desc: '无力支付房租被扫地出门。' },
+  { id: 'aug_uprising', name: 'AI 同化', victory: false, desc: '街区被机械蜂巢接管。' },
+  { id: 'prison_murder', name: '深空重刑犯', victory: false, desc: '误杀平民被流放苦役。' },
+  { id: 'raid_busted', name: '查抄没收', victory: false, desc: '嫌疑满格被治安部查封。' },
+  { id: 'blackmarket_boss', name: '黑市教父', victory: true, desc: '黑市声望满格成为地下之王。' },
+  { id: 'upper_tycoon', name: '上层大亨', victory: true, desc: '上层区声望满格。' },
+  { id: 'security_hero', name: '治安英雄', victory: true, desc: '治安部声望满格。' },
+  { id: 'lower_saint', name: '下层圣人', victory: true, desc: '下层街坊爱戴。' },
+  { id: 'collector', name: '收藏家', victory: true, desc: '集齐 50 种以上物品。' }
+];
+
+// 远征箱掉落表
+CRATE_LOOT_TABLES.crate_expedition = {
+  guaranteed: ['ration_sealed_std', 'energy_cell'],
+  rolls: [
+    { id: 'morsel_food', chance: 0.6 }, { id: 'bottled_water_std', chance: 0.6 },
+    { id: 'keycard_supply', chance: 0.45 }, { id: 'filter_core', chance: 0.5 },
+    { id: 'expedition_box', chance: 0.2 }, { id: 'micro_purifier', chance: 0.1 }
+  ]
+};
+
 
 // ============================================================================
 // Web Audio 合成赛博朋克音效引擎 & Canvas 像素角色肖像渲染器（零外部资源依赖）
@@ -2458,6 +3781,24 @@ function drawCustomerPortrait(canvas, customer, tick = 0) {
 // 支持：套包扩容箱（占小格扩出大空间+伪装免检）、五类密封箱+钥匙卡开箱、
 // 刮刮乐与液体好运、单名顾客多物品整单/勾选交易、电话批发供货商大宗采购
 // ============================================================================
+
+function getModuleEffects(state) {
+  const fx = {
+    efficiency: 0, performance: 0, quality: 0, eco: 0, overclock: 0,
+    refinement: 0, alarm_tx: 0, streamlining: 0, blast: 0, junk: 0,
+    chem: 0, neural: 0, corrupted: 0, ruined: 0, blank: 0,
+    hydro_speed: 0, hydro_yield: 0, hydro_quality: 0, hydro_auto: 0, hydro_light: 0, hydro_water: 0, hydro_temp: 0
+  };
+  if (!state.modules) return fx;
+  for (const mid of state.modules) {
+    const tpl = ITEM_TEMPLATES[mid];
+    if (!tpl || !tpl.isModule) continue;
+    const mt = tpl.moduleType;
+    if (fx[mt] !== undefined) fx[mt] += 1;
+  }
+  return fx;
+}
+;
 
 const FIRST_NAMES = [
   '科瓦奇', '米拉', '老杰克', '阿杰', '琳达', '萨沙', '汉克', '薇拉',
@@ -2787,6 +4128,23 @@ function evaluateItemFairPrice(item, state) {
     if (state.hotCategory === item.category) {
       val = Math.round(val * 1.25);
     }
+    if (state.newspaper && state.newspaper.category === item.category) {
+      val = Math.round(val * (state.newspaper.mult || 1));
+    }
+    if (state.machines && state.machines.includes('fridge')) {
+      const tpl = ITEM_TEMPLATES[item.templateId];
+      if (tpl && tpl.frozen) val = Math.round(val * 1.25);
+      else if (tpl && tpl.chillable) val = Math.round(val * 1.20);
+    }
+    if (state.profession === 'hydro_farmer' && (item.isSeed || ['nutrifruit','bloomberry','dream_cap','fillerweed'].includes(item.templateId))) {
+      val = Math.round(val * 1.20);
+    }
+    if (state.profession === 'aquaculturist' && (item.isFish || ['caviar','caviar_tin','sturgeon_roe'].includes(item.templateId))) {
+      val = Math.round(val * 1.25);
+    }
+    const modFx = getModuleEffects(state);
+    if (modFx.quality > 0) val = Math.round(val * (1 + modFx.quality * 0.10));
+    if (modFx.hydro_quality > 0 && item.isSeed) val = Math.round(val * 1.15);
   }
   return Math.max(5, val);
 }
@@ -2939,6 +4297,38 @@ function useConsumableItem(state, itemUid) {
     return { ok: true, prize: totalPrize, hitJackpot, msg };
   }
 
+  if (item.isUsable === 'turbo') {
+    removeOwnedItemByUid(state, item.uid);
+    state.energy = Math.min(state.maxEnergy, state.energy + 40);
+    addLog(state, '🚀 涡轮增压器启动！电力 +40⚡');
+    return { ok: true, msg: '🚀 涡轮增压！电力 +40⚡' };
+  }
+  if (item.isUsable === 'module_bay') {
+    if (state.moduleMaxSlots >= 8) return { ok: false, msg: '模块槽已满（8槽上限）' };
+    removeOwnedItemByUid(state, item.uid);
+    state.moduleMaxSlots += 2;
+    addLog(state, '🔧 模块槽上限 +2！');
+    return { ok: true, msg: '🔧 模块槽上限 +2！' };
+  }
+  if (item.isUsable === 'extract_basic' || item.isUsable === 'extract_adv') {
+    const adv = item.isUsable === 'extract_adv';
+    removeOwnedItemByUid(state, item.uid);
+    const pool = adv ? ['mod_overclock','mod_refinement','mod_chem_equip','mod_neural_core','mod_streamlining'] : ['mod_efficiency','mod_performance','mod_quality','mod_eco','mod_alarm_tx'];
+    const got = pool[Math.floor(Math.random() * pool.length)];
+    smartStoreItem(state, createItemInstance(got, { inspectedVisual: true }));
+    addLog(state, `🧲 提取器产出【${ITEM_TEMPLATES[got].name}】！`);
+    return { ok: true, msg: `🧲 提取成功：${ITEM_TEMPLATES[got].name}！` };
+  }
+  // 机器模块：点击装入模块槽
+  if (item.isModule) {
+    if (!state.modules) state.modules = [];
+    if (state.modules.length >= (state.moduleMaxSlots || 4)) return { ok: false, msg: '模块槽已满！用【模块舱扩容套件】扩容。' };
+    removeOwnedItemByUid(state, item.uid);
+    state.modules.push(item.templateId);
+    state.stats.modulesInstalled = (state.stats.modulesInstalled || 0) + 1;
+    addLog(state, `⚙️ 装入模块【${item.name}】！`);
+    return { ok: true, msg: `⚙️ 已装入【${item.name}】（${state.modules.length}/${state.moduleMaxSlots} 槽）！` };
+  }
   return { ok: false, msg: '该物品不可直接使用' };
 }
 
@@ -3017,7 +4407,7 @@ function buyFromWholesaleMerchant(state, merchantId, tplId) {
 // ============================================================================
 // 游戏主状态初始化与每日多物品顾客生成
 // ============================================================================
-function createNewGameState(professionId = 'apprentice') {
+function createNewGameState(professionId = 'apprentice', opts = {}) {
   const prof = PROFESSIONS.find(p => p.id === professionId) || PROFESSIONS[0];
 
   const rep = {
@@ -3027,6 +4417,8 @@ function createNewGameState(professionId = 'apprentice') {
     rebel: 5 + (prof.repMod.rebel || 0),
     upper: 5 + (prof.repMod.upper || 0)
   };
+  if (opts.perkPositive === 'diplomatic' || opts.perkNeutral === 'diplomatic') { for (const k of Object.keys(rep)) rep[k] += 10; }
+  if (opts.perkPositive === 'model_citizen') rep.security += 15;
 
   const unlockedMerchants = WHOLESALE_MERCHANTS
     .filter(m => m.unlockedByDefault)
@@ -3037,26 +4429,63 @@ function createNewGameState(professionId = 'apprentice') {
   if (prof.id === 'fence' && !unlockedMerchants.includes('sawyer_exchange')) {
     unlockedMerchants.push('sawyer_exchange');
   }
+  if (opts.perkPositive === 'sawyers_crew' && !unlockedMerchants.includes('sawyer_exchange')) {
+    unlockedMerchants.push('sawyer_exchange');
+  }
+  if (opts.perkPositive === 'vending_machine' && !prof.startingMachines.includes('vending')) {
+    prof = { ...prof, startingMachines: [...prof.startingMachines, 'vending'] };
+  }
+
+  const diff = DIFFICULTIES.find(d => d.id === opts.difficulty) || DIFFICULTIES[1];
+  const perks = {
+    positive: opts.perkPositive || null,
+    negative: opts.perkNegative || null,
+    neutral: opts.perkNeutral || null
+  };
+  const hasPerk = (id) => perks.positive === id || perks.negative === id || perks.neutral === id;
+  let startCredits = Math.round(prof.credits * diff.creditsMult);
+  let startLuck = prof.luck || 8;
+  let startHeat = prof.id === 'fence' ? 12 : 0;
+  let startAug = Math.round(10 * diff.augMult);
+  let maxEnergy = 160;
+  if (hasPerk('lucky')) startLuck += 25;
+  if (hasPerk('unlucky')) startLuck = Math.max(0, startLuck - 20);
+  if (hasPerk('convict')) startHeat += 25;
+  if (hasPerk('sentinel_disorder')) startAug += 20;
+  if (hasPerk('addictions')) maxEnergy -= 30;
+  if (hasPerk('makeshift_reactor')) maxEnergy += 40;
+  if (hasPerk('blackmail')) startCredits = Math.max(0, startCredits - 200);
+  if (hasPerk('aug_menace')) startAug += 15;
+  let buyoutPrice = Math.round(6000 * diff.buyoutMult);
+  if (hasPerk('prime_real_estate')) buyoutPrice = Math.round(buyoutPrice * 0.8);
+  let rentAmount = Math.round(350 * diff.rentMult);
+  if (hasPerk('bad_lease')) rentAmount = Math.round(rentAmount * 1.3);
 
   const state = {
-    version: 2,
+    version: 3,
     profession: prof.id,
     professionName: prof.name,
+    difficulty: diff.id,
+    difficultyName: diff.name,
+    perks,
     day: 1,
     week: 1,
     rentDueDay: 4,
-    rentAmount: 350,
-    buyoutPrice: 6000,
+    rentAmount,
+    buyoutPrice,
     ownsShop: false,
     gameOver: null,
 
-    credits: prof.credits,
+    credits: startCredits,
     energy: prof.energy,
-    maxEnergy: 160,
-    luck: prof.luck || 8,
+    maxEnergy,
+    luck: startLuck,
     luckBuffDays: 0,
-    heat: prof.id === 'fence' ? 12 : 0,
-    augThreat: 10,
+    heat: startHeat,
+    augThreat: startAug,
+    modules: [],
+    moduleMaxSlots: 4,
+    newspaper: null,
 
     rep,
     licenses: [...prof.startingLicenses],
@@ -3065,7 +4494,7 @@ function createNewGameState(professionId = 'apprentice') {
     unlockedMerchants,
     merchantDailyStock: {},
 
-    shelfMaxSlots: 12,
+    shelfMaxSlots: opts.perkNegative === 'minimalist' ? 8 : 12,
     stashMaxSlots: prof.id === 'fence' ? 6 : 4,
     shelf: [],
     stash: [],
@@ -3091,7 +4520,12 @@ function createNewGameState(professionId = 'apprentice') {
       helpedSerpico: false,
       metOdinFriendly: false,
       luQuestState: 'none',
-      luReturnDay: 0
+      luReturnDay: 0,
+      hydroHarvested: 0,
+      aquaHarvested: 0,
+      modulesInstalled: 0,
+      vendingEarned: 0,
+      uniqueItemsSeen: 0
     },
 
     logs: [
@@ -3133,6 +4567,7 @@ function addLog(state, msg) {
 
 function changeRep(state, factionId, delta) {
   if (state.rep[factionId] === undefined) return;
+  if (delta > 0 && state.perks && state.perks.negative === 'ascetic') delta = Math.round(delta * 0.7);
   state.rep[factionId] = Math.max(-50, Math.min(100, Math.round(state.rep[factionId] + delta)));
 }
 
@@ -3141,6 +4576,8 @@ function prepareDay(state) {
   const categories = ['supply', 'medical', 'weapon', 'luxury', 'tech'];
   state.hotCategory = categories[(state.day * 2 + 1) % categories.length];
   state.dailyWanted = WANTED_POOL[(state.day - 1) % WANTED_POOL.length];
+  state.newspaper = NEWSPAPER_EVENTS[(state.day * 3 + 1) % NEWSPAPER_EVENTS.length];
+  addLog(state, state.newspaper.headline + '（' + state.newspaper.desc + '）');
   state.customersServedToday = 0;
 
   // 重置所有批发供货商今日限购库存
@@ -3159,6 +4596,10 @@ function prepareDay(state) {
   if (state.day === 4) queue.push(buildStoryVisitor(STORY_NPCS.corrupt_cop_trap));
   if (state.day === 5) queue.push(buildStoryVisitor(STORY_NPCS.lu_crate));
   if (state.day === 6) queue.push(buildStoryVisitor(STORY_NPCS.serpico_plea));
+  if (state.day === 7) queue.push(buildStoryVisitor(STORY_NPCS.eleanor_seed));
+  if (state.day === 8) queue.push(buildStoryVisitor(STORY_NPCS.ren_addiction));
+  if (state.day === 9) queue.push(buildStoryVisitor(STORY_NPCS.sawyer_deal));
+  if (state.day === 10) queue.push(buildStoryVisitor(STORY_NPCS.georgio_return));
 
   if (state.stats.luQuestState === 'holding' && state.day >= state.stats.luReturnDay) {
     queue.push({
@@ -3180,7 +4621,7 @@ function prepareDay(state) {
   }
 
   // 2. 交租日当天必来一位「收破烂的黑市奸商」帮玩家批量清仓废品凑房租！（还原原版交租前奸商机制）
-  const regularCount = state.day === 1 ? 6 : 7;
+  const regularCount = (state.day === 1 ? 6 : 7) + (state.machines.includes('mirage') ? 2 : 0);
   let wantedSpawned = false;
   let augSpawnedToday = 0;
 
@@ -3201,7 +4642,9 @@ function prepareDay(state) {
   }
 
   // 3. 治安部突击盘查官
-  const raidChance = (state.heat * 0.012) + (state.day >= 2 ? 0.24 : 0);
+  let raidChance = (state.heat * 0.012) + (state.day >= 2 ? 0.24 : 0);
+  if (state.machines.includes('alarm_sys')) raidChance *= 0.6;
+  if (state.perks && state.perks.positive === 'model_citizen') raidChance *= 0.8;
   if (state.day >= 2 && Math.random() < raidChance) {
     const raidIdx = Math.min(queue.length, 3 + Math.floor(Math.random() * 3));
     queue.splice(raidIdx, 0, buildSecurityInspector(state));
@@ -3401,11 +4844,11 @@ function generateRandomCustomer(state, { forcedArch, allowWanted, allowAug }) {
     offerEntries,
     buyEntries,
     haggleMult,
-    minSellMult: 0.74,   // 卖家最多接受被砍到 74%
-    maxBuyMult: 1.28,    // 买家最多接受被加价到 128%
+    minSellMult: state.perks && state.perks.positive === 'intimidating' ? 0.62 : 0.74,
+    maxBuyMult: state.perks && state.perks.positive === 'intimidating' ? 1.45 : 1.28,
 
-    patience: arch.patience,
-    maxPatience: arch.patience,
+    patience: arch.patience + (state.machines.includes('cassette_player') ? 1 : 0) + (getModuleEffects(state).streamlining > 0 ? 1 : 0),
+    maxPatience: arch.patience + (state.machines.includes('cassette_player') ? 1 : 0) + (getModuleEffects(state).streamlining > 0 ? 1 : 0),
     dialogue: greeting,
     behaviorNote
   };
@@ -3443,7 +4886,8 @@ function refreshCustomerBuyEntries(state, arch, wantedInfo, sellableNow, targetQ
   const shuffled = [...pool].sort(() => Math.random() - 0.5);
   const picked = shuffled.slice(0, Math.min(targetQty, shuffled.length));
 
-  const budgetMult = (wantedInfo && wantedInfo.isOdin) ? 1.48 : (arch ? arch.budgetMult : 1.1);
+  const diffObj = DIFFICULTIES.find(d => d.id === state.difficulty) || DIFFICULTIES[1];
+  const budgetMult = ((wantedInfo && wantedInfo.isOdin) ? 1.48 : (arch ? arch.budgetMult : 1.1)) * diffObj.budgetMult;
   const faction = wantedInfo ? wantedInfo.faction : (arch ? arch.faction : 'lower');
 
   for (const item of picked) {
@@ -3830,9 +5274,10 @@ function scanCustomerForAug(state) {
     return { ok: false, msg: '尚未购买【AI 改造体扫描仪】（可在证照&设备栏购买）！' };
   }
   if (c.augScanned) return { ok: false, msg: '已扫描过该访客' };
-  if (state.energy < 20) return { ok: false, msg: '电力不足（需 20⚡）！可在库存点击聚变电池充电。' };
+  const scanCost = (state.perks && state.perks.positive === 'vigilant') || getModuleEffects(state).neural > 0 ? 10 : 20;
+  if (state.energy < scanCost) return { ok: false, msg: `电力不足（需 ${scanCost}⚡）！可在库存点击聚变电池充电。` };
 
-  state.energy -= 20;
+  state.energy -= scanCost;
   c.augScanned = true;
   if (c.isAug) {
     addLog(state, `📡 [AUG DETECTED] 扫描确认：${c.name} 是被失控 AI 寄生的改造体！立即拔霰弹枪轰击领赏！`);
@@ -3849,7 +5294,8 @@ function shootCustomerWithShotgun(state) {
 
   if (c.isAug) {
     c.eliminated = true;
-    const bounty = state.rep.security >= 40 ? 240 : 190;
+    let bounty = state.rep.security >= 40 ? 240 : 190;
+    if (state.perks && state.perks.neutral === 'aug_menace') bounty = Math.round(bounty * 1.5);
     state.credits += bounty;
     state.stats.totalEarned += bounty;
     state.stats.augsEliminated++;
@@ -4075,16 +5521,25 @@ function runMachineRecipe(state, machineId, recipeId) {
   const recipe = machine.recipes.find(r => r.id === recipeId);
   if (!recipe) return { ok: false, msg: '未知配方' };
 
-  if (state.energy < recipe.power) {
-    return { ok: false, msg: `电力不足（需 ${recipe.power}⚡，当前 ${state.energy}⚡）！` };
+  const modFx = getModuleEffects(state);
+  let powerCost = recipe.power;
+  if (modFx.efficiency > 0) powerCost = Math.max(1, Math.round(powerCost * (1 - modFx.efficiency * 0.12)));
+  if (modFx.chem > 0 && machineId === 'chem_finisher') powerCost = Math.max(1, Math.round(powerCost * 0.8));
+  if (modFx.hydro_light > 0 && machineId === 'hydroponics') powerCost = Math.max(1, Math.round(powerCost * 0.85));
+  if (state.perks && state.perks.positive === 'experienced_chemist') powerCost = Math.max(1, Math.round(powerCost * 0.85));
+  if (state.energy < powerCost) {
+    return { ok: false, msg: `电力不足（需 ${powerCost}⚡，当前 ${state.energy}⚡）！` };
   }
 
   const all = getAllOwnedItemsWithLoc(state)
     .map(x => x.item)
     .filter(i => !i.questTag && !i.isContainer);
 
+  let effectiveInputs = [...recipe.inputs];
+  if (modFx.refinement > 0 && effectiveInputs.length > 1) effectiveInputs = effectiveInputs.slice(0, -1);
+  if (modFx.hydro_water > 0 && machineId === 'hydroponics' && effectiveInputs.length > 1) effectiveInputs = effectiveInputs.slice(0, -1);
   const chosenUids = [];
-  for (const reqTpl of recipe.inputs) {
+  for (const reqTpl of effectiveInputs) {
     const match = all.find(i => i.templateId === reqTpl && !chosenUids.includes(i.uid));
     if (!match) {
       return { ok: false, msg: `缺少原料：【${ITEM_TEMPLATES[reqTpl].name}】（可去电话批发商整批采购）！` };
@@ -4093,9 +5548,15 @@ function runMachineRecipe(state, machineId, recipeId) {
   }
 
   for (const uid of chosenUids) removeOwnedItemByUid(state, uid);
-  state.energy -= recipe.power;
+  state.energy -= powerCost;
 
-  for (let n = 0; n < recipe.outputCount; n++) {
+  let outCount = recipe.outputCount;
+  if (modFx.overclock > 0 && Math.random() < 0.25 * modFx.overclock) outCount += 1;
+  if (modFx.chem > 0 && machineId === 'chem_finisher') outCount += 1;
+  if (modFx.hydro_yield > 0 && machineId === 'hydroponics') outCount += 1;
+  if (modFx.junk > 0 && machineId === 'furnace') outCount += 1;
+  if (modFx.blast > 0 && machineId === 'furnace' && recipe.id === 'smelt_junk') outCount += 1;
+  for (let n = 0; n < outCount; n++) {
     const out = createItemInstance(recipe.output, {
       isFake: Boolean(recipe.makeFake),
       inspectedVisual: true,
@@ -4103,10 +5564,12 @@ function runMachineRecipe(state, machineId, recipeId) {
     });
     smartStoreItem(state, out);
   }
+  if (machineId === 'hydroponics') state.stats.hydroHarvested = (state.stats.hydroHarvested || 0) + outCount;
+  if (machineId === 'aquaculture') state.stats.aquaHarvested = (state.stats.aquaHarvested || 0) + outCount;
 
-  state.stats.itemsCrafted += recipe.outputCount;
+  state.stats.itemsCrafted += outCount;
   addLog(state, `⚙️ 【${machine.name}】合成完成：产出 ${recipe.outputCount} ×【${ITEM_TEMPLATES[recipe.output].name}】。`);
-  return { ok: true, msg: `⚙️ 制造成功！获得 ${recipe.outputCount} ×【${ITEM_TEMPLATES[recipe.output].name}】！` };
+  return { ok: true, msg: `⚙️ 制造成功！获得 ${outCount} ×【${ITEM_TEMPLATES[recipe.output].name}】！` };
 }
 
 // 序列号打磨机洗白赃物
@@ -4133,6 +5596,9 @@ function purchaseShopUpgrade(state, id) {
     if (state.credits < m.cost) return { ok: false, msg: `信用点不足（需 ${m.cost} CR）` };
     state.credits -= m.cost;
     state.machines.push(id);
+    if (id === 'powerbloc') state.maxEnergy += 60;
+    if (id === 'micro_reactor') state.maxEnergy += 120;
+    if (id === 'storage_coordinator') state.shelfMaxSlots += 6;
     addLog(state, `🏭 后室新增生产设备：【${m.name}】（-${m.cost} CR）！`);
     return { ok: true, msg: `🏭 已安装【${m.name}】！` };
   }
@@ -4149,6 +5615,10 @@ function purchaseShopUpgrade(state, id) {
     if (id === 'shelf_expand_1') state.shelfMaxSlots += 8;
     if (id === 'stash_expand') state.stashMaxSlots += 6;
   }
+  // 被动机器即时生效
+  if (id === 'powerbloc') state.maxEnergy += 60;
+  if (id === 'micro_reactor') state.maxEnergy += 120;
+  if (id === 'storage_coordinator') state.shelfMaxSlots += 6;
 
   addLog(state, `📜 解锁升级：【${up.name}】（-${up.cost} CR）！`);
   return { ok: true, msg: `📜 成功解锁【${up.name}】！` };
@@ -4177,7 +5647,8 @@ function performNightActionAndSleep(state, nightChoice) {
       'scrap_metal', 'dirty_water', 'filter_core', 'bio_moss', 'electronic_parts',
       'broken_pistol', 'morsel_food', 'scratcher_ticket', 'crate_service', 'keycard_service'
     ];
-    const count = state.rep.lower >= 40 ? 4 : 3;
+    let count = state.rep.lower >= 40 ? 4 : 3;
+    if (state.perks && state.perks.positive === 'proficient_scavenger') count += 2;
     const names = [];
     for (let k = 0; k < count; k++) {
       const tplId = lootPool[Math.floor(Math.random() * lootPool.length)];
@@ -4207,6 +5678,34 @@ function performNightActionAndSleep(state, nightChoice) {
     state.heat = Math.max(0, state.heat - 18);
     nightReport.push('⚡ 留店检修电容并抹除巡查监控：电力 +65⚡，治安嫌疑 -18%。');
   }
+
+  // v3.0 被动机器夜间结算
+  const modFxNight = getModuleEffects(state);
+  if (state.machines.includes('vending')) {
+    const sellable = getShopSellableItems(state).filter(i => !i.isContainer);
+    if (sellable.length > 0) {
+      const n = Math.min(3, sellable.length);
+      let earn = 0;
+      for (let i = 0; i < n; i++) {
+        const it = sellable[Math.floor(Math.random() * sellable.length)];
+        if (it) { earn += Math.round(it.baseValue * 0.7); removeOwnedItemByUid(state, it.uid); }
+      }
+      if (earn > 0) { state.credits += earn; state.stats.totalEarned += earn; state.stats.vendingEarned = (state.stats.vendingEarned || 0) + earn; nightReport.push(`🏪 自动售货机夜间被动销售 +${earn} CR！`); }
+    }
+  }
+  if (state.machines.includes('recharger')) { state.energy = Math.min(state.maxEnergy, state.energy + 30); nightReport.push('🔌 充电站夜间回电 +30⚡'); }
+  if (state.machines.includes('micro_reactor')) { state.energy = Math.min(state.maxEnergy, state.energy + 40); nightReport.push('☢️ 微型核反应堆夜间回电 +40⚡'); }
+  if (state.machines.includes('mouse_trap') && Math.random() < 0.6) {
+    smartStoreItem(state, createItemInstance('raw_meat_small', { inspectedVisual: true }));
+    nightReport.push('🐭 捕鼠陷阱夜间捕获小动物，产出小型生肉！');
+  }
+  if (modFxNight.hydro_auto > 0 && state.machines.includes('hydroponics')) {
+    smartStoreItem(state, createItemInstance('nutrifruit', { inspectedVisual: true }));
+    nightReport.push('🤖 水培自动模块夜间产出营养果！');
+  }
+  if (modFxNight.eco > 0) { state.energy = Math.min(state.maxEnergy, state.energy + 10 * modFxNight.eco); }
+  if (state.perks && state.perks.positive === 'short_sleeper') { state.energy = Math.min(state.maxEnergy, state.energy + 20); }
+  if (state.perks && state.perks.neutral === 'makeshift_reactor') { state.energy = Math.min(state.maxEnergy, state.energy + 10); }
 
   // 检查自充电零点能电池被动回电！
   const allAfter = getAllOwnedItemsWithLoc(state);
@@ -4263,6 +5762,11 @@ function performNightActionAndSleep(state, nightChoice) {
     }
   }
 
+  if (state.heat >= 100) {
+    state.gameOver = { victory: false, endingId: 'raid_busted', title: '结局：查抄没收', desc: '嫌疑满格，治安部查封了你的当铺！' };
+    state.phase = 'gameover';
+    return { ok: true, nightReport, gameOver: state.gameOver };
+  }
   if (state.augThreat >= 100) {
     state.gameOver = {
       victory: false,
@@ -4311,6 +5815,20 @@ function buyoutShopProperty(state) {
       title: '黑金结局：第13区盲盒与暗巷教父',
       desc: '没有你刷不开的密封箱，也没有你的走私者伪装箱藏不住的违禁珍宝。索耶与全城大盗奉你为地下交易之王！'
     };
+  } else if ((state.stats.hydroHarvested || 0) >= 20) {
+    ending = { victory: true, endingId: 'hydro_king', title: '传奇结局：水培之王', desc: '你的水培作物垄断了全站市场！' };
+  } else if ((state.stats.aquaHarvested || 0) >= 15) {
+    ending = { victory: true, endingId: 'aqua_tycoon', title: '传奇结局：水产大亨', desc: '鱼子酱帝国崛起！' };
+  } else if (state.stats.itemsCrafted >= 40) {
+    ending = { victory: true, endingId: 'chem_master', title: '传奇结局：化学大师', desc: '制药酿酒传奇！' };
+  } else if (state.rep.blackmarket >= 60) {
+    ending = { victory: true, endingId: 'blackmarket_boss', title: '传奇结局：黑市教父', desc: '地下世界之王！' };
+  } else if (state.rep.upper >= 60) {
+    ending = { victory: true, endingId: 'upper_tycoon', title: '传奇结局：上层大亨', desc: '上层区顶级富豪！' };
+  } else if (state.rep.security >= 60) {
+    ending = { victory: true, endingId: 'security_hero', title: '传奇结局：治安英雄', desc: '治安部终身荣誉！' };
+  } else if (state.rep.lower >= 60) {
+    ending = { victory: true, endingId: 'lower_saint', title: '传奇结局：下层圣人', desc: '下层街坊爱戴！' };
   } else if (state.stats.augsEliminated >= 3 && state.rep.security >= 40) {
     ending = {
       victory: true,
@@ -4510,6 +6028,32 @@ function renderTopBar() {
   document.getElementById('hud-energy').textContent = `⚡ ${s.energy}/${s.maxEnergy}`;
   document.getElementById('hud-luck').textContent = `🍀 幸运 ${s.luck || 0}${s.luckBuffDays > 0 ? `(药效${s.luckBuffDays}天)` : ''}`;
   document.getElementById('hud-heat').textContent = `🚨 嫌疑 ${s.heat}%`;
+
+  const diffEl = document.getElementById('difficulty-badge');
+  if (diffEl) {
+    const diff = DIFFICULTIES.find(d => d.id === s.difficulty) || DIFFICULTIES[1];
+    diffEl.textContent = diff.icon + ' ' + diff.name;
+    diffEl.style.color = diff.id === 'gouge' ? '#10b981' : diff.id === 'markup' ? '#3b82f6' : diff.id === 'thin_margins' ? '#f59e0b' : '#ef4444';
+  }
+  const perkEl = document.getElementById('perks-badge');
+  if (perkEl) {
+    const p = s.perks;
+    const names = [
+      p.positive ? (ITEM_TEMPLATES[p.positive]?.name || PERKS_POSITIVE.find(x=>x.id===p.positive)?.name || '') : '',
+      p.negative ? (ITEM_TEMPLATES[p.negative]?.name || PERKS_NEGATIVE.find(x=>x.id===p.negative)?.name || '') : '',
+      p.neutral ? (ITEM_TEMPLATES[p.neutral]?.name || PERKS_NEUTRAL.find(x=>x.id===p.neutral)?.name || '') : ''
+    ].filter(Boolean);
+    perkEl.textContent = names.length ? names.join(' · ') : '无特性';
+  }
+  const modEl = document.getElementById('modules-badge');
+  if (modEl) {
+    modEl.textContent = `⚙️ ${s.modules ? s.modules.length : 0}/${s.moduleMaxSlots || 4}`;
+  }
+  const newsEl = document.getElementById('newspaper-badge');
+  if (newsEl && s.newspaper) {
+    newsEl.textContent = s.newspaper.headline;
+    newsEl.title = s.newspaper.desc;
+  }
   document.getElementById('hud-aug').textContent = `🤖 AI ${s.augThreat}%`;
 
   const buyoutBtn = document.getElementById('btn-buyout');
@@ -5615,6 +7159,58 @@ function initApp() {
 }
 
 window.addEventListener('DOMContentLoaded', initApp);
+
+// 批量整理库存：按类别排序 + 容器自动装入
+function handleBatchSort(s) {
+  const shelf = s.shelf;
+  const stash = s.stash;
+  const all = [...shelf, ...stash];
+  const containers = all.filter(i => ITEM_TEMPLATES[i.templateId]?.isContainer);
+  const others = all.filter(i => !ITEM_TEMPLATES[i.templateId]?.isContainer);
+  others.sort((a,b) => {
+    const ca = ITEM_TEMPLATES[a.templateId]?.category || '';
+    const cb = ITEM_TEMPLATES[b.templateId]?.category || '';
+    return ca.localeCompare(cb);
+  });
+  for (const c of containers) {
+    const tpl = ITEM_TEMPLATES[c.templateId];
+    let cap = tpl.containerCap - c.slots;
+    if (cap > 0) {
+      const toMove = others.splice(0, cap);
+      c.slots += toMove.length;
+      c.contents = (c.contents || []).concat(toMove.map(i => i.uid));
+    }
+  }
+  s.shelf = containers.filter(i => !stash.includes(i)).concat(others.filter(i => !stash.includes(i)));
+  s.stash = containers.filter(i => stash.includes(i)).concat(others.filter(i => stash.includes(i)));
+  showToast('📦 仓储协调器自动整理完成！', 'info');
+}
+
+// 批量整理库存：按类别排序 + 容器自动装入
+function handleBatchSort(s) {
+  const shelf = s.shelf;
+  const stash = s.stash;
+  const all = [...shelf, ...stash];
+  const containers = all.filter(i => ITEM_TEMPLATES[i.templateId]?.isContainer);
+  const others = all.filter(i => !ITEM_TEMPLATES[i.templateId]?.isContainer);
+  others.sort((a,b) => {
+    const ca = ITEM_TEMPLATES[a.templateId]?.category || '';
+    const cb = ITEM_TEMPLATES[b.templateId]?.category || '';
+    return ca.localeCompare(cb);
+  });
+  for (const c of containers) {
+    const tpl = ITEM_TEMPLATES[c.templateId];
+    let cap = tpl.containerCap - c.slots;
+    if (cap > 0) {
+      const toMove = others.splice(0, cap);
+      c.slots += toMove.length;
+      c.contents = (c.contents || []).concat(toMove.map(i => i.uid));
+    }
+  }
+  s.shelf = containers.filter(i => !stash.includes(i)).concat(others.filter(i => !stash.includes(i)));
+  s.stash = containers.filter(i => stash.includes(i)).concat(others.filter(i => stash.includes(i)));
+  showToast('📦 仓储协调器自动整理完成！', 'info');
+}
 
 
 })();

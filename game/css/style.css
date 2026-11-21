@@ -616,3 +616,35 @@ button:disabled {
 .toast.good { border-left-color: var(--neon-green); }
 
 .hidden { display: none !important; }
+
+/* v3.0 新增徽章与模块/可用物品样式 */
+.badge {
+  display: inline-block;
+  font-size: 10px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: bold;
+}
+.badge-cyan { background: #06b6d4; color: #000; }
+.badge-purple { background: #a855f7; color: #fff; }
+.badge-orange { background: #f97316; color: #fff; }
+
+.container-item { border-left: 3px solid #06b6d4 !important; }
+.module-item { border-left: 3px solid #a855f7 !important; }
+.usable-item { border-left: 3px solid #f97316 !important; }
+
+/* 报纸头条样式 */
+#newspaper-badge {
+  animation: blink 3s infinite;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* 仓储协调器快捷键提示 */
+.shortcut-hint {
+  font-size: 10px;
+  color: #94a3b8;
+  margin-left: 4px;
+}

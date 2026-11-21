@@ -10,7 +10,12 @@ import {
   ITEM_TEMPLATES,
   WHOLESALE_MERCHANTS,
   MACHINES,
-  UPGRADES_AND_LICENSES
+  UPGRADES_AND_LICENSES,
+  DIFFICULTIES,
+  PERKS_POSITIVE,
+  PERKS_NEGATIVE,
+  PERKS_NEUTRAL,
+  NEWSPAPER_EVENTS
 } from './data.js';
 
 import {
@@ -225,6 +230,32 @@ function renderTopBar() {
   document.getElementById('hud-energy').textContent = `⚡ ${s.energy}/${s.maxEnergy}`;
   document.getElementById('hud-luck').textContent = `🍀 幸运 ${s.luck || 0}${s.luckBuffDays > 0 ? `(药效${s.luckBuffDays}天)` : ''}`;
   document.getElementById('hud-heat').textContent = `🚨 嫌疑 ${s.heat}%`;
+
+  const diffEl = document.getElementById('difficulty-badge');
+  if (diffEl) {
+    const diff = DIFFICULTIES.find(d => d.id === s.difficulty) || DIFFICULTIES[1];
+    diffEl.textContent = diff.icon + ' ' + diff.name;
+    diffEl.style.color = diff.id === 'gouge' ? '#10b981' : diff.id === 'markup' ? '#3b82f6' : diff.id === 'thin_margins' ? '#f59e0b' : '#ef4444';
+  }
+  const perkEl = document.getElementById('perks-badge');
+  if (perkEl) {
+    const p = s.perks;
+    const names = [
+      p.positive ? (ITEM_TEMPLATES[p.positive]?.name || PERKS_POSITIVE.find(x=>x.id===p.positive)?.name || '') : '',
+      p.negative ? (ITEM_TEMPLATES[p.negative]?.name || PERKS_NEGATIVE.find(x=>x.id===p.negative)?.name || '') : '',
+      p.neutral ? (ITEM_TEMPLATES[p.neutral]?.name || PERKS_NEUTRAL.find(x=>x.id===p.neutral)?.name || '') : ''
+    ].filter(Boolean);
+    perkEl.textContent = names.length ? names.join(' · ') : '无特性';
+  }
+  const modEl = document.getElementById('modules-badge');
+  if (modEl) {
+    modEl.textContent = `⚙️ ${s.modules ? s.modules.length : 0}/${s.moduleMaxSlots || 4}`;
+  }
+  const newsEl = document.getElementById('newspaper-badge');
+  if (newsEl && s.newspaper) {
+    newsEl.textContent = s.newspaper.headline;
+    newsEl.title = s.newspaper.desc;
+  }
   document.getElementById('hud-aug').textContent = `🤖 AI ${s.augThreat}%`;
 
   const buyoutBtn = document.getElementById('btn-buyout');
@@ -1330,3 +1361,55 @@ function initApp() {
 }
 
 window.addEventListener('DOMContentLoaded', initApp);
+
+// 批量整理库存：按类别排序 + 容器自动装入
+function handleBatchSort(s) {
+  const shelf = s.shelf;
+  const stash = s.stash;
+  const all = [...shelf, ...stash];
+  const containers = all.filter(i => ITEM_TEMPLATES[i.templateId]?.isContainer);
+  const others = all.filter(i => !ITEM_TEMPLATES[i.templateId]?.isContainer);
+  others.sort((a,b) => {
+    const ca = ITEM_TEMPLATES[a.templateId]?.category || '';
+    const cb = ITEM_TEMPLATES[b.templateId]?.category || '';
+    return ca.localeCompare(cb);
+  });
+  for (const c of containers) {
+    const tpl = ITEM_TEMPLATES[c.templateId];
+    let cap = tpl.containerCap - c.slots;
+    if (cap > 0) {
+      const toMove = others.splice(0, cap);
+      c.slots += toMove.length;
+      c.contents = (c.contents || []).concat(toMove.map(i => i.uid));
+    }
+  }
+  s.shelf = containers.filter(i => !stash.includes(i)).concat(others.filter(i => !stash.includes(i)));
+  s.stash = containers.filter(i => stash.includes(i)).concat(others.filter(i => stash.includes(i)));
+  showToast('📦 仓储协调器自动整理完成！', 'info');
+}
+
+// 批量整理库存：按类别排序 + 容器自动装入
+function handleBatchSort(s) {
+  const shelf = s.shelf;
+  const stash = s.stash;
+  const all = [...shelf, ...stash];
+  const containers = all.filter(i => ITEM_TEMPLATES[i.templateId]?.isContainer);
+  const others = all.filter(i => !ITEM_TEMPLATES[i.templateId]?.isContainer);
+  others.sort((a,b) => {
+    const ca = ITEM_TEMPLATES[a.templateId]?.category || '';
+    const cb = ITEM_TEMPLATES[b.templateId]?.category || '';
+    return ca.localeCompare(cb);
+  });
+  for (const c of containers) {
+    const tpl = ITEM_TEMPLATES[c.templateId];
+    let cap = tpl.containerCap - c.slots;
+    if (cap > 0) {
+      const toMove = others.splice(0, cap);
+      c.slots += toMove.length;
+      c.contents = (c.contents || []).concat(toMove.map(i => i.uid));
+    }
+  }
+  s.shelf = containers.filter(i => !stash.includes(i)).concat(others.filter(i => !stash.includes(i)));
+  s.stash = containers.filter(i => stash.includes(i)).concat(others.filter(i => stash.includes(i)));
+  showToast('📦 仓储协调器自动整理完成！', 'info');
+}

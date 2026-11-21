@@ -33,6 +33,10 @@
       </div>
 
       <div style="display:flex;gap:5px;align-items:center;">
+        <div id="difficulty-badge" style="font-size:11px;padding:2px 5px;border-radius:4px;background:#1e3a5f;color:#3b82f6;">⚖️ 标准模式</div>
+        <div id="perks-badge" style="font-size:11px;padding:2px 5px;border-radius:4px;background:#1e3a5f;color:#94a3b8;">无特性</div>
+        <div id="modules-badge" style="font-size:11px;padding:2px 5px;border-radius:4px;background:#1e3a5f;color:#a855f7;">⚙️ 0/4</div>
+        <div id="newspaper-badge" style="font-size:11px;padding:2px 5px;border-radius:4px;background:#1e3a5f;color:#f59e0b;font-weight:bold;">📰 报纸头条</div>
         <button class="btn-amber" id="btn-buyout" title="攒够 6,000 CR 买断永久地契解锁多结局！">🔑 买断地契(6000)</button>
         <button class="btn-primary" id="btn-fullscreen" title="进入沉浸全屏并锁定横屏">⛶ 全屏横屏</button>
         <button id="btn-mute" title="开关合成音效">🔊</button>
@@ -74,6 +78,7 @@
               <div id="customer-badges" style="display:flex;flex-wrap:wrap;gap:3px;justify-content:center;"></div>
             </div>
             <div id="customer-meta"></div>
+            <div id="newspaper-badge" style="font-size:11px;padding:2px 5px;border-radius:4px;background:#1e3a5f;color:#f59e0b;font-weight:bold;margin-top:4px;text-align:center;">📰 报纸头条</div>
           </div>
 
           <div id="center-content"></div>
@@ -98,6 +103,70 @@
     </main>
 
     <!-- 开局 6 大职业选择全屏弹窗 -->
+    <div id="start-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>🛸 深空当铺：可能是偷的 v3.0</h2>
+          <button id="btn-close-start" class="btn-close hidden">✕</button>
+        </div>
+
+        <!-- v3.0 难度与特性选择 -->
+        <div class="select-group">
+          <label>难度：</label>
+          <select id="diff-select">
+            <option value="gouge">💰 宰客模式 (预算+15%)</option>
+            <option value="markup" selected>⚖️ 标准模式</option>
+            <option value="thin_margins">📉 薄利模式 (房租+20%)</option>
+            <option value="red_ink">🔴 赤字模式 (地狱难度)</option>
+          </select>
+        </div>
+        <div class="select-group">
+          <label>正面特性：</label>
+          <select id="perk-pos-select">
+            <option value="">无</option>
+            <option value="short_sleeper">😴 短睡者 (夜间回电+20)</option>
+            <option value="model_citizen">⭐ 模范公民 (治安+15)</option>
+            <option value="lucky">🍀 幸运儿 (幸运+25)</option>
+            <option value="intimidating">😠 气势逼人 (议价+15%)</option>
+            <option value="vending_machine">🏪 自动售货机 (自带机器)</option>
+            <option value="sawyers_crew">🕵️ 索耶手下 (解锁黑市)</option>
+            <option value="diplomatic">🤝 外交家 (全派系+10)</option>
+            <option value="proficient_scavenger">🗑️ 熟练拾荒者 (垃圾场+2)</option>
+            <option value="vigilant">👁️ 警觉 (AI扫描减半)</option>
+            <option value="experienced_chemist">🧪 资深化学家 (机器耗电-15%)</option>
+          </select>
+        </div>
+        <div class="select-group">
+          <label>负面特性：</label>
+          <select id="perk-neg-select">
+            <option value="">无</option>
+            <option value="ascetic">🧘 苦行者 (声望-30%)</option>
+            <option value="minimalist">📦 极简主义者 (货架-4)</option>
+            <option value="sentinel_disorder">🤖 哨兵紊乱症 (AI+20)</option>
+            <option value="bad_lease">📜 烂租约 (房租+30%)</option>
+            <option value="convict">⛓️ 前科犯 (嫌疑+25)</option>
+            <option value="addictions">💊 成瘾者 (能量-30)</option>
+            <option value="unlucky">☠️ 倒霉蛋 (幸运-20)</option>
+            <option value="blackmail">💸 被勒索 (开局-200CR)</option>
+          </select>
+        </div>
+        <div class="select-group">
+          <label>中性特性：</label>
+          <select id="perk-neu-select">
+            <option value="">无</option>
+            <option value="aug_menace">🤖 AI威胁 (赏金+50%)</option>
+            <option value="makeshift_reactor">☢️ 简易反应堆 (能量+40)</option>
+            <option value="prime_real_estate">🏙️ 黄金地段 (买断-20%)</option>
+          </select>
+        </div>
+
+        <div id="prof-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:15px;"></div>
+
+        <div style="margin-top:15px;text-align:center;">
+          <button id="btn-resume-save" class="btn-primary hidden" style="width:100%;margin-bottom:8px;">📂 继续存档</button>
+        </div>
+      </div>
+    </div>
     <div id="start-modal" class="modal-overlay">
       <div class="modal-box">
         <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">

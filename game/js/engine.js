@@ -15,8 +15,32 @@ import {
   CUSTOMER_ARCHETYPES,
   AUG_CLUES,
   WANTED_POOL,
-  STORY_NPCS
-} from './data.js';
+  STORY_NPCS,
+  DIFFICULTIES,
+  PERKS_POSITIVE,
+  PERKS_NEGATIVE,
+  PERKS_NEUTRAL,
+  NEWSPAPER_EVENTS
+} from './data.js'
+
+
+export function getModuleEffects(state) {
+  const fx = {
+    efficiency: 0, performance: 0, quality: 0, eco: 0, overclock: 0,
+    refinement: 0, alarm_tx: 0, streamlining: 0, blast: 0, junk: 0,
+    chem: 0, neural: 0, corrupted: 0, ruined: 0, blank: 0,
+    hydro_speed: 0, hydro_yield: 0, hydro_quality: 0, hydro_auto: 0, hydro_light: 0, hydro_water: 0, hydro_temp: 0
+  };
+  if (!state.modules) return fx;
+  for (const mid of state.modules) {
+    const tpl = ITEM_TEMPLATES[mid];
+    if (!tpl || !tpl.isModule) continue;
+    const mt = tpl.moduleType;
+    if (fx[mt] !== undefined) fx[mt] += 1;
+  }
+  return fx;
+}
+;
 
 const FIRST_NAMES = [
   '科瓦奇', '米拉', '老杰克', '阿杰', '琳达', '萨沙', '汉克', '薇拉',
@@ -346,6 +370,23 @@ export function evaluateItemFairPrice(item, state) {
     if (state.hotCategory === item.category) {
       val = Math.round(val * 1.25);
     }
+    if (state.newspaper && state.newspaper.category === item.category) {
+      val = Math.round(val * (state.newspaper.mult || 1));
+    }
+    if (state.machines && state.machines.includes('fridge')) {
+      const tpl = ITEM_TEMPLATES[item.templateId];
+      if (tpl && tpl.frozen) val = Math.round(val * 1.25);
+      else if (tpl && tpl.chillable) val = Math.round(val * 1.20);
+    }
+    if (state.profession === 'hydro_farmer' && (item.isSeed || ['nutrifruit','bloomberry','dream_cap','fillerweed'].includes(item.templateId))) {
+      val = Math.round(val * 1.20);
+    }
+    if (state.profession === 'aquaculturist' && (item.isFish || ['caviar','caviar_tin','sturgeon_roe'].includes(item.templateId))) {
+      val = Math.round(val * 1.25);
+    }
+    const modFx = getModuleEffects(state);
+    if (modFx.quality > 0) val = Math.round(val * (1 + modFx.quality * 0.10));
+    if (modFx.hydro_quality > 0 && item.isSeed) val = Math.round(val * 1.15);
   }
   return Math.max(5, val);
 }
@@ -498,6 +539,38 @@ export function useConsumableItem(state, itemUid) {
     return { ok: true, prize: totalPrize, hitJackpot, msg };
   }
 
+  if (item.isUsable === 'turbo') {
+    removeOwnedItemByUid(state, item.uid);
+    state.energy = Math.min(state.maxEnergy, state.energy + 40);
+    addLog(state, '🚀 涡轮增压器启动！电力 +40⚡');
+    return { ok: true, msg: '🚀 涡轮增压！电力 +40⚡' };
+  }
+  if (item.isUsable === 'module_bay') {
+    if (state.moduleMaxSlots >= 8) return { ok: false, msg: '模块槽已满（8槽上限）' };
+    removeOwnedItemByUid(state, item.uid);
+    state.moduleMaxSlots += 2;
+    addLog(state, '🔧 模块槽上限 +2！');
+    return { ok: true, msg: '🔧 模块槽上限 +2！' };
+  }
+  if (item.isUsable === 'extract_basic' || item.isUsable === 'extract_adv') {
+    const adv = item.isUsable === 'extract_adv';
+    removeOwnedItemByUid(state, item.uid);
+    const pool = adv ? ['mod_overclock','mod_refinement','mod_chem_equip','mod_neural_core','mod_streamlining'] : ['mod_efficiency','mod_performance','mod_quality','mod_eco','mod_alarm_tx'];
+    const got = pool[Math.floor(Math.random() * pool.length)];
+    smartStoreItem(state, createItemInstance(got, { inspectedVisual: true }));
+    addLog(state, `🧲 提取器产出【${ITEM_TEMPLATES[got].name}】！`);
+    return { ok: true, msg: `🧲 提取成功：${ITEM_TEMPLATES[got].name}！` };
+  }
+  // 机器模块：点击装入模块槽
+  if (item.isModule) {
+    if (!state.modules) state.modules = [];
+    if (state.modules.length >= (state.moduleMaxSlots || 4)) return { ok: false, msg: '模块槽已满！用【模块舱扩容套件】扩容。' };
+    removeOwnedItemByUid(state, item.uid);
+    state.modules.push(item.templateId);
+    state.stats.modulesInstalled = (state.stats.modulesInstalled || 0) + 1;
+    addLog(state, `⚙️ 装入模块【${item.name}】！`);
+    return { ok: true, msg: `⚙️ 已装入【${item.name}】（${state.modules.length}/${state.moduleMaxSlots} 槽）！` };
+  }
   return { ok: false, msg: '该物品不可直接使用' };
 }
 
@@ -576,7 +649,7 @@ export function buyFromWholesaleMerchant(state, merchantId, tplId) {
 // ============================================================================
 // 游戏主状态初始化与每日多物品顾客生成
 // ============================================================================
-export function createNewGameState(professionId = 'apprentice') {
+export function createNewGameState(professionId = 'apprentice', opts = {}) {
   const prof = PROFESSIONS.find(p => p.id === professionId) || PROFESSIONS[0];
 
   const rep = {
@@ -586,6 +659,8 @@ export function createNewGameState(professionId = 'apprentice') {
     rebel: 5 + (prof.repMod.rebel || 0),
     upper: 5 + (prof.repMod.upper || 0)
   };
+  if (opts.perkPositive === 'diplomatic' || opts.perkNeutral === 'diplomatic') { for (const k of Object.keys(rep)) rep[k] += 10; }
+  if (opts.perkPositive === 'model_citizen') rep.security += 15;
 
   const unlockedMerchants = WHOLESALE_MERCHANTS
     .filter(m => m.unlockedByDefault)
@@ -596,26 +671,63 @@ export function createNewGameState(professionId = 'apprentice') {
   if (prof.id === 'fence' && !unlockedMerchants.includes('sawyer_exchange')) {
     unlockedMerchants.push('sawyer_exchange');
   }
+  if (opts.perkPositive === 'sawyers_crew' && !unlockedMerchants.includes('sawyer_exchange')) {
+    unlockedMerchants.push('sawyer_exchange');
+  }
+  if (opts.perkPositive === 'vending_machine' && !prof.startingMachines.includes('vending')) {
+    prof = { ...prof, startingMachines: [...prof.startingMachines, 'vending'] };
+  }
+
+  const diff = DIFFICULTIES.find(d => d.id === opts.difficulty) || DIFFICULTIES[1];
+  const perks = {
+    positive: opts.perkPositive || null,
+    negative: opts.perkNegative || null,
+    neutral: opts.perkNeutral || null
+  };
+  const hasPerk = (id) => perks.positive === id || perks.negative === id || perks.neutral === id;
+  let startCredits = Math.round(prof.credits * diff.creditsMult);
+  let startLuck = prof.luck || 8;
+  let startHeat = prof.id === 'fence' ? 12 : 0;
+  let startAug = Math.round(10 * diff.augMult);
+  let maxEnergy = 160;
+  if (hasPerk('lucky')) startLuck += 25;
+  if (hasPerk('unlucky')) startLuck = Math.max(0, startLuck - 20);
+  if (hasPerk('convict')) startHeat += 25;
+  if (hasPerk('sentinel_disorder')) startAug += 20;
+  if (hasPerk('addictions')) maxEnergy -= 30;
+  if (hasPerk('makeshift_reactor')) maxEnergy += 40;
+  if (hasPerk('blackmail')) startCredits = Math.max(0, startCredits - 200);
+  if (hasPerk('aug_menace')) startAug += 15;
+  let buyoutPrice = Math.round(6000 * diff.buyoutMult);
+  if (hasPerk('prime_real_estate')) buyoutPrice = Math.round(buyoutPrice * 0.8);
+  let rentAmount = Math.round(350 * diff.rentMult);
+  if (hasPerk('bad_lease')) rentAmount = Math.round(rentAmount * 1.3);
 
   const state = {
-    version: 2,
+    version: 3,
     profession: prof.id,
     professionName: prof.name,
+    difficulty: diff.id,
+    difficultyName: diff.name,
+    perks,
     day: 1,
     week: 1,
     rentDueDay: 4,
-    rentAmount: 350,
-    buyoutPrice: 6000,
+    rentAmount,
+    buyoutPrice,
     ownsShop: false,
     gameOver: null,
 
-    credits: prof.credits,
+    credits: startCredits,
     energy: prof.energy,
-    maxEnergy: 160,
-    luck: prof.luck || 8,
+    maxEnergy,
+    luck: startLuck,
     luckBuffDays: 0,
-    heat: prof.id === 'fence' ? 12 : 0,
-    augThreat: 10,
+    heat: startHeat,
+    augThreat: startAug,
+    modules: [],
+    moduleMaxSlots: 4,
+    newspaper: null,
 
     rep,
     licenses: [...prof.startingLicenses],
@@ -624,7 +736,7 @@ export function createNewGameState(professionId = 'apprentice') {
     unlockedMerchants,
     merchantDailyStock: {},
 
-    shelfMaxSlots: 12,
+    shelfMaxSlots: opts.perkNegative === 'minimalist' ? 8 : 12,
     stashMaxSlots: prof.id === 'fence' ? 6 : 4,
     shelf: [],
     stash: [],
@@ -650,7 +762,12 @@ export function createNewGameState(professionId = 'apprentice') {
       helpedSerpico: false,
       metOdinFriendly: false,
       luQuestState: 'none',
-      luReturnDay: 0
+      luReturnDay: 0,
+      hydroHarvested: 0,
+      aquaHarvested: 0,
+      modulesInstalled: 0,
+      vendingEarned: 0,
+      uniqueItemsSeen: 0
     },
 
     logs: [
@@ -692,6 +809,7 @@ export function addLog(state, msg) {
 
 export function changeRep(state, factionId, delta) {
   if (state.rep[factionId] === undefined) return;
+  if (delta > 0 && state.perks && state.perks.negative === 'ascetic') delta = Math.round(delta * 0.7);
   state.rep[factionId] = Math.max(-50, Math.min(100, Math.round(state.rep[factionId] + delta)));
 }
 
@@ -700,6 +818,8 @@ export function prepareDay(state) {
   const categories = ['supply', 'medical', 'weapon', 'luxury', 'tech'];
   state.hotCategory = categories[(state.day * 2 + 1) % categories.length];
   state.dailyWanted = WANTED_POOL[(state.day - 1) % WANTED_POOL.length];
+  state.newspaper = NEWSPAPER_EVENTS[(state.day * 3 + 1) % NEWSPAPER_EVENTS.length];
+  addLog(state, state.newspaper.headline + '（' + state.newspaper.desc + '）');
   state.customersServedToday = 0;
 
   // 重置所有批发供货商今日限购库存
@@ -718,6 +838,10 @@ export function prepareDay(state) {
   if (state.day === 4) queue.push(buildStoryVisitor(STORY_NPCS.corrupt_cop_trap));
   if (state.day === 5) queue.push(buildStoryVisitor(STORY_NPCS.lu_crate));
   if (state.day === 6) queue.push(buildStoryVisitor(STORY_NPCS.serpico_plea));
+  if (state.day === 7) queue.push(buildStoryVisitor(STORY_NPCS.eleanor_seed));
+  if (state.day === 8) queue.push(buildStoryVisitor(STORY_NPCS.ren_addiction));
+  if (state.day === 9) queue.push(buildStoryVisitor(STORY_NPCS.sawyer_deal));
+  if (state.day === 10) queue.push(buildStoryVisitor(STORY_NPCS.georgio_return));
 
   if (state.stats.luQuestState === 'holding' && state.day >= state.stats.luReturnDay) {
     queue.push({
@@ -739,7 +863,7 @@ export function prepareDay(state) {
   }
 
   // 2. 交租日当天必来一位「收破烂的黑市奸商」帮玩家批量清仓废品凑房租！（还原原版交租前奸商机制）
-  const regularCount = state.day === 1 ? 6 : 7;
+  const regularCount = (state.day === 1 ? 6 : 7) + (state.machines.includes('mirage') ? 2 : 0);
   let wantedSpawned = false;
   let augSpawnedToday = 0;
 
@@ -760,7 +884,9 @@ export function prepareDay(state) {
   }
 
   // 3. 治安部突击盘查官
-  const raidChance = (state.heat * 0.012) + (state.day >= 2 ? 0.24 : 0);
+  let raidChance = (state.heat * 0.012) + (state.day >= 2 ? 0.24 : 0);
+  if (state.machines.includes('alarm_sys')) raidChance *= 0.6;
+  if (state.perks && state.perks.positive === 'model_citizen') raidChance *= 0.8;
   if (state.day >= 2 && Math.random() < raidChance) {
     const raidIdx = Math.min(queue.length, 3 + Math.floor(Math.random() * 3));
     queue.splice(raidIdx, 0, buildSecurityInspector(state));
@@ -960,11 +1086,11 @@ function generateRandomCustomer(state, { forcedArch, allowWanted, allowAug }) {
     offerEntries,
     buyEntries,
     haggleMult,
-    minSellMult: 0.74,   // 卖家最多接受被砍到 74%
-    maxBuyMult: 1.28,    // 买家最多接受被加价到 128%
+    minSellMult: state.perks && state.perks.positive === 'intimidating' ? 0.62 : 0.74,
+    maxBuyMult: state.perks && state.perks.positive === 'intimidating' ? 1.45 : 1.28,
 
-    patience: arch.patience,
-    maxPatience: arch.patience,
+    patience: arch.patience + (state.machines.includes('cassette_player') ? 1 : 0) + (getModuleEffects(state).streamlining > 0 ? 1 : 0),
+    maxPatience: arch.patience + (state.machines.includes('cassette_player') ? 1 : 0) + (getModuleEffects(state).streamlining > 0 ? 1 : 0),
     dialogue: greeting,
     behaviorNote
   };
@@ -1002,7 +1128,8 @@ function refreshCustomerBuyEntries(state, arch, wantedInfo, sellableNow, targetQ
   const shuffled = [...pool].sort(() => Math.random() - 0.5);
   const picked = shuffled.slice(0, Math.min(targetQty, shuffled.length));
 
-  const budgetMult = (wantedInfo && wantedInfo.isOdin) ? 1.48 : (arch ? arch.budgetMult : 1.1);
+  const diffObj = DIFFICULTIES.find(d => d.id === state.difficulty) || DIFFICULTIES[1];
+  const budgetMult = ((wantedInfo && wantedInfo.isOdin) ? 1.48 : (arch ? arch.budgetMult : 1.1)) * diffObj.budgetMult;
   const faction = wantedInfo ? wantedInfo.faction : (arch ? arch.faction : 'lower');
 
   for (const item of picked) {
@@ -1389,9 +1516,10 @@ export function scanCustomerForAug(state) {
     return { ok: false, msg: '尚未购买【AI 改造体扫描仪】（可在证照&设备栏购买）！' };
   }
   if (c.augScanned) return { ok: false, msg: '已扫描过该访客' };
-  if (state.energy < 20) return { ok: false, msg: '电力不足（需 20⚡）！可在库存点击聚变电池充电。' };
+  const scanCost = (state.perks && state.perks.positive === 'vigilant') || getModuleEffects(state).neural > 0 ? 10 : 20;
+  if (state.energy < scanCost) return { ok: false, msg: `电力不足（需 ${scanCost}⚡）！可在库存点击聚变电池充电。` };
 
-  state.energy -= 20;
+  state.energy -= scanCost;
   c.augScanned = true;
   if (c.isAug) {
     addLog(state, `📡 [AUG DETECTED] 扫描确认：${c.name} 是被失控 AI 寄生的改造体！立即拔霰弹枪轰击领赏！`);
@@ -1408,7 +1536,8 @@ export function shootCustomerWithShotgun(state) {
 
   if (c.isAug) {
     c.eliminated = true;
-    const bounty = state.rep.security >= 40 ? 240 : 190;
+    let bounty = state.rep.security >= 40 ? 240 : 190;
+    if (state.perks && state.perks.neutral === 'aug_menace') bounty = Math.round(bounty * 1.5);
     state.credits += bounty;
     state.stats.totalEarned += bounty;
     state.stats.augsEliminated++;
@@ -1634,16 +1763,25 @@ export function runMachineRecipe(state, machineId, recipeId) {
   const recipe = machine.recipes.find(r => r.id === recipeId);
   if (!recipe) return { ok: false, msg: '未知配方' };
 
-  if (state.energy < recipe.power) {
-    return { ok: false, msg: `电力不足（需 ${recipe.power}⚡，当前 ${state.energy}⚡）！` };
+  const modFx = getModuleEffects(state);
+  let powerCost = recipe.power;
+  if (modFx.efficiency > 0) powerCost = Math.max(1, Math.round(powerCost * (1 - modFx.efficiency * 0.12)));
+  if (modFx.chem > 0 && machineId === 'chem_finisher') powerCost = Math.max(1, Math.round(powerCost * 0.8));
+  if (modFx.hydro_light > 0 && machineId === 'hydroponics') powerCost = Math.max(1, Math.round(powerCost * 0.85));
+  if (state.perks && state.perks.positive === 'experienced_chemist') powerCost = Math.max(1, Math.round(powerCost * 0.85));
+  if (state.energy < powerCost) {
+    return { ok: false, msg: `电力不足（需 ${powerCost}⚡，当前 ${state.energy}⚡）！` };
   }
 
   const all = getAllOwnedItemsWithLoc(state)
     .map(x => x.item)
     .filter(i => !i.questTag && !i.isContainer);
 
+  let effectiveInputs = [...recipe.inputs];
+  if (modFx.refinement > 0 && effectiveInputs.length > 1) effectiveInputs = effectiveInputs.slice(0, -1);
+  if (modFx.hydro_water > 0 && machineId === 'hydroponics' && effectiveInputs.length > 1) effectiveInputs = effectiveInputs.slice(0, -1);
   const chosenUids = [];
-  for (const reqTpl of recipe.inputs) {
+  for (const reqTpl of effectiveInputs) {
     const match = all.find(i => i.templateId === reqTpl && !chosenUids.includes(i.uid));
     if (!match) {
       return { ok: false, msg: `缺少原料：【${ITEM_TEMPLATES[reqTpl].name}】（可去电话批发商整批采购）！` };
@@ -1652,9 +1790,15 @@ export function runMachineRecipe(state, machineId, recipeId) {
   }
 
   for (const uid of chosenUids) removeOwnedItemByUid(state, uid);
-  state.energy -= recipe.power;
+  state.energy -= powerCost;
 
-  for (let n = 0; n < recipe.outputCount; n++) {
+  let outCount = recipe.outputCount;
+  if (modFx.overclock > 0 && Math.random() < 0.25 * modFx.overclock) outCount += 1;
+  if (modFx.chem > 0 && machineId === 'chem_finisher') outCount += 1;
+  if (modFx.hydro_yield > 0 && machineId === 'hydroponics') outCount += 1;
+  if (modFx.junk > 0 && machineId === 'furnace') outCount += 1;
+  if (modFx.blast > 0 && machineId === 'furnace' && recipe.id === 'smelt_junk') outCount += 1;
+  for (let n = 0; n < outCount; n++) {
     const out = createItemInstance(recipe.output, {
       isFake: Boolean(recipe.makeFake),
       inspectedVisual: true,
@@ -1662,10 +1806,12 @@ export function runMachineRecipe(state, machineId, recipeId) {
     });
     smartStoreItem(state, out);
   }
+  if (machineId === 'hydroponics') state.stats.hydroHarvested = (state.stats.hydroHarvested || 0) + outCount;
+  if (machineId === 'aquaculture') state.stats.aquaHarvested = (state.stats.aquaHarvested || 0) + outCount;
 
-  state.stats.itemsCrafted += recipe.outputCount;
+  state.stats.itemsCrafted += outCount;
   addLog(state, `⚙️ 【${machine.name}】合成完成：产出 ${recipe.outputCount} ×【${ITEM_TEMPLATES[recipe.output].name}】。`);
-  return { ok: true, msg: `⚙️ 制造成功！获得 ${recipe.outputCount} ×【${ITEM_TEMPLATES[recipe.output].name}】！` };
+  return { ok: true, msg: `⚙️ 制造成功！获得 ${outCount} ×【${ITEM_TEMPLATES[recipe.output].name}】！` };
 }
 
 // 序列号打磨机洗白赃物
@@ -1692,6 +1838,9 @@ export function purchaseShopUpgrade(state, id) {
     if (state.credits < m.cost) return { ok: false, msg: `信用点不足（需 ${m.cost} CR）` };
     state.credits -= m.cost;
     state.machines.push(id);
+    if (id === 'powerbloc') state.maxEnergy += 60;
+    if (id === 'micro_reactor') state.maxEnergy += 120;
+    if (id === 'storage_coordinator') state.shelfMaxSlots += 6;
     addLog(state, `🏭 后室新增生产设备：【${m.name}】（-${m.cost} CR）！`);
     return { ok: true, msg: `🏭 已安装【${m.name}】！` };
   }
@@ -1708,6 +1857,10 @@ export function purchaseShopUpgrade(state, id) {
     if (id === 'shelf_expand_1') state.shelfMaxSlots += 8;
     if (id === 'stash_expand') state.stashMaxSlots += 6;
   }
+  // 被动机器即时生效
+  if (id === 'powerbloc') state.maxEnergy += 60;
+  if (id === 'micro_reactor') state.maxEnergy += 120;
+  if (id === 'storage_coordinator') state.shelfMaxSlots += 6;
 
   addLog(state, `📜 解锁升级：【${up.name}】（-${up.cost} CR）！`);
   return { ok: true, msg: `📜 成功解锁【${up.name}】！` };
@@ -1736,7 +1889,8 @@ export function performNightActionAndSleep(state, nightChoice) {
       'scrap_metal', 'dirty_water', 'filter_core', 'bio_moss', 'electronic_parts',
       'broken_pistol', 'morsel_food', 'scratcher_ticket', 'crate_service', 'keycard_service'
     ];
-    const count = state.rep.lower >= 40 ? 4 : 3;
+    let count = state.rep.lower >= 40 ? 4 : 3;
+    if (state.perks && state.perks.positive === 'proficient_scavenger') count += 2;
     const names = [];
     for (let k = 0; k < count; k++) {
       const tplId = lootPool[Math.floor(Math.random() * lootPool.length)];
@@ -1766,6 +1920,34 @@ export function performNightActionAndSleep(state, nightChoice) {
     state.heat = Math.max(0, state.heat - 18);
     nightReport.push('⚡ 留店检修电容并抹除巡查监控：电力 +65⚡，治安嫌疑 -18%。');
   }
+
+  // v3.0 被动机器夜间结算
+  const modFxNight = getModuleEffects(state);
+  if (state.machines.includes('vending')) {
+    const sellable = getShopSellableItems(state).filter(i => !i.isContainer);
+    if (sellable.length > 0) {
+      const n = Math.min(3, sellable.length);
+      let earn = 0;
+      for (let i = 0; i < n; i++) {
+        const it = sellable[Math.floor(Math.random() * sellable.length)];
+        if (it) { earn += Math.round(it.baseValue * 0.7); removeOwnedItemByUid(state, it.uid); }
+      }
+      if (earn > 0) { state.credits += earn; state.stats.totalEarned += earn; state.stats.vendingEarned = (state.stats.vendingEarned || 0) + earn; nightReport.push(`🏪 自动售货机夜间被动销售 +${earn} CR！`); }
+    }
+  }
+  if (state.machines.includes('recharger')) { state.energy = Math.min(state.maxEnergy, state.energy + 30); nightReport.push('🔌 充电站夜间回电 +30⚡'); }
+  if (state.machines.includes('micro_reactor')) { state.energy = Math.min(state.maxEnergy, state.energy + 40); nightReport.push('☢️ 微型核反应堆夜间回电 +40⚡'); }
+  if (state.machines.includes('mouse_trap') && Math.random() < 0.6) {
+    smartStoreItem(state, createItemInstance('raw_meat_small', { inspectedVisual: true }));
+    nightReport.push('🐭 捕鼠陷阱夜间捕获小动物，产出小型生肉！');
+  }
+  if (modFxNight.hydro_auto > 0 && state.machines.includes('hydroponics')) {
+    smartStoreItem(state, createItemInstance('nutrifruit', { inspectedVisual: true }));
+    nightReport.push('🤖 水培自动模块夜间产出营养果！');
+  }
+  if (modFxNight.eco > 0) { state.energy = Math.min(state.maxEnergy, state.energy + 10 * modFxNight.eco); }
+  if (state.perks && state.perks.positive === 'short_sleeper') { state.energy = Math.min(state.maxEnergy, state.energy + 20); }
+  if (state.perks && state.perks.neutral === 'makeshift_reactor') { state.energy = Math.min(state.maxEnergy, state.energy + 10); }
 
   // 检查自充电零点能电池被动回电！
   const allAfter = getAllOwnedItemsWithLoc(state);
@@ -1822,6 +2004,11 @@ export function performNightActionAndSleep(state, nightChoice) {
     }
   }
 
+  if (state.heat >= 100) {
+    state.gameOver = { victory: false, endingId: 'raid_busted', title: '结局：查抄没收', desc: '嫌疑满格，治安部查封了你的当铺！' };
+    state.phase = 'gameover';
+    return { ok: true, nightReport, gameOver: state.gameOver };
+  }
   if (state.augThreat >= 100) {
     state.gameOver = {
       victory: false,
@@ -1870,6 +2057,20 @@ export function buyoutShopProperty(state) {
       title: '黑金结局：第13区盲盒与暗巷教父',
       desc: '没有你刷不开的密封箱，也没有你的走私者伪装箱藏不住的违禁珍宝。索耶与全城大盗奉你为地下交易之王！'
     };
+  } else if ((state.stats.hydroHarvested || 0) >= 20) {
+    ending = { victory: true, endingId: 'hydro_king', title: '传奇结局：水培之王', desc: '你的水培作物垄断了全站市场！' };
+  } else if ((state.stats.aquaHarvested || 0) >= 15) {
+    ending = { victory: true, endingId: 'aqua_tycoon', title: '传奇结局：水产大亨', desc: '鱼子酱帝国崛起！' };
+  } else if (state.stats.itemsCrafted >= 40) {
+    ending = { victory: true, endingId: 'chem_master', title: '传奇结局：化学大师', desc: '制药酿酒传奇！' };
+  } else if (state.rep.blackmarket >= 60) {
+    ending = { victory: true, endingId: 'blackmarket_boss', title: '传奇结局：黑市教父', desc: '地下世界之王！' };
+  } else if (state.rep.upper >= 60) {
+    ending = { victory: true, endingId: 'upper_tycoon', title: '传奇结局：上层大亨', desc: '上层区顶级富豪！' };
+  } else if (state.rep.security >= 60) {
+    ending = { victory: true, endingId: 'security_hero', title: '传奇结局：治安英雄', desc: '治安部终身荣誉！' };
+  } else if (state.rep.lower >= 60) {
+    ending = { victory: true, endingId: 'lower_saint', title: '传奇结局：下层圣人', desc: '下层街坊爱戴！' };
   } else if (state.stats.augsEliminated >= 3 && state.rep.security >= 40) {
     ending = {
       victory: true,
