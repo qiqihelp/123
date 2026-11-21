@@ -34,6 +34,7 @@ import {
   researchBlocked,
   startResearch,
   rechargeShield,
+  updateHullBar,
   location,
 } from "../rts/sim.mjs";
 
@@ -641,13 +642,13 @@ test("building placement reserves exact coordinates; invalid attempts do not cha
   );
 });
 
-test("ten T2 vehicles and one T3 mech unlock at their own research tier", () => {
+test("ten T2 vehicles and three multi-turret T3 tanks unlock at their own research tier", () => {
   const g = createGame();
   Object.assign(g, { ore: 20000, crystal: 600, uranium: 100 });
   const t2 = Object.keys(units).filter((key) => units[key].tech === "t2");
   const t3 = Object.keys(units).filter((key) => units[key].tech === "t3");
   assert.equal(t2.length, 10);
-  assert.deepEqual(t3, ["titan"]);
+  assert.deepEqual(t3, ["titan", "aegis", "skySiege"]);
   assert.ok(t2.every((k) => /T2/.test(submit(g, k))));
   assert.match(submit(g, "titan"), /T3/);
   assert.equal(enqueue(g, "lab"), "");
@@ -666,6 +667,9 @@ test("ten T2 vehicles and one T3 mech unlock at their own research tier", () => 
   advance(g, 0.2);
   assert.equal(submit(g, "titan"), "");
   assert.equal(g.uranium, 38);
+  g.uranium = 200;
+  assert.equal(submit(g, "aegis"), "");
+  assert.equal(submit(g, "skySiege"), "");
 });
 
 test("losing a research center refunds all T3 research resources, including uranium", () => {
@@ -755,7 +759,7 @@ test("T3 shells damage and slow enemies in their impact area without slowing all
     (a) => a.team === -1 && a.type === "scout",
   );
   const ally = g.actors.find((a) => a.team === 1 && a.type === "scout");
-  Object.assign(titan, { type: "titan", x: 300, y: 300, cd: 0 });
+  Object.assign(titan, { type: "skySiege", x: 300, y: 300, cd: 0 });
   Object.assign(first, { x: 520, y: 300, hp: 200, cd: 100 });
   Object.assign(second, { x: 540, y: 340, hp: 200, cd: 100 });
   Object.assign(ally, { x: 530, y: 270, cd: 100 });
@@ -783,4 +787,97 @@ test("a factory placed on the far edge deploys units inside the map and holds th
     scout.x < W && scout.y < H && scout.x > W - 150 && scout.y > H - 150,
   );
   assert.equal(scout.order, null);
+});
+
+test("hull UI leads with white damage and green repair before the red fill catches up", () => {
+  const a = { hp: 100, hullBar: 100, hullSample: 100 };
+  a.hp = 60;
+  updateHullBar(a, 100, 0.05);
+  assert.equal(a.hullBar, 100);
+  assert.equal(a.hullSample, 60);
+  updateHullBar(a, 100, 0.2);
+  assert.ok(a.hullBar < 100 && a.hullBar > 60);
+  for (let i = 0; i < 60; i++) updateHullBar(a, 100, 1 / 30);
+  assert.equal(a.hullBar, 60);
+  a.hp = 90;
+  updateHullBar(a, 100, 0.1);
+  assert.equal(a.hullBar, 60);
+  assert.equal(a.hullSample, 90);
+  updateHullBar(a, 100, 0.13);
+  assert.ok(a.hullBar > 60 && a.hullBar < 90);
+  for (let i = 0; i < 60; i++) updateHullBar(a, 100, 1 / 30);
+  assert.equal(a.hullBar, 90);
+});
+
+test("repair emits a green-link source and target only for actual allied healing", () => {
+  const g = createGame();
+  g.nextThink = Infinity;
+  const medic = g.actors.find((a) => a.team === 1 && a.type === "tank");
+  const ally = g.actors.find((a) => a.team === 1 && a.type === "scout");
+  const foe = g.actors.find((a) => a.team === -1 && a.type === "scout");
+  Object.assign(medic, { x: 400, y: 350, type: "aegis", hp: 400 });
+  Object.assign(ally, { x: 400, y: 400, hp: 60, hullBar: 60, hullSample: 60 });
+  Object.assign(foe, { x: 455, y: 400, hp: 55, cd: 100 });
+  step(g, 1 / 30);
+  assert.deepEqual(g.repairLinks, [{ source: medic.id, target: ally.id }]);
+  assert.ok(ally.hp > 60 && ally.hullBar === 60);
+  assert.equal(medic.hp, 400);
+  ally.x = 200;
+  step(g, 1 / 30);
+  assert.equal(g.repairLinks.length, 0);
+});
+
+test("the composite assault tank independently aims two guns and launches exactly two staggered rockets", () => {
+  const g = createGame();
+  g.nextThink = Infinity;
+  const titan = g.actors.find((a) => a.team === 1 && a.type === "tank");
+  const [left, right] = g.actors.filter(
+    (a) => a.team === -1 && a.type === "scout",
+  );
+  const far = g.actors.find((a) => a.team === -1 && a.type === "tank");
+  Object.assign(titan, {
+    x: 300,
+    y: 330,
+    angle: 0,
+    type: "titan",
+    hp: 610,
+    shield: 220,
+  });
+  Object.assign(left, { x: 365, y: 280, hp: 200, cd: 100 });
+  Object.assign(right, { x: 365, y: 380, hp: 200, cd: 100 });
+  Object.assign(far, { x: 493, y: 330, hp: 200, cd: 100 });
+  g.selected = new Set([titan.id]);
+  order(g, far.x, far.y, "attack", far.id);
+  step(g, 1 / 30);
+  assert.deepEqual(
+    titan.mountState.map((w) => w.target),
+    [far.id, left.id, right.id],
+  );
+  assert.ok(titan.mountState[1].aim < 0 && titan.mountState[2].aim > 0);
+  assert.equal(g.shots.filter((s) => s.light).length, 2);
+  assert.equal(g.missiles.length, 2);
+  assert.ok(g.missiles[0].age > 0 && g.missiles[1].age < 0);
+  assert.notEqual(titan.mountState[0].cd, titan.mountState[1].cd);
+  advance(g, 0.13);
+  assert.equal(g.missiles.filter((m) => m.age > 0).length, 2);
+  assert.equal(titan.mountState[0].salvoLane, 1);
+});
+
+test("self-repair waits after hull damage and remains independent of shield recharge", () => {
+  const g = createGame();
+  g.nextThink = Infinity;
+  const tank = g.actors.find((a) => a.team === 1 && a.type === "tank");
+  const attacker = g.actors.find((a) => a.team === -1 && a.type === "tank");
+  Object.assign(tank, { x: 300, y: 300, type: "titan", hp: 610, shield: 0 });
+  Object.assign(attacker, { x: 390, y: 300, cd: 0, hp: 200 });
+  step(g, 1 / 30);
+  const damaged = tank.hp;
+  assert.ok(damaged < 610);
+  attacker.x = 700;
+  advance(g, 2);
+  assert.equal(tank.hp, damaged);
+  assert.ok(tank.shield > 0);
+  advance(g, 1);
+  assert.ok(tank.hp > damaged);
+  assert.ok(!g.repairLinks.some((r) => r.source === tank.id));
 });

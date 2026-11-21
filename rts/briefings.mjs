@@ -37,7 +37,10 @@ const notes = {
   clusterLauncher: "连射三枚溅射范围较大的追踪导弹，适合攻击扎堆的敌军。",
   ionSkirmisher: "在移动中快速发射等离子弹，有一层较薄的自充护盾。",
   titan:
-    "T3 重装机甲。重甲和护盾用于承受火力，远程震荡炮能伤害并减速爆炸范围内的敌车。",
+    "一座双发火箭炮塔和两座近程机枪炮塔可同时独立瞄准与开火。护盾自动充能，车体停止受伤一段时间后启动自修。",
+  aegis:
+    "两座独立机枪保护维修平台。绿线连接维修中的友军车辆；有强化护盾，但不能用维修模块修理自己。",
+  skySiege: "远程震荡炮可让落点周围的敌方车辆减速，两座独立机枪防止敌军贴脸。",
   uraniumTank:
     "消耗铀生产的重型护盾战车，可承受集中火力，适合掩护后排。护盾会自行恢复，车体受损需要维修。",
   uraniumPlant: "消耗铀建造的高容量电站，为基地提供额外的电力，不持续消耗铀。",
@@ -76,10 +79,27 @@ export function unitProfile(g, group) {
   }
   if (spec.speed)
     add("移动速度", Number(movementSpeed(g, a).toFixed(2)) + " / 秒");
-  if (spec.range) {
+  if (spec.range && !spec.mounts) {
     add("射程", spec.range);
     add(spec.missiles ? "单枚伤害" : "单发伤害", weaponDamage(g, a));
     add("开火间隔", spec.rate + " 秒");
+  }
+  if (spec.mounts) {
+    add("独立炮塔", spec.mounts.length + " 座");
+    for (const weapon of spec.mounts) {
+      const damage = weaponDamage(g, a, weapon);
+      add(
+        weapon.name,
+        `射程 ${weapon.range} · 伤害 ${damage}${weapon.missiles ? " ×" + weapon.missiles : ""} · ${weapon.rate} 秒${weapon.slow ? " · 范围减速 " + weapon.slow + " 秒" : ""}`,
+      );
+    }
+  }
+  if (spec.selfRepair) {
+    const tech = a.team === 1 ? g.tech : g.red.tech;
+    add(
+      "自我维修",
+      `车体 ${spec.selfRepair * (tech.has("repairBoost") ? 1.3 : 1)} / 秒 · 停止受损 ${spec.repairDelay} 秒后启动`,
+    );
   }
   if (spec.missiles) add("每轮连发", spec.missiles + " 枚");
   if (spec.splash) add("溅射半径", spec.splash);

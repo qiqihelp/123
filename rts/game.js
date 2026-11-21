@@ -992,6 +992,34 @@ function render(now) {
       );
     }
   for (const r of g.relays) if (visible(r.x, r.y)) relay(c, r);
+  if (g.repairLinks.length) {
+    const actors = new Map(g.actors.map((a) => [a.id, a]));
+    c.save();
+    for (const link of g.repairLinks) {
+      const from = actors.get(link.source),
+        to = actors.get(link.target);
+      if (!from || !to || (!visible(from.x, from.y) && !visible(to.x, to.y)))
+        continue;
+      c.beginPath();
+      c.moveTo(from.x, from.y - 4);
+      c.lineTo(to.x, to.y - 3);
+      c.lineWidth = 6;
+      c.strokeStyle = "#54e57850";
+      c.stroke();
+      c.lineWidth = 1.7;
+      c.strokeStyle = "#9cffa8";
+      c.stroke();
+      const p = (g.time * 3 + from.id * 0.21) % 1;
+      c.fillStyle = "#dbffd8";
+      c.fillRect(
+        from.x + (to.x - from.x) * p - 1.5,
+        from.y - 4 + (to.y - from.y + 1) * p - 1.5,
+        3,
+        3,
+      );
+    }
+    c.restore();
+  }
   const marked = new Set(
     selected(g)
       .filter((a) => a.order?.kind === "target")
@@ -1028,6 +1056,7 @@ function render(now) {
         u.aim,
         u.recoil,
         u.salvoLane,
+        u.mountState,
       );
     else structure(c, u.type, u.team, u.x, u.y, u.aim, u.recoil);
     if (s.shield && u.shield > 0) {
@@ -1075,14 +1104,23 @@ function render(now) {
     if (
       g.selected.has(u.id) ||
       u.hp < s.hp ||
+      u.hullBar < s.hp ||
       (s.shield && u.shield < s.shield)
     ) {
       const x = Math.round(u.x - s.size),
         y = Math.round(u.y - s.size - 8);
       c.fillStyle = "#263020";
       c.fillRect(x - 1, y - 1, s.size * 2 + 2, 5);
-      c.fillStyle = u.team === 1 ? "#a9c687" : "#db937b";
-      c.fillRect(x, y, Math.ceil((s.size * 2 * u.hp) / s.hp), 3);
+      const width = s.size * 2,
+        live = clamp(u.hp / s.hp, 0, 1) * width,
+        trailing = clamp(u.hullBar / s.hp, 0, 1) * width;
+      const red = Math.min(live, trailing);
+      c.fillStyle = "#df635a";
+      c.fillRect(x, y, red, 3);
+      if (live !== trailing) {
+        c.fillStyle = live > trailing ? "#91f998" : "#fff8ee";
+        c.fillRect(x + red, y, Math.abs(live - trailing), 3);
+      }
       if (s.shield) {
         c.fillStyle = "#33344e";
         c.fillRect(x, y - 4, s.size * 2, 2);
@@ -1105,9 +1143,9 @@ function render(now) {
       marker(c, mine.x, mine.y + 34, "◆ " + spec.label, 0, spec.color);
     }
   for (const s of g.shots) {
-    const p = 1 - s.life / 0.14;
+    const p = 1 - s.life / (s.light ? 0.08 : 0.14);
     c.strokeStyle = s.team === 1 ? "#f5de9a" : "#f5ad7b";
-    c.lineWidth = 1.5;
+    c.lineWidth = s.light ? 1 : 1.5;
     c.beginPath();
     c.moveTo(s.x + (s.tx - s.x) * p * 0.75, s.y + (s.ty - s.y) * p * 0.75);
     c.lineTo(s.x + (s.tx - s.x) * p, s.y + (s.ty - s.y) * p);

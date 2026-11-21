@@ -11,6 +11,16 @@ export const location = (x, y) => {
   const [px, py] = field(x, y);
   return { x: px, y: py };
 };
+const pointDefense = (side, y) => ({
+  name: side + "机枪炮塔",
+  x: 8,
+  y,
+  kind: "mg",
+  range: 120,
+  damage: 13,
+  rate: 0.32,
+  barrel: 8,
+});
 export const units = {
   miner: {
     name: "采矿车",
@@ -298,24 +308,88 @@ export const units = {
     flight: 0.24,
   },
   titan: {
-    name: "天穹攻城机甲",
-    desc: "T3 · 重型护盾与广域迟滞",
+    name: "复合型攻坚坦克",
+    desc: "T3 · 双发火箭 / 双机枪 / 自修护盾",
     cost: 980,
     crystal: 52,
     uranium: 34,
     hp: 610,
     shield: 220,
-    speed: 23,
+    speed: 27,
     size: 26,
-    range: 284,
-    damage: 158,
-    rate: 4.8,
     time: 24,
     tech: "t3",
     armor: 0.88,
-    splash: 64,
-    flight: 0.76,
-    slow: 2.5,
+    selfRepair: 12,
+    repairDelay: 2.5,
+    mounts: [
+      {
+        name: "双发火箭炮塔",
+        x: -6,
+        y: 0,
+        kind: "rocket",
+        range: 215,
+        damage: 61,
+        rate: 3.0,
+        barrel: 14,
+        missiles: 2,
+        flight: 0.7,
+        splash: 35,
+      },
+      pointDefense("左侧", -10),
+      pointDefense("右侧", 10),
+    ],
+  },
+  aegis: {
+    name: "守望支援坦克",
+    desc: "T3 · 双炮台 / 友军维修 / 重盾",
+    cost: 850,
+    crystal: 46,
+    uranium: 32,
+    hp: 515,
+    shield: 260,
+    speed: 31,
+    size: 23,
+    time: 21,
+    tech: "t3",
+    armor: 0.94,
+    heal: 17,
+    radius: 100,
+    mounts: [
+      { ...pointDefense("左侧", -8), x: 1 },
+      { ...pointDefense("右侧", 8), x: 1 },
+    ],
+  },
+  skySiege: {
+    name: "天穹攻城坦克",
+    desc: "T3 · 震荡炮 / 双机枪 / 远程减速",
+    cost: 1090,
+    crystal: 58,
+    uranium: 38,
+    hp: 530,
+    shield: 140,
+    speed: 22,
+    size: 27,
+    time: 27,
+    tech: "t3",
+    armor: 0.93,
+    mounts: [
+      {
+        name: "远程震荡炮塔",
+        x: -5,
+        y: 0,
+        kind: "shell",
+        range: 284,
+        damage: 158,
+        rate: 4.8,
+        barrel: 23,
+        splash: 64,
+        flight: 0.76,
+        slow: 2.5,
+      },
+      pointDefense("左侧", -11),
+      pointDefense("右侧", 11),
+    ],
   },
 };
 export const buildings = {
@@ -441,8 +515,12 @@ export const BUILDING_HP_FACTOR = 1.55;
 export const BASE_DAMAGE_FACTOR = 0.75;
 for (const spec of Object.values(buildings))
   spec.hp = Math.round(spec.hp * BUILDING_HP_FACTOR);
-for (const spec of [...Object.values(units), ...Object.values(buildings)])
-  if (spec.damage) spec.damage = Math.round(spec.damage * BASE_DAMAGE_FACTOR);
+for (const spec of [...Object.values(units), ...Object.values(buildings)]) {
+  if (spec.mounts) spec.range = Math.max(...spec.mounts.map((m) => m.range));
+  for (const weapon of spec.mounts || [spec])
+    if (weapon.damage)
+      weapon.damage = Math.round(weapon.damage * BASE_DAMAGE_FACTOR);
+}
 export const UNIT_LIMIT = 60;
 export const ENEMY_UNIT_LIMIT = 11;
 export const ENEMY_MAX_WAVE = 6;
@@ -518,8 +596,8 @@ export const techs = {
   },
   t3: {
     name: "T3 科技",
-    desc: "完成 T2 后可研究；解锁天穹攻城机甲。",
-    short: "解锁天穹攻城机甲",
+    desc: "完成 T2 后可研究；解锁三种多炮台坦克。",
+    short: "解锁三种多炮台坦克",
     cost: 650,
     crystal: 60,
     uranium: 28,
@@ -593,6 +671,7 @@ export function createGame() {
     rally: null,
     waveWaiting: false,
     shots: [],
+    repairLinks: [],
     shells: [],
     plasma: [],
     damageText: [],
@@ -678,6 +757,10 @@ function spawn(g, type, team, x, y, angle = team === 1 ? -0.7 : 2.4) {
     hitFlash: 0,
     repairGlow: 0,
     hp: spec.hp,
+    hullBar: spec.hp,
+    hullSample: spec.hp,
+    hullHold: 0,
+    hullDirection: 0,
     shield: spec.shield || 0,
     shieldClock: 0,
     shieldFlash: 0,
@@ -986,6 +1069,36 @@ function floatDamage(g, target, value, shield) {
     shield,
   });
 }
+// Hull health changes immediately; only the red fill of the bar waits and chases it.
+export function updateHullBar(a, max, dt) {
+  const hp = clamp(a.hp, 0, max),
+    sample = a.hullSample ?? hp;
+  a.hullBar = clamp(a.hullBar ?? hp, 0, max);
+  const direction = Math.sign(hp - sample);
+  if (
+    direction &&
+    (direction !== a.hullDirection || Math.abs(sample - a.hullBar) < 1e-6)
+  ) {
+    a.hullHold = 0.18;
+    a.hullDirection = direction;
+  }
+  a.hullSample = hp;
+  const hold = a.hullHold || 0;
+  a.hullHold = Math.max(0, hold - dt);
+  const diff = hp - a.hullBar;
+  const delta = Math.min(
+    Math.abs(diff),
+    Math.max(max * 0.1, Math.abs(diff) * 4) * Math.max(0, dt - hold),
+  );
+  a.hullBar += Math.sign(diff) * delta;
+}
+function healHull(g, a, amount, source = null) {
+  if (a.hp <= 0 || amount <= 0 || a.hp >= catalog[a.type].hp) return;
+  a.hp = Math.min(catalog[a.type].hp, a.hp + amount);
+  a.repairGlow = 0.2;
+  if (source && source !== a)
+    g.repairLinks.push({ source: source.id, target: a.id });
+}
 function strike(g, target, damage, effects = {}) {
   if (target.hp <= 0) return;
   const shieldBonus = effects.shieldBonus || 1;
@@ -1008,6 +1121,7 @@ function strike(g, target, damage, effects = {}) {
     target.slowTime = Math.max(target.slowTime || 0, effects.slow);
   if (hull) {
     target.hp -= hull;
+    target.lastHullHit = g.time;
     target.hitFlash = 0.12;
     floatDamage(g, target, hull, false);
   }
@@ -1040,8 +1154,7 @@ function explode(g, x, y, p) {
       strike(g, b, Math.ceil(p.damage * (1 - (0.6 * d) / p.radius)), p);
   }
 }
-export function weaponDamage(g, a) {
-  const s = catalog[a.type];
+export function weaponDamage(g, a, s = catalog[a.type]) {
   return (
     (s.damage || 0) +
     (s.missiles && teamTech(g, a.team).has("guidance")
@@ -1051,21 +1164,33 @@ export function weaponDamage(g, a) {
         : 0)
   );
 }
-function fire(g, a, b, s) {
-  a.cd = s.rate;
-  const damage = weaponDamage(g, a);
-  a.recoil = 0.24;
-  const fx = Math.cos(a.aim),
-    fy = Math.sin(a.aim),
-    barrel = s.missiles ? 13 : s.splash ? 19 : 13;
-  const sx = a.x + fx * barrel,
-    sy = a.y + fy * barrel;
+function mountPoint(a, s) {
+  const c = Math.cos(a.angle),
+    sn = Math.sin(a.angle);
+  return {
+    x: a.x + (s.x || 0) * c - (s.y || 0) * sn,
+    y: a.y + (s.x || 0) * sn + (s.y || 0) * c,
+  };
+}
+function muzzlePoint(a, s, aim, lane = 0) {
+  const center = mountPoint(a, s),
+    barrel = s.barrel || (s.missiles ? 13 : s.splash ? 19 : 13);
+  return {
+    x: center.x + Math.cos(aim) * barrel - Math.sin(aim) * lane * 6,
+    y: center.y + Math.sin(aim) * barrel + Math.cos(aim) * lane * 6,
+  };
+}
+function fire(g, a, b, s, index) {
+  const state = index === undefined ? a : a.mountState[index];
+  state.cd = s.rate;
+  const damage = weaponDamage(g, a, s);
+  state.recoil = 0.24;
+  const { x: sx, y: sy } = muzzlePoint(a, s, state.aim);
   if (s.missiles) {
-    a.salvoLane = -1;
+    state.salvoLane = -1;
     for (let i = 0; i < s.missiles; i++) {
       const lane = i % 2 === 0 ? -1 : 1,
-        x = sx - fy * lane * 6,
-        y = sy + fx * lane * 6;
+        { x, y } = muzzlePoint(a, s, state.aim, lane);
       g.missiles.push({
         x,
         y,
@@ -1075,6 +1200,7 @@ function fire(g, a, b, s) {
         ty: b.y,
         id: b.id,
         source: a.id,
+        mount: index,
         team: a.team,
         age: -i * 0.12,
         total: s.flight + i * 0.04,
@@ -1117,7 +1243,15 @@ function fire(g, a, b, s) {
       s,
     );
     blast(g, b.x, b.y, s.damage > 30 ? 21 : 15, "spark");
-    g.shots.push({ x: sx, y: sy, tx: b.x, ty: b.y, team: a.team, life: 0.14 });
+    g.shots.push({
+      x: sx,
+      y: sy,
+      tx: b.x,
+      ty: b.y,
+      team: a.team,
+      life: s.kind === "mg" ? 0.08 : 0.14,
+      light: s.kind === "mg",
+    });
   }
 }
 function updateMissiles(g, dt) {
@@ -1125,14 +1259,32 @@ function updateMissiles(g, dt) {
     const previous = m.age;
     m.age += dt;
     if (m.age <= 0) continue;
+    const target = g.actors.find((a) => a.id === m.id && a.hp > 0);
     if (m.delayed && previous <= 0) {
       const launcher = g.actors.find((a) => a.id === m.source && a.hp > 0);
       if (launcher) {
-        launcher.recoil = 0.24;
-        launcher.salvoLane = m.lane;
+        const state =
+          m.mount === undefined ? launcher : launcher.mountState?.[m.mount];
+        if (state) {
+          state.recoil = 0.24;
+          state.salvoLane = m.lane;
+          if (m.mount !== undefined) {
+            const weapon = catalog[launcher.type].mounts[m.mount],
+              p = mountPoint(launcher, weapon);
+            const aim = Math.atan2(
+              (target?.y ?? m.ty) - p.y,
+              (target?.x ?? m.tx) - p.x,
+            );
+            const origin = muzzlePoint(launcher, weapon, aim, m.lane);
+            m.x = m.ox = origin.x;
+            m.y = m.oy = origin.y;
+          }
+        }
+      } else if (m.mount !== undefined) {
+        m.age = m.total;
+        continue;
       }
     }
-    const target = g.actors.find((a) => a.id === m.id && a.hp > 0);
     if (target) {
       m.tx = target.x;
       m.ty = target.y;
@@ -1187,12 +1339,13 @@ function enemyAI(g, dt) {
       dist(a, redHQ) < 92 &&
       !enemyFor(g, a, 125)
     ) {
-      a.hp = Math.min(catalog[a.type].hp, a.hp + dt * 10);
+      healHull(g, a, dt * 10, redHQ);
     }
   if (g.time < g.nextThink) return;
   g.nextThink = g.time + 0.6;
   const defenders = g.actors.filter(
-    (a) => a.team === -1 && units[a.type]?.range && a.hp > 0,
+    (a) =>
+      a.team === -1 && units[a.type]?.range && !units[a.type].heal && a.hp > 0,
   );
   const intruder = g.actors
     .filter(
@@ -1213,7 +1366,7 @@ function enemyAI(g, dt) {
   const enemies = byTeam(g, 1).filter(
     (a) => units[a.type]?.range || units[a.type]?.heal,
   );
-  const support = byTeam(g, -1, "fieldMedic");
+  const support = byTeam(g, -1).filter((a) => units[a.type]?.heal);
   const exposedMiner = byTeam(g, -1, "miner").find((m) =>
     enemies.some((b) => units[b.type].range && dist(m, b) < 145),
   );
@@ -1273,7 +1426,11 @@ function enemyAI(g, dt) {
     }
     a.aiRetreat = false;
     // Artillery backs up instead of driving into close combat; other units screen it.
-    if ((s.splash || s.pierce) && local && dist(a, local) < s.range * 0.63) {
+    if (
+      (s.splash || s.pierce || s.mounts?.some((w) => w.kind === "shell")) &&
+      local &&
+      dist(a, local) < s.range * 0.63
+    ) {
       const d = dist(a, local) || 1;
       a.order = {
         kind: "move",
@@ -1693,9 +1850,18 @@ function reinforce(g) {
       : r.tech.has("t2")
         ? [
             ...(r.tech.has("t3") &&
-            !byTeam(g, -1, "titan").length &&
-            !r.production.some((q) => q.type === "titan")
-              ? ["titan"]
+            !byTeam(g, -1).some((a) => units[a.type]?.tech === "t3") &&
+            !r.production.some((q) => units[q.type].tech === "t3")
+              ? [
+                  ...(defenses >= 2
+                    ? ["skySiege", "titan", "aegis"]
+                    : wave % 3 === 0
+                      ? ["aegis", "titan", "skySiege"]
+                      : ["titan", "skySiege", "aegis"]
+                  )
+                    .filter((type) => redEligible(g, units[type]))
+                    .slice(0, 1),
+                ]
               : []),
             counter,
             support,
@@ -1777,6 +1943,7 @@ export function step(g, dt) {
   advanceEnemyIndustry(g, dt);
   manageEnemyBase(g);
   reinforce(g);
+  g.repairLinks.length = 0;
   enemyAI(g, dt);
   const blueBrownout = load(g) > capacity(g),
     redBrownout = load(g, -1) > capacity(g, -1);
@@ -1794,22 +1961,22 @@ export function step(g, dt) {
     rechargeShield(a, s, dt);
     a.slowTime = Math.max(0, (a.slowTime || 0) - dt);
     const speed = movementSpeed(g, a) * (a.slowTime ? 0.65 : 1);
+    if (
+      s.selfRepair &&
+      g.time - (a.lastHullHit ?? -Infinity) >= s.repairDelay
+    ) {
+      const improved = teamTech(g, a.team).has("repairBoost") ? 1.3 : 1;
+      healHull(g, a, s.selfRepair * improved * dt);
+    }
     if (s.heal) {
       for (const ally of g.actors)
         if (
           ally !== a &&
           ally.team === a.team &&
           units[ally.type] &&
-          ally.hp > 0 &&
-          ally.hp < catalog[ally.type].hp &&
           dist(a, ally) <= s.radius
-        ) {
-          ally.hp = Math.min(
-            catalog[ally.type].hp,
-            ally.hp + repairRate(g, a) * dt,
-          );
-          ally.repairGlow = 0.2;
-        }
+        )
+          healHull(g, ally, repairRate(g, a) * dt, a);
     }
     a.cd -= dt;
     let o = a.order;
@@ -1818,18 +1985,39 @@ export function step(g, dt) {
         ? g.actors.find((b) => b.id === o.id && b.hp > 0)
         : null;
     if (o?.kind === "target" && !focus) o = a.order = null;
-    const foe = !s.range
-      ? null
-      : focus && rangeTo(a, focus) <= s.range
-        ? focus
-        : enemyFor(g, a, s.range);
-    if (foe) {
-      a.aim = Math.atan2(foe.y - a.y, foe.x - a.x);
-      if (a.cd <= 0) fire(g, a, foe, s);
+    let foe = null,
+      focusInRange = false;
+    if (s.mounts) {
+      a.mountState ??= s.mounts.map(() => ({ cd: 0, recoil: 0, aim: a.angle }));
+      for (const [i, weapon] of s.mounts.entries()) {
+        const state = a.mountState[i];
+        state.cd -= dt;
+        state.recoil = Math.max(0, state.recoil - dt);
+        const p = mountPoint(a, weapon);
+        // An out-of-range focus command doesn't prevent other mounts from defending the vehicle.
+        const canFocus = focus && rangeTo(p, focus) <= weapon.range;
+        focusInRange ||= Boolean(canFocus);
+        const target = canFocus
+          ? focus
+          : enemyFor(g, { ...p, team: a.team }, weapon.range);
+        foe ||= target;
+        state.target = target?.id;
+        state.aim = target
+          ? Math.atan2(target.y - p.y, target.x - p.x)
+          : a.angle;
+        if (target && state.cd <= 1e-8) fire(g, a, target, weapon, i);
+      }
+    } else if (s.range) {
+      focusInRange = Boolean(focus && rangeTo(a, focus) <= s.range);
+      foe = focusInRange ? focus : enemyFor(g, a, s.range);
+      if (foe) {
+        a.aim = Math.atan2(foe.y - a.y, foe.x - a.x);
+        if (a.cd <= 0) fire(g, a, foe, s);
+      }
     }
     if (speed && o && !mining(g, a)) {
       if (o.kind === "target") {
-        if (rangeTo(a, focus) > s.range) move(a, focus, speed, dt);
+        if (!focusInRange && s.range) move(a, focus, speed, dt);
       } else if (o.kind !== "attack" || !foe) {
         if (o.kind === "attack" && o.center && s.range) {
           o.atArea ||= move(a, o, speed, dt);
@@ -1873,6 +2061,7 @@ export function step(g, dt) {
       }
     }
   }
+  for (const a of g.actors) updateHullBar(a, catalog[a.type].hp, dt);
   g.actors = g.actors.filter((a) => {
     if (a.hp > 0) return true;
     g.selected.delete(a.id);
