@@ -38,6 +38,11 @@ jobs:
       contents: write
       pages: write
       id-token: write
+    # deploy-pages 只有在带 github-pages environment 的 job 里才会真正发布；
+    # 缺这一行时步骤会"成功"但什么都不做（没有 deployment 记录）。
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
 
