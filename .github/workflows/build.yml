@@ -80,6 +80,11 @@ jobs:
           cmake --build build-web-single -j2 --target echofall_web_single
           ls -la build-web-single
 
+      - name: Add 数学之战 mini game
+        run: |
+          mkdir -p build-web/mathwar
+          cp -r mathwar/. build-web/mathwar/
+
       - name: Package for GitHub Pages
         uses: actions/upload-pages-artifact@v3
         continue-on-error: true

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>《数学之战》· Math Battle</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <!-- 顶栏 -->
+  <header id="topbar">
+    <div class="tb-left">
+      <span id="sunBox" title="阳光 = 积分">☀️ <b id="sunVal">50</b></span>
+      <span id="livesBox" title="生命">❤️ <b id="livesVal">3</b></span>
+      <span id="levelName">第 1 关 · 教学关</span>
+    </div>
+    <div class="tb-mid">
+      <div id="progressWrap" title="击杀进度"><div id="progressBar"></div></div>
+      <span id="progressText">0/8</span>
+    </div>
+    <div class="tb-right">
+      <button id="btnPause" title="暂停 (P)">⏸</button>
+      <button id="btnSpeed" title="速度切换">▶ 1×</button>
+      <button id="btnSound" title="音效开关">🔊</button>
+      <button id="btnRestart" title="重开本关">↻</button>
+      <button id="btnMenu" title="返回菜单">🏠</button>
+    </div>
+  </header>
+
+  <!-- 卡片栏 -->
+  <div id="cardbar">
+    <div id="cards"></div>
+    <button id="btnShovel" title="铲子：点击植物移除它">🧹 铲子</button>
+  </div>
+
+  <!-- 提示条 -->
+  <div id="hintbar">点击卡片，再点击草坪种植。右键 / Esc 取消选择。</div>
+
+  <!-- 游戏画布 -->
+  <div id="stage">
+    <canvas id="game" width="960" height="540"></canvas>
+    <div id="flash"></div>
+  </div>
+
+  <!-- 主菜单 -->
+  <div id="menuOverlay" class="overlay">
+    <div class="panel">
+      <h1>《数学之战》</h1>
+      <p class="sub">MATH BATTLE · 植物大战僵尸 × 数学运算</p>
+      <p class="intro">阳光就是积分。种下数字植物，发射数字子弹，<br>把僵尸的数字打到 <b>0</b> —— 归零死亡！</p>
+      <div class="btn-col">
+        <button id="btnStart" class="big">🎮 开始游戏</button>
+        <button id="btnHelp">📖 玩法说明 / 植物图鉴</button>
+      </div>
+      <p class="foot">共 10 关 · 关关解锁新角色 · 每关玩法都不一样</p>
+    </div>
+  </div>
+
+  <!-- 选关 -->
+  <div id="levelOverlay" class="overlay hidden">
+    <div class="panel wide">
+      <h2>选择关卡</h2>
+      <p class="sub">通关上一关解锁下一关</p>
+      <div id="levelGrid"></div>
+      <button id="btnLevelBack" class="ghost">← 返回</button>
+    </div>
+  </div>
+
+  <!-- 帮助 -->
+  <div id="helpOverlay" class="overlay hidden">
+    <div class="panel wide scroll">
+      <h2>玩法说明</h2>
+      <div id="helpBody"></div>
+      <button id="btnHelpBack" class="ghost">← 返回</button>
+    </div>
+  </div>
+
+  <!-- 暂停 -->
+  <div id="pauseOverlay" class="overlay hidden">
+    <div class="panel">
+      <h2>⏸ 已暂停</h2>
+      <div class="btn-col">
+        <button id="btnResume" class="big">▶ 继续</button>
+        <button id="btnPauseRestart">↻ 重开本关</button>
+        <button id="btnPauseMenu">🏠 返回菜单</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 结算 -->
+  <div id="endOverlay" class="overlay hidden">
+    <div class="panel">
+      <h2 id="endTitle">🎉 通关！</h2>
+      <p id="endStars" class="stars"></p>
+      <p id="endText"></p>
+      <p id="endGoals" class="goals"></p>
+      <p id="endUnlock" class="unlock"></p>
+      <div class="btn-col">
+        <button id="btnNext" class="big">➡ 下一关</button>
+        <button id="btnRetry">↻ 再打一次</button>
+        <button id="btnEndMenu">🏠 返回菜单</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
