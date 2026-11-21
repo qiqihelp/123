@@ -1,0 +1,44 @@
+name: Math War → GitHub Pages
+
+# 《数学之战》是纯静态网页游戏（mathwar/），不依赖 Emscripten 构建。
+# 这个工作流会把它单独发布到 GitHub Pages。
+# 等主站（回声之谷）也启用 Pages 后，可以删掉本文件，改用 build.yml 里的打包步骤。
+
+on:
+  push:
+    paths:
+      - 'mathwar/**'
+      - '.github/workflows/mathwar-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: mathwar-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # 需要仓库在 Settings → Pages → Source 里先选好「GitHub Actions」，
+      # 否则这一步会报 "Resource not accessible by integration"。
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: mathwar
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
