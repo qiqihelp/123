@@ -29,20 +29,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Diagnose Pages state
-        if: always()
-        run: |
-          code=$(curl -s -o /tmp/pages.json -w "%{http_code}" \
-            -H "Authorization: Bearer ${{ github.token }}" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/pages)
-          echo "PAGES_GET_HTTP=$code"
-          head -c 300 /tmp/pages.json
-          echo "::error title=PagesAPI::$code $(head -c 200 /tmp/pages.json | tr '\n' ' ')"
+      # 需要仓库在 Settings → Pages → Source 里先选好「GitHub Actions」，
+      # 否则这一步会报 "Resource not accessible by integration"。
       - name: Setup Pages
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
