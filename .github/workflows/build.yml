@@ -9,6 +9,7 @@ on:
 permissions:
   contents: read
 
+# Pages 只有 main 分支能发布，避免多个 Arena 分支互相覆盖站点内容
 concurrency:
   group: pages-${{ github.ref }}
   cancel-in-progress: true
@@ -85,15 +86,20 @@ jobs:
           mkdir -p build-web/mathwar
           cp -r mathwar/. build-web/mathwar/
 
+      # upload-pages-artifact@v4 才会产出 actions 类型的 artifact（名字 github-pages），
+      # deploy-pages@v4 只能读取这种类型；v3 上传的 pages 类型会报
+      # "No artifacts named github-pages were found"。
       - name: Package for GitHub Pages
-        uses: actions/upload-pages-artifact@v3
-        continue-on-error: true
+        if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+        uses: actions/upload-pages-artifact@v4
         with:
           path: build-web
 
+      # 不加 continue-on-error：部署失败必须让工作流变红，不能再出现"假绿"
       - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+        id: deployment
         uses: actions/deploy-pages@v4
-        continue-on-error: true
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
