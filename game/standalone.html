@@ -1,0 +1,4283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>深空当铺：可能是偷的 | Deepspace Pawnshop: Probably Stolen</title>
+  <style>
+/* ==========================================================================
+   《深空当铺：可能是偷的》赛博朋克反乌托邦界面样式
+   霓虹暗色金属工业风 + 清晰的信息层级与微动效反馈
+   ========================================================================== */
+
+:root {
+  --bg-deep: #070a12;
+  --bg-panel: #0f1626;
+  --bg-card: #162036;
+  --bg-card-hover: #1e2c4a;
+  --border-dim: #263554;
+  --border-cyan: #06b6d4;
+  --neon-cyan: #22d3ee;
+  --neon-pink: #f43f5e;
+  --neon-amber: #f59e0b;
+  --neon-green: #22c55e;
+  --neon-purple: #c084fc;
+  --text-main: #e2e8f0;
+  --text-muted: #94a3b8;
+  --font-sans: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  min-height: 100%;
+  background: radial-gradient(circle at 50% 0%, #131c33 0%, var(--bg-deep) 75%);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+  overflow-x: hidden;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: 1px solid var(--border-dim);
+  background: var(--bg-card);
+  color: var(--text-main);
+  border-radius: 6px;
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.14s ease;
+}
+
+button:hover:not(:disabled) {
+  background: var(--bg-card-hover);
+  border-color: var(--neon-cyan);
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #0891b2, #0284c7);
+  border-color: var(--neon-cyan);
+  color: #fff;
+}
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #06b6d4, #0ea5e9);
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.35);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #15803d, #16a34a);
+  border-color: #4ade80;
+  color: #fff;
+}
+.btn-success:hover:not(:disabled) {
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.35);
+}
+
+.btn-amber {
+  background: linear-gradient(135deg, #b45309, #d97706);
+  border-color: #fbbf24;
+  color: #fff;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, #991b1b, #dc2626);
+  border-color: #f87171;
+  color: #fff;
+}
+.btn-danger:hover:not(:disabled) {
+  box-shadow: 0 0 14px rgba(244, 63, 94, 0.5);
+}
+
+.btn-purple {
+  background: linear-gradient(135deg, #6b21a8, #9333ea);
+  border-color: #d8b4fe;
+  color: #fff;
+}
+
+/* 顶部状态仪表栏 */
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 16px;
+  background: rgba(10, 15, 28, 0.94);
+  border-bottom: 1px solid var(--border-dim);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.brand-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-title {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  background: linear-gradient(90deg, #22d3ee, #c084fc, #f472b6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.hud-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #111a2e;
+  border: 1px solid var(--border-dim);
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+.stat-pill.credits {
+  border-color: rgba(250, 204, 21, 0.45);
+  color: #fde047;
+  font-weight: 700;
+}
+
+.stat-pill.rent {
+  border-color: rgba(244, 63, 94, 0.45);
+  color: #fda4af;
+}
+
+.stat-pill.energy {
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #7dd3fc;
+}
+
+.stat-pill.heat {
+  border-color: rgba(249, 115, 22, 0.4);
+  color: #fdba74;
+}
+
+.stat-pill.aug {
+  border-color: rgba(192, 132, 252, 0.4);
+  color: #e9d5ff;
+}
+
+/* 三栏主工作台布局 */
+.main-grid {
+  max-width: 1460px;
+  margin: 12px auto;
+  padding: 0 12px 20px;
+  display: grid;
+  grid-template-columns: 290px minmax(420px, 1fr) 390px;
+  gap: 12px;
+  align-items: start;
+}
+
+@media (max-width: 1180px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel {
+  background: rgba(15, 22, 38, 0.92);
+  border: 1px solid var(--border-dim);
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.4);
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.18);
+}
+
+.panel-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--neon-cyan);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 左侧栏：派系声望、今日通缉令、行情与日志 */
+.faction-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.faction-row {
+  background: #10192b;
+  border: 1px solid #1e2d4a;
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
+.faction-top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.rep-bar-bg {
+  height: 5px;
+  background: #090e1a;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.rep-bar-fill {
+  height: 100%;
+  transition: width 0.25s ease;
+}
+
+.wanted-card {
+  background: linear-gradient(180deg, rgba(127, 29, 29, 0.26), rgba(15, 23, 42, 0.9));
+  border: 1px solid rgba(239, 68, 68, 0.45);
+  border-radius: 8px;
+  padding: 9px 10px;
+  margin-bottom: 12px;
+}
+
+.wanted-header {
+  display: flex;
+  justify-content: space-between;
+  color: #fca5a5;
+  font-weight: 700;
+  font-size: 12.5px;
+  margin-bottom: 4px;
+}
+
+.log-box {
+  max-height: 230px;
+  overflow-y: auto;
+  background: #090e1a;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.log-entry {
+  color: #cbd5e1;
+  border-bottom: 1px dashed rgba(51, 65, 85, 0.5);
+  padding-bottom: 4px;
+}
+
+/* 中央柜台交互区 */
+.counter-stage {
+  display: grid;
+  grid-template-columns: 196px 1fr;
+  gap: 12px;
+  background: linear-gradient(180deg, #0b1222 0%, #121c32 100%);
+  border: 1px solid #283a5e;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 640px) {
+  .counter-stage {
+    grid-template-columns: 1fr;
+  }
+}
+
+.portrait-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+#customer-canvas {
+  width: 180px;
+  height: 180px;
+  border-radius: 8px;
+  border: 2px solid #38bdf8;
+  box-shadow: 0 0 18px rgba(6, 182, 212, 0.22);
+  image-rendering: pixelated;
+}
+
+.customer-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+}
+
+.badge {
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 99px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+.badge-cyan { background: rgba(6, 182, 212, 0.16); color: #67e8f9; border-color: rgba(6, 182, 212, 0.4); }
+.badge-red { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border-color: rgba(239, 68, 68, 0.5); }
+.badge-amber { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border-color: rgba(245, 158, 11, 0.5); }
+.badge-purple { background: rgba(168, 85, 247, 0.2); color: #e9d5ff; border-color: rgba(168, 85, 247, 0.5); }
+.badge-green { background: rgba(34, 197, 94, 0.18); color: #86efac; border-color: rgba(34, 197, 94, 0.45); }
+
+.dialogue-bubble {
+  background: rgba(15, 23, 42, 0.95);
+  border-left: 3px solid var(--neon-cyan);
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  color: #f1f5f9;
+  margin-bottom: 8px;
+}
+
+.behavior-clue {
+  background: rgba(30, 41, 59, 0.65);
+  border: 1px dashed #475569;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #cbd5e1;
+  margin-bottom: 10px;
+}
+
+/* 交易桌面与鉴定台 */
+.deal-card {
+  background: #10192d;
+  border: 1px solid #2a3d66;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.deal-item-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.deal-item-icon {
+  font-size: 32px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #090f1d;
+  border: 1px solid #334155;
+  border-radius: 8px;
+}
+
+.inspect-findings {
+  background: #090e1a;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 8px 10px;
+  margin: 8px 0;
+  font-size: 12.5px;
+}
+
+.finding-line {
+  padding: 3px 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+.finding-ok { color: #86efac; }
+.finding-Sus { color: #fda4af; font-weight: 700; }
+
+.haggle-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #1e293b;
+}
+
+.price-input {
+  width: 92px;
+  background: #090e1a;
+  border: 1px solid var(--neon-cyan);
+  color: #fde047;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 6px 8px;
+  border-radius: 6px;
+}
+
+/* 柜台下战术防卫栏（扫描仪、举报、霰弹枪） */
+.under-counter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: linear-gradient(90deg, rgba(30, 27, 75, 0.55), rgba(69, 10, 10, 0.45));
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  border-radius: 8px;
+  padding: 9px 12px;
+}
+
+/* 右侧栏：多标签页（库存&暗格 / 后室生产链 / 许可证&升级 / 图鉴指南） */
+.tabs-nav {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.tab-btn {
+  padding: 7px 4px;
+  font-size: 12px;
+  text-align: center;
+  background: #0c1322;
+  border-color: #1e293b;
+  color: var(--text-muted);
+}
+
+.tab-btn.active {
+  background: #172542;
+  border-color: var(--neon-cyan);
+  color: var(--neon-cyan);
+}
+
+.inv-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.inv-card {
+  background: #10192c;
+  border: 1px solid #243454;
+  border-radius: 7px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  position: relative;
+}
+
+.inv-card.illegal {
+  border-color: rgba(244, 63, 94, 0.65);
+  background: linear-gradient(180deg, rgba(127, 29, 29, 0.2), #10192c);
+}
+
+.inv-card.wanted-buy {
+  border-color: #4ade80;
+  box-shadow: 0 0 10px rgba(74, 222, 128, 0.22);
+}
+
+.inv-card-top {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.inv-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.inv-actions button {
+  padding: 3px 7px;
+  font-size: 11px;
+}
+
+/* 机器卡片 */
+.machine-card {
+  background: #10192c;
+  border: 1px solid #263859;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 9px;
+}
+
+.recipe-box {
+  background: #0a101d;
+  border: 1px solid #1e293b;
+  border-radius: 6px;
+  padding: 7px 9px;
+  margin-top: 7px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+/* 开局职业选择与结局全屏弹层 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 7, 15, 0.88);
+  backdrop-filter: blur(6px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.modal-box {
+  background: #0f172a;
+  border: 1px solid var(--neon-cyan);
+  box-shadow: 0 0 40px rgba(6, 182, 212, 0.25);
+  border-radius: 12px;
+  max-width: 980px;
+  width: 100%;
+  padding: 22px;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+.prof-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(265px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.prof-card {
+  background: #141f38;
+  border: 1px solid #293b63;
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.prof-card:hover {
+  border-color: var(--neon-cyan);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(6, 182, 212, 0.2);
+}
+
+/* 顶部浮动提示 Toast */
+#toast-container {
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.toast {
+  background: rgba(15, 23, 42, 0.96);
+  border-left: 4px solid var(--neon-cyan);
+  border-top: 1px solid #334155;
+  border-right: 1px solid #334155;
+  border-bottom: 1px solid #334155;
+  color: #f8fafc;
+  padding: 10px 14px;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
+  font-size: 13px;
+  max-width: 380px;
+  animation: slideIn 0.2s ease;
+}
+
+.toast.warn { border-left-color: var(--neon-pink); }
+.toast.good { border-left-color: var(--neon-green); }
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.hidden {
+  display: none !important;
+}
+
+</style>
+</head>
+<body>
+
+  <!-- 顶部赛博经营仪表盘 -->
+  <header class="topbar">
+    <div class="brand-box">
+      <span style="font-size:24px;">🛸</span>
+      <div>
+        <div class="brand-title">深空当铺：可能是偷的</div>
+        <div class="brand-sub" id="hud-day">第 1 天 · 准备营业</div>
+      </div>
+    </div>
+
+    <div class="hud-stats">
+      <div class="stat-pill credits" id="hud-credits" title="当前流动信用点">💰 0 CR</div>
+      <div class="stat-pill rent" id="hud-rent" title="每4天收缴一次递增房租，交不起会被房东扫地出门">🏠 房租 320 CR</div>
+      <div class="stat-pill energy" id="hud-energy" title="用于驱动后室机器合成、光谱深度检测与AI扫描仪">⚡ 电力 100/150</div>
+      <div class="stat-pill heat" id="hud-heat" title="倒卖赃物、违禁品会增加治安局关注度并引来突击搜查">🚨 嫌疑 0%</div>
+      <div class="stat-pill aug" id="hud-aug" title="放任失控AI改造体混过柜台将升高渗透度，满100%全街区沦陷">🤖 AI渗透 10%</div>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="btn-amber" id="btn-buyout" title="攒够 5,000 CR 买断当铺永久产权，达成主线多结局！">🔑 买断产权 (5000 CR)</button>
+      <button id="btn-mute">🔊 音效</button>
+      <button id="btn-newgame-top">🔄 重开/职业</button>
+    </div>
+  </header>
+
+  <!-- 三栏核心当铺工作台 -->
+  <main class="main-grid">
+
+    <!-- 左栏：空间站派系政治、今日通缉令、市场风向与账本日志 -->
+    <section class="panel">
+      <div class="panel-header">
+        <span class="panel-title">🌐 空间站五大势力与通缉令</span>
+      </div>
+
+      <div id="market-hot" style="background:#0c1527;border:1px solid #1e3a5f;border-radius:6px;padding:7px 9px;font-size:12.5px;margin-bottom:10px;">
+        📈 今日紧俏溢价：加载中...
+      </div>
+
+      <div id="wanted-box" class="wanted-card"></div>
+
+      <div id="faction-list" class="faction-list"></div>
+
+      <div class="panel-header" style="margin-top:8px;">
+        <span class="panel-title">📓 掌柜交易与暗巷日志</span>
+      </div>
+      <div id="log-box" class="log-box"></div>
+    </section>
+
+    <!-- 中栏：主交易柜台、动态像素肖像、真伪鉴定质询与霰弹枪防卫 -->
+    <section class="panel">
+      <div class="panel-header">
+        <span class="panel-title">🏮 第13底层街区 · 当铺前厅柜台</span>
+        <span id="queue-counter" style="font-size:12px;color:#94a3b8;font-family:var(--font-mono);">排队中...</span>
+      </div>
+
+      <div class="counter-stage">
+        <div class="portrait-wrap">
+          <canvas id="customer-canvas" width="160" height="160"></canvas>
+          <div id="customer-badges" class="customer-badges"></div>
+        </div>
+        <div id="customer-meta"></div>
+      </div>
+
+      <div id="center-content"></div>
+    </section>
+
+    <!-- 右栏：货架&秘密暗格、后室机器生产链、许可证购买、新手指南 -->
+    <section class="panel">
+      <div class="tabs-nav">
+        <button class="tab-btn active" data-tab="inventory">📦 库存&暗格</button>
+        <button class="tab-btn" data-tab="workshop">⚙️ 后室生产</button>
+        <button class="tab-btn" data-tab="upgrades">📜 证照&设备</button>
+        <button class="tab-btn" data-tab="guide">📖 掌柜手册</button>
+      </div>
+
+      <div id="right-tab-body"></div>
+    </section>
+
+  </main>
+
+  <!-- 开局身份与流派选择全屏弹窗 -->
+  <div id="start-modal" class="modal-overlay">
+    <div class="modal-box">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+        <div>
+          <h1 style="font-size:24px;background:linear-gradient(90deg,#22d3ee,#c084fc,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+            🛸 深空当铺：可能是偷的
+          </h1>
+          <p style="color:#94a3b8;font-size:13.5px;margin-top:4px;">
+            赛博朋克反乌托邦当铺模拟经营 · 甄别赝品 · 藏匿赃物 · 搭建产线 · 猎杀潜伏 AI 改造体
+          </p>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-success hidden" id="btn-resume-save">📂 继续上次存档</button>
+          <button class="hidden" id="btn-close-start">✕ 返回当前对局</button>
+        </div>
+      </div>
+
+      <div style="background:#0a1120;border:1px solid #1e293b;border-radius:8px;padding:10px 14px;margin-top:12px;font-size:12.5px;color:#cbd5e1;">
+        💡 <strong>生存目标：</strong>你靠高利贷租下了星环空间站底层的这间破旧当铺。应对每 4 天暴涨一次的<strong>房租</strong>，用放大镜揭穿<strong>假货</strong>狠狠压价，在治安官突击搜查前把<strong>赃物与违禁品</strong>塞进秘密暗格，并用柜台下的霰弹枪轰碎伪装成顾客的<strong>失控 AI 改造体</strong>——最终攒够 <strong>5,000 CR</strong> 彻底买下店铺产权！
+      </div>
+
+      <div id="prof-grid" class="prof-grid"></div>
+    </div>
+  </div>
+
+  <!-- 结局结算弹窗 -->
+  <div id="ending-modal" class="modal-overlay hidden">
+    <div class="modal-box" style="max-width:720px;">
+      <div id="ending-content"></div>
+    </div>
+  </div>
+
+  <!-- 浮动消息提示容器 -->
+  <div id="toast-container"></div>
+
+  <script>
+(function() {
+"use strict";
+
+// ============================================================================
+// 《深空当铺：可能是偷的》(Deepspace Pawnshop: Probably Stolen)
+// 核心数据库：职业流派、阵营、物品图鉴、鉴定规则、机器生产链、顾客与剧情事件
+// ============================================================================
+
+const FACTIONS = {
+  lower: {
+    id: 'lower',
+    name: '下层街区',
+    short: '下层区',
+    color: '#94a3b8',
+    desc: '底层拾荒者、矿工与平民。声望高时进货享受 15% 邻里折扣，垃圾场偶遇线人。',
+    perkThreshold: 40,
+    perkDesc: '声望≥40：底层居民出售物品要价降低 15%，夜间拾荒额外收获 +1'
+  },
+  security: {
+    id: 'security',
+    name: '空间站治安局',
+    short: '治安局',
+    color: '#ef4444',
+    desc: '腐败而强硬的执法机构。声望高可减少突击查抄并购买武器许可；案底高会招致搜查。',
+    perkThreshold: 40,
+    perkDesc: '声望≥40：解锁二级军火许可，贿赂费用减半，击毙改造体赏金 +25%'
+  },
+  blackmarket: {
+    id: 'blackmarket',
+    name: '第13区黑市',
+    short: '黑市',
+    color: '#c084fc',
+    desc: '地下销赃网与暗巷帮派。声望高会吸引大盗与高价值违禁品买家，但容易引起条子注意。',
+    perkThreshold: 40,
+    perkDesc: '声望≥40：黑市商人高价收购赃物与违禁品 (+25%)，开放夜间黑市特殊货源'
+  },
+  rebel: {
+    id: 'rebel',
+    name: '深空革命军',
+    short: '革命军',
+    color: '#22c55e',
+    desc: '反抗上层垄断的地下武装。急需武器、纯净水与医疗品，声望高可提供庇护与秘密订单。',
+    perkThreshold: 40,
+    perkDesc: '声望≥40：革命军高价采购军火与医疗物资 (+30%)，危急时替你销毁一次治安局案底'
+  },
+  upper: {
+    id: 'upper',
+    name: '上层穹顶区',
+    short: '上层区',
+    color: '#f472b6',
+    desc: '奢靡冷漠的权贵精英。只对高纯度佳酿、古董遗物和义体感兴趣，出价极高但极度挑剔。',
+    perkThreshold: 40,
+    perkDesc: '声望≥40：吸引富豪收藏家到访，展示柜奢侈品溢价 +35%'
+  }
+};
+
+const PROFESSIONS = [
+  {
+    id: 'apprentice',
+    name: '底层学徒',
+    subtitle: '均衡开局 · 鉴定专精',
+    icon: '🔍',
+    color: '#38bdf8',
+    credits: 650,
+    energy: 100,
+    desc: '前任老店长留下的放大镜与鉴定笔记。资金宽裕，没有案底，适合稳扎稳打摸透空间站生存法则。',
+    perks: ['初始信用点 650 CR', '自带【光学放大镜】与【水质检测试剂】', '鉴定揭穿假货时对方降价幅度额外 +10%'],
+    startingMachines: [],
+    startingLicenses: ['general'],
+    startingItems: ['ration_pack', 'dirty_water', 'cig_redstar'],
+    repMod: { lower: 15, security: 10, blackmarket: 0, rebel: 5, upper: 0 }
+  },
+  {
+    id: 'water_merchant',
+    name: '净水商人',
+    subtitle: '民生刚需 · 水质提纯',
+    icon: '💧',
+    color: '#06b6d4',
+    credits: 450,
+    energy: 120,
+    desc: '在下层区，干净的水比命还贵。你开局拥有一台工业净水器，但小心别把受辐射污染的废水卖给街坊——或者掺点料牟取暴利。',
+    perks: ['开局自带【工业净水器】机器', '自带【水质光谱仪】无限检测纯度', '水资源与饮品售价 +15%'],
+    startingMachines: ['purifier'],
+    startingLicenses: ['general', 'water_permit'],
+    startingItems: ['dirty_water', 'dirty_water', 'filter_core'],
+    repMod: { lower: 20, security: 5, blackmarket: 0, rebel: 10, upper: 0 }
+  },
+  {
+    id: 'gunsmith',
+    name: '地下枪械匠',
+    subtitle: '军火改装 · 高危暴利',
+    icon: '🔫',
+    color: '#f97316',
+    credits: 420,
+    energy: 100,
+    desc: '靠修复损坏的动能手枪和脉冲步枪发家。利润惊人，但治安局巡逻队每隔几天就会来查你的持枪许可证和序列号。',
+    perks: ['开局自带【武器改装台】与【一级军火许可】', '自带【AI改造体扫描仪】', '武器与零件交易利润 +20%，但初始治安关注度较高'],
+    startingMachines: ['workbench'],
+    startingLicenses: ['general', 'arms_1'],
+    startingItems: ['broken_pistol', 'scrap_metal', 'energy_cell'],
+    repMod: { lower: 5, security: 5, blackmarket: 15, rebel: 15, upper: 0 }
+  },
+  {
+    id: 'chemist',
+    name: '合成化学家',
+    subtitle: '药剂酿造 · 灰色成瘾',
+    icon: '🧪',
+    color: '#a855f7',
+    credits: 440,
+    energy: 110,
+    desc: '无论是救命的“免疫宁”，还是令人沉醉的深空合成烈酒与违禁兴奋剂，都在你的蒸馏釜里诞生。配方与纯度决定一切。',
+    perks: ['开局自带【化学合成蒸馏釜】', '化学药剂、酒类与医疗品估值 +20%', '解锁隐藏违禁合成配方'],
+    startingMachines: ['synthesizer'],
+    startingLicenses: ['general', 'med_permit'],
+    startingItems: ['bio_moss', 'industrial_alcohol', 'immuno_med'],
+    repMod: { lower: 10, security: 0, blackmarket: 20, rebel: 5, upper: 10 }
+  },
+  {
+    id: 'fence',
+    name: '暗巷销赃人',
+    subtitle: '黑市倒爷 · 刀尖舔血',
+    icon: '🎭',
+    color: '#ec4899',
+    credits: 520,
+    energy: 90,
+    desc: '“这批货可能是偷的，但谁在乎呢？”你天生懂得利用秘密暗格藏匿赃物，与第13区小偷和走私客称兄道弟。',
+    perks: ['暗格初始容量翻倍（6格），自带【序列号打磨机】', '收购赃物额外压价 20%，黑市初始声望 30', '初始带有 15 点治安局嫌疑值'],
+    startingMachines: ['scrambler'],
+    startingLicenses: ['general'],
+    startingItems: ['stolen_watch', 'credit_chip_locked', 'cig_redstar'],
+    repMod: { lower: 5, security: -10, blackmarket: 30, rebel: 10, upper: 5 }
+  }
+];
+
+// 物品模板库
+// category: 'supply'(民生补给), 'luxury'(奢侈古董), 'medical'(化学医疗), 'weapon'(军火武器), 'tech'(赛博零件), 'material'(工业原料), 'contraband'(重度违禁)
+const ITEM_TEMPLATES = {
+  dirty_water: {
+    id: 'dirty_water',
+    name: '浑浊回收水 (2L)',
+    category: 'material',
+    baseValue: 28,
+    w: 1, h: 2,
+    icon: '🚱',
+    legal: 'legal',
+    inspectType: 'liquid',
+    desc: '空间站冷凝管收集的未经处理水源，含有重金属和微量辐射。直接饮用有患病风险。',
+    authenticSigns: { seal: '冷凝站原厂封口', clarity: '轻度浑浊 (纯度 ~52%)', rads: '微弱背景辐射 (18 mSv)' },
+    fakeSigns: [
+      { key: 'rads', badText: '致命辐射超标 (420 mSv - 反应堆冷却废液!)', reason: '辐射含量严重超标，实为工业废液' },
+      { key: 'clarity', badText: '刺鼻化学油膜 (纯度 <15%)', reason: '掺杂工业废油，无法正常饮用' }
+    ]
+  },
+  pure_water: {
+    id: 'pure_water',
+    name: '99.9% 特级纯净水',
+    category: 'supply',
+    baseValue: 88,
+    w: 1, h: 2,
+    icon: '💧',
+    legal: 'legal',
+    inspectType: 'liquid',
+    desc: '经过多层反渗透滤芯净化的生命之源，在下层区硬通货程度堪比信用点。',
+    authenticSigns: { seal: '蓝环防伪热缩膜完好', clarity: '晶莹剔透 (纯度 99.9%)', rads: '零辐射残留 (0.0 mSv)' },
+    fakeSigns: [
+      { key: 'seal', badText: '热缩膜有二次吹风机加热皱褶', reason: '封口存在二次封装痕迹，系自来水灌装假货' },
+      { key: 'clarity', badText: '底部有肉眼可见悬浮絮状物 (纯度 68%)', reason: '水质纯度虚标，未达饮用特级标准' }
+    ]
+  },
+  cig_redstar: {
+    id: 'cig_redstar',
+    name: '“红巨星”过滤嘴香烟',
+    category: 'supply',
+    baseValue: 65,
+    w: 1, h: 1,
+    icon: '🚬',
+    legal: 'legal',
+    inspectType: 'packaging',
+    desc: '矿工与治安官最爱的合成烟草制品。市面上充斥着锯末卷制的劣质假烟。',
+    authenticSigns: { stamp: '贸易署激光全息税标 (清晰变色)', print: '烫金“RED GIANT”凹凸压印', smell: '烘烤合成烟叶焦香' },
+    fakeSigns: [
+      { key: 'stamp', badText: '税标为普通油墨印刷，无全息反光', reason: '防伪税标系廉价油墨伪造' },
+      { key: 'print', badText: '拼写错误印成了“RED GAINT”', reason: '包装外盒存在低级拼写印刷错误' },
+      { key: 'smell', badText: '散发发霉木屑与劣质胶水味', reason: '内部填充物为发霉木屑而非烟草' }
+    ]
+  },
+  ration_pack: {
+    id: 'ration_pack',
+    name: '军用高能营养膏',
+    category: 'supply',
+    baseValue: 55,
+    w: 1, h: 1,
+    icon: '🥫',
+    legal: 'legal',
+    inspectType: 'packaging',
+    desc: '印着联合舰队标志的铝塑管装蛋白质糊，虽然味道像湿纸板，但一管能顶两天饿。',
+    authenticSigns: { date: '保质期至 2192 年 · 批次号激光蚀刻', seal: '真空铝膜紧绷平整', code: '舰队后勤部校验码通过' },
+    fakeSigns: [
+      { key: 'date', badText: '原过期日期被砂纸磨掉后重盖墨印', reason: '生产日期被人为篡改涂抹，实为过期军粮' },
+      { key: 'seal', badText: '包装明显胀袋鼓包，按压漏气', reason: '铝塑袋胀袋变质，存在肉毒毒素风险' }
+    ]
+  },
+  immuno_med: {
+    id: 'immuno_med',
+    name: '“免疫宁”抗辐射注射器',
+    category: 'medical',
+    baseValue: 145,
+    w: 1, h: 2,
+    icon: '💉',
+    legal: 'permit_med',
+    inspectType: 'chemical',
+    desc: '深空辐射病与哨兵综合征的救命药剂。黑市假药泛滥，不少骗子用染色生理盐水充数。',
+    authenticSigns: { liquid: '淡蔚蓝荧光药液，摇晃后3秒消泡', label: '海卫一制药微缩防伪码完好', needle: '无菌钛合金封针未拆封' },
+    fakeSigns: [
+      { key: 'liquid', badText: '液体呈死板深蓝色，沉淀出色素颗粒', reason: '药液系食用色素勾兑生理盐水，毫无疗效' },
+      { key: 'needle', badText: '针头护帽有细微血迹与拔插划痕', reason: '使用过的医疗废品二次回收灌装' }
+    ]
+  },
+  synth_wine: {
+    id: 'synth_wine',
+    name: '星云陈酿合成紫酒',
+    category: 'luxury',
+    baseValue: 175,
+    w: 1, h: 2,
+    icon: '🍷',
+    legal: 'legal',
+    inspectType: 'liquid',
+    desc: '用深空荧光苔藓与精馏酒精酿造的佳酿，深受上层穹顶区精英追捧。',
+    authenticSigns: { clarity: '琥珀紫挂杯绵密 (酒精度 42.0%)', methanol: '甲醇残留 <0.01% (安全)', cork: '合成橡木塞烙有星环酒庄徽记' },
+    fakeSigns: [
+      { key: 'methanol', badText: '工业甲醇含量高达 4.8% (致盲风险!)', reason: '工业酒精直接勾兑，甲醇严重超标' },
+      { key: 'cork', badText: '塞口由廉价塑料塞加胶水封死', reason: '酒瓶系回收真瓶灌装劣质散酒' }
+    ]
+  },
+  scrap_metal: {
+    id: 'scrap_metal',
+    name: '高纯钛合金废料',
+    category: 'material',
+    baseValue: 35,
+    w: 2, h: 1,
+    icon: '🔩',
+    legal: 'legal',
+    inspectType: 'tech',
+    desc: '从废弃舱壁或无人机残骸上拆下的合金板材，可用于冶炼零件或修复枪械。',
+    authenticSigns: { alloy: '无磁性航空钛合金 (密度 4.5g/cm³)', rust: '表面仅轻微太空氧化层' },
+    fakeSigns: [
+      { key: 'alloy', badText: '强磁铁吸附反应剧烈，内芯是镀漆生铁', reason: '实为廉价铸铁表面喷涂钛银漆' }
+    ]
+  },
+  filter_core: {
+    id: 'filter_core',
+    name: '纳米碳净水滤芯',
+    category: 'material',
+    baseValue: 42,
+    w: 1, h: 1,
+    icon: '🧽',
+    legal: 'legal',
+    inspectType: 'tech',
+    desc: '工业净水器的核心耗材，能将浑浊废水提纯为昂贵的特级纯净水。',
+    authenticSigns: { mesh: '蜂窝纳米碳膜未染色，透气均匀', casing: '卡扣无磨损痕迹' },
+    fakeSigns: [
+      { key: 'mesh', badText: '内部碳粉结块发黑，系报废旧滤芯水洗翻新', reason: '滤芯早已饱和失效，系旧件水洗翻新' }
+    ]
+  },
+  bio_moss: {
+    id: 'bio_moss',
+    name: '深空荧光培养苔藓',
+    category: 'material',
+    baseValue: 48,
+    w: 1, h: 1,
+    icon: '🌿',
+    legal: 'legal',
+    inspectType: 'chemical',
+    desc: '无土栽培舱产出的活性有机植物，是合成“免疫宁”和酿造紫酒的关键原料。',
+    authenticSigns: { activity: '孢子生物活性 94%，幽绿微光稳定', mold: '无杂菌感染斑点' },
+    fakeSigns: [
+      { key: 'activity', badText: '菌丝枯死发黑，涂有荧光粉伪装活性', reason: '苔藓已完全失活，表面喷涂工业荧光剂' }
+    ]
+  },
+  industrial_alcohol: {
+    id: 'industrial_alcohol',
+    name: '精馏工业乙醇罐',
+    category: 'material',
+    baseValue: 40,
+    w: 1, h: 1,
+    icon: '🧪',
+    legal: 'legal',
+    inspectType: 'liquid',
+    desc: '化学合成与酿造的基础溶剂，经过脱毒蒸馏后可用于制药或酿酒。',
+    authenticSigns: { purity: '无水乙醇纯度 96%', container: '防爆铝罐压力正常' },
+    fakeSigns: [
+      { key: 'purity', badText: '兑水严重，摇晃全是水泡 (纯度仅 35%)', reason: '乙醇被大量兑水稀释' }
+    ]
+  },
+  energy_cell: {
+    id: 'energy_cell',
+    name: '高密聚变电池组',
+    category: 'tech',
+    baseValue: 75,
+    w: 1, h: 1,
+    icon: '🔋',
+    legal: 'legal',
+    inspectType: 'tech',
+    desc: '既能给店铺机器补充 60 点电力，也能驱动 AI 扫描仪或高价转售。',
+    authenticSigns: { charge: '满载电压 24.0V · 循环次数 <10次', shell: '绝缘陶瓷外壳无鼓包' },
+    fakeSigns: [
+      { key: 'charge', badText: '虚标电压，实测内阻极大仅剩 8% 残电', reason: '报废电芯串联虚标满电' }
+    ]
+  },
+  broken_pistol: {
+    id: 'broken_pistol',
+    name: '卡壳的9mm动能手枪',
+    category: 'weapon',
+    baseValue: 95,
+    w: 2, h: 1,
+    icon: '🔧',
+    legal: 'permit_arms',
+    inspectType: 'weapon',
+    desc: '撞针断裂的下层区防身手枪。在改装台上用废金属修复后价值翻倍。',
+    authenticSigns: { barrel: '膛线尚存7成新，仅击发弹簧断裂', serial: '民用防卫序列号可查' },
+    fakeSigns: [
+      { key: 'barrel', badText: '枪管内部炸膛裂缝被焊锡掩盖，开火即炸', reason: '炸膛报废枪管被焊锡伪装，无法安全修复' }
+    ]
+  },
+  kinetic_pistol: {
+    id: 'kinetic_pistol',
+    name: '“蝮蛇”制式动能手枪',
+    category: 'weapon',
+    baseValue: 230,
+    w: 2, h: 1,
+    icon: '🔫',
+    legal: 'permit_arms',
+    inspectType: 'weapon',
+    desc: '校准完毕的半自动手枪。无一级军火许可摆在明面上会被治安官直接没收并罚款！',
+    authenticSigns: { barrel: '冷锻精钢膛线完好，击锤清脆', serial: '标准防卫署备案编码', frame: '原厂聚合物握把' },
+    fakeSigns: [
+      { key: 'frame', badText: '劣质3D打印塑料机匣，猛击即碎', reason: '采用廉价塑料3D打印拼装的玩具级仿制品' }
+    ]
+  },
+  pulse_rifle: {
+    id: 'pulse_rifle',
+    name: '军用电磁脉冲步枪',
+    category: 'contraband',
+    baseValue: 460,
+    w: 2, h: 2,
+    icon: '⚡',
+    legal: 'contraband',
+    inspectType: 'weapon',
+    desc: '严禁民间持有的重型制式武器。革命军与黑市疯抢的硬货，但被治安局搜出后果极其严重。',
+    authenticSigns: { coil: '超导加速线圈导通率 99%', serial: '军方批次铭牌', capacitor: '高能电容充放电正常' },
+    fakeSigns: [
+      { key: 'coil', badText: '内部超导线圈被偷换成了普通铜线', reason: '核心超导电磁线圈被调包，无法激发脉冲' }
+    ]
+  },
+  stolen_watch: {
+    id: 'stolen_watch',
+    name: '欧米茄古董机械怀表',
+    category: 'luxury',
+    baseValue: 260,
+    w: 1, h: 1,
+    icon: '⌚',
+    legal: 'legal',
+    inspectType: 'luxury',
+    desc: '旧地球时代的精密机械遗物，上层贵族趋之若鹜。经常带有失主报案的防盗追踪码。',
+    authenticSigns: { movement: '17钻陀飞轮擒纵机构运转精准', case: '18K玫瑰金表壳，内侧瑞士铭文清晰', glass: '蓝宝石弧面表镜无划痕' },
+    fakeSigns: [
+      { key: 'movement', badText: '打开后盖里面塞着廉价电子石英机芯', reason: '内部机芯为廉价石英表芯伪造机械表' },
+      { key: 'case', badText: '表壳镀金层脱落，露出黄铜底色', reason: '表壳系黄铜电镀而非真金古董' }
+    ]
+  },
+  cyber_arm: {
+    id: 'cyber_arm',
+    name: '“荒坂式”军规义体手臂',
+    category: 'tech',
+    baseValue: 340,
+    w: 2, h: 2,
+    icon: '🦾',
+    legal: 'permit_arms',
+    inspectType: 'tech',
+    desc: '具备液压增力模块的精密义体。义体诊所、上层买家与改装客都愿意出大价钱。',
+    authenticSigns: { servo: '微型液压伺服电机响应延迟 2ms', neuro: '神经接驳金手指无氧化烧蚀', armor: '碳纤维外甲原厂涂装' },
+    fakeSigns: [
+      { key: 'neuro', badText: '神经接口存在严重过载烧焦黑斑（死人身上硬扯下来的报废件）', reason: '神经接驳芯片已烧毁报废' },
+      { key: 'servo', badText: '关节活动发出刺耳齿轮卡死声', reason: '内部液压漏油且齿轮崩齿' }
+    ]
+  },
+  credit_chip_locked: {
+    id: 'credit_chip_locked',
+    name: '加密黑金信用芯片',
+    category: 'contraband',
+    baseValue: 180,
+    w: 1, h: 1,
+    icon: '💳',
+    legal: 'contraband',
+    inspectType: 'tech',
+    desc: '从上层区银行劫案流出的死账芯片。用序列号打磨机/解码器破译后可提取高额无痕资金或转卖黑市。',
+    authenticSigns: { chip: '量子加密存储扇区完整，内含活跃秘钥', casing: '钛金封装未触发自毁熔断' },
+    fakeSigns: [
+      { key: 'chip', badText: '芯片已被远程触发电磁自毁，内部全是乱码空扇区', reason: '芯片已触发防盗自毁，实为空白废卡' }
+    ]
+  },
+  unlocked_ledger: {
+    id: 'unlocked_ledger',
+    name: '破译的不记名债券芯片',
+    category: 'luxury',
+    baseValue: 390,
+    w: 1, h: 1,
+    icon: '💎',
+    legal: 'legal',
+    inspectType: 'tech',
+    desc: '洗白并解除追踪的巨额不记名债权凭证，任何富商或黑市金主都会爽快高价买走。',
+    authenticSigns: { chip: '区块链无痕签名校验有效', casing: '全新匿名封装壳' },
+    fakeSigns: []
+  },
+  red_dust: {
+    id: 'red_dust',
+    name: '“猩红星尘”神经兴奋剂',
+    category: 'contraband',
+    baseValue: 380,
+    w: 1, h: 1,
+    icon: '🩸',
+    legal: 'contraband',
+    inspectType: 'chemical',
+    desc: '高度管制的违禁神经加速药剂。暴利惊人，但一旦被治安官查获或卖给便衣线人就会引火烧身。',
+    authenticSigns: { crystal: '深红六方晶系粉末，折射率极高', purity: '合成生物碱纯度 95%' },
+    fakeSigns: [
+      { key: 'crystal', badText: '掺入大量红砖粉与咖啡因颗粒', reason: '掺杂大量砖粉的劣质假货' }
+    ]
+  },
+  rad_barrel: {
+    id: 'rad_barrel',
+    name: '高危放射性废料桶',
+    category: 'contraband',
+    baseValue: 15,
+    w: 2, h: 2,
+    icon: '☢️',
+    legal: 'contraband',
+    inspectType: 'liquid',
+    desc: '别人花脏钱请你代为处理的烫手山芋！留在店里每晚会增加辐射污染与治安风险，必须在夜间去垃圾场偷偷倾倒处理。',
+    authenticSigns: { rads: '盖革计数器疯狂爆表 (1800 mSv)!!', seal: '铅封桶壁正在缓慢渗漏绿液' },
+    fakeSigns: []
+  },
+  relic_core: {
+    id: 'relic_core',
+    name: '先驱者母舰量子遗物',
+    category: 'luxury',
+    baseValue: 580,
+    w: 2, h: 2,
+    icon: '🔮',
+    legal: 'legal',
+    inspectType: 'luxury',
+    desc: '深空遗迹打捞出的神秘悬浮球体，全空间站最顶级的收藏珍品。放进展示柜能引来最阔绰的大人物。',
+    authenticSigns: { field: '反重力微弱自旋力场稳定', glyph: '古地球先驱者纳米蚀刻铭文' },
+    fakeSigns: [
+      { key: 'field', badText: '底座藏着微型磁悬浮线圈和纽扣电池', reason: '现代磁悬浮工艺品伪造远古遗物' }
+    ]
+  }
+};
+
+// 店面后室机器与生产链
+const MACHINES = {
+  purifier: {
+    id: 'purifier',
+    name: '工业反渗透净水器',
+    icon: '💧',
+    cost: 280,
+    powerPerRun: 20,
+    desc: '将浑浊回收水与滤芯加工成高利润的 99.9% 特级纯净水。',
+    recipes: [
+      {
+        id: 'purify_water_clean',
+        name: '标准多层净化',
+        inputs: ['dirty_water', 'filter_core'],
+        output: 'pure_water',
+        outputCount: 2,
+        power: 20,
+        note: '消耗 1 浑浊水 + 1 纳米滤芯 → 产出 2 瓶正品特级纯净水'
+      },
+      {
+        id: 'purify_water_shady',
+        name: '无滤芯快速粗滤 (次品伪装)',
+        inputs: ['dirty_water'],
+        output: 'pure_water',
+        outputCount: 1,
+        makeFake: true,
+        power: 12,
+        note: '仅消耗 1 浑浊水 → 产出 1 瓶伪装成特级纯净水的次品水（可坑骗粗心买家，被识破掉声望）'
+      }
+    ]
+  },
+  workbench: {
+    id: 'workbench',
+    name: '精密军火与机械改装台',
+    icon: '🛠️',
+    cost: 340,
+    powerPerRun: 25,
+    desc: '修复损坏枪械、组装军规义体或升级重型脉冲武器。',
+    recipes: [
+      {
+        id: 'repair_pistol',
+        name: '修复并校准动能手枪',
+        inputs: ['broken_pistol', 'scrap_metal'],
+        output: 'kinetic_pistol',
+        outputCount: 1,
+        power: 20,
+        note: '消耗 1 卡壳手枪 + 1 钛合金废料 → 产出 1 把正品“蝮蛇”手枪'
+      },
+      {
+        id: 'build_pulse_rifle',
+        name: '秘密改装军用脉冲步枪',
+        inputs: ['kinetic_pistol', 'energy_cell', 'scrap_metal'],
+        output: 'pulse_rifle',
+        outputCount: 1,
+        power: 35,
+        note: '消耗 1 蝮蛇手枪 + 1 聚变电池 + 1 废金属 → 产出 1 把违禁脉冲步枪 (暴利!)'
+      }
+    ]
+  },
+  synthesizer: {
+    id: 'synthesizer',
+    name: '化学合成与酿造蒸馏釜',
+    icon: '⚗️',
+    cost: 320,
+    powerPerRun: 25,
+    desc: '调配“免疫宁”抗辐射药剂、酿造上层紫酒，或提炼违禁“猩红星尘”。',
+    recipes: [
+      {
+        id: 'brew_wine',
+        name: '发酵星云陈酿紫酒',
+        inputs: ['bio_moss', 'industrial_alcohol'],
+        output: 'synth_wine',
+        outputCount: 1,
+        power: 20,
+        note: '消耗 1 荧光苔藓 + 1 工业乙醇 → 产出 1 瓶星云陈酿紫酒'
+      },
+      {
+        id: 'craft_immuno',
+        name: '合成“免疫宁”药剂',
+        inputs: ['bio_moss', 'pure_water'],
+        output: 'immuno_med',
+        outputCount: 1,
+        power: 22,
+        note: '消耗 1 荧光苔藓 + 1 特级纯净水 → 产出 1 支免疫宁注射器'
+      },
+      {
+        id: 'cook_reddust',
+        name: '提纯违禁“猩红星尘”',
+        inputs: ['immuno_med', 'industrial_alcohol'],
+        output: 'red_dust',
+        outputCount: 1,
+        power: 30,
+        note: '消耗 1 免疫宁 + 1 工业乙醇 → 产出 1 份高危违禁品“猩红星尘”'
+      }
+    ]
+  },
+  scrambler: {
+    id: 'scrambler',
+    name: '量子序列号打磨/解码仪',
+    icon: '💻',
+    cost: 300,
+    powerPerRun: 20,
+    desc: '抹除任何赃物上的失主报案追踪码（洗白赃物），或破译黑金加密芯片。',
+    recipes: [
+      {
+        id: 'decode_chip',
+        name: '破译黑金信用芯片',
+        inputs: ['credit_chip_locked', 'energy_cell'],
+        output: 'unlocked_ledger',
+        outputCount: 1,
+        power: 25,
+        note: '消耗 1 加密黑金芯片 + 1 聚变电池 → 产出 1 枚高价值不记名债券芯片'
+      }
+    ]
+  }
+};
+
+// 店铺升级与许可证
+const UPGRADES_AND_LICENSES = [
+  {
+    id: 'aug_scanner',
+    type: 'tool',
+    name: '杰克逊博士的 AI 改造体扫描仪',
+    icon: '📡',
+    cost: 240,
+    desc: '每次消耗 20 点电力对柜台前的顾客进行生物芯片扫描，100% 确认对方是否为失控 AI 改造体（Aug）。'
+  },
+  {
+    id: 'spec_analyzer',
+    type: 'tool',
+    name: '全频段物质光谱仪',
+    icon: '🔬',
+    cost: 220,
+    desc: '深度鉴定工具：一键透视液体纯度、化学成分、隐藏机芯与防盗追踪码，不漏过任何高仿瑕疵。'
+  },
+  {
+    id: 'stash_expand',
+    type: 'upgrade',
+    name: '液压磁屏蔽暗格扩建',
+    icon: '🗄️',
+    cost: 260,
+    desc: '将柜台下方的秘密防搜查暗格容量扩充至 8 格，治安官常规突击检查无法发现暗格内的赃物与违禁品。'
+  },
+  {
+    id: 'display_case_up',
+    type: 'upgrade',
+    name: '全息防弹展示柜升级',
+    icon: '✨',
+    cost: 250,
+    desc: '摆放在主货架前 3 格的高价值商品会自动吸引上层区富豪顾客，且所有出售议价容忍度提升 12%。'
+  },
+  {
+    id: 'arms_1',
+    type: 'license',
+    name: '一级民用军火经营许可证',
+    icon: '📜',
+    cost: 300,
+    reqFaction: { id: 'security', min: 10 },
+    desc: '贸易署与治安局联合签发。合法持有与买卖手枪、义体等受控武器装备（不含重型脉冲步枪违禁品）。'
+  },
+  {
+    id: 'med_permit',
+    type: 'license',
+    name: '深空医药与化学制剂许可',
+    icon: '⚕️',
+    cost: 200,
+    desc: '合法经营“免疫宁”等处方抗辐射药剂，避免在治安巡查时被当作非法行医罚没。'
+  },
+  {
+    id: 'appraiser_cert',
+    type: 'license',
+    name: '空间站鉴定委员会初级证书',
+    icon: '🏅',
+    cost: 220,
+    desc: '挂在店内后，每天有概率吸引专门上门求鉴定的委托客人，成功鉴定即可直接赚取丰厚鉴定佣金！'
+  }
+];
+
+// 人物原型与特征生成（用于《请出示证件》+《深空当铺》式的察言观色与 AI 改造体识别）
+const CUSTOMER_ARCHETYPES = [
+  {
+    id: 'miner',
+    roleName: '下层矿工',
+    faction: 'lower',
+    avatarHue: 205,
+    helmet: 'miner_cap',
+    sellPool: ['scrap_metal', 'dirty_water', 'broken_pistol', 'cig_redstar', 'energy_cell'],
+    buyCategories: ['supply', 'medical'],
+    honesty: 0.72,
+    patience: 3,
+    budgetMult: 1.05,
+    greetings: [
+      '咳咳……刚从第9矿道下来，肺里全是铁锈味。老板，看看这件货收不收？',
+      '老兄，这周水费又涨了，手头紧得要命，给个公道价吧。',
+      '听说你这儿童叟无欺，我想淘点能保命的日用品。'
+    ]
+  },
+  {
+    id: 'scavenger',
+    roleName: '废舱拾荒客',
+    faction: 'lower',
+    avatarHue: 38,
+    helmet: 'goggles',
+    sellPool: ['scrap_metal', 'filter_core', 'bio_moss', 'broken_pistol', 'stolen_watch', 'cyber_arm', 'ration_pack'],
+    buyCategories: ['supply', 'tech'],
+    honesty: 0.52,
+    patience: 3,
+    budgetMult: 1.0,
+    greetings: [
+      '嘿嘿，昨晚在废弃反应堆夹层摸出来的好宝贝，绝对原装正版！大概吧……',
+      '别问哪儿来的，在这座空间站里，没人认领的东西就是无主之物。',
+      '老板眼力毒，但咱这趟差点喂了变异鼠，多少给添几个子儿？'
+    ]
+  },
+  {
+    id: 'thief',
+    roleName: '第13区暗巷扒手',
+    faction: 'blackmarket',
+    avatarHue: 280,
+    helmet: 'hood',
+    sellPool: ['stolen_watch', 'credit_chip_locked', 'cyber_arm', 'immuno_med', 'synth_wine', 'kinetic_pistol'],
+    buyCategories: ['weapon', 'contraband', 'tech'],
+    stolenChance: 0.75,
+    honesty: 0.40,
+    patience: 2,
+    budgetMult: 1.22,
+    greetings: [
+      '嘘——小声点，外面刚过去一队红皮条子。这货有点“烫手”，你敢吃下吗？',
+      '上层区老爷兜里刚顺出来的，连体温都还热乎着呢，便宜出给你。',
+      '有没有不记名、不查证件的硬货？价钱好商量。'
+    ]
+  },
+  {
+    id: 'rebel_courier',
+    roleName: '革命军地下联络员',
+    faction: 'rebel',
+    avatarHue: 140,
+    helmet: 'beret',
+    sellPool: ['energy_cell', 'industrial_alcohol', 'bio_moss', 'relic_core'],
+    buyCategories: ['weapon', 'medical', 'supply', 'contraband'],
+    honesty: 0.85,
+    patience: 3,
+    budgetMult: 1.25,
+    greetings: [
+      '为了自由星环。我们前线据点急需一批补给和防身家伙，算我欠你个人情。',
+      '上层穹顶把持着90%的净水，弟兄们快撑不住了，你店里有存货吗？',
+      '这是我们突袭运输船缴获的物资，换点现金买药。'
+    ]
+  },
+  {
+    id: 'upper_agent',
+    roleName: '穹顶区私人买手',
+    faction: 'upper',
+    avatarHue: 330,
+    helmet: 'visor_gold',
+    sellPool: ['synth_wine', 'immuno_med', 'stolen_watch', 'relic_core'],
+    buyCategories: ['luxury', 'tech'],
+    honesty: 0.78,
+    patience: 2,
+    budgetMult: 1.48,
+    greetings: [
+      '啧，下层区的空气真是令人作呕……快点，我家主人想要几件体面的稀罕货。',
+      '只要东西正宗，信用点不是问题。但要是敢拿假货糊弄我，等着瞧。',
+      '把上层淘汰下来的藏品处理掉，你这小庙吃得下吗？'
+    ]
+  },
+  {
+    id: 'undercover_cop',
+    roleName: '可疑的便衣访客',
+    faction: 'security',
+    avatarHue: 5,
+    helmet: 'collar',
+    isSting: true,
+    sellPool: ['cig_redstar', 'kinetic_pistol'],
+    buyCategories: ['contraband', 'weapon'],
+    honesty: 0.65,
+    patience: 2,
+    budgetMult: 1.35,
+    greetings: [
+      '咳，老板，听说你这儿路子野……有没有那种“不需要许可证”的刺激玩意儿？我出高价。',
+      '我是新来的帮派成员（眼神不自然地瞟向你的货架编号），卖点违禁品给我呗？'
+    ]
+  }
+];
+
+// 失控 AI 改造体（Aug）专属异常线索库（还原原版 6 大鉴别维度：芯片、瞳孔、表情、台词、动作、服饰错位）
+const AUG_CLUES = {
+  visualTells: [
+    '耳后皮肤下隐约闪烁着高频红色 AI 神经接驳芯片微光',
+    '左眼瞳孔呈现非人类的六边形机械收缩网格，完全不眨眼',
+    '面部肌肉僵硬对称，嘴角保持着毫米级固定弧度的诡异假笑'
+  ],
+  speechTells: [
+    '你好，人类商业经营单位。我请求执行【等价物质交换协议】，误差容忍率 0.00%。',
+    '这件物品的物理熵值处于理想区间。请立即输出你的信用点报价参数。',
+    '口渴感模拟模块已触发……更正：我今天嗓子有点干，需要摄入液体或高能电池。'
+  ],
+  behaviorTells: [
+    '身体静止得像一尊雕像，每隔4.2秒颈部关节会出现一次轻微的机械抽搐',
+    '穿着下层矿工的破旧工装，胸口却别着上层穹顶区精英的门禁徽章（服饰与阵营严重不符）',
+    '呼吸频率完全为零，手指在金属柜台上敲击出精准的二进制节拍'
+  ],
+  normalBehaviors: [
+    '站在柜台前不耐烦地搓着手，时不时回头看一眼巷口巡逻队',
+    '眼角带着熬夜的黑眼圈，说话时带着浓重的下层区口音与叹气声',
+    '衣袖沾着机油和灰尘，神态自然地打量着货架上的标价牌',
+    '呼吸略显急促，习惯性地摸了摸口袋里皱巴巴的烟盒'
+  ]
+};
+
+// 通缉犯名单模板（每日随机刷新 1-2 名通缉犯特征，遇到可举报领赏或私下黑市交易）
+const WANTED_POOL = [
+  {
+    id: 'wanted_viper',
+    name: '“独眼”维克多',
+    crime: '劫持上层区运钞穿梭机',
+    bounty: 220,
+    mark: '右眼佩戴红色战术义眼罩，脖颈有条形码刺青',
+    faction: 'blackmarket'
+  },
+  {
+    id: 'wanted_ghost',
+    name: '幽灵焊工·林',
+    crime: '破坏空间站氧气税计费总闸',
+    bounty: 190,
+    mark: '左脸颊有一道电弧灼伤疤痕，头戴铜色护目镜',
+    faction: 'rebel'
+  },
+  {
+    id: 'wanted_crow',
+    name: '渡鸦·科尔',
+    crime: '倒卖军方加密神经芯片',
+    bounty: 250,
+    mark: '身穿深紫色高领兜帽衫，嘴角叼着银色金属牙签',
+    faction: 'blackmarket'
+  }
+];
+
+// 特殊剧情角色事件（致敬原版 卢 Lu、塞尔皮科 Serpico、乔治奥 Georgio、房东等黑色幽默故事线）
+const STORY_NPCS = {
+  mentor_day1: {
+    day: 1,
+    id: 'mentor_intro',
+    name: '老莫（前任独臂店主）',
+    role: '退休当铺掌柜',
+    faction: 'lower',
+    text: '“咳咳……小子，钥匙给你了。记住在下层区开当铺的三条铁律：第一，买货前先拿放大镜看清楚封口和防伪标，十个拾荒客里有四个揣着假货；第二，治安局条子来查铺之前，把没证的枪和脏货塞进柜台底下的【秘密暗格】；第三，最近空间站闹失控 AI 改造体（Aug），要是确认对面不是活人，柜台底下那把霰弹枪别省子弹！每周日房东会来收租，攒够 12,000 信用点把产权买下来，你才算真正自由。”',
+    choices: [
+      { label: '收下老莫留下的备用电池与忠告 (+1 聚变电池)', effect: 'gift_cell' },
+      { label: '询问关于“失控 AI 改造体”的细节 (+30 电量, 解锁鉴别图鉴)', effect: 'aug_tip' }
+    ]
+  },
+  georgio_waste: {
+    day: 3,
+    id: 'georgio_waste',
+    name: '乔治奥（反应堆外包工头）',
+    role: '灰色废料中间人',
+    faction: 'blackmarket',
+    text: '乔治奥压低帽檐凑近柜台：“老板，发财的脏活干不干？上层反应堆有 2 桶【高危放射性废料】，正规无害化处理太贵了。你帮我暂存处理掉，我当场给你 **320 信用点** 现金！只要你晚上抽空去垃圾场偷偷倒掉就行……当然，别让治安局在店里搜出来。”',
+    choices: [
+      { label: '接下脏活！收下 320 CR 和 2 桶放射性废料', effect: 'accept_waste' },
+      { label: '严词拒绝：我这小店不想变成辐射墓地', effect: 'reject_waste' }
+    ]
+  },
+  lu_crate: {
+    day: 5,
+    id: 'lu_crate',
+    name: '卢（神秘的乔装女客）',
+    role: '革命军特勤先锋',
+    faction: 'rebel',
+    text: '身穿旧风衣的女人警惕地扫视门外，将一个沉甸甸的合金箱推上柜台：“听着，治安局特工正在封锁街区。这把改装脉冲步枪先寄存在你这儿保管两天，别卖掉也别被条子搜走。事成之后我给你 **450 信用点** 保管费，外加革命军的永久友谊。当然，如果你转头向治安局告密……我不建议你这么做。”',
+    choices: [
+      { label: '答应替卢保管箱中重武器（获得脉冲步枪，2天后卢回访重谢）', effect: 'lu_accept' },
+      { label: '暗中按下治安局举报按钮领赏（+280 CR，治安局+20，革命军-30）', effect: 'lu_betray' },
+      { label: '婉拒卷入派系纷争', effect: 'lu_decline' }
+    ]
+  },
+  serpico_plea: {
+    day: 6,
+    id: 'serpico_plea',
+    name: '瘦弱的送信少年',
+    role: '垃圾场流亡者信使',
+    faction: 'lower',
+    text: '少年递来一封沾满油污的信：“是躲在垃圾倾倒场深处的塞尔皮科叔叔让我来的……他因为揭发水务公司掺毒被通缉，快饿死了。如果你背包里有【军用高能营养膏】或【特级纯净水】，能支援他一份吗？虽然没钱付给你，但下层区的街坊们都会记住你的恩情。”',
+    choices: [
+      { label: '免费赠送 1 份营养膏或纯净水救助塞尔皮科（下层区+22，革命军+12，获得神秘回礼线索）', effect: 'help_serpico' },
+      { label: '资助 120 信用点让他自己买吃的（下层区+15，好运提升）', effect: 'pay_serpico' },
+      { label: '冷漠赶走：当铺不做慈善（下层区-8）', effect: 'ignore_serpico' }
+    ]
+  }
+};
+
+
+// ============================================================================
+// Web Audio 合成赛博朋克音效引擎 & Canvas 像素角色肖像渲染器（零外部资源依赖）
+// ============================================================================
+
+class SoundEngine {
+  constructor() {
+    this.ctx = null;
+    this.muted = false;
+  }
+
+  init() {
+    if (!this.ctx && (window.AudioContext || window.webkitAudioContext)) {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AudioCtx();
+    }
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume();
+    }
+  }
+
+  play(type) {
+    if (this.muted) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+
+      if (type === 'click') {
+        this._tone(680, 420, 0.05, 'square', 0.06, now);
+      } else if (type === 'coin') {
+        this._tone(987.77, 987.77, 0.07, 'triangle', 0.12, now);
+        this._tone(1318.5, 1318.5, 0.16, 'triangle', 0.12, now + 0.07);
+      } else if (type === 'scan') {
+        this._tone(320, 1240, 0.22, 'sawtooth', 0.07, now);
+        this._tone(1240, 480, 0.18, 'sine', 0.06, now + 0.22);
+      } else if (type === 'alert') {
+        this._tone(520, 260, 0.14, 'sawtooth', 0.12, now);
+        this._tone(520, 260, 0.18, 'sawtooth', 0.12, now + 0.16);
+      } else if (type === 'shotgun') {
+        // 白噪声爆发 + 低频重击模拟霰弹枪轰鸣
+        const bufferSize = this.ctx.sampleRate * 0.28;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (this.ctx.sampleRate * 0.07));
+        }
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(1100, now);
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0.28, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+        noise.start(now);
+        this._tone(130, 38, 0.25, 'sawtooth', 0.22, now);
+      } else if (type === 'craft') {
+        this._tone(260, 520, 0.12, 'triangle', 0.09, now);
+        this._tone(520, 780, 0.15, 'sine', 0.10, now + 0.11);
+      } else if (type === 'door') {
+        this._tone(440, 660, 0.09, 'sine', 0.07, now);
+        this._tone(660, 550, 0.12, 'sine', 0.06, now + 0.1);
+      } else if (type === 'fail') {
+        this._tone(300, 170, 0.22, 'sawtooth', 0.10, now);
+      }
+    } catch (_) {
+      // 忽略浏览器自动播放限制异常
+    }
+  }
+
+  _tone(fStart, fEnd, dur, wave, vol, startTime) {
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = wave;
+    osc.frequency.setValueAtTime(fStart, startTime);
+    if (fStart !== fEnd) {
+      osc.frequency.exponentialRampToValueAtTime(Math.max(20, fEnd), startTime + dur);
+    }
+    gain.gain.setValueAtTime(vol, startTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(startTime);
+    osc.stop(startTime + dur + 0.02);
+  }
+}
+
+const sfx = new SoundEngine();
+
+// ----------------------------------------------------------------------------
+// 赛博朋克像素风顾客肖像生成器
+// 根据顾客身份、阵营、是否通缉犯、是否潜伏 AI 改造体（Aug）绘制动态像素画肖像
+// ----------------------------------------------------------------------------
+function drawCustomerPortrait(canvas, customer, tick = 0) {
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width;
+  const H = canvas.height;
+  ctx.imageSmoothingEnabled = false;
+
+  // 背景：下层空间站霓虹窗景 + 扫描线
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, '#090d1a');
+  grad.addColorStop(0.65, '#111c33');
+  grad.addColorStop(1, '#1a1428');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // 远处空间站霓虹灯牌装饰
+  ctx.fillStyle = 'rgba(6, 182, 212, 0.14)';
+  ctx.fillRect(14, 18, 36, 10);
+  ctx.fillStyle = 'rgba(236, 72, 153, 0.15)';
+  ctx.fillRect(W - 52, 26, 38, 8);
+
+  if (!customer) {
+    // 空柜台状态：显示霓虹 OPEN 灯牌
+    ctx.strokeStyle = '#06b6d4';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(W / 2 - 48, H / 2 - 20, 96, 40);
+    ctx.fillStyle = '#22d3ee';
+    ctx.font = 'bold 14px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('WAITING...', W / 2, H / 2 + 5);
+    return;
+  }
+
+  // 像素网格尺度 (48x48 逻辑像素 -> 放大到画布)
+  const px = Math.floor(W / 40);
+  const ox = Math.floor((W - px * 40) / 2);
+  const oy = Math.floor(H - px * 38);
+
+  // AI 改造体会有微妙的机械抽搐，人类则是自然呼吸起伏
+  let bobY = Math.round(Math.sin(tick * 0.07) * 1);
+  let glitchX = 0;
+  if (customer.isAug && customer.augVisualType === 'twitch') {
+    bobY = 0;
+    if (tick % 55 < 4) glitchX = (tick % 2 === 0 ? 1 : -1);
+  }
+
+  const rect = (gx, gy, gw, gh, color) => {
+    ctx.fillStyle = color;
+    ctx.fillRect(ox + (gx + glitchX) * px, oy + (gy + bobY) * px, gw * px, gh * px);
+  };
+
+  // 角色配色
+  const seed = customer.seed || 17;
+  const skinTones = ['#e0b193', '#c68c68', '#8d5b3e', '#f0c8b0', '#b8866b'];
+  const skin = customer.isSecurityRaid ? '#d7a485' : skinTones[seed % skinTones.length];
+  const coatHue = customer.isSecurityRaid ? 0 : (customer.coatHue ?? 200);
+  const coatMain = customer.isSecurityRaid
+    ? '#7f1d1d'
+    : `hsl(${coatHue}, 42%, 28%)`;
+  const coatLight = customer.isSecurityRaid
+    ? '#dc2626'
+    : `hsl(${coatHue}, 58%, 44%)`;
+
+  // 肩膀与外套
+  rect(7, 25, 26, 13, coatMain);
+  rect(10, 24, 20, 3, coatLight);
+  // 领口/内衬
+  rect(16, 25, 8, 9, '#0f172a');
+
+  // 如果服饰与阵营错位（AI 改造体伪装破绽之一，或上层胸章）
+  if (customer.mismatchBadge || customer.faction === 'upper') {
+    rect(25, 28, 4, 3, '#f472b6');
+    rect(26, 29, 2, 1, '#fde047');
+  } else if (customer.isSecurityRaid) {
+    // 治安官警徽
+    rect(25, 28, 4, 4, '#facc15');
+  }
+
+  // 脖颈
+  rect(17, 20, 6, 6, skin);
+  // 通缉犯条形码刺青
+  if (customer.wantedId === 'wanted_viper') {
+    rect(18, 22, 4, 2, '#1e293b');
+  }
+
+  // 耳朵 & 耳后 AI 神经芯片破绽
+  rect(11, 13, 2, 5, skin);
+  rect(27, 13, 2, 5, skin);
+  if (customer.isAug && customer.augVisualType === 'chip') {
+    // 耳后闪烁红光的失控 AI 芯片
+    const blink = (Math.floor(tick / 12) % 2 === 0) ? '#ff1e56' : '#7f1d1d';
+    rect(27, 15, 2, 2, '#334155');
+    rect(28, 15, 1, 1, blink);
+  }
+
+  // 头部轮廓
+  rect(13, 7, 14, 15, skin);
+  rect(14, 6, 12, 2, skin);
+
+  // 脸部疤痕（通缉犯幽灵焊工）
+  if (customer.wantedId === 'wanted_ghost') {
+    rect(14, 15, 3, 4, '#991b1b');
+  }
+
+  // 眼睛与瞳孔（普通人会眨眼，AI 改造体六边形异色瞳且不眨眼）
+  const isBlinking = !customer.isAug && (tick % 95 < 4);
+  if (isBlinking) {
+    rect(15, 13, 3, 1, '#1e293b');
+    rect(22, 13, 3, 1, '#1e293b');
+  } else {
+    rect(15, 12, 3, 2, '#f8fafc');
+    rect(22, 12, 3, 2, '#f8fafc');
+    if (customer.isAug && customer.augVisualType === 'pupil') {
+      // 诡异青红色非人瞳孔
+      rect(16, 12, 2, 2, '#00f5d4');
+      rect(23, 12, 2, 2, '#f43f5e');
+    } else {
+      rect(16, 12, 2, 2, '#0f172a');
+      rect(23, 12, 2, 2, '#0f172a');
+    }
+  }
+
+  // 独眼通缉犯眼罩
+  if (customer.wantedId === 'wanted_viper') {
+    rect(14, 11, 5, 3, '#111827');
+    rect(15, 12, 2, 2, '#ef4444');
+    rect(13, 11, 14, 1, '#111827');
+  }
+
+  // 眉毛与嘴巴表情
+  rect(15, 10, 3, 1, '#27272a');
+  rect(22, 10, 3, 1, '#27272a');
+  if (customer.isAug && customer.augVisualType === 'smile') {
+    // 诡异僵硬对称假笑
+    rect(16, 18, 8, 1, '#f8fafc');
+    rect(15, 17, 1, 1, '#7f1d1d');
+    rect(24, 17, 1, 1, '#7f1d1d');
+  } else {
+    rect(18, 18, 4, 1, '#573b2c');
+    if (customer.wantedId === 'wanted_crow') {
+      // 银色金属牙签
+      rect(21, 18, 4, 1, '#e2e8f0');
+    }
+  }
+
+  // 头饰 / 发型
+  const hairColors = ['#18181b', '#3f271d', '#7c2d12', '#cbd5e1', '#0e7490', '#701a75'];
+  const hair = hairColors[(seed >> 1) % hairColors.length];
+  if (customer.isSecurityRaid) {
+    // 治安局战术头盔与防暴目镜
+    rect(12, 4, 16, 5, '#1e293b');
+    rect(13, 6, 14, 2, '#ef4444');
+    rect(14, 11, 12, 3, '#38bdf8');
+  } else if (customer.helmet === 'miner_cap') {
+    rect(12, 4, 16, 4, '#ca8a04');
+    rect(18, 5, 4, 2, '#fef08a'); // 矿灯
+  } else if (customer.helmet === 'goggles' || customer.wantedId === 'wanted_ghost') {
+    rect(13, 5, 14, 3, hair);
+    rect(13, 8, 14, 3, '#b45309');
+    rect(15, 8, 4, 2, '#38bdf8');
+    rect(21, 8, 4, 2, '#38bdf8');
+  } else if (customer.helmet === 'hood' || customer.wantedId === 'wanted_crow') {
+    rect(11, 4, 18, 6, '#3b0764');
+    rect(11, 9, 2, 12, '#3b0764');
+    rect(27, 9, 2, 12, '#3b0764');
+  } else if (customer.helmet === 'visor_gold') {
+    rect(13, 4, 14, 4, '#f8fafc');
+    rect(14, 11, 12, 2, '#facc15');
+  } else {
+    rect(12, 4, 16, 4, hair);
+    rect(12, 7, 2, 5, hair);
+    rect(26, 7, 2, 5, hair);
+  }
+
+  // 柜台金属台面遮挡底部
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(0, H - 10, W, 10);
+  ctx.fillStyle = '#38bdf8';
+  ctx.fillRect(0, H - 10, W, 2);
+
+  // CRT 扫描线滤镜质感
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.18)';
+  for (let y = 0; y < H; y += 3) {
+    ctx.fillRect(0, y, W, 1);
+  }
+}
+
+
+// ============================================================================
+// 《深空当铺：可能是偷的》核心经营与博弈状态机引擎
+// ============================================================================
+
+const FIRST_NAMES = [
+  '科瓦奇', '米拉', '老杰克', '阿杰', '琳达', '萨沙', '汉克', '薇拉',
+  '铁砧·陈', '蕾娜', '格里高利', '诺亚', '凯恩', '伊芙', '莫里斯', '佐伊'
+];
+
+let uidCounter = 1000;
+function nextUid() {
+  return `itm_${++uidCounter}_${Math.floor(Math.random() * 999)}`;
+}
+
+// 创建一件具体商品实例（支持正品/赝品瑕疵、赃物追踪码、冷却天数、鉴定状态）
+function createItemInstance(templateId, opts = {}) {
+  const tpl = ITEM_TEMPLATES[templateId];
+  if (!tpl) throw new Error(`Unknown item template: ${templateId}`);
+
+  const isFake = opts.isFake ?? false;
+  let fakeFlaw = null;
+  if (isFake && tpl.fakeSigns && tpl.fakeSigns.length > 0) {
+    fakeFlaw = tpl.fakeSigns[Math.floor(Math.random() * tpl.fakeSigns.length)];
+  }
+
+  const isStolen = opts.isStolen ?? false;
+  // 赃物风头天数：等 2 天后或者用打磨机即可洗白
+  const heatDays = isStolen ? (opts.heatDays ?? 2) : 0;
+
+  return {
+    uid: nextUid(),
+    templateId: tpl.id,
+    name: tpl.name,
+    icon: tpl.icon,
+    category: tpl.category,
+    baseValue: tpl.baseValue,
+    w: tpl.w,
+    h: tpl.h,
+    legal: tpl.legal,
+    desc: tpl.desc,
+    isFake,
+    fakeFlaw,           // { key, badText, reason }
+    isStolen,
+    heatDays,
+    inspectedVisual: opts.inspectedVisual ?? false,
+    inspectedDeep: opts.inspectedDeep ?? false,
+    confronted: false,  // 是否已当面揭穿卖家假货
+    questTag: opts.questTag || null // 如 'lu_rifle' 寄存任务标记
+  };
+}
+
+// 计算商品当前的真实市场公允估值
+function evaluateItemFairPrice(item, state) {
+  let val = item.baseValue;
+
+  // 若已经被鉴定出是假货，真实价值暴跌至 28%
+  if (item.isFake && (item.inspectedVisual || item.inspectedDeep || item.confronted)) {
+    val = Math.round(val * 0.28);
+  }
+
+  // 职业专精加成
+  if (state) {
+    if (state.profession === 'water_merchant' && (item.templateId === 'pure_water' || item.templateId === 'dirty_water' || item.templateId === 'synth_wine')) {
+      val = Math.round(val * 1.15);
+    }
+    if (state.profession === 'gunsmith' && (item.category === 'weapon' || item.templateId === 'cyber_arm')) {
+      val = Math.round(val * 1.20);
+    }
+    if (state.profession === 'chemist' && (item.category === 'medical' || item.templateId === 'synth_wine' || item.templateId === 'red_dust')) {
+      val = Math.round(val * 1.20);
+    }
+    // 市场每日随机行情波动
+    if (state.hotCategory === item.category) {
+      val = Math.round(val * 1.25);
+    }
+  }
+
+  return Math.max(8, val);
+}
+
+// 判断商品在当前店铺许可证下是否属于违规摆设（治安官突击检查判定）
+function getItemIllegalityReason(item, state) {
+  if (item.questTag === 'lu_rifle') {
+    return '革命军寄存的军用脉冲步枪（违禁重武器）';
+  }
+  if (item.legal === 'contraband') {
+    return `重度违禁品【${item.name}】`;
+  }
+  if (item.isStolen && item.heatDays > 0) {
+    return `带失主报案追踪码的赃物【${item.name}】`;
+  }
+  if (item.legal === 'permit_arms' && !state.licenses.includes('arms_1')) {
+    return `无证经营管制军火/义体【${item.name}】（需一级军火许可）`;
+  }
+  if (item.legal === 'permit_med' && !state.licenses.includes('med_permit')) {
+    return `无证持有处方药剂【${item.name}】（需医药制剂许可）`;
+  }
+  return null;
+}
+
+// 初始化一局新游戏状态
+function createNewGameState(professionId = 'apprentice') {
+  const prof = PROFESSIONS.find(p => p.id === professionId) || PROFESSIONS[0];
+
+  const rep = {
+    lower: 10 + (prof.repMod.lower || 0),
+    security: 10 + (prof.repMod.security || 0),
+    blackmarket: 5 + (prof.repMod.blackmarket || 0),
+    rebel: 5 + (prof.repMod.rebel || 0),
+    upper: 5 + (prof.repMod.upper || 0)
+  };
+
+  const shelfMax = 16; // 主货架容量（以格位计，简化紧凑度同时保留大/小件体积占用体验）
+  const stashMax = prof.id === 'fence' ? 6 : 3; // 柜台下防搜查秘密暗格容量
+
+  const state = {
+    version: 1,
+    profession: prof.id,
+    professionName: prof.name,
+    day: 1,
+    week: 1,
+    rentDueDay: 4,          // 每 4 天交一次房租（节奏紧凑刺激，第4、8、12...天收租）
+    rentAmount: 320,        // 初始租金 320，每次递增
+    buyoutPrice: 5000,      // 浓缩节奏版买断当铺产权目标：5,000 CR（原版长线1.2万按网页端单局30分钟体验黄金比例缩放，也可买断后继续无尽模式）
+    ownsShop: false,
+    gameOver: null,         // null | { victory: bool, endingId, title, desc }
+
+    credits: prof.credits,
+    energy: prof.energy,
+    maxEnergy: 150,
+    heat: prof.id === 'fence' ? 15 : 0,    // 治安局案底/关注度 (0-100)
+    augThreat: 10,          // 空间站失控 AI 改造体渗透威胁度 (0-100)
+
+    rep,
+    licenses: [...prof.startingLicenses],
+    machines: [...prof.startingMachines],
+    tools: ['magnifier'],   // 默认人人有基础放大镜
+
+    shelfMaxSlots: shelfMax,
+    stashMaxSlots: stashMax,
+    shelf: [],              // 摆在明面货架/展示柜的商品
+    stash: [],              // 藏在秘密暗格的商品（治安官搜不到，顾客也看不到）
+
+    hotCategory: 'supply',  // 今日紧俏品类
+    dailyWanted: null,      // 今日通缉犯特征档案
+    phase: 'morning',       // 'morning' | 'open' | 'night' | 'gameover'
+
+    customersQueue: [],
+    currentCustomer: null,
+    customersServedToday: 0,
+
+    // 统计与成就追踪
+    stats: {
+      totalEarned: 0,
+      fakesExposed: 0,
+      augsEliminated: 0,
+      innocentsShot: 0,
+      wantedReported: 0,
+      raidsSurvived: 0,
+      itemsCrafted: 0,
+      helpedSerpico: false,
+      luQuestState: 'none', // 'none' | 'holding' | 'completed' | 'betrayed'
+      luReturnDay: 0
+    },
+
+    logs: [
+      `[第1天] 你背着高利贷盘下了第13底层街区的“深空当铺”。距离房东收租还有 3 天（需缴 320 CR），攒够 5,000 CR 即可彻底买下店铺产权！`
+    ]
+  };
+
+  // 职业专属初始工具
+  if (prof.id === 'water_merchant' || prof.id === 'chemist') {
+    state.tools.push('spec_analyzer');
+  }
+  if (prof.id === 'gunsmith') {
+    state.tools.push('aug_scanner');
+  }
+
+  // 放入初始库存
+  for (const tplId of prof.startingItems) {
+    state.shelf.push(createItemInstance(tplId, {
+      isFake: false,
+      isStolen: tplId === 'stolen_watch' || tplId === 'credit_chip_locked',
+      inspectedVisual: true
+    }));
+  }
+
+  prepareDay(state);
+  return state;
+}
+
+function usedSlots(list) {
+  return list.reduce((sum, it) => sum + (it.w * it.h > 2 ? 2 : 1), 0);
+}
+
+function itemSlotCost(item) {
+  return (item.w * item.h > 2) ? 2 : 1;
+}
+
+function addLog(state, msg) {
+  state.logs.unshift(msg);
+  if (state.logs.length > 60) state.logs.pop();
+}
+
+function changeRep(state, factionId, delta) {
+  if (!state.rep[factionId] && state.rep[factionId] !== 0) return;
+  state.rep[factionId] = Math.max(-50, Math.min(100, Math.round(state.rep[factionId] + delta)));
+}
+
+// 准备新一天的行情、通缉令与访客队列
+function prepareDay(state) {
+  const categories = ['supply', 'medical', 'weapon', 'luxury', 'tech'];
+  state.hotCategory = categories[(state.day * 3 + 1) % categories.length];
+  state.dailyWanted = WANTED_POOL[(state.day - 1) % WANTED_POOL.length];
+  state.customersServedToday = 0;
+
+  // 构建今日访客队列（4 ~ 6 人 + 可能的特殊剧情 NPC + 治安突击检查）
+  const queue = [];
+
+  // 1. 检查固定天数剧情人物
+  if (state.day === 1) {
+    queue.push(buildStoryVisitor(STORY_NPCS.mentor_day1));
+  } else if (state.day === 3) {
+    queue.push(buildStoryVisitor(STORY_NPCS.georgio_waste));
+  } else if (state.day === 5) {
+    queue.push(buildStoryVisitor(STORY_NPCS.lu_crate));
+  } else if (state.day === 6) {
+    queue.push(buildStoryVisitor(STORY_NPCS.serpico_plea));
+  }
+
+  // 卢回来取寄存的箱子
+  if (state.stats.luQuestState === 'holding' && state.day >= state.stats.luReturnDay) {
+    queue.push({
+      id: `story_lu_return_${state.day}`,
+      type: 'story',
+      storyId: 'lu_return',
+      name: '卢（革命军特勤先锋）',
+      roleName: '取货委托人',
+      faction: 'rebel',
+      coatHue: 145,
+      helmet: 'beret',
+      seed: 77,
+      dialogue: '卢准时推门而入，目光落在柜台上：“这两天条子搜得很紧，我寄存的那把改装脉冲步枪还在店里吗？”',
+      choices: [
+        { label: '物归原主！交还寄存的脉冲步枪（+450 CR，革命军声望 +25）', effect: 'lu_handover' },
+        { label: '摊手表示东西丢了/被卖了（革命军声望 -30，卢愤然离去）', effect: 'lu_lost' }
+      ]
+    });
+  }
+
+  // 2. 生成常规买卖/鉴定/通缉/AI改造体顾客（每天 4~5 位）
+  const regularCount = state.day === 1 ? 4 : 5;
+  let wantedSpawned = false;
+  let augSpawnedToday = 0;
+
+  for (let i = 0; i < regularCount; i++) {
+    const cust = generateRandomCustomer(state, {
+      allowWanted: !wantedSpawned && i >= 1 && Math.random() < 0.45,
+      allowAug: state.day >= 2 && augSpawnedToday < 2 && Math.random() < (0.24 + state.augThreat * 0.003)
+    });
+    if (cust.wantedId) wantedSpawned = true;
+    if (cust.isAug) augSpawnedToday++;
+    queue.push(cust);
+  }
+
+  // 3. 如果案底(heat)较高或第 2 天以后随机触发治安局突击搜查官（插在队列中后段，给玩家留出藏匿反应机会）
+  const raidChance = (state.heat * 0.012) + (state.day >= 3 ? 0.25 : 0);
+  if (state.day >= 2 && Math.random() < raidChance) {
+    const raidIndex = Math.min(queue.length, 2 + Math.floor(Math.random() * 2));
+    queue.splice(raidIndex, 0, buildSecurityInspector(state));
+  }
+
+  state.customersQueue = queue;
+  state.phase = 'open';
+  nextCustomer(state);
+}
+
+function buildStoryVisitor(storyCfg) {
+  return {
+    id: `story_${storyCfg.id}`,
+    type: 'story',
+    storyId: storyCfg.id,
+    name: storyCfg.name,
+    roleName: storyCfg.role,
+    faction: storyCfg.faction,
+    coatHue: storyCfg.faction === 'rebel' ? 140 : (storyCfg.faction === 'blackmarket' ? 280 : 200),
+    helmet: 'normal',
+    seed: storyCfg.day * 31 + 7,
+    dialogue: storyCfg.text,
+    choices: storyCfg.choices
+  };
+}
+
+function buildSecurityInspector(state) {
+  const bribeCost = state.rep.security >= 40 ? 90 : 160;
+  return {
+    id: `raid_${state.day}_${Math.floor(Math.random() * 999)}`,
+    type: 'raid',
+    isSecurityRaid: true,
+    name: '霍克警督',
+    roleName: '治安局稽查官',
+    faction: 'security',
+    coatHue: 0,
+    helmet: 'cop',
+    seed: 99 + state.day,
+    bribeCost,
+    dialogue: '“例行突击搜查！所有人不许动！把货架打开接受违禁品、赃物与特种经营许可核验！（提示：搜查前你仍可点击货架物品快速塞进暗格，或塞钱消灾）”'
+  };
+}
+
+function generateRandomCustomer(state, { allowWanted, allowAug }) {
+  // 根据店铺声望和展示柜奢侈品权重抽取顾客原型
+  const hasLuxuryOnShelf = state.shelf.some(it => it.baseValue >= 220);
+  const pool = [...CUSTOMER_ARCHETYPES];
+  if (hasLuxuryOnShelf || state.rep.upper >= 25) {
+    pool.push(CUSTOMER_ARCHETYPES.find(a => a.id === 'upper_agent'));
+  }
+  if (state.rep.blackmarket >= 25) {
+    pool.push(CUSTOMER_ARCHETYPES.find(a => a.id === 'thief'));
+  }
+
+  const arch = pool[Math.floor(Math.random() * pool.length)];
+  const seed = Math.floor(Math.random() * 10000);
+  let name = FIRST_NAMES[seed % FIRST_NAMES.length];
+  let wantedInfo = null;
+
+  if (allowWanted && state.dailyWanted && !arch.isSting) {
+    wantedInfo = state.dailyWanted;
+    name = wantedInfo.name;
+  }
+
+  // 是否为潜伏的失控 AI 改造体（Aug）
+  const isAug = Boolean(allowAug && !wantedInfo && !arch.isSting);
+  const augVisualTypes = ['chip', 'pupil', 'smile', 'twitch'];
+  const augVisualType = isAug ? augVisualTypes[seed % augVisualTypes.length] : null;
+  const mismatchBadge = isAug && (seed % 3 === 0) && arch.faction === 'lower';
+
+  // 决定来意：卖货给当铺 (sell_to_shop) / 从当铺买货 (buy_from_shop) / 鉴定委托 (appraise_only)
+  let intent = 'sell_to_shop';
+  if (state.licenses.includes('appraiser_cert') && !arch.isSting && Math.random() < 0.22) {
+    intent = 'appraise_request';
+  } else if (state.shelf.length > 0 && (arch.isSting || Math.random() < 0.46)) {
+    intent = 'buy_from_shop';
+  }
+
+  let offerItem = null;
+  let askingPrice = 0;
+  let wantedBuyItem = null;
+  let buyerMaxOffer = 0;
+  let currentOffer = 0;
+
+  if (intent === 'sell_to_shop' || intent === 'appraise_request') {
+    const tplId = arch.sellPool[Math.floor(Math.random() * arch.sellPool.length)];
+    const tpl = ITEM_TEMPLATES[tplId];
+    const isFake = (tpl.fakeSigns && tpl.fakeSigns.length > 0) ? (Math.random() > arch.honesty) : false;
+    const isStolen = !isFake && ((arch.stolenChance && Math.random() < arch.stolenChance) || Math.random() < 0.15);
+
+    offerItem = createItemInstance(tplId, { isFake, isStolen, inspectedVisual: false });
+
+    // 卖家开价（就算拿假货也会按真货甚至虚高报价忽悠玩家；赃物则会主动打折急出）
+    let baseAsk = tpl.baseValue;
+    if (isStolen) baseAsk = Math.round(baseAsk * 0.72);
+    else baseAsk = Math.round(baseAsk * (0.95 + Math.random() * 0.30));
+
+    // 下层区高声望邻里进货折扣
+    if (arch.faction === 'lower' && state.rep.lower >= 40) {
+      baseAsk = Math.round(baseAsk * 0.85);
+    }
+    // 销赃人压价特长
+    if (isStolen && state.profession === 'fence') {
+      baseAsk = Math.round(baseAsk * 0.82);
+    }
+
+    askingPrice = Math.max(12, baseAsk);
+    currentOffer = askingPrice;
+  } else if (intent === 'buy_from_shop') {
+    // 挑选货架上顾客感兴趣的商品（便衣警察专挑违禁品或无证枪械钓鱼！）
+    let candidates = state.shelf.filter(it => !it.questTag);
+    if (arch.isSting) {
+      const illegalOnes = candidates.filter(it => getItemIllegalityReason(it, state) !== null);
+      if (illegalOnes.length > 0) candidates = illegalOnes;
+    } else {
+      const preferred = candidates.filter(it => arch.buyCategories.includes(it.category));
+      if (preferred.length > 0) candidates = preferred;
+    }
+
+    if (candidates.length === 0) {
+      // 店里没货可买，改为卖货给玩家
+      intent = 'sell_to_shop';
+      const tplId = arch.sellPool[0];
+      offerItem = createItemInstance(tplId, { isFake: Math.random() < 0.35 });
+      askingPrice = Math.round(offerItem.baseValue * 1.05);
+      currentOffer = askingPrice;
+    } else {
+      wantedBuyItem = candidates[Math.floor(Math.random() * candidates.length)];
+      // 买家根据商品外在估值出价（除非买家自己识破假货，否则按正品估值出价！）
+      let perceivedVal = wantedBuyItem.baseValue;
+      if (state.hotCategory === wantedBuyItem.category) perceivedVal = Math.round(perceivedVal * 1.25);
+      if (arch.faction === 'blackmarket' && state.rep.blackmarket >= 40 && (wantedBuyItem.isStolen || wantedBuyItem.legal === 'contraband')) {
+        perceivedVal = Math.round(perceivedVal * 1.25);
+      }
+      if (arch.faction === 'rebel' && state.rep.rebel >= 40 && (wantedBuyItem.category === 'weapon' || wantedBuyItem.category === 'medical')) {
+        perceivedVal = Math.round(perceivedVal * 1.30);
+      }
+      if (arch.faction === 'upper' && state.rep.upper >= 40 && wantedBuyItem.category === 'luxury') {
+        perceivedVal = Math.round(perceivedVal * 1.35);
+      }
+      if (state.licenses.includes('display_case_up')) {
+        perceivedVal = Math.round(perceivedVal * 1.12);
+      }
+
+      currentOffer = Math.round(perceivedVal * arch.budgetMult * (0.95 + Math.random() * 0.15));
+      buyerMaxOffer = Math.round(currentOffer * 1.28);
+    }
+  }
+
+  // 生成对话与观察破绽文本
+  let greeting = arch.greetings[seed % arch.greetings.length];
+  let behaviorNote = AUG_CLUES.normalBehaviors[seed % AUG_CLUES.normalBehaviors.length];
+
+  if (isAug) {
+    // AI 改造体会在台词或举止中露出蛛丝马迹
+    if (seed % 2 === 0) {
+      greeting = AUG_CLUES.speechTells[seed % AUG_CLUES.speechTells.length];
+    }
+    behaviorNote = mismatchBadge
+      ? AUG_CLUES.behaviorTells[1]
+      : AUG_CLUES.behaviorTells[seed % AUG_CLUES.behaviorTells.length];
+  } else if (wantedInfo) {
+    behaviorNote = `体貌特征引起注意：${wantedInfo.mark}。神色警惕地盯着门外。`;
+  } else if (arch.isSting) {
+    behaviorNote = '衣领下似乎藏着微型执法记录仪，站姿笔挺得像治安学院教官。';
+  }
+
+  return {
+    id: `cust_${state.day}_${seed}`,
+    type: 'customer',
+    archetypeId: arch.id,
+    isSting: Boolean(arch.isSting),
+    isAug,
+    augVisualType,
+    mismatchBadge,
+    augScanned: false,
+    wantedId: wantedInfo ? wantedInfo.id : null,
+    wantedBounty: wantedInfo ? wantedInfo.bounty : 0,
+
+    name,
+    roleName: arch.roleName,
+    faction: arch.faction,
+    coatHue: arch.avatarHue,
+    helmet: arch.helmet,
+    seed,
+
+    intent,             // 'sell_to_shop' | 'buy_from_shop' | 'appraise_request'
+    offerItem,          // 顾客带来的物品
+    askingPrice,        // 卖家当前要价
+    minAcceptPrice: Math.max(10, Math.round(askingPrice * 0.74)),
+
+    wantedBuyItemUid: wantedBuyItem ? wantedBuyItem.uid : null,
+    currentOffer,       // 买家当前出价
+    buyerMaxOffer,
+
+    patience: arch.patience,
+    maxPatience: arch.patience,
+    dialogue: greeting,
+    behaviorNote
+  };
+}
+
+// 推进到下一位访客；若队列清空则进入打烊夜晚阶段
+function nextCustomer(state) {
+  // 如果上一位顾客是未被清除的 AI 改造体，离开后会提升空间站 AI 威胁度
+  if (state.currentCustomer && state.currentCustomer.isAug && !state.currentCustomer.eliminated) {
+    state.augThreat = Math.min(100, state.augThreat + 9);
+    addLog(state, '⚠️ 昨晚监控提示：有一名伪装的失控 AI 改造体活着离开了街区，区域渗透威胁上升！');
+  }
+
+  if (state.customersQueue.length === 0) {
+    state.currentCustomer = null;
+    state.phase = 'night';
+    addLog(state, `🌙 第 ${state.day} 天营业结束，卷帘门落下。你可以操作后室机器生产、整理库存，或外出前往垃圾场/黑市。`);
+    return;
+  }
+
+  state.currentCustomer = state.customersQueue.shift();
+  state.customersServedToday++;
+
+  // 如果买家想买的商品刚刚已经被移进暗格或加工掉了，动态重选一件货架商品
+  const c = state.currentCustomer;
+  if (c.type === 'customer' && c.intent === 'buy_from_shop') {
+    const exists = state.shelf.find(it => it.uid === c.wantedBuyItemUid);
+    if (!exists) {
+      const fallback = state.shelf.find(it => !it.questTag);
+      if (fallback) {
+        c.wantedBuyItemUid = fallback.uid;
+        c.currentOffer = Math.round(evaluateItemFairPrice(fallback, state) * 1.1);
+        c.buyerMaxOffer = Math.round(c.currentOffer * 1.25);
+      } else {
+        // 货架彻底空了，顾客抱怨一句离开
+        c.intent = 'empty_leave';
+        c.dialogue = '“货架上空空如也？白跑一趟，等你进点货我再来吧。”';
+      }
+    }
+  }
+}
+
+// 使用放大镜或光谱仪鉴定顾客带来的物品（或自家库存物品）
+function inspectItem(state, item, mode = 'visual') {
+  if (!item) return { ok: false, msg: '未选择有效商品' };
+
+  if (mode === 'visual') {
+    item.inspectedVisual = true;
+    return {
+      ok: true,
+      msg: `🔍 已用光学放大镜仔细核验【${item.name}】的外观封口与防伪标识。`
+    };
+  }
+
+  if (mode === 'deep') {
+    if (!state.tools.includes('spec_analyzer')) {
+      return { ok: false, msg: '你尚未购置【全频段物质光谱仪】，请在设备升级面板购买。' };
+    }
+    if (state.energy < 10) {
+      return { ok: false, msg: '店铺电力不足（深度光谱分析需 10 点电力）！' };
+    }
+    state.energy -= 10;
+    item.inspectedVisual = true;
+    item.inspectedDeep = true;
+    return {
+      ok: true,
+      msg: `🔬 光谱仪深度透视完成！已解析【${item.name}】的内部构造、纯度与防盗追踪码（耗电 10）。`
+    };
+  }
+  return { ok: false, msg: '未知检测模式' };
+}
+
+// 当面揭穿卖家商品为假货并要求大砍价（《深空当铺》标志性质询博弈机制）
+function confrontSellerFake(state, reasonText) {
+  const c = state.currentCustomer;
+  if (!c || !c.offerItem || c.offerItem.confronted) {
+    return { ok: false, msg: '当前无法质询该商品。' };
+  }
+  const item = c.offerItem;
+  item.confronted = true;
+
+  if (item.isFake && (!reasonText || (item.fakeFlaw && item.fakeFlaw.reason === reasonText))) {
+    // 成功揭穿假货！价格暴跌至 30%~35%，记录成就
+    const slashFactor = state.profession === 'apprentice' ? 0.25 : 0.35;
+    c.askingPrice = Math.max(8, Math.round(c.askingPrice * slashFactor));
+    c.minAcceptPrice = Math.max(5, Math.round(c.askingPrice * 0.8));
+    state.stats.fakesExposed++;
+    c.dialogue = `“嘶……老板好毒的眼力！行行行，算我栽了，这件有瑕疵的货按废品价 **${c.askingPrice} CR** 处理给你，别声张！”`;
+    addLog(state, `🎯 慧眼识珠！当场揭穿 ${c.name} 的假货【${item.name}】，对方被迫将要价砍至 ${c.askingPrice} CR！`);
+    return { ok: true, success: true, msg: `揭穿成功！对方冷汗直流，报价暴降至 ${c.askingPrice} CR！` };
+  } else {
+    // 误判冤枉了真货卖家（或选错瑕疵理由）！掉声望并损失耐心
+    changeRep(state, c.faction, -4);
+    c.patience -= 2;
+    c.dialogue = '“你胡说八道什么？！这可是正儿八经的原装货！不懂行就别乱扣帽子！”';
+    addLog(state, `❌ 质询失误！冤枉了 ${c.name} 的商品，${FACTIONS[c.faction].short}声望 -4。`);
+    if (c.patience <= 0) {
+      nextCustomer(state);
+      return { ok: true, success: false, msg: '你冤枉了好货，顾客拂袖而去！' };
+    }
+    return { ok: true, success: false, msg: '质询错误！这件商品并非此瑕疵，对方十分恼火（声望 -4）。' };
+  }
+}
+
+// 讨价还价：向顾客提出还价金额
+function haggleWithCustomer(state, proposedPrice) {
+  const c = state.currentCustomer;
+  if (!c || c.type !== 'customer') return { ok: false, msg: '当前对象无法议价' };
+  proposedPrice = Math.round(Number(proposedPrice));
+  if (isNaN(proposedPrice) || proposedPrice <= 0) return { ok: false, msg: '报价无效' };
+
+  if (c.intent === 'sell_to_shop') {
+    if (proposedPrice >= c.askingPrice) {
+      return executeBuyFromCustomer(state, proposedPrice);
+    }
+    if (proposedPrice >= c.minAcceptPrice) {
+      c.askingPrice = proposedPrice;
+      c.dialogue = `“行吧行吧，看在老主顾份上，**${proposedPrice} CR** 成交！你点钱吧。”`;
+      return executeBuyFromCustomer(state, proposedPrice);
+    } else {
+      c.patience -= 1;
+      // 对方稍微让步一点
+      c.askingPrice = Math.max(c.minAcceptPrice, Math.round((c.askingPrice + c.minAcceptPrice) / 2));
+      if (c.patience <= 0) {
+        addLog(state, `💢 压价太狠，${c.name} 骂骂咧咧地收起【${c.offerItem.name}】走了。`);
+        nextCustomer(state);
+        return { ok: true, left: true, msg: '砍价太狠耗尽了对方耐心，顾客直接离开！' };
+      }
+      c.dialogue = `“太黑了吧老板！最多让到 **${c.askingPrice} CR**，再低我宁可扔进太空垃圾槽！”（剩余耐心 ${c.patience}）`;
+      return { ok: true, accepted: false, msg: `对方拒绝了 ${proposedPrice} CR，松口降至 ${c.askingPrice} CR。` };
+    }
+  } else if (c.intent === 'buy_from_shop') {
+    if (proposedPrice <= c.currentOffer) {
+      return executeSellToCustomer(state, proposedPrice);
+    }
+    if (proposedPrice <= c.buyerMaxOffer) {
+      c.currentOffer = proposedPrice;
+      return executeSellToCustomer(state, proposedPrice);
+    } else {
+      c.patience -= 1;
+      c.currentOffer = Math.min(c.buyerMaxOffer, Math.round((c.currentOffer + c.buyerMaxOffer) / 2));
+      if (c.patience <= 0) {
+        addLog(state, `💢 要价太离谱，买家 ${c.name} 扭头去了隔壁摊位。`);
+        nextCustomer(state);
+        return { ok: true, left: true, msg: '漫天要价吓跑了顾客！' };
+      }
+      c.dialogue = `“你当我是上层区的冤大头吗？我最多出 **${c.currentOffer} CR**，卖不卖给句痛快话！”（剩余耐心 ${c.patience}）`;
+      return { ok: true, accepted: false, msg: `买家拒绝高价，愿意加价至 ${c.currentOffer} CR。` };
+    }
+  }
+  return { ok: false, msg: '当前状态不支持议价' };
+}
+
+// 确认收购顾客商品
+function executeBuyFromCustomer(state, finalPrice) {
+  const c = state.currentCustomer;
+  if (!c || !c.offerItem) return { ok: false, msg: '没有可收购的物品' };
+  const price = finalPrice ?? c.askingPrice;
+
+  if (state.credits < price) {
+    return { ok: false, msg: `信用点不足（需要 ${price} CR，当前 ${state.credits} CR）！` };
+  }
+  const costSlots = itemSlotCost(c.offerItem);
+  if (usedSlots(state.shelf) + costSlots > state.shelfMaxSlots) {
+    return { ok: false, msg: '主货架空间已满！请先出售部分商品或移入暗格。' };
+  }
+
+  state.credits -= price;
+  // 买进店后，玩家自动知晓自己库存的真伪情况
+  c.offerItem.inspectedVisual = true;
+  state.shelf.push(c.offerItem);
+  changeRep(state, c.faction, 3);
+
+  if (c.offerItem.isStolen) {
+    state.heat = Math.min(100, state.heat + 6);
+    addLog(state, `💰 花费 ${price} CR 从 ${c.name} 手中收下赃物【${c.offerItem.name}】（治安关注 +6，建议放入暗格或用打磨机洗白）。`);
+  } else {
+    addLog(state, `💰 花费 ${price} CR 收购了【${c.offerItem.name}】（${FACTIONS[c.faction].short}声望 +3）。`);
+  }
+
+  const fakeNotice = (c.offerItem.isFake && !c.offerItem.confronted)
+    ? '（⚠️ 入库复检发现：这竟是一件你刚才没看出来的假货！）'
+    : '';
+
+  nextCustomer(state);
+  return { ok: true, msg: `成功以 ${price} CR 购入【${c.offerItem.name}】！${fakeNotice}` };
+}
+
+// 确认出售货架商品给顾客
+function executeSellToCustomer(state, finalPrice) {
+  const c = state.currentCustomer;
+  if (!c || c.intent !== 'buy_from_shop') return { ok: false, msg: '当前顾客并非买家' };
+
+  const idx = state.shelf.findIndex(it => it.uid === c.wantedBuyItemUid);
+  if (idx === -1) return { ok: false, msg: '目标商品不在主货架上' };
+
+  const item = state.shelf[idx];
+  const price = finalPrice ?? c.currentOffer;
+
+  // 检查是否中了便衣警察的钓鱼执法圈套！
+  const illegalReason = getItemIllegalityReason(item, state);
+  if (c.isSting && illegalReason) {
+    state.shelf.splice(idx, 1);
+    const fine = 140;
+    state.credits = Math.max(0, state.credits - fine);
+    state.heat = Math.min(100, state.heat + 18);
+    changeRep(state, 'security', -10);
+    addLog(state, `🚨 钓鱼执法！！便衣探员亮出警徽，当场没收【${item.name}】并罚款 ${fine} CR！（原因：${illegalReason}）`);
+    nextCustomer(state);
+    return {
+      ok: true,
+      stingCaught: true,
+      msg: `🚨 糟糕！对方是治安局钓鱼执法的便衣！货物被没收并处以 ${fine} CR 罚款！`
+    };
+  }
+
+  // 如果把假货当正品卖给顾客，有概率被当场或事后识破掉声望
+  let fakePenaltyMsg = '';
+  if (item.isFake && Math.random() < 0.55) {
+    changeRep(state, c.faction, -7);
+    state.heat = Math.min(100, state.heat + 5);
+    fakePenaltyMsg = `（⚠️ 顾客出门后察觉货品有假，${FACTIONS[c.faction].short}声望 -7！）`;
+  } else {
+    changeRep(state, c.faction, 4);
+  }
+
+  if (illegalReason) {
+    state.heat = Math.min(100, state.heat + 8);
+  }
+
+  state.shelf.splice(idx, 1);
+  state.credits += price;
+  state.stats.totalEarned += price;
+
+  addLog(state, `💵 以 ${price} CR 将【${item.name}】卖给 ${c.name}。${fakePenaltyMsg}`);
+  nextCustomer(state);
+  return { ok: true, msg: `交易达成！入账 +${price} CR ${fakePenaltyMsg}` };
+}
+
+// 完成鉴定委员会委托客人（判断真品 / 赝品赚取佣金）
+function fulfillAppraisal(state, claimIsAuthentic) {
+  const c = state.currentCustomer;
+  if (!c || c.intent !== 'appraise_request' || !c.offerItem) {
+    return { ok: false, msg: '当前不是鉴定委托' };
+  }
+  const actualAuthentic = !c.offerItem.isFake;
+  if (claimIsAuthentic === actualAuthentic) {
+    const fee = 95 + Math.round(c.offerItem.baseValue * 0.25);
+    state.credits += fee;
+    state.stats.totalEarned += fee;
+    state.stats.fakesExposed++;
+    changeRep(state, c.faction, 5);
+    addLog(state, `🏅 完美鉴定！【${c.offerItem.name}】结论准确无误，获得鉴定佣金 +${fee} CR！`);
+    nextCustomer(state);
+    return { ok: true, msg: `鉴定完全正确！委托人欣然支付了 ${fee} CR 鉴定费！` };
+  } else {
+    changeRep(state, c.faction, -6);
+    addLog(state, `❌ 鉴定打眼了！对【${c.offerItem.name}】出具了错误鉴定报告，声望受损。`);
+    nextCustomer(state);
+    return { ok: true, msg: '鉴定结论错误！委托人愤怒地拒付佣金并投诉了你（声望 -6）。' };
+  }
+}
+
+// 拒绝当前顾客
+function refuseCustomer(state) {
+  const c = state.currentCustomer;
+  if (!c) return { ok: false, msg: '当前无访客' };
+  if (c.isSecurityRaid) return { ok: false, msg: '治安局突击搜查无法礼貌送客！请选择配合检查或塞钱行贿。' };
+
+  addLog(state, `👋 你婉拒了与 ${c.name} 的交易。`);
+  nextCustomer(state);
+  return { ok: true, msg: '已送走当前访客。' };
+}
+
+// 用 AI 扫描仪检测当前顾客是否为改造体（消耗 20 电力）
+function scanCustomerForAug(state) {
+  const c = state.currentCustomer;
+  if (!c || c.type !== 'customer') return { ok: false, msg: '当前对象无需扫描' };
+  if (!state.tools.includes('aug_scanner')) {
+    return { ok: false, msg: '尚未拥有【AI 改造体扫描仪】，可在设备与许可栏向杰克逊博士购买。' };
+  }
+  if (c.augScanned) {
+    return { ok: false, msg: '已扫描过该访客。' };
+  }
+  if (state.energy < 20) {
+    return { ok: false, msg: '电力不足！启动扫描仪需要 20 点电力（可使用聚变电池充电）。' };
+  }
+
+  state.energy -= 20;
+  c.augScanned = true;
+  if (c.isAug) {
+    addLog(state, `📡 [红色警报] 扫描仪锁定神经接驳频段：${c.name} 100% 是失控 AI 改造体（AUG DETECTED）！你有权立即开枪击毙！`);
+    return { ok: true, isAug: true, msg: '🚨 警报：检测到失控 AI 寄生芯片（AUG DETECTED）！可合法使用柜台下霰弹枪击毙！' };
+  } else {
+    addLog(state, `📡 扫描完成：${c.name} 脑波正常，属于自然人类（No Aug Detected）。`);
+    return { ok: true, isAug: false, msg: '✅ 扫描确认：自然人类，未发现失控 AI 芯片。' };
+  }
+}
+
+// 掏出柜台下霰弹枪射击当前访客！（高能名场面机制）
+function shootCustomerWithShotgun(state) {
+  const c = state.currentCustomer;
+  if (!c || c.type !== 'customer') {
+    return { ok: false, msg: '不能对该目标开枪！' };
+  }
+
+  if (c.isAug) {
+    // 合法击毙失控 AI 改造体！全阵营拍手称快，治安局发放清除赏金！
+    c.eliminated = true;
+    const baseBounty = 180;
+    const bounty = state.rep.security >= 40 ? Math.round(baseBounty * 1.25) : baseBounty;
+    state.credits += bounty;
+    state.stats.totalEarned += bounty;
+    state.stats.augsEliminated++;
+    state.augThreat = Math.max(0, state.augThreat - 18);
+    changeRep(state, 'security', 8);
+    changeRep(state, 'lower', 6);
+
+    // 掉落一块聚变电池战利品（如果货架有空位）
+    let lootMsg = '';
+    if (usedSlots(state.shelf) + 1 <= state.shelfMaxSlots) {
+      state.shelf.push(createItemInstance('energy_cell', { inspectedVisual: true }));
+      lootMsg = '，并从残骸中回收了 1 块【高密聚变电池组】';
+    }
+
+    addLog(state, `💥 砰！！你果断拔出柜台下的霰弹枪轰碎了伪装改造体 ${c.name} 的核心！治安局发放清除赏金 +${bounty} CR${lootMsg}！`);
+    nextCustomer(state);
+    return {
+      ok: true,
+      correctKill: true,
+      msg: `💥 精准猎杀失控 AI 改造体！获得赏金 +${bounty} CR${lootMsg}，AI 渗透威胁大幅下降！`
+    };
+  } else {
+    // 惨重误杀无辜人类！巨额过失杀人罚金 + 全阵营声望暴跌 + 案底飙升
+    const fine = 350;
+    state.credits = Math.max(0, state.credits - fine);
+    state.heat = Math.min(100, state.heat + 40);
+    state.stats.innocentsShot++;
+    changeRep(state, 'lower', -18);
+    changeRep(state, 'security', -22);
+    changeRep(state, c.faction, -15);
+
+    addLog(state, `🩸 致命误判！！${c.name} 是活生生的人类！治安局以过失伤人罪重罚你 ${fine} CR，案底暴涨 +40！`);
+    if (state.stats.innocentsShot >= 3) {
+      state.gameOver = {
+        victory: false,
+        endingId: 'prison_murder',
+        title: '结局：深空重刑犯流放舱',
+        desc: '因多次在店内无差别枪击无辜平民，空间站治安局特种小队攻破了你的当铺，你被判处终身流放至小行星采矿监狱。'
+      };
+      state.phase = 'gameover';
+    } else {
+      nextCustomer(state);
+    }
+    return {
+      ok: true,
+      correctKill: false,
+      msg: `🩸 惨重失误！对方是普通人类！你被治安局重罚 ${fine} CR，声望与治安记录严重恶化！`
+    };
+  }
+}
+
+// 按下隐蔽报警器向治安局举报通缉犯
+function reportWantedCustomer(state) {
+  const c = state.currentCustomer;
+  if (!c || c.type !== 'customer') return { ok: false, msg: '当前无举报对象' };
+
+  if (c.wantedId) {
+    const bounty = c.wantedBounty || 200;
+    state.credits += bounty;
+    state.stats.totalEarned += bounty;
+    state.stats.wantedReported++;
+    state.heat = Math.max(0, state.heat - 12);
+    changeRep(state, 'security', 12);
+    changeRep(state, c.faction, -14);
+    addLog(state, `🚨 成功举报通缉犯【${c.name}】！治安局巡逻队将其逮捕，发放悬赏金 +${bounty} CR（治安局+12，${FACTIONS[c.faction].short}-14）。`);
+    nextCustomer(state);
+    return { ok: true, msg: `举报立功！获得悬赏金 +${bounty} CR，且治安嫌疑降低！` };
+  } else {
+    // 谎报军情被治安官训斥罚款
+    state.credits = Math.max(0, state.credits - 40);
+    changeRep(state, 'security', -5);
+    addLog(state, `⚠️ 误报通缉令！${c.name} 并非通缉犯，治安局罚了你 40 CR 报假警费用。`);
+    nextCustomer(state);
+    return { ok: true, msg: '核查无此通缉犯！你因报假警被罚款 40 CR。' };
+  }
+}
+
+// 应对治安官突击搜查（配合检查 vs 贿赂摆平）
+function handleSecurityRaid(state, action) {
+  const c = state.currentCustomer;
+  if (!c || !c.isSecurityRaid) return { ok: false, msg: '当前没有治安搜查' };
+
+  if (action === 'bribe') {
+    if (state.credits < c.bribeCost) {
+      return { ok: false, msg: `信用点不足以支付 ${c.bribeCost} CR 茶水费！赶紧把违禁品塞进暗格然后接受检查！` };
+    }
+    state.credits -= c.bribeCost;
+    state.heat = Math.max(0, state.heat - 20);
+    state.stats.raidsSurvived++;
+    addLog(state, `🤫 你不动声色地塞给霍克警督 ${c.bribeCost} CR 信用芯片，警督满意地合上记录本离开了（嫌疑值 -20）。`);
+    nextCustomer(state);
+    return { ok: true, msg: `破财消灾！支付 ${c.bribeCost} CR 顺利打发了稽查队。` };
+  }
+
+  // 配合检查：只搜查明面上的主货架 (state.shelf)，不搜查秘密暗格 (state.stash)（除非案底满100）
+  const confiscated = [];
+  const remaining = [];
+  for (const item of state.shelf) {
+    const reason = getItemIllegalityReason(item, state);
+    if (reason) {
+      confiscated.push({ item, reason });
+    } else {
+      remaining.push(item);
+    }
+  }
+  state.shelf = remaining;
+
+  if (confiscated.length === 0) {
+    state.heat = Math.max(0, state.heat - 15);
+    changeRep(state, 'security', 6);
+    state.stats.raidsSurvived++;
+    addLog(state, '✅ 治安官翻遍了明面货架，未发现任何无证军火、赃物或违禁品！你的守法记录得到改善（治安局+6，嫌疑-15）。');
+    nextCustomer(state);
+    return { ok: true, clean: true, msg: '✅ 货架清白过关！暗格里的秘密安然无恙，治安局声望 +6！' };
+  } else {
+    const fine = confiscated.length * 110;
+    state.credits = Math.max(0, state.credits - fine);
+    state.heat = Math.min(100, state.heat + 15);
+    changeRep(state, 'security', -12);
+    const names = confiscated.map(x => x.item.name).join('、');
+    addLog(state, `🚨 查抄损失惨重！稽查官从货架搜出并没收了 ${confiscated.length} 件违规货品（${names}），罚款 ${fine} CR！`);
+    nextCustomer(state);
+    return {
+      ok: true,
+      clean: false,
+      msg: `🚨 货架搜出违规品【${names}】！全部没收并罚款 ${fine} CR！（下次记得提前藏进暗格！）`
+    };
+  }
+}
+
+// 处理特殊剧情 NPC 选项
+function resolveStoryChoice(state, effect) {
+  const c = state.currentCustomer;
+  if (!c || c.type !== 'story') return { ok: false, msg: '当前非剧情对话' };
+
+  let msg = '你做出了抉择。';
+
+  if (effect === 'gift_cell') {
+    state.shelf.push(createItemInstance('energy_cell', { inspectedVisual: true }));
+    msg = '老莫拍了拍你的肩膀，留下一块满电的【高密聚变电池组】。';
+    addLog(state, '🎁 收下老莫赠送的备用聚变电池。');
+  } else if (effect === 'aug_tip') {
+    state.energy = Math.min(state.maxEnergy, state.energy + 30);
+    msg = '老莫详细传授了识别失控 AI 改造体的六大破绽，并替你检修好了店铺电容（+30 电力）。';
+    addLog(state, '📖 习得 AI 改造体观察秘诀：留意耳后红光芯片、异色瞳孔、机械假笑与异常口吻！');
+  } else if (effect === 'accept_waste') {
+    state.credits += 320;
+    state.stats.totalEarned += 320;
+    state.shelf.push(createItemInstance('rad_barrel', { inspectedVisual: true }));
+    state.shelf.push(createItemInstance('rad_barrel', { inspectedVisual: true }));
+    msg = '收下 320 CR 脏钱与 2 桶【高危放射性废料】！切记今晚打烊后去垃圾场倾倒处理！';
+    addLog(state, '☢️ 接下乔治奥的放射性废料脏活（+320 CR），务必在夜间前往垃圾场丢弃废料桶！');
+  } else if (effect === 'reject_waste') {
+    changeRep(state, 'lower', 6);
+    msg = '你拒绝了污染下层街区的脏活，街坊们对你投来赞许的目光（下层区声望 +6）。';
+    addLog(state, '🛡️ 拒绝代处理放射性废料，下层区声望 +6。');
+  } else if (effect === 'lu_accept') {
+    const rifle = createItemInstance('pulse_rifle', { inspectedVisual: true, questTag: 'lu_rifle' });
+    // 优先塞暗格，暗格满放货架
+    if (usedSlots(state.stash) + itemSlotCost(rifle) <= state.stashMaxSlots) {
+      state.stash.push(rifle);
+    } else {
+      state.shelf.push(rifle);
+    }
+    state.stats.luQuestState = 'holding';
+    state.stats.luReturnDay = state.day + 2;
+    changeRep(state, 'rebel', 10);
+    msg = '你收下了卢寄存的脉冲步枪（建议保存在暗格内防搜查），她将在第 7 天回来取货并支付 450 CR！';
+    addLog(state, '📦 答应替革命军先锋“卢”保管脉冲步枪两天。');
+  } else if (effect === 'lu_betray') {
+    state.credits += 280;
+    state.stats.luQuestState = 'betrayed';
+    changeRep(state, 'security', 20);
+    changeRep(state, 'rebel', -30);
+    msg = '治安局特工冲入店内缴获了武器箱，卢在烟雾弹掩护下逃脱并冷冷看了你一眼（+280 CR，治安局+20，革命军-30）。';
+    addLog(state, '🚨 出卖了卢的武器箱，获得治安局线人赏金 280 CR，与革命军结怨！');
+  } else if (effect === 'lu_decline') {
+    msg = '卢点了点头，提着沉重的箱子消失在霓虹雨夜中。';
+    addLog(state, '保持中立，婉拒了卢的寄存请求。');
+  } else if (effect === 'lu_handover') {
+    const idxShelf = state.shelf.findIndex(i => i.questTag === 'lu_rifle' || i.templateId === 'pulse_rifle');
+    const idxStash = state.stash.findIndex(i => i.questTag === 'lu_rifle' || i.templateId === 'pulse_rifle');
+    if (idxStash !== -1) state.stash.splice(idxStash, 1);
+    else if (idxShelf !== -1) state.shelf.splice(idxShelf, 1);
+    else {
+      return { ok: false, msg: '你店里和暗格里都已经没有脉冲步枪了！只能选择坦白丢失。' };
+    }
+    state.credits += 450;
+    state.stats.totalEarned += 450;
+    state.stats.luQuestState = 'completed';
+    changeRep(state, 'rebel', 25);
+    msg = '卢检查了完好无损的脉冲步枪，爽快地支付了 450 CR 重金酬谢！（革命军声望 +25）';
+    addLog(state, '🌟 守信归还卢的武器箱！获得 450 CR 保管酬金与革命军高度信任！');
+  } else if (effect === 'lu_lost') {
+    state.stats.luQuestState = 'betrayed';
+    changeRep(state, 'rebel', -30);
+    msg = '卢眼神冰冷：“看来第13区的规矩你还没懂。”（革命军声望 -30）';
+    addLog(state, '❌ 未能归还卢寄存的武器，革命军声望暴跌 -30。');
+  } else if (effect === 'help_serpico') {
+    const foodIdx = state.shelf.findIndex(i => i.templateId === 'ration_pack' || i.templateId === 'pure_water');
+    const stashFoodIdx = state.stash.findIndex(i => i.templateId === 'ration_pack' || i.templateId === 'pure_water');
+    if (foodIdx === -1 && stashFoodIdx === -1) {
+      return { ok: false, msg: '你当前没有【军用高能营养膏】或【特级纯净水】！可选择资助 120 CR。' };
+    }
+    if (foodIdx !== -1) state.shelf.splice(foodIdx, 1);
+    else state.stash.splice(stashFoodIdx, 1);
+
+    state.stats.helpedSerpico = true;
+    changeRep(state, 'lower', 22);
+    changeRep(state, 'rebel', 12);
+    // 塞尔皮科回赠一件古董怀表
+    state.shelf.push(createItemInstance('stolen_watch', { isFake: false, isStolen: false, inspectedVisual: true }));
+    msg = '少年含泪收下补给，并递给你一块塞尔皮科珍藏多年的真品【欧米茄古董机械怀表】作为信物！（下层区+22，革命军+12）';
+    addLog(state, '❤️ 伸出援手救助垃圾场流亡者塞尔皮科，获赠传家古董怀表！');
+  } else if (effect === 'pay_serpico') {
+    if (state.credits < 120) return { ok: false, msg: '信用点不足 120 CR！' };
+    state.credits -= 120;
+    state.stats.helpedSerpico = true;
+    changeRep(state, 'lower', 15);
+    msg = '你塞给少年 120 CR 去买口粮，下层区居民传颂着你的善举（下层区声望 +15）。';
+    addLog(state, '❤️ 资助流亡者塞尔皮科 120 CR，下层区声望 +15。');
+  } else if (effect === 'ignore_serpico') {
+    changeRep(state, 'lower', -8);
+    msg = '少年咬着嘴唇默默离开了当铺（下层区声望 -8）。';
+    addLog(state, '冷漠拒绝了塞尔皮科的求援。');
+  }
+
+  nextCustomer(state);
+  return { ok: true, msg };
+}
+
+// 在主货架与秘密暗格之间转移物品（支持一键藏匿赃物/违禁品）
+function toggleItemStorage(state, itemUid) {
+  let idx = state.shelf.findIndex(i => i.uid === itemUid);
+  if (idx !== -1) {
+    const item = state.shelf[idx];
+    if (usedSlots(state.stash) + itemSlotCost(item) > state.stashMaxSlots) {
+      return { ok: false, msg: '秘密暗格空间已满！可升级液压磁屏蔽暗格扩充容量。' };
+    }
+    state.shelf.splice(idx, 1);
+    state.stash.push(item);
+    return { ok: true, msg: `🗄️ 已将【${item.name}】藏入柜台下秘密暗格。` };
+  }
+
+  idx = state.stash.findIndex(i => i.uid === itemUid);
+  if (idx !== -1) {
+    const item = state.stash[idx];
+    if (usedSlots(state.shelf) + itemSlotCost(item) > state.shelfMaxSlots) {
+      return { ok: false, msg: '主货架空间已满！' };
+    }
+    state.stash.splice(idx, 1);
+    state.shelf.push(item);
+    return { ok: true, msg: `📦 已将【${item.name}】摆回主货架展示。` };
+  }
+
+  return { ok: false, msg: '未找到指定物品' };
+}
+
+// 使用库存中的聚变电池为店铺充电
+function useBatteryForPower(state, itemUid) {
+  let list = state.shelf;
+  let idx = list.findIndex(i => i.uid === itemUid);
+  if (idx === -1) {
+    list = state.stash;
+    idx = list.findIndex(i => i.uid === itemUid);
+  }
+  if (idx === -1) return { ok: false, msg: '未找到电池' };
+  const item = list[idx];
+  if (item.templateId !== 'energy_cell') return { ok: false, msg: '只有聚变电池组可用于补充店铺电力' };
+
+  list.splice(idx, 1);
+  const gain = item.isFake ? 15 : 65;
+  state.energy = Math.min(state.maxEnergy, state.energy + gain);
+  addLog(state, `🔋 消耗 1 块聚变电池，店铺储备电力恢复 +${gain}（当前 ${state.energy}/${state.maxEnergy}）。`);
+  return { ok: true, msg: `充电完成！电力 +${gain}` };
+}
+
+// 后室机器生产合成 & 洗白赃物
+function runMachineRecipe(state, machineId, recipeId) {
+  if (!state.machines.includes(machineId)) {
+    return { ok: false, msg: '尚未购置该生产设备！' };
+  }
+  const machine = MACHINES[machineId];
+  const recipe = machine.recipes.find(r => r.id === recipeId);
+  if (!recipe) return { ok: false, msg: '配方不存在' };
+
+  if (state.energy < recipe.power) {
+    return { ok: false, msg: `电力不足（需 ${recipe.power} 点电力，当前 ${state.energy}）！请使用电池或夜间供电补给。` };
+  }
+
+  // 检查全部原料（优先用货架，也可用暗格，但不消耗剧情寄存物品）
+  const allItems = [...state.shelf, ...state.stash].filter(i => !i.questTag);
+  const chosenUids = [];
+  for (const reqTpl of recipe.inputs) {
+    const match = allItems.find(i => i.templateId === reqTpl && !chosenUids.includes(i.uid));
+    if (!match) {
+      return { ok: false, msg: `缺少原料：【${ITEM_TEMPLATES[reqTpl].name}】！` };
+    }
+    chosenUids.push(match.uid);
+  }
+
+  // 移除原料
+  state.shelf = state.shelf.filter(i => !chosenUids.includes(i.uid));
+  state.stash = state.stash.filter(i => !chosenUids.includes(i.uid));
+  state.energy -= recipe.power;
+
+  // 生成产物
+  const outputs = [];
+  for (let n = 0; n < recipe.outputCount; n++) {
+    const outItem = createItemInstance(recipe.output, {
+      isFake: Boolean(recipe.makeFake),
+      isStolen: false,
+      inspectedVisual: true,
+      inspectedDeep: true
+    });
+    outputs.push(outItem);
+    if (usedSlots(state.shelf) + itemSlotCost(outItem) <= state.shelfMaxSlots) {
+      state.shelf.push(outItem);
+    } else {
+      state.stash.push(outItem);
+    }
+  }
+
+  state.stats.itemsCrafted += outputs.length;
+  addLog(state, `⚙️ 【${machine.name}】运转完成：产出 ${outputs.length} 件【${ITEM_TEMPLATES[recipe.output].name}】（耗电 ${recipe.power}）。`);
+  return { ok: true, msg: `制造成功！获得 ${outputs.length} ×【${ITEM_TEMPLATES[recipe.output].name}】！` };
+}
+
+// 序列号打磨机特殊功能：一键抹除任意赃物的失主追踪码
+function scrubStolenItem(state, itemUid) {
+  if (!state.machines.includes('scrambler')) {
+    return { ok: false, msg: '需要购置【量子序列号打磨/解码仪】才能主动洗白赃物！' };
+  }
+  if (state.energy < 15) {
+    return { ok: false, msg: '电力不足（洗白序列号需 15 点电力）！' };
+  }
+  const item = [...state.shelf, ...state.stash].find(i => i.uid === itemUid);
+  if (!item || !item.isStolen) {
+    return { ok: false, msg: '该物品不是赃物，无需洗白。' };
+  }
+  state.energy -= 15;
+  item.isStolen = false;
+  item.heatDays = 0;
+  addLog(state, `💻 量子打磨完成：【${item.name}】的失主防盗码已彻底抹除，变为合法无痕商品！`);
+  return { ok: true, msg: `洗白成功！【${item.name}】现已无任何赃物风险！` };
+}
+
+// 购买机器、工具或经营许可证
+function purchaseShopUpgrade(state, id) {
+  // 先查是不是机器
+  if (MACHINES[id]) {
+    const m = MACHINES[id];
+    if (state.machines.includes(id)) return { ok: false, msg: '已拥有该机器' };
+    if (state.credits < m.cost) return { ok: false, msg: `信用点不足（需 ${m.cost} CR）` };
+    state.credits -= m.cost;
+    state.machines.push(id);
+    addLog(state, `🛠️ 购置后室重型设备：【${m.name}】（-${m.cost} CR）！`);
+    return { ok: true, msg: `已安装【${m.name}】！可在后室工坊投入生产。` };
+  }
+
+  const up = UPGRADES_AND_LICENSES.find(u => u.id === id);
+  if (!up) return { ok: false, msg: '未知升级项' };
+  if (state.tools.includes(id) || state.licenses.includes(id)) {
+    return { ok: false, msg: '已拥有该工具或证照' };
+  }
+  if (up.reqFaction && state.rep[up.reqFaction.id] < up.reqFaction.min) {
+    return {
+      ok: false,
+      msg: `声望不足！需要【${FACTIONS[up.reqFaction.id].name}】声望达到 ${up.reqFaction.min} 才能获批。`
+    };
+  }
+  if (state.credits < up.cost) {
+    return { ok: false, msg: `信用点不足（需 ${up.cost} CR）！` };
+  }
+
+  state.credits -= up.cost;
+  if (up.type === 'tool') {
+    state.tools.push(id);
+  } else if (up.type === 'license') {
+    state.licenses.push(id);
+  } else if (id === 'stash_expand') {
+    state.licenses.push(id);
+    state.stashMaxSlots = 8;
+  } else if (id === 'display_case_up') {
+    state.licenses.push(id);
+  }
+
+  addLog(state, `📜 解锁店铺升级/许可：【${up.name}】（-${up.cost} CR）！`);
+  return { ok: true, msg: `成功购入【${up.name}】！` };
+}
+
+// 夜间行动并推进到第二天（含房租结算、废料倾倒、垃圾场拾荒、地下黑市进货、电网充能）
+function performNightActionAndSleep(state, nightChoice) {
+  if (state.phase !== 'night') return { ok: false, msg: '尚未到夜间打烊时段' };
+
+  let nightReport = [];
+
+  if (nightChoice === 'dump_scrapyard') {
+    // 1. 自动倾倒所有高危放射性废料桶 + 翻找免费废料与物资！
+    const beforeShelf = state.shelf.length;
+    const beforeStash = state.stash.length;
+    state.shelf = state.shelf.filter(i => i.templateId !== 'rad_barrel');
+    state.stash = state.stash.filter(i => i.templateId !== 'rad_barrel');
+    const dumped = (beforeShelf + beforeStash) - (state.shelf.length + state.stash.length);
+    if (dumped > 0) {
+      nightReport.push(`☢️ 趁夜色将 ${dumped} 桶高危放射性废料偷偷倾倒在无人垃圾坑，解除了店内辐射隐患！`);
+    }
+
+    // 垃圾场翻找免费战利品（1~2件，下层高声望多拿1件）
+    const lootPool = ['scrap_metal', 'dirty_water', 'filter_core', 'bio_moss', 'broken_pistol', 'energy_cell', 'cig_redstar'];
+    const count = state.rep.lower >= 40 ? 3 : 2;
+    const foundNames = [];
+    for (let k = 0; k < count; k++) {
+      const tplId = lootPool[Math.floor(Math.random() * lootPool.length)];
+      const item = createItemInstance(tplId, { isFake: false, inspectedVisual: true });
+      if (usedSlots(state.shelf) + itemSlotCost(item) <= state.shelfMaxSlots) {
+        state.shelf.push(item);
+        foundNames.push(item.name);
+      }
+    }
+    nightReport.push(`🗑️ 夜间垃圾场拾荒收获：${foundNames.length ? foundNames.join('、') : '货架已满未能带回'}。`);
+  } else if (nightChoice === 'black_market') {
+    // 前往第 13 区地下黑市低价盲盒进硬货（花费 130 CR）
+    if (state.credits < 130) {
+      return { ok: false, msg: '去地下黑市淘战利品盲盒需要至少 130 CR 入场货款！' };
+    }
+    state.credits -= 130;
+    const bmPool = ['stolen_watch', 'cyber_arm', 'credit_chip_locked', 'immuno_med', 'synth_wine', 'kinetic_pistol', 'relic_core'];
+    const tplId = bmPool[Math.floor(Math.random() * bmPool.length)];
+    const item = createItemInstance(tplId, {
+      isFake: false,
+      isStolen: Math.random() < 0.5,
+      inspectedVisual: true
+    });
+    if (usedSlots(state.stash) + itemSlotCost(item) <= state.stashMaxSlots) {
+      state.stash.push(item);
+    } else {
+      state.shelf.push(item);
+    }
+    changeRep(state, 'blackmarket', 6);
+    nightReport.push(`🕶️ 花费 130 CR 从第13区黑市暗拍淘得真品硬货：【${item.name}】！`);
+  } else if (nightChoice === 'rest_recharge') {
+    // 检修电路并打通关系降案底
+    state.energy = Math.min(state.maxEnergy, state.energy + 55);
+    state.heat = Math.max(0, state.heat - 15);
+    nightReport.push('⚡ 夜间检修店铺聚变回路并清理监控记录：电力恢复 +55，治安局嫌疑值 -15。');
+  }
+
+  // 检查店内是否还残留未处理的放射性废料桶
+  const leftoverBarrels = [...state.shelf, ...state.stash].filter(i => i.templateId === 'rad_barrel').length;
+  if (leftoverBarrels > 0) {
+    const radPenalty = leftoverBarrels * 45;
+    state.credits = Math.max(0, state.credits - radPenalty);
+    state.heat = Math.min(100, state.heat + 12);
+    nightReport.push(`☢️ 警告：店内残留 ${leftoverBarrels} 桶渗漏的放射性废料！耗费 ${radPenalty} CR 买消辐药且引起治安巡逻注意！`);
+  }
+
+  // 所有库存赃物的风头自然消退 1 天
+  for (const it of [...state.shelf, ...state.stash]) {
+    if (it.isStolen && it.heatDays > 0) {
+      it.heatDays -= 1;
+      if (it.heatDays <= 0) {
+        it.isStolen = false;
+        nightReport.push(`🕒 赃物【${it.name}】风头已过，失主追踪悬赏自动失效！`);
+      }
+    }
+  }
+
+  // 基础电网每晚微量回电
+  state.energy = Math.min(state.maxEnergy, state.energy + 20);
+
+  // 检查今天是否是交房租日（若尚未买断产权）
+  if (!state.ownsShop && state.day >= state.rentDueDay) {
+    if (state.credits >= state.rentAmount) {
+      state.credits -= state.rentAmount;
+      nightReport.push(`🏠 房东上门收走了本期房租 **-${state.rentAmount} CR**！下期房租将上涨至 ${Math.round(state.rentAmount * 1.38)} CR。`);
+      state.rentAmount = Math.round(state.rentAmount * 1.38);
+      state.rentDueDay += 4;
+      state.week += 1;
+    } else {
+      // 交不起房租 —— 触发破产驱逐结局！
+      state.gameOver = {
+        victory: false,
+        endingId: 'evicted',
+        title: '结局：破产驱逐 · 重回垃圾场',
+        desc: `第 ${state.day} 天夜晚，你凑不出 ${state.rentAmount} CR 的高额房租（手头仅剩 ${state.credits} CR）。房东带着机械打手焊死了卷帘门，没收了全部设备。你再次沦为空间站底层的流浪拾荒者。`
+      };
+      state.phase = 'gameover';
+      return { ok: true, nightReport, gameOver: state.gameOver };
+    }
+  }
+
+  // 检查失控 AI 改造体威胁是否满 100 失控崩坏
+  if (state.augThreat >= 100) {
+    state.gameOver = {
+      victory: false,
+      endingId: 'aug_uprising',
+      title: '结局：机械意识吞噬下层区',
+      desc: '由于太多潜伏的 AI 改造体从你的柜台前安然混过，哨兵母体完成了第13街区的神经同化。一夜之间，整座底层空间站化作了冰冷的机械蜂巢。'
+    };
+    state.phase = 'gameover';
+    return { ok: true, nightReport, gameOver: state.gameOver };
+  }
+
+  // 推进到新的一天
+  state.day += 1;
+  for (const line of nightReport) {
+    addLog(state, line);
+  }
+  prepareDay(state);
+
+  return { ok: true, nightReport };
+}
+
+// 支付 5,000 CR 买断当铺永久产权 —— 达成多重派系主线胜利结局！（并支持继续无尽经营）
+function buyoutShopProperty(state) {
+  if (state.ownsShop) {
+    return { ok: false, msg: '你已经是这间深空当铺的永久主人了！' };
+  }
+  if (state.credits < state.buyoutPrice) {
+    return {
+      ok: false,
+      msg: `买断永久产权需要 ${state.buyoutPrice} CR（还差 ${state.buyoutPrice - state.credits} CR）！`
+    };
+  }
+
+  state.credits -= state.buyoutPrice;
+  state.ownsShop = true;
+
+  // 根据玩家的声望路线与道德选择评定专属多结局！
+  let ending = {
+    victory: true,
+    endingId: 'free_proprietor',
+    title: '真结局：深空独立掌柜 · 自由之身',
+    desc: '当你在电子地契上按下指纹的那一刻，压在头顶的高利贷与周租枷锁彻底粉碎！在黑白交织的空间站底层，你凭着毒辣的眼力与精明的算计站稳了脚跟，这间当铺终于真正属于你。'
+  };
+
+  if (state.rep.rebel >= 45 && state.stats.helpedSerpico) {
+    ending = {
+      victory: true,
+      endingId: 'rebel_beacon',
+      title: '传奇结局：第13区的暗夜火种',
+      desc: '你买下了当铺产权，而这间不起眼的小店早已成为深空革命军与底层受难者最可靠的秘密港湾。卢与塞尔皮科在暗巷向你致敬——当星环变革的号角吹响时，你的名字将被铭刻在自由纪念碑上。'
+    };
+  } else if (state.rep.blackmarket >= 50 && state.heat >= 25) {
+    ending = {
+      victory: true,
+      endingId: 'shadow_kingpin',
+      title: '黑金结局：地下黑市无冕教父',
+      desc: '买下店铺只是你商业帝国的起点。全空间站最烫手的遗物、军火与黑金芯片都经由你的柜台流转，连治安局警督进门前都要先向你脱帽问好。谁在乎货是不是偷的？现在规矩由你来定。'
+    };
+  } else if (state.stats.augsEliminated >= 3 && state.rep.security >= 40) {
+    ending = {
+      victory: true,
+      endingId: 'blade_runner',
+      title: '铁血结局：银翼猎手与特许皇商',
+      desc: '你不仅买下了店铺，更凭着柜台下那把从不失手的霰弹枪肃清了潜伏街区的失控 AI 改造体。贸易署与治安局联合授予你特级免检勋章，你的金字招牌响彻上下两层空间站。'
+    };
+  } else if (state.rep.upper >= 45) {
+    ending = {
+      victory: true,
+      endingId: 'upper_tycoon',
+      title: '名流结局：星环穹顶奢侈品大亨',
+      desc: '从拾荒客到名流雅集之主，你用醇厚的星云紫酒与先驱者遗物征服了挑剔的穹顶权贵。买断产权后，分店一路开进了上层核心环区。'
+    };
+  }
+
+  state.gameOver = ending;
+  state.phase = 'gameover';
+  addLog(state, `🏆 【里程碑达成】你豪掷 ${state.buyoutPrice} CR 彻底买下了深空当铺永久产权！解锁结局：《${ending.title}》！`);
+  return { ok: true, ending };
+}
+
+// 买断结局后继续无尽自由经营模式
+function continueEndlessAfterVictory(state) {
+  state.gameOver = null;
+  state.phase = state.currentCustomer ? 'open' : 'night';
+}
+
+
+// ============================================================================
+// 《深空当铺：可能是偷的》前端交互与视图控制器
+// ============================================================================
+
+const SAVE_KEY = 'deepspace_pawnshop_save_v1';
+
+const CATEGORY_NAMES = {
+  supply: '民生补给',
+  medical: '化学医疗',
+  weapon: '军火武器',
+  luxury: '奢侈古董',
+  tech: '赛博零件',
+  material: '工业原料',
+  contraband: '重度违禁'
+};
+
+let gameState = null;
+let activeTab = 'inventory'; // 'inventory' | 'workshop' | 'upgrades' | 'guide'
+let animTick = 0;
+
+function showToast(msg, kind = 'info') {
+  const box = document.getElementById('toast-container');
+  if (!box) return;
+  const el = document.createElement('div');
+  el.className = `toast ${kind}`;
+  el.textContent = msg;
+  box.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transition = 'opacity 0.25s';
+    setTimeout(() => el.remove(), 260);
+  }, 3400);
+}
+
+function saveGame() {
+  if (!gameState) return;
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
+  } catch (_) {}
+}
+
+function loadSavedGame() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && parsed.version === 1) return parsed;
+  } catch (_) {}
+  return null;
+}
+
+// ----------------------------------------------------------------------------
+// 开局职业选择弹窗渲染
+// ----------------------------------------------------------------------------
+function openStartModal(allowClose = false) {
+  const modal = document.getElementById('start-modal');
+  modal.classList.remove('hidden');
+
+  const saved = loadSavedGame();
+  const resumeBtn = document.getElementById('btn-resume-save');
+  if (saved && !saved.gameOver) {
+    resumeBtn.classList.remove('hidden');
+    resumeBtn.textContent = `📂 继续存档（第 ${saved.day} 天 · ${saved.professionName} · ${saved.credits} CR）`;
+    resumeBtn.onclick = () => {
+      sfx.play('click');
+      gameState = saved;
+      modal.classList.add('hidden');
+      renderAll();
+    };
+  } else {
+    resumeBtn.classList.add('hidden');
+  }
+
+  const closeBtn = document.getElementById('btn-close-start');
+  if (allowClose && gameState) {
+    closeBtn.classList.remove('hidden');
+    closeBtn.onclick = () => modal.classList.add('hidden');
+  } else {
+    closeBtn.classList.add('hidden');
+  }
+
+  const grid = document.getElementById('prof-grid');
+  grid.innerHTML = PROFESSIONS.map(p => `
+    <div class="prof-card" data-prof="${p.id}">
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-size:24px;">${p.icon}</span>
+          <span class="badge badge-cyan">${p.subtitle}</span>
+        </div>
+        <h3 style="font-size:16px;color:${p.color};margin-bottom:6px;">${p.name}</h3>
+        <p style="font-size:12.5px;color:#cbd5e1;margin-bottom:10px;">${p.desc}</p>
+        <ul style="list-style:none;font-size:12px;color:#94a3b8;display:flex;flex-direction:column;gap:4px;">
+          ${p.perks.map(pk => `<li>✦ ${pk}</li>`).join('')}
+        </ul>
+      </div>
+      <button class="btn-primary" style="width:100%;margin-top:8px;">以此身份接手当铺</button>
+    </div>
+  `).join('');
+
+  grid.querySelectorAll('.prof-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const profId = card.getAttribute('data-prof');
+      sfx.play('door');
+      gameState = createNewGameState(profId);
+      saveGame();
+      modal.classList.add('hidden');
+      renderAll();
+      showToast(`欢迎来到第13底层街区！你以【${gameState.professionName}】身份开启了当铺生涯。`, 'good');
+    });
+  });
+}
+
+// ----------------------------------------------------------------------------
+// 主界面全量渲染
+// ----------------------------------------------------------------------------
+function renderAll() {
+  if (!gameState) return;
+  renderTopBar();
+  renderLeftPanel();
+  renderCenterStage();
+  renderRightTabs();
+  renderGameOverModal();
+  saveGame();
+}
+
+function renderTopBar() {
+  const s = gameState;
+  const daysLeft = Math.max(0, s.rentDueDay - s.day);
+  const rentText = s.ownsShop
+    ? '🏆 已买断永久产权 (免房租)'
+    : `房租 ${s.rentAmount} CR (${daysLeft === 0 ? '今晚收租!' : `剩 ${daysLeft} 天`})`;
+
+  document.getElementById('hud-day').textContent = `第 ${s.day} 天 · ${s.phase === 'night' ? '🌙 打烊夜晚' : '🏮 营业中'} (${s.professionName})`;
+  document.getElementById('hud-credits').textContent = `💰 ${s.credits} CR`;
+  document.getElementById('hud-rent').textContent = `🏠 ${rentText}`;
+  document.getElementById('hud-energy').textContent = `⚡ 电力 ${s.energy}/${s.maxEnergy}`;
+  document.getElementById('hud-heat').textContent = `🚨 嫌疑 ${s.heat}%`;
+  document.getElementById('hud-aug').textContent = `🤖 AI渗透 ${s.augThreat}%`;
+
+  const buyoutBtn = document.getElementById('btn-buyout');
+  if (s.ownsShop) {
+    buyoutBtn.textContent = '🏆 永久产权店主';
+    buyoutBtn.disabled = true;
+  } else {
+    buyoutBtn.textContent = `🔑 买断产权 (${s.buyoutPrice} CR)`;
+    buyoutBtn.disabled = s.credits < s.buyoutPrice;
+  }
+}
+
+function renderLeftPanel() {
+  const s = gameState;
+
+  // 今日紧俏行情
+  document.getElementById('market-hot').innerHTML = `
+    📈 今日紧俏溢价 (+25%)：<strong style="color:#4ade80;">${CATEGORY_NAMES[s.hotCategory] || '民生补给'}</strong>
+  `;
+
+  // 派系声望条
+  const facContainer = document.getElementById('faction-list');
+  facContainer.innerHTML = Object.values(FACTIONS).map(f => {
+    const val = s.rep[f.id] || 0;
+    const pct = Math.max(4, Math.min(100, ((val + 50) / 150) * 100));
+    const unlocked = val >= f.perkThreshold;
+    return `
+      <div class="faction-row" title="${f.desc}\n${f.perkDesc}">
+        <div class="faction-top">
+          <span style="color:${f.color};font-weight:700;">${f.name} ${unlocked ? '★特权激活' : ''}</span>
+          <span style="font-family:var(--font-mono);color:${val >= 0 ? '#e2e8f0' : '#fca5a5'};">${val}</span>
+        </div>
+        <div class="rep-bar-bg">
+          <div class="rep-bar-fill" style="width:${pct}%;background:${f.color};"></div>
+        </div>
+        <div style="font-size:11px;color:#64748b;margin-top:3px;">${f.perkDesc}</div>
+      </div>
+    `;
+  }).join('');
+
+  // 今日治安局通缉令
+  const w = s.dailyWanted;
+  const wantedEl = document.getElementById('wanted-box');
+  if (w) {
+    wantedEl.innerHTML = `
+      <div class="wanted-header">
+        <span>🚨 今日治安悬赏通缉</span>
+        <span>赏金 +${w.bounty} CR</span>
+      </div>
+      <div style="font-size:12.5px;color:#f8fafc;font-weight:600;">${w.name}（${FACTIONS[w.faction].short}）</div>
+      <div style="font-size:11.5px;color:#cbd5e1;margin-top:2px;">罪名：${w.crime}</div>
+      <div style="font-size:11.5px;color:#fde047;margin-top:3px;">识别特征：${w.mark}</div>
+    `;
+  }
+
+  // 账本日志
+  const logEl = document.getElementById('log-box');
+  logEl.innerHTML = s.logs.slice(0, 25).map(l => `<div class="log-entry">${l}</div>`).join('');
+}
+
+// ----------------------------------------------------------------------------
+// 中央当铺柜台区渲染（访客互动 / 鉴定质询 / 议价 / 夜间行动）
+// ----------------------------------------------------------------------------
+function renderCenterStage() {
+  const s = gameState;
+  const stageContainer = document.getElementById('center-content');
+  const queueInfo = document.getElementById('queue-counter');
+
+  if (s.phase === 'night') {
+    queueInfo.textContent = '🌙 卷帘门已落下 · 夜间自由整备时段';
+    drawCustomerPortrait(document.getElementById('customer-canvas'), null, animTick);
+    document.getElementById('customer-badges').innerHTML = `<span class="badge badge-purple">打烊整备</span>`;
+    document.getElementById('customer-meta').innerHTML = `
+      <h3 style="font-size:17px;color:#e2e8f0;margin-bottom:6px;">第 ${s.day} 天夜晚 · 抉择你的夜间行动</h3>
+      <div class="dialogue-bubble">
+        白天的喧嚣暂时退去。你可以先在右侧面板<strong>操作后室机器合成高价货品</strong>或<strong>调整货架库存</strong>，然后选择一项夜间行动进入明天。
+        ${(!s.ownsShop && s.day >= s.rentDueDay) ? `<div style="margin-top:8px;color:#fda4af;font-weight:700;">⚠️ 今晚结账时房东将准时收缴本期房租 ${s.rentAmount} CR！（当前持有 ${s.credits} CR）</div>` : ''}
+      </div>
+    `;
+
+    const hasRadBarrel = [...s.shelf, ...s.stash].some(i => i.templateId === 'rad_barrel');
+    stageContainer.innerHTML = `
+      <div class="deal-card">
+        <h4 style="color:var(--neon-cyan);margin-bottom:10px;">🌃 选择今晚外出或整备计划（执行后推进至第 ${s.day + 1} 天）</h4>
+        <div style="display:grid;gap:10px;">
+          <div class="recipe-box">
+            <div>
+              <div style="font-weight:700;color:#86efac;">🗑️ 溜去下层垃圾倾倒场拾荒 ${hasRadBarrel ? '<span class="badge badge-red">顺便倾倒放射性废料桶!</span>' : ''}</div>
+              <div style="font-size:12px;color:#94a3b8;">免费翻找 2~3 件金属/滤芯/浑浊水/旧零件，并安全丢弃店内所有高危放射性废料桶。</div>
+            </div>
+            <button class="btn-success" id="act-night-scrap">出发拾荒</button>
+          </div>
+
+          <div class="recipe-box">
+            <div>
+              <div style="font-weight:700;color:#e9d5ff;">🕶️ 潜入第13区地下黑市暗拍 (-130 CR)</div>
+              <div style="font-size:12px;color:#94a3b8;">支付 130 CR 盲盒入场费，必定淘回 1 件高价值真品硬货（义体/怀表/紫酒/加密芯片/遗物），黑市声望 +6。</div>
+            </div>
+            <button class="btn-purple" id="act-night-bm" ${s.credits < 130 ? 'disabled' : ''}>黑市淘货</button>
+          </div>
+
+          <div class="recipe-box">
+            <div>
+              <div style="font-weight:700;color:#7dd3fc;">⚡ 留店检修聚变电容与抹除监控</div>
+              <div style="font-size:12px;color:#94a3b8;">店铺电力大幅恢复 +55（另加每晚基础回电 +20），且治安局嫌疑值下降 -15。</div>
+            </div>
+            <button class="btn-primary" id="act-night-rest">检修休整</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('act-night-scrap').onclick = () => triggerNight('dump_scrapyard');
+    document.getElementById('act-night-bm').onclick = () => triggerNight('black_market');
+    document.getElementById('act-night-rest').onclick = () => triggerNight('rest_recharge');
+    return;
+  }
+
+  // 营业阶段：渲染当前访客
+  const c = s.currentCustomer;
+  queueInfo.textContent = `今日剩余排队访客：${s.customersQueue.length} 人`;
+  drawCustomerPortrait(document.getElementById('customer-canvas'), c, animTick);
+
+  if (!c) {
+    stageContainer.innerHTML = '';
+    return;
+  }
+
+  // 访客身份徽章
+  const fac = FACTIONS[c.faction] || FACTIONS.lower;
+  let badgesHtml = `<span class="badge" style="background:rgba(15,23,42,0.8);color:${fac.color};border-color:${fac.color};">${fac.short}</span>`;
+  if (c.isSecurityRaid) badgesHtml += `<span class="badge badge-red">突击搜查</span>`;
+  if (c.type === 'story') badgesHtml += `<span class="badge badge-amber">特殊剧情</span>`;
+  if (c.augScanned) {
+    badgesHtml += c.isAug
+      ? `<span class="badge badge-red">🤖 确认AI改造体!</span>`
+      : `<span class="badge badge-green">✅ 确认人类</span>`;
+  }
+  document.getElementById('customer-badges').innerHTML = badgesHtml;
+
+  // 访客台词与外貌举止观察线索
+  document.getElementById('customer-meta').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+      <div>
+        <span style="font-size:17px;font-weight:800;color:#f8fafc;">${c.name}</span>
+        <span style="font-size:12px;color:#94a3b8;margin-left:6px;">· ${c.roleName}</span>
+      </div>
+      ${c.patience ? `<span style="font-size:12px;color:#fbbf24;">耐心：${'★'.repeat(c.patience)}${'☆'.repeat(Math.max(0, c.maxPatience - c.patience))}</span>` : ''}
+    </div>
+    <div class="dialogue-bubble">${c.dialogue}</div>
+    ${c.behaviorNote ? `<div class="behavior-clue">👁️ <strong>柜台观察记录：</strong>${c.behaviorNote}${getVisualAugHintText(c)}</div>` : ''}
+  `;
+
+  // 分支 1：剧情人物交互
+  if (c.type === 'story') {
+    stageContainer.innerHTML = `
+      <div class="deal-card">
+        <h4 style="color:#fbbf24;margin-bottom:10px;">🎭 关键抉择（你的决定将影响派系关系与后续故事线）</h4>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          ${c.choices.map((ch, idx) => `
+            <button class="${idx === 0 ? 'btn-primary' : ''}" data-story-eff="${ch.effect}" style="text-align:left;padding:10px 12px;">
+              ➤ ${ch.label}
+            </button>
+          `).join('')}
+        </div>
+      </div>
+    `;
+    stageContainer.querySelectorAll('[data-story-eff]').forEach(btn => {
+      btn.onclick = () => {
+        const eff = btn.getAttribute('data-story-eff');
+        const res = resolveStoryChoice(s, eff);
+        if (!res.ok) {
+          sfx.play('fail');
+          showToast(res.msg, 'warn');
+        } else {
+          sfx.play('coin');
+          showToast(res.msg, 'good');
+          renderAll();
+        }
+      };
+    });
+    return;
+  }
+
+  // 分支 2：治安局突击搜查！
+  if (c.isSecurityRaid) {
+    const illegalOnShelf = s.shelf.filter(it => getItemIllegalityReason(it, s) !== null);
+    stageContainer.innerHTML = `
+      <div class="deal-card" style="border-color:#ef4444;">
+        <h4 style="color:#fca5a5;margin-bottom:8px;">🚨 治安局突击搜查正在进行！</h4>
+        <p style="font-size:12.5px;color:#cbd5e1;margin-bottom:10px;">
+          当前明面货架上有 <strong style="color:${illegalOnShelf.length ? '#f87171' : '#4ade80'};">${illegalOnShelf.length} 件</strong> 无证军火、未洗白赃物或违禁品！
+          ${illegalOnShelf.length > 0 ? '<br>💡 <strong>提示：现在立刻在右侧【库存与暗格】点击“藏入暗格”还来得及藏匿！</strong>' : ''}
+        </p>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;">
+          <button class="btn-primary" id="btn-raid-comply">👐 打开货架配合检查</button>
+          <button class="btn-amber" id="btn-raid-bribe">🤫 塞钱打点霍克警督 (-${c.bribeCost} CR)</button>
+        </div>
+      </div>
+    `;
+    document.getElementById('btn-raid-comply').onclick = () => {
+      const res = handleSecurityRaid(s, 'comply');
+      sfx.play(res.clean ? 'coin' : 'alert');
+      showToast(res.msg, res.clean ? 'good' : 'warn');
+      renderAll();
+    };
+    document.getElementById('btn-raid-bribe').onclick = () => {
+      const res = handleSecurityRaid(s, 'bribe');
+      if (!res.ok) {
+        sfx.play('fail');
+        showToast(res.msg, 'warn');
+      } else {
+        sfx.play('coin');
+        showToast(res.msg, 'good');
+        renderAll();
+      }
+    };
+    return;
+  }
+
+  // 分支 3：普通/特殊顾客（卖货给当铺 / 买当铺货 / 鉴定委托 / 空架离开）
+  let dealHtml = '';
+
+  if (c.intent === 'empty_leave') {
+    dealHtml = `
+      <div class="deal-card">
+        <p style="color:#94a3b8;margin-bottom:10px;">主货架上没有可出售的商品（暗格内的商品顾客看不见）。</p>
+        <button class="btn-primary" id="btn-next-empty">送走顾客</button>
+      </div>
+    `;
+  } else if (c.intent === 'sell_to_shop' || c.intent === 'appraise_request') {
+    const item = c.offerItem;
+    const tpl = ITEM_TEMPLATES[item.templateId];
+    const fairEst = evaluateItemFairPrice(item, s);
+    dealHtml = `
+      <div class="deal-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+          <span class="badge ${c.intent === 'appraise_request' ? 'badge-amber' : 'badge-cyan'}">
+            ${c.intent === 'appraise_request' ? '🏅 鉴定委员会委托单（无需收购，判真伪赚佣金）' : '📥 顾客向你兜售物品'}
+          </span>
+          <span style="font-family:var(--font-mono);font-size:12px;color:#94a3b8;">
+            图鉴正品参考价: ~${tpl.baseValue} CR ${s.hotCategory === item.category ? '🔥紧俏' : ''}
+          </span>
+        </div>
+
+        <div class="deal-item-header">
+          <div class="deal-item-icon">${item.icon}</div>
+          <div style="flex:1;">
+            <div style="font-size:15px;font-weight:700;color:#f8fafc;">
+              ${item.name}
+              ${(item.inspectedVisual || item.inspectedDeep) && item.isStolen ? '<span class="badge badge-amber">⚠️ 疑似带追踪码赃物</span>' : ''}
+            </div>
+            <div style="font-size:12px;color:#94a3b8;">${item.desc}</div>
+          </div>
+          ${c.intent === 'sell_to_shop' ? `
+            <div style="text-align:right;">
+              <div style="font-size:11px;color:#94a3b8;">对方当前要价</div>
+              <div style="font-size:20px;font-weight:800;color:#fde047;font-family:var(--font-mono);">${c.askingPrice} CR</div>
+            </div>
+          ` : ''}
+        </div>
+
+        <!-- 鉴定工具栏 -->
+        <div style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;">
+          <button id="btn-insp-visual" ${item.inspectedVisual ? 'disabled' : ''}>
+            🔍 放大镜外观核验 (免费)
+          </button>
+          <button id="btn-insp-deep" ${item.inspectedDeep ? 'disabled' : ''}>
+            🔬 光谱仪深度透视 (-10⚡)
+          </button>
+          ${(c.intent === 'sell_to_shop' && item.inspectedVisual && !item.confronted) ? `
+            <button class="btn-amber" id="btn-open-confront">⚡ 指出假货瑕疵压价！</button>
+          ` : ''}
+        </div>
+
+        <!-- 鉴定结果展示面板 -->
+        ${renderInspectionReportHtml(item)}
+
+        <!-- 质询瑕疵选择折叠栏 -->
+        <div id="confront-panel" class="hidden" style="background:#1a1122;border:1px solid #f59e0b;border-radius:6px;padding:9px;margin-top:8px;">
+          <div style="font-size:12px;color:#fcd34d;margin-bottom:6px;font-weight:700;">
+            请选择你发现的确凿造假证据（若指控正确对方将暴降价格；冤枉真货会掉声望！）：
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            ${(tpl.fakeSigns || []).map((fs, i) => `
+              <button class="btn-confront-reason" data-reason="${fs.reason}" style="text-align:left;font-size:12px;">
+                ❗ 指控瑕疵 ${i + 1}：${fs.reason}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+
+        ${c.intent === 'sell_to_shop' ? `
+          <div class="haggle-bar">
+            <button class="btn-success" id="btn-buy-direct">💰 按 ${c.askingPrice} CR 直接买下</button>
+            <div style="display:flex;align-items:center;gap:5px;">
+              <input type="number" id="inp-haggle" class="price-input" value="${Math.max(8, Math.round(c.askingPrice * 0.82))}" min="5" max="9999">
+              <button class="btn-primary" id="btn-haggle-sub">🗣️ 还价博弈</button>
+            </div>
+            <button id="btn-refuse">👋 拒绝送客</button>
+            <span style="font-size:11.5px;color:#64748b;margin-left:auto;">当前你的估值: ~${fairEst} CR</span>
+          </div>
+        ` : `
+          <div class="haggle-bar">
+            <button class="btn-success" id="btn-appraise-true">✅ 出具报告：真品无疑</button>
+            <button class="btn-danger" id="btn-appraise-fake">❌ 出具报告：系伪造赝品</button>
+            <button id="btn-refuse">👋 婉拒委托</button>
+          </div>
+        `}
+      </div>
+    `;
+  } else if (c.intent === 'buy_from_shop') {
+    const targetItem = s.shelf.find(i => i.uid === c.wantedBuyItemUid);
+    const illegalWarn = targetItem ? getItemIllegalityReason(targetItem, s) : null;
+    dealHtml = `
+      <div class="deal-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span class="badge badge-green">📤 顾客想购买你货架上的商品</span>
+          ${illegalWarn ? `<span class="badge badge-red">⚠️ 违规风险：留意对方是否便衣钓鱼!</span>` : ''}
+        </div>
+
+        ${targetItem ? `
+          <div class="deal-item-header">
+            <div class="deal-item-icon">${targetItem.icon}</div>
+            <div style="flex:1;">
+              <div style="font-size:15px;font-weight:700;color:#f8fafc;">
+                ${targetItem.name}
+                ${targetItem.isFake ? '<span class="badge badge-red">赝品次货</span>' : '<span class="badge badge-cyan">正品</span>'}
+                ${targetItem.isStolen ? '<span class="badge badge-amber">赃物</span>' : ''}
+              </div>
+              <div style="font-size:12px;color:#94a3b8;">基准市价: ${targetItem.baseValue} CR · ${illegalWarn || '合法合规商品'}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-size:11px;color:#94a3b8;">买家当前出价</div>
+              <div style="font-size:20px;font-weight:800;color:#4ade80;font-family:var(--font-mono);">${c.currentOffer} CR</div>
+            </div>
+          </div>
+
+          <div class="haggle-bar">
+            <button class="btn-success" id="btn-sell-direct">💵 按 ${c.currentOffer} CR 立即成交</button>
+            <div style="display:flex;align-items:center;gap:5px;">
+              <input type="number" id="inp-haggle" class="price-input" value="${Math.round(c.currentOffer * 1.18)}" min="5" max="9999">
+              <button class="btn-primary" id="btn-haggle-sub">📈 加价博弈</button>
+            </div>
+            <button id="btn-refuse">👋 不卖送客</button>
+          </div>
+        ` : `<p>目标商品已被移走。</p><button id="btn-refuse">送客</button>`}
+      </div>
+    `;
+  }
+
+  // 柜台下战术防卫操作栏（AI扫描仪、通缉举报、霰弹枪轰击！）
+  const underCounterHtml = `
+    <div class="under-counter-bar">
+      <div style="font-size:12px;color:#fda4af;font-weight:700;">
+        🛡️ 柜台下安防系统：
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:7px;">
+        <button id="btn-aug-scan" title="消耗20点电力扫描对方体内是否有失控AI芯片">
+          📡 AI改造体扫描 (-20⚡)
+        </button>
+        <button class="btn-amber" id="btn-report-wanted" title="若认出对方符合左栏今日通缉犯特征，可秘密报警领赏">
+          🚨 举报通缉犯
+        </button>
+        <button class="btn-danger" id="btn-shotgun" title="确认对方是失控AI改造体(Aug)时可合法当场击毙领赏！切勿误杀真人类！">
+          💥 拔出霰弹枪击毙
+        </button>
+      </div>
+    </div>
+  `;
+
+  stageContainer.innerHTML = dealHtml + underCounterHtml;
+  bindCounterEvents(s, c);
+}
+
+function getVisualAugHintText(c) {
+  if (!c.isAug) return '';
+  if (c.augVisualType === 'chip') return ' <span style="color:#fda4af;">（细看肖像：右耳后似乎有微弱红点闪烁…）</span>';
+  if (c.augVisualType === 'pupil') return ' <span style="color:#67e8f9;">（细看肖像：双瞳泛着诡异异色反光且从不眨眼…）</span>';
+  if (c.augVisualType === 'smile') return ' <span style="color:#fda4af;">（细看肖像：嘴角弧度僵硬得像尺子量出来一样…）</span>';
+  return '';
+}
+
+function renderInspectionReportHtml(item) {
+  const tpl = ITEM_TEMPLATES[item.templateId];
+  if (!item.inspectedVisual && !item.inspectedDeep) {
+    return `<div class="inspect-findings" style="color:#64748b;">尚未检验商品细节。建议先用【放大镜】核验包装、封口或纯度！</div>`;
+  }
+
+  const lines = [];
+  const signs = tpl.authenticSigns || {};
+  const keys = Object.keys(signs);
+
+  keys.forEach((k, idx) => {
+    // 基础放大镜可看前2项特征；若有第3项或深层瑕疵，光谱仪可100%全看清，放大镜看大部分
+    const isFlawHere = item.isFake && item.fakeFlaw && item.fakeFlaw.key === k;
+    const hiddenWithoutDeep = (idx >= 2 && !item.inspectedDeep && !isFlawHere);
+
+    if (hiddenWithoutDeep) {
+      lines.push(`<div class="finding-line" style="color:#64748b;">• [深层指标需光谱仪透视]</div>`);
+    } else if (isFlawHere) {
+      lines.push(`<div class="finding-line finding-Sus">⚠️ 异常破绽：${item.fakeFlaw.badText}</div>`);
+    } else {
+      lines.push(`<div class="finding-line finding-ok">✓ 核验正常：${signs[k]}</div>`);
+    }
+  });
+
+  if (item.inspectedDeep) {
+    lines.push(`<div class="finding-line" style="color:#38bdf8;border-top:1px dashed #1e293b;margin-top:4px;padding-top:4px;">
+      🔬 光谱仪总结论：${item.isFake ? '❌ 确认为伪造次品！' : '✅ 100% 原装真品'} · ${item.isStolen ? `⚠️ 检测到失主防盗报案码（冷却剩 ${item.heatDays} 天）` : '无防盗追踪码'}
+    </div>`);
+  }
+
+  return `<div class="inspect-findings">${lines.join('')}</div>`;
+}
+
+function bindCounterEvents(s, c) {
+  const btnNextEmpty = document.getElementById('btn-next-empty');
+  if (btnNextEmpty) {
+    btnNextEmpty.onclick = () => {
+      sfx.play('click');
+      refuseCustomer(s);
+      renderAll();
+    };
+  }
+
+  const btnVisual = document.getElementById('btn-insp-visual');
+  if (btnVisual) {
+    btnVisual.onclick = () => {
+      const res = inspectItem(s, c.offerItem, 'visual');
+      sfx.play('scan');
+      showToast(res.msg, 'info');
+      renderAll();
+    };
+  }
+
+  const btnDeep = document.getElementById('btn-insp-deep');
+  if (btnDeep) {
+    btnDeep.onclick = () => {
+      const res = inspectItem(s, c.offerItem, 'deep');
+      sfx.play(res.ok ? 'scan' : 'fail');
+      showToast(res.msg, res.ok ? 'good' : 'warn');
+      renderAll();
+    };
+  }
+
+  const btnOpenConfront = document.getElementById('btn-open-confront');
+  if (btnOpenConfront) {
+    btnOpenConfront.onclick = () => {
+      sfx.play('click');
+      document.getElementById('confront-panel').classList.toggle('hidden');
+    };
+  }
+
+  document.querySelectorAll('.btn-confront-reason').forEach(btn => {
+    btn.onclick = () => {
+      const reason = btn.getAttribute('data-reason');
+      const res = confrontSellerFake(s, reason);
+      sfx.play(res.success ? 'coin' : 'alert');
+      showToast(res.msg, res.success ? 'good' : 'warn');
+      renderAll();
+    };
+  });
+
+  const btnBuy = document.getElementById('btn-buy-direct');
+  if (btnBuy) {
+    btnBuy.onclick = () => {
+      const res = executeBuyFromCustomer(s, c.askingPrice);
+      sfx.play(res.ok ? 'coin' : 'fail');
+      showToast(res.msg, res.ok ? 'good' : 'warn');
+      renderAll();
+    };
+  }
+
+  const btnSell = document.getElementById('btn-sell-direct');
+  if (btnSell) {
+    btnSell.onclick = () => {
+      const res = executeSellToCustomer(s, c.currentOffer);
+      sfx.play(res.stingCaught ? 'alert' : 'coin');
+      showToast(res.msg, res.stingCaught ? 'warn' : 'good');
+      renderAll();
+    };
+  }
+
+  const btnHaggle = document.getElementById('btn-haggle-sub');
+  if (btnHaggle) {
+    btnHaggle.onclick = () => {
+      const val = document.getElementById('inp-haggle').value;
+      const res = haggleWithCustomer(s, val);
+      sfx.play(res.left ? 'fail' : 'click');
+      showToast(res.msg, res.left ? 'warn' : 'info');
+      renderAll();
+    };
+  }
+
+  const btnAppTrue = document.getElementById('btn-appraise-true');
+  if (btnAppTrue) {
+    btnAppTrue.onclick = () => {
+      const res = fulfillAppraisal(s, true);
+      sfx.play('coin');
+      showToast(res.msg, 'info');
+      renderAll();
+    };
+  }
+
+  const btnAppFake = document.getElementById('btn-appraise-fake');
+  if (btnAppFake) {
+    btnAppFake.onclick = () => {
+      const res = fulfillAppraisal(s, false);
+      sfx.play('coin');
+      showToast(res.msg, 'info');
+      renderAll();
+    };
+  }
+
+  const btnRefuse = document.getElementById('btn-refuse');
+  if (btnRefuse) {
+    btnRefuse.onclick = () => {
+      sfx.play('door');
+      const res = refuseCustomer(s);
+      showToast(res.msg, 'info');
+      renderAll();
+    };
+  }
+
+  // 柜台下三件套：扫描、举报、霰弹枪
+  const btnScan = document.getElementById('btn-aug-scan');
+  if (btnScan) {
+    btnScan.onclick = () => {
+      const res = scanCustomerForAug(s);
+      sfx.play(res.ok ? (res.isAug ? 'alert' : 'scan') : 'fail');
+      showToast(res.msg, res.isAug ? 'warn' : 'info');
+      renderAll();
+    };
+  }
+
+  const btnReport = document.getElementById('btn-report-wanted');
+  if (btnReport) {
+    btnReport.onclick = () => {
+      const res = reportWantedCustomer(s);
+      sfx.play('alert');
+      showToast(res.msg, 'info');
+      renderAll();
+    };
+  }
+
+  const btnShotgun = document.getElementById('btn-shotgun');
+  if (btnShotgun) {
+    btnShotgun.onclick = () => {
+      if (!c.augScanned) {
+        const sure = window.confirm(`⚠️ 警告：你尚未用扫描仪确认【${c.name}】是否为失控 AI 改造体！\n一旦误杀真人类将被治安局重罚 350 CR！确定要直接扣动扳机吗？`);
+        if (!sure) return;
+      }
+      sfx.play('shotgun');
+      const res = shootCustomerWithShotgun(s);
+      showToast(res.msg, res.correctKill ? 'good' : 'warn');
+      renderAll();
+    };
+  }
+}
+
+function triggerNight(choice) {
+  const res = performNightActionAndSleep(gameState, choice);
+  if (!res.ok) {
+    sfx.play('fail');
+    showToast(res.msg, 'warn');
+    return;
+  }
+  sfx.play('door');
+  if (res.nightReport && res.nightReport.length > 0) {
+    showToast(res.nightReport[0], 'good');
+  }
+  renderAll();
+}
+
+// ----------------------------------------------------------------------------
+// 右侧多功能经营面板（库存&秘密暗格 / 后室生产链 / 设备许可商店 / 经营指南）
+// ----------------------------------------------------------------------------
+function renderRightTabs() {
+  const s = gameState;
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-tab') === activeTab);
+  });
+
+  const body = document.getElementById('right-tab-body');
+
+  if (activeTab === 'inventory') {
+    const shelfUsed = usedSlots(s.shelf);
+    const stashUsed = usedSlots(s.stash);
+    const curWantedUid = (s.currentCustomer && s.currentCustomer.intent === 'buy_from_shop')
+      ? s.currentCustomer.wantedBuyItemUid
+      : null;
+
+    body.innerHTML = `
+      <div style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-weight:700;color:#e2e8f0;">📦 明面主货架 (${shelfUsed}/${s.shelfMaxSlots} 格)</span>
+        <span style="font-size:11.5px;color:#94a3b8;">大件占2格 · 小件占1格</span>
+      </div>
+      <div class="inv-grid">
+        ${s.shelf.length === 0 ? `<div style="grid-column:1/-1;color:#64748b;font-size:12px;padding:10px;">主货架空空如也。</div>` : s.shelf.map(it => renderInvItemCard(it, s, 'shelf', curWantedUid)).join('')}
+      </div>
+
+      <div style="margin:12px 0 8px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #1e293b;padding-top:10px;">
+        <span style="font-weight:700;color:#c084fc;">🗄️ 柜台下秘密暗格 (${stashUsed}/${s.stashMaxSlots} 格)</span>
+        <span style="font-size:11.5px;color:#a855f7;">防治安官搜查 · 顾客不可见</span>
+      </div>
+      <div class="inv-grid">
+        ${s.stash.length === 0 ? `<div style="grid-column:1/-1;color:#64748b;font-size:12px;padding:10px;">暗格为空。可将赃物、无证武器或违禁品藏在这里躲避突击搜查！</div>` : s.stash.map(it => renderInvItemCard(it, s, 'stash', null)).join('')}
+      </div>
+    `;
+
+    body.querySelectorAll('[data-move-uid]').forEach(btn => {
+      btn.onclick = () => {
+        const res = toggleItemStorage(s, btn.getAttribute('data-move-uid'));
+        sfx.play(res.ok ? 'click' : 'fail');
+        showToast(res.msg, res.ok ? 'info' : 'warn');
+        renderAll();
+      };
+    });
+
+    body.querySelectorAll('[data-charge-uid]').forEach(btn => {
+      btn.onclick = () => {
+        const res = useBatteryForPower(s, btn.getAttribute('data-charge-uid'));
+        sfx.play('craft');
+        showToast(res.msg, 'good');
+        renderAll();
+      };
+    });
+
+    body.querySelectorAll('[data-scrub-uid]').forEach(btn => {
+      btn.onclick = () => {
+        const res = scrubStolenItem(s, btn.getAttribute('data-scrub-uid'));
+        sfx.play(res.ok ? 'craft' : 'fail');
+        showToast(res.msg, res.ok ? 'good' : 'warn');
+        renderAll();
+      };
+    });
+  } else if (activeTab === 'workshop') {
+    const ownedMachines = s.machines.map(id => MACHINES[id]).filter(Boolean);
+    body.innerHTML = `
+      <div style="font-size:12px;color:#94a3b8;margin-bottom:10px;">
+        ⚙️ 后室生产线可将廉价废料、浑浊水、损坏枪械加工成高利润商品（白天与夜晚均可随时开动机器）。
+      </div>
+      ${ownedMachines.length === 0 ? `
+        <div class="machine-card" style="text-align:center;color:#94a3b8;padding:18px;">
+          当前后室尚未安装任何生产机器。<br>请前往【证照&设备】标签页购置净水器、改装台、蒸馏釜或解码仪！
+        </div>
+      ` : ownedMachines.map(m => `
+        <div class="machine-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <strong style="color:var(--neon-cyan);font-size:14px;">${m.icon} ${m.name}</strong>
+            <span class="badge badge-cyan">已通电就绪</span>
+          </div>
+          <div style="font-size:12px;color:#94a3b8;margin:4px 0 6px;">${m.desc}</div>
+          ${m.recipes.map(r => `
+            <div class="recipe-box">
+              <div style="flex:1;">
+                <div style="font-size:12.5px;font-weight:700;color:#f1f5f9;">${r.name} (-${r.power}⚡)</div>
+                <div style="font-size:11.5px;color:#94a3b8;">${r.note}</div>
+              </div>
+              <button class="btn-primary" data-machine="${m.id}" data-recipe="${r.id}">合成加工</button>
+            </div>
+          `).join('')}
+        </div>
+      `).join('')}
+    `;
+
+    body.querySelectorAll('[data-recipe]').forEach(btn => {
+      btn.onclick = () => {
+        const res = runMachineRecipe(s, btn.getAttribute('data-machine'), btn.getAttribute('data-recipe'));
+        sfx.play(res.ok ? 'craft' : 'fail');
+        showToast(res.msg, res.ok ? 'good' : 'warn');
+        renderAll();
+      };
+    });
+  } else if (activeTab === 'upgrades') {
+    const machineListHtml = Object.values(MACHINES).map(m => {
+      const owned = s.machines.includes(m.id);
+      return `
+        <div class="machine-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <strong style="color:#f8fafc;">${m.icon} ${m.name}</strong>
+            <span style="font-family:var(--font-mono);color:#fde047;font-weight:700;">${owned ? '已安装' : `${m.cost} CR`}</span>
+          </div>
+          <p style="font-size:12px;color:#94a3b8;margin:5px 0 8px;">${m.desc}</p>
+          <button class="${owned ? '' : 'btn-primary'}" data-buy-up="${m.id}" ${owned ? 'disabled' : ''}>
+            ${owned ? '✓ 已拥有该设备' : `购置设备 (${m.cost} CR)`}
+          </button>
+        </div>
+      `;
+    }).join('');
+
+    const upListHtml = UPGRADES_AND_LICENSES.map(u => {
+      const owned = s.tools.includes(u.id) || s.licenses.includes(u.id);
+      return `
+        <div class="machine-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <strong style="color:#f8fafc;">${u.icon} ${u.name}</strong>
+            <span style="font-family:var(--font-mono);color:#fde047;font-weight:700;">${owned ? '已激活' : `${u.cost} CR`}</span>
+          </div>
+          <p style="font-size:12px;color:#94a3b8;margin:5px 0 8px;">${u.desc}</p>
+          <button class="${owned ? '' : 'btn-success'}" data-buy-up="${u.id}" ${owned ? 'disabled' : ''}>
+            ${owned ? '✓ 已解锁' : `购买解锁 (${u.cost} CR)`}
+          </button>
+        </div>
+      `;
+    }).join('');
+
+    body.innerHTML = `
+      <h4 style="color:var(--neon-cyan);margin-bottom:8px;">🏭 后室生产链重型设备</h4>
+      ${machineListHtml}
+      <h4 style="color:#4ade80;margin:14px 0 8px;">📜 官方许可证、鉴定仪器与扩建</h4>
+      ${upListHtml}
+    `;
+
+    body.querySelectorAll('[data-buy-up]').forEach(btn => {
+      btn.onclick = () => {
+        const res = purchaseShopUpgrade(s, btn.getAttribute('data-buy-up'));
+        sfx.play(res.ok ? 'coin' : 'fail');
+        showToast(res.msg, res.ok ? 'good' : 'warn');
+        renderAll();
+      };
+    });
+  } else if (activeTab === 'guide') {
+    body.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;color:#cbd5e1;">
+        <div class="machine-card">
+          <strong style="color:var(--neon-cyan);">1. 🔍 真伪鉴定与质询大砍价</strong>
+          <p style="margin-top:4px;">收货前先点【放大镜外观核验】（免费）。一旦看到红色异常破绽，点击<strong>【指出假货瑕疵压价】</strong>并选对造假原因，卖家会当场暴降 65%~75% 价格！你既可以拒收，也可以白菜价买进再处理。</p>
+        </div>
+        <div class="machine-card">
+          <strong style="color:#fda4af;">2. 🤖 识别失控 AI 改造体（Aug）</strong>
+          <p style="margin-top:4px;">潜伏在人群中的失控 AI 宿主有 6 大蛛丝马迹：<strong>右耳后红光芯片、异色不眨眼瞳孔、僵硬对称假笑、机械抽搐、阵营服饰错位、生硬协议式台词</strong>。可用【AI扫描仪】100%验明正身，拔出<strong>霰弹枪击毙</strong>可领高额赏金！切忌误杀活人！</p>
+        </div>
+        <div class="machine-card">
+          <strong style="color:#c084fc;">3. 🗄️ 赃物、许可证与突击检查</strong>
+          <p style="margin-top:4px;">未持证的武器/药剂、带追踪码的赃物、脉冲步枪与猩红星尘摆在明面货架上会被<strong>便衣钓鱼执法</strong>或<strong>治安官查抄</strong>！遇到检查前赶紧把红框物品塞进【秘密暗格】。赃物放满 2 晚或用【序列号打磨机】即可洗白。</p>
+        </div>
+        <div class="machine-card">
+          <strong style="color:#fde047;">4. 🏠 房租与买断自由多结局</strong>
+          <p style="margin-top:4px;">每 4 天房东上门收租且金额递增。攒够 <strong>5,000 CR</strong> 点击右上角【买断产权】，将根据你的阵营声望与剧情抉择解锁不同结局，之后还可继续无尽自由经营！</p>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function renderInvItemCard(item, s, loc, curWantedUid) {
+  const illegalReason = getItemIllegalityReason(item, s);
+  const fairVal = evaluateItemFairPrice(item, s);
+  const slots = itemSlotCost(item);
+  const isWantedByBuyer = curWantedUid === item.uid;
+
+  return `
+    <div class="inv-card ${illegalReason && loc === 'shelf' ? 'illegal' : ''} ${isWantedByBuyer ? 'wanted-buy' : ''}">
+      <div>
+        <div class="inv-card-top">
+          <span style="font-size:22px;">${item.icon}</span>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:12.5px;font-weight:700;color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${item.name}">
+              ${item.name}
+            </div>
+            <div style="font-size:11px;color:#94a3b8;">
+              估值 ~${fairVal} CR · 占${slots}格
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:5px;">
+          ${item.isFake ? '<span class="badge badge-red">赝品</span>' : ''}
+          ${item.isStolen ? `<span class="badge badge-amber">赃物(${item.heatDays}天)</span>` : ''}
+          ${item.questTag ? '<span class="badge badge-purple">剧情寄存</span>' : ''}
+          ${illegalReason && loc === 'shelf' ? '<span class="badge badge-red">违规暴露!</span>' : ''}
+          ${isWantedByBuyer ? '<span class="badge badge-green">当前买家求购</span>' : ''}
+        </div>
+      </div>
+
+      <div class="inv-actions">
+        <button data-move-uid="${item.uid}">
+          ${loc === 'shelf' ? '🗄️ 藏入暗格' : '📦 摆上货架'}
+        </button>
+        ${item.templateId === 'energy_cell' ? `<button class="btn-primary" data-charge-uid="${item.uid}">⚡ 充电</button>` : ''}
+        ${item.isStolen && s.machines.includes('scrambler') ? `<button class="btn-purple" data-scrub-uid="${item.uid}">💻 洗白</button>` : ''}
+      </div>
+    </div>
+  `;
+}
+
+// ----------------------------------------------------------------------------
+// 结局结算弹窗渲染
+// ----------------------------------------------------------------------------
+function renderGameOverModal() {
+  const modal = document.getElementById('ending-modal');
+  if (!gameState || !gameState.gameOver) {
+    modal.classList.add('hidden');
+    return;
+  }
+
+  const end = gameState.gameOver;
+  const st = gameState.stats;
+  modal.classList.remove('hidden');
+
+  document.getElementById('ending-content').innerHTML = `
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:46px;margin-bottom:6px;">${end.victory ? '🏆' : '💀'}</div>
+      <h2 style="font-size:24px;color:${end.victory ? '#fde047' : '#f87171'};margin-bottom:8px;">${end.title}</h2>
+      <p style="font-size:14.5px;color:#e2e8f0;max-width:640px;margin:0 auto;line-height:1.65;">${end.desc}</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;background:#090e1a;padding:14px;border-radius:8px;border:1px solid #1e293b;margin-bottom:18px;text-align:center;">
+      <div><div style="color:#94a3b8;font-size:12px;">经营天数</div><div style="font-size:18px;font-weight:700;color:#38bdf8;">${gameState.day} 天</div></div>
+      <div><div style="color:#94a3b8;font-size:12px;">累计营业收入</div><div style="font-size:18px;font-weight:700;color:#fde047;">${st.totalEarned} CR</div></div>
+      <div><div style="color:#94a3b8;font-size:12px;">识破赝品/鉴定</div><div style="font-size:18px;font-weight:700;color:#4ade80;">${st.fakesExposed} 次</div></div>
+      <div><div style="color:#94a3b8;font-size:12px;">猎杀AI改造体</div><div style="font-size:18px;font-weight:700;color:#c084fc;">${st.augsEliminated} 具</div></div>
+      <div><div style="color:#94a3b8;font-size:12px;">后室制造货品</div><div style="font-size:18px;font-weight:700;color:#f472b6;">${st.itemsCrafted} 件</div></div>
+    </div>
+
+    <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">
+      ${end.victory ? `<button class="btn-success" id="btn-endless">🚀 继续无尽自由经营（免房租）</button>` : ''}
+      <button class="btn-primary" id="btn-restart-new">🔄 选择新职业重开一局</button>
+    </div>
+  `;
+
+  const btnEndless = document.getElementById('btn-endless');
+  if (btnEndless) {
+    btnEndless.onclick = () => {
+      sfx.play('coin');
+      continueEndlessAfterVictory(gameState);
+      renderAll();
+    };
+  }
+
+  document.getElementById('btn-restart-new').onclick = () => {
+    localStorage.removeItem(SAVE_KEY);
+    modal.classList.add('hidden');
+    openStartModal(false);
+  };
+}
+
+// ----------------------------------------------------------------------------
+// 启动与全局事件绑定
+// ----------------------------------------------------------------------------
+function initApp() {
+  // 标签页切换
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      sfx.play('click');
+      activeTab = btn.getAttribute('data-tab');
+      renderRightTabs();
+    });
+  });
+
+  // 顶部功能按钮
+  document.getElementById('btn-buyout').addEventListener('click', () => {
+    if (!gameState) return;
+    const res = buyoutShopProperty(gameState);
+    if (!res.ok) {
+      sfx.play('fail');
+      showToast(res.msg, 'warn');
+    } else {
+      sfx.play('coin');
+      renderAll();
+    }
+  });
+
+  document.getElementById('btn-mute').addEventListener('click', (e) => {
+    sfx.muted = !sfx.muted;
+    e.currentTarget.textContent = sfx.muted ? '🔇 静音' : '🔊 音效';
+  });
+
+  document.getElementById('btn-newgame-top').addEventListener('click', () => {
+    sfx.play('click');
+    openStartModal(true);
+  });
+
+  // 肖像微动画循环（呼吸、眨眼、AI改造体芯片闪烁与机械抽搐）
+  setInterval(() => {
+    animTick++;
+    if (gameState && gameState.phase === 'open') {
+      drawCustomerPortrait(document.getElementById('customer-canvas'), gameState.currentCustomer, animTick);
+    }
+  }, 110);
+
+  // 打开开局界面
+  openStartModal(false);
+}
+
+window.addEventListener('DOMContentLoaded', initApp);
+
+
+})();
+</script>
+</body>
+</html>

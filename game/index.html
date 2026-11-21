@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>深空当铺：可能是偷的 | Deepspace Pawnshop: Probably Stolen</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+  <!-- 顶部赛博经营仪表盘 -->
+  <header class="topbar">
+    <div class="brand-box">
+      <span style="font-size:24px;">🛸</span>
+      <div>
+        <div class="brand-title">深空当铺：可能是偷的</div>
+        <div class="brand-sub" id="hud-day">第 1 天 · 准备营业</div>
+      </div>
+    </div>
+
+    <div class="hud-stats">
+      <div class="stat-pill credits" id="hud-credits" title="当前流动信用点">💰 0 CR</div>
+      <div class="stat-pill rent" id="hud-rent" title="每4天收缴一次递增房租，交不起会被房东扫地出门">🏠 房租 320 CR</div>
+      <div class="stat-pill energy" id="hud-energy" title="用于驱动后室机器合成、光谱深度检测与AI扫描仪">⚡ 电力 100/150</div>
+      <div class="stat-pill heat" id="hud-heat" title="倒卖赃物、违禁品会增加治安局关注度并引来突击搜查">🚨 嫌疑 0%</div>
+      <div class="stat-pill aug" id="hud-aug" title="放任失控AI改造体混过柜台将升高渗透度，满100%全街区沦陷">🤖 AI渗透 10%</div>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="btn-amber" id="btn-buyout" title="攒够 5,000 CR 买断当铺永久产权，达成主线多结局！">🔑 买断产权 (5000 CR)</button>
+      <button id="btn-mute">🔊 音效</button>
+      <button id="btn-newgame-top">🔄 重开/职业</button>
+    </div>
+  </header>
+
+  <!-- 三栏核心当铺工作台 -->
+  <main class="main-grid">
+
+    <!-- 左栏：空间站派系政治、今日通缉令、市场风向与账本日志 -->
+    <section class="panel">
+      <div class="panel-header">
+        <span class="panel-title">🌐 空间站五大势力与通缉令</span>
+      </div>
+
+      <div id="market-hot" style="background:#0c1527;border:1px solid #1e3a5f;border-radius:6px;padding:7px 9px;font-size:12.5px;margin-bottom:10px;">
+        📈 今日紧俏溢价：加载中...
+      </div>
+
+      <div id="wanted-box" class="wanted-card"></div>
+
+      <div id="faction-list" class="faction-list"></div>
+
+      <div class="panel-header" style="margin-top:8px;">
+        <span class="panel-title">📓 掌柜交易与暗巷日志</span>
+      </div>
+      <div id="log-box" class="log-box"></div>
+    </section>
+
+    <!-- 中栏：主交易柜台、动态像素肖像、真伪鉴定质询与霰弹枪防卫 -->
+    <section class="panel">
+      <div class="panel-header">
+        <span class="panel-title">🏮 第13底层街区 · 当铺前厅柜台</span>
+        <span id="queue-counter" style="font-size:12px;color:#94a3b8;font-family:var(--font-mono);">排队中...</span>
+      </div>
+
+      <div class="counter-stage">
+        <div class="portrait-wrap">
+          <canvas id="customer-canvas" width="160" height="160"></canvas>
+          <div id="customer-badges" class="customer-badges"></div>
+        </div>
+        <div id="customer-meta"></div>
+      </div>
+
+      <div id="center-content"></div>
+    </section>
+
+    <!-- 右栏：货架&秘密暗格、后室机器生产链、许可证购买、新手指南 -->
+    <section class="panel">
+      <div class="tabs-nav">
+        <button class="tab-btn active" data-tab="inventory">📦 库存&暗格</button>
+        <button class="tab-btn" data-tab="workshop">⚙️ 后室生产</button>
+        <button class="tab-btn" data-tab="upgrades">📜 证照&设备</button>
+        <button class="tab-btn" data-tab="guide">📖 掌柜手册</button>
+      </div>
+
+      <div id="right-tab-body"></div>
+    </section>
+
+  </main>
+
+  <!-- 开局身份与流派选择全屏弹窗 -->
+  <div id="start-modal" class="modal-overlay">
+    <div class="modal-box">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">
+        <div>
+          <h1 style="font-size:24px;background:linear-gradient(90deg,#22d3ee,#c084fc,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+            🛸 深空当铺：可能是偷的
+          </h1>
+          <p style="color:#94a3b8;font-size:13.5px;margin-top:4px;">
+            赛博朋克反乌托邦当铺模拟经营 · 甄别赝品 · 藏匿赃物 · 搭建产线 · 猎杀潜伏 AI 改造体
+          </p>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn-success hidden" id="btn-resume-save">📂 继续上次存档</button>
+          <button class="hidden" id="btn-close-start">✕ 返回当前对局</button>
+        </div>
+      </div>
+
+      <div style="background:#0a1120;border:1px solid #1e293b;border-radius:8px;padding:10px 14px;margin-top:12px;font-size:12.5px;color:#cbd5e1;">
+        💡 <strong>生存目标：</strong>你靠高利贷租下了星环空间站底层的这间破旧当铺。应对每 4 天暴涨一次的<strong>房租</strong>，用放大镜揭穿<strong>假货</strong>狠狠压价，在治安官突击搜查前把<strong>赃物与违禁品</strong>塞进秘密暗格，并用柜台下的霰弹枪轰碎伪装成顾客的<strong>失控 AI 改造体</strong>——最终攒够 <strong>5,000 CR</strong> 彻底买下店铺产权！
+      </div>
+
+      <div id="prof-grid" class="prof-grid"></div>
+    </div>
+  </div>
+
+  <!-- 结局结算弹窗 -->
+  <div id="ending-modal" class="modal-overlay hidden">
+    <div class="modal-box" style="max-width:720px;">
+      <div id="ending-content"></div>
+    </div>
+  </div>
+
+  <!-- 浮动消息提示容器 -->
+  <div id="toast-container"></div>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>

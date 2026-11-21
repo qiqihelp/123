@@ -28,6 +28,8 @@ jobs:
         run: cmake --build build -j2
       - name: Run tests
         run: ctest --test-dir build --output-on-failure
+      - name: Run Deepspace Pawnshop tests
+        run: node tests/test_pawnshop.mjs
 
   web:
     name: WebAssembly build
@@ -66,6 +68,12 @@ jobs:
         run: |
           source emsdk/emsdk_env.sh > /dev/null 2>&1
           cmake --build build-web -j2 --target echofall_web
+          node tools/bundle_pawnshop.mjs
+          mkdir -p build-web/echofall
+          cp build-web/index.html build-web/echofall/index.html
+          cp build-web/index.js build-web/echofall/index.js 2>/dev/null || true
+          cp build-web/index.wasm build-web/echofall/index.wasm 2>/dev/null || true
+          cp -r game/* build-web/
           ls -la build-web
 
       - name: Build single file bundle
@@ -104,3 +112,10 @@ jobs:
           name: echofall-single-file
           path: build-web-single
           if-no-files-found: warn
+
+      - name: Upload Deepspace Pawnshop standalone artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: deepspace-pawnshop-standalone
+          path: game/standalone.html
+          if-no-files-found: error
