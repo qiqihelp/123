@@ -144,13 +144,17 @@ function openStartModal(allowClose = false) {
   if (saved && !saved.gameOver) {
     resumeBtn.classList.remove('hidden');
     resumeBtn.textContent = `📂 继续存档 (第${saved.day}天 · ${saved.professionName} · ${saved.credits} CR)`;
-    resumeBtn.onclick = () => {
-      sfx.play('click');
-      toggleFullscreenLandscape().catch(() => {});
-      gameState = saved;
+  resumeBtn.onclick = () => {
+    sfx.play('click');
+    toggleFullscreenLandscape().then(() => {
       modal.classList.add('hidden');
       renderAll();
-    };
+    }).catch(() => {
+      modal.classList.add('hidden');
+      renderAll();
+    });
+    gameState = saved;
+  };
   } else {
     resumeBtn.classList.add('hidden');
   }
@@ -184,21 +188,27 @@ function openStartModal(allowClose = false) {
   grid.querySelectorAll('.prof-card').forEach(card => {
     card.onclick = () => {
       const profId = card.getAttribute('data-prof');
+      const diffSelect = document.getElementById('diff-select');
+      const perkPosSelect = document.getElementById('perk-pos-select');
+      const perkNegSelect = document.getElementById('perk-neg-select');
+      const perkNeuSelect = document.getElementById('perk-neu-select');
+      const diffId = diffSelect ? diffSelect.value : 'markup';
+      const perkPos = perkPosSelect ? perkPosSelect.value : null;
+      const perkNeg = perkNegSelect ? perkNegSelect.value : null;
+      const perkNeu = perkNeuSelect ? perkNeuSelect.value : null;
       sfx.play('door');
-      // 尝试顺带请求全屏横屏
-      if (!document.fullscreenElement) {
-        const docEl = document.documentElement;
-        if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
-        if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {});
-      }
-      gameState = createNewGameState(profId);
-      // 默认自动展开玩家身上的第一个套包扩容箱，让玩家一眼看到套包机制！
+      toggleFullscreenLandscape().then(() => {
+        modal.classList.add('hidden');
+        renderAll();
+      }).catch(() => {
+        modal.classList.add('hidden');
+        renderAll();
+      });
+      gameState = createNewGameState(profId, { difficulty: diffId, perkPositive: perkPos, perkNegative: perkNeg, perkNeutral: perkNeu });
       const firstBag = [...gameState.shelf, ...gameState.stash].find(i => i.isContainer);
       openedContainerUid = firstBag ? firstBag.uid : null;
       openConfrontIdx = null;
       saveGame();
-      modal.classList.add('hidden');
-      renderAll();
       showToast(`欢迎掌柜！已为你自动展开身上的【${firstBag ? firstBag.name : '货架'}】套包空间！`, 'good');
     };
   });
@@ -1329,14 +1339,20 @@ function initApp() {
 
   document.getElementById('btn-fullscreen').onclick = () => {
     sfx.play('click');
-    toggleFullscreenLandscape();
+    toggleFullscreenLandscape().then(() => {
+      const btn = document.getElementById('btn-fullscreen');
+      if (btn) btn.style.display = 'none';
+    }).catch(() => {});
   };
 
   const startFsBtn = document.getElementById('btn-start-fullscreen');
   if (startFsBtn) {
     startFsBtn.onclick = () => {
       sfx.play('click');
-      toggleFullscreenLandscape();
+      toggleFullscreenLandscape().then(() => {
+        const btn = document.getElementById('btn-start-fullscreen');
+        if (btn) btn.style.display = 'none';
+      }).catch(() => {});
     };
   }
 
