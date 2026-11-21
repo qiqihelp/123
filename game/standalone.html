@@ -7135,22 +7135,32 @@ function initApp() {
     renderAll();
   };
 
-  document.getElementById('btn-fullscreen').onclick = () => {
-    sfx.play('click');
-    toggleFullscreenLandscape().then(() => {
-      const btn = document.getElementById('btn-fullscreen');
-      if (btn) btn.style.display = 'none';
-    }).catch(() => {});
-  };
+  const btnFullscreen = document.getElementById('btn-fullscreen');
+  if (btnFullscreen) {
+    btnFullscreen.onclick = () => {
+      sfx.play('click');
+      toggleFullscreenLandscape().then(() => {
+        btnFullscreen.style.display = 'none';
+      }).catch((err) => {
+        console.error('Fullscreen failed:', err);
+        // 如果失败，也隐藏按钮或者提示，防止卡死
+        btnFullscreen.style.display = 'none';
+        showToast('全屏受限，已强制横屏！', 'info');
+      });
+    };
+  }
 
   const startFsBtn = document.getElementById('btn-start-fullscreen');
   if (startFsBtn) {
     startFsBtn.onclick = () => {
       sfx.play('click');
       toggleFullscreenLandscape().then(() => {
-        const btn = document.getElementById('btn-start-fullscreen');
-        if (btn) btn.style.display = 'none';
-      }).catch(() => {});
+        startFsBtn.style.display = 'none';
+      }).catch((err) => {
+        console.error('Fullscreen failed:', err);
+        startFsBtn.style.display = 'none';
+        showToast('全屏受限，已强制横屏！', 'info');
+      });
     };
   }
 
