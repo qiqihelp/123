@@ -1,11 +1,14 @@
 // ============================================================================
-// 《深空当铺：可能是偷的》前端交互与视图控制器
+// 《深空当铺：可能是偷的》2.0 视图与交互控制器
+// 支持：强制横屏全屏切换、套包扩容箱展开独立子仓库、密封箱刷卡开箱、刮刮乐、
+// 单顾客多物品勾选与整单议价、电话大宗批发商订货
 // ============================================================================
 
 import {
   FACTIONS,
   PROFESSIONS,
   ITEM_TEMPLATES,
+  WHOLESALE_MERCHANTS,
   MACHINES,
   UPGRADES_AND_LICENSES
 } from './data.js';
@@ -15,8 +18,20 @@ import {
   evaluateItemFairPrice,
   getItemIllegalityReason,
   usedSlots,
+  containerUsedSlots,
   itemSlotCost,
+  getAllOwnedItemsWithLoc,
+  getShopSellableItems,
+  moveItemToTarget,
+  quickHideAllIllegal,
+  openSealedCrate,
+  useConsumableItem,
+  unlockWholesaleMerchant,
+  buyFromWholesaleMerchant,
+  getCustomerSelectedTotal,
+  toggleDealEntrySelection,
   inspectItem,
+  inspectAllSellerItems,
   confrontSellerFake,
   haggleWithCustomer,
   executeBuyFromCustomer,
@@ -28,8 +43,6 @@ import {
   reportWantedCustomer,
   handleSecurityRaid,
   resolveStoryChoice,
-  toggleItemStorage,
-  useBatteryForPower,
   runMachineRecipe,
   scrubStolenItem,
   purchaseShopUpgrade,
@@ -40,21 +53,50 @@ import {
 
 import { sfx, drawCustomerPortrait } from './audio_art.js';
 
-const SAVE_KEY = 'deepspace_pawnshop_save_v1';
+const SAVE_KEY = 'deepspace_pawnshop_save_v2';
 
 const CATEGORY_NAMES = {
-  supply: '民生补给',
-  medical: '化学医疗',
-  weapon: '军火武器',
-  luxury: '奢侈古董',
-  tech: '赛博零件',
-  material: '工业原料',
-  contraband: '重度违禁'
+  supply: '民生食品补给',
+  medical: '化学医疗制剂',
+  weapon: '军火武器弹药',
+  luxury: '上层奢侈古董',
+  tech: '工程赛博组件',
+  material: '工业原料耗材',
+  contraband: '黑市违禁硬货',
+  crate: '密封物资盲盒箱',
+  container: '套包扩容箱'
 };
 
 let gameState = null;
-let activeTab = 'inventory'; // 'inventory' | 'workshop' | 'upgrades' | 'guide'
+let activeTab = 'inventory'; // 'inventory' | 'merchants' | 'workshop' | 'upgrades' | 'guide'
+let openedContainerUid = null; // 当前点击展开查看的套包扩容箱 UID！
+let openConfrontIdx = null;    // 当前打开假货质询下拉面板的条目索引
 let animTick = 0;
+
+// ----------------------------------------------------------------------------
+// 全屏 & 强制横屏锁定 API
+// ----------------------------------------------------------------------------
+async function toggleFullscreenLandscape() {
+  try {
+    const docEl = document.documentElement;
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      if (docEl.requestFullscreen) {
+        await docEl.requestFullscreen();
+      } else if (docEl.webkitRequestFullscreen) {
+        docEl.webkitRequestFullscreen();
+      }
+      if (screen.orientation && screen.orientation.lock) {
+        try { await screen.orientation.lock('landscape'); } catch (_) {}
+      }
+      showToast('已开启全屏横屏沉浸模式！', 'good');
+    } else {
+      if (document.exitFullscreen) await document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }
+  } catch (_) {
+    showToast('当前浏览器内嵌环境限制原生全屏，已自动启用视口 100% 横屏布局！', 'info');
+  }
+}
 
 function showToast(msg, kind = 'info') {
   const box = document.getElementById('toast-container');
@@ -72,9 +114,7 @@ function showToast(msg, kind = 'info') {
 
 function saveGame() {
   if (!gameState) return;
-  try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
-  } catch (_) {}
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(gameState)); } catch (_) {}
 }
 
 function loadSavedGame() {
@@ -82,13 +122,13 @@ function loadSavedGame() {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (parsed && parsed.version === 1) return parsed;
+    if (parsed && parsed.version === 2) return parsed;
   } catch (_) {}
   return null;
 }
 
 // ----------------------------------------------------------------------------
-// 开局职业选择弹窗渲染
+// 开局 6 大职业选择弹窗
 // ----------------------------------------------------------------------------
 function openStartModal(allowClose = false) {
   const modal = document.getElementById('start-modal');
@@ -98,9 +138,10 @@ function openStartModal(allowClose = false) {
   const resumeBtn = document.getElementById('btn-resume-save');
   if (saved && !saved.gameOver) {
     resumeBtn.classList.remove('hidden');
-    resumeBtn.textContent = `📂 继续存档（第 ${saved.day} 天 · ${saved.professionName} · ${saved.credits} CR）`;
+    resumeBtn.textContent = `📂 继续存档 (第${saved.day}天 · ${saved.professionName} · ${saved.credits} CR)`;
     resumeBtn.onclick = () => {
       sfx.play('click');
+      toggleFullscreenLandscape().catch(() => {});
       gameState = saved;
       modal.classList.add('hidden');
       renderAll();
@@ -121,35 +162,45 @@ function openStartModal(allowClose = false) {
   grid.innerHTML = PROFESSIONS.map(p => `
     <div class="prof-card" data-prof="${p.id}">
       <div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-          <span style="font-size:24px;">${p.icon}</span>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-size:22px;">${p.icon}</span>
           <span class="badge badge-cyan">${p.subtitle}</span>
         </div>
-        <h3 style="font-size:16px;color:${p.color};margin-bottom:6px;">${p.name}</h3>
-        <p style="font-size:12.5px;color:#cbd5e1;margin-bottom:10px;">${p.desc}</p>
-        <ul style="list-style:none;font-size:12px;color:#94a3b8;display:flex;flex-direction:column;gap:4px;">
+        <h3 style="font-size:14.5px;color:${p.color};margin-bottom:4px;">${p.name}</h3>
+        <p style="font-size:11.5px;color:#cbd5e1;margin-bottom:7px;">${p.desc}</p>
+        <ul style="list-style:none;font-size:11px;color:#94a3b8;display:flex;flex-direction:column;gap:3px;">
           ${p.perks.map(pk => `<li>✦ ${pk}</li>`).join('')}
         </ul>
       </div>
-      <button class="btn-primary" style="width:100%;margin-top:8px;">以此身份接手当铺</button>
+      <button class="btn-primary" style="width:100%;">选择【${p.name}】开店</button>
     </div>
   `).join('');
 
   grid.querySelectorAll('.prof-card').forEach(card => {
-    card.addEventListener('click', () => {
+    card.onclick = () => {
       const profId = card.getAttribute('data-prof');
       sfx.play('door');
+      // 尝试顺带请求全屏横屏
+      if (!document.fullscreenElement) {
+        const docEl = document.documentElement;
+        if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => {});
+        if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {});
+      }
       gameState = createNewGameState(profId);
+      // 默认自动展开玩家身上的第一个套包扩容箱，让玩家一眼看到套包机制！
+      const firstBag = [...gameState.shelf, ...gameState.stash].find(i => i.isContainer);
+      openedContainerUid = firstBag ? firstBag.uid : null;
+      openConfrontIdx = null;
       saveGame();
       modal.classList.add('hidden');
       renderAll();
-      showToast(`欢迎来到第13底层街区！你以【${gameState.professionName}】身份开启了当铺生涯。`, 'good');
-    });
+      showToast(`欢迎掌柜！已为你自动展开身上的【${firstBag ? firstBag.name : '货架'}】套包空间！`, 'good');
+    };
   });
 }
 
 // ----------------------------------------------------------------------------
-// 主界面全量渲染
+// 全界面同步渲染
 // ----------------------------------------------------------------------------
 function renderAll() {
   if (!gameState) return;
@@ -165,175 +216,167 @@ function renderTopBar() {
   const s = gameState;
   const daysLeft = Math.max(0, s.rentDueDay - s.day);
   const rentText = s.ownsShop
-    ? '🏆 已买断永久产权 (免房租)'
-    : `房租 ${s.rentAmount} CR (${daysLeft === 0 ? '今晚收租!' : `剩 ${daysLeft} 天`})`;
+    ? '🏆 免房租永久产权'
+    : `房租 ${s.rentAmount} (${daysLeft === 0 ? '今晚收!' : `剩${daysLeft}天`})`;
 
-  document.getElementById('hud-day').textContent = `第 ${s.day} 天 · ${s.phase === 'night' ? '🌙 打烊夜晚' : '🏮 营业中'} (${s.professionName})`;
+  document.getElementById('hud-day').textContent = `第 ${s.day} 天 · ${s.phase === 'night' ? '🌙 夜晚整备' : '🏮 营业中'} · ${s.professionName}`;
   document.getElementById('hud-credits').textContent = `💰 ${s.credits} CR`;
   document.getElementById('hud-rent').textContent = `🏠 ${rentText}`;
-  document.getElementById('hud-energy').textContent = `⚡ 电力 ${s.energy}/${s.maxEnergy}`;
+  document.getElementById('hud-energy').textContent = `⚡ ${s.energy}/${s.maxEnergy}`;
+  document.getElementById('hud-luck').textContent = `🍀 幸运 ${s.luck || 0}${s.luckBuffDays > 0 ? `(药效${s.luckBuffDays}天)` : ''}`;
   document.getElementById('hud-heat').textContent = `🚨 嫌疑 ${s.heat}%`;
-  document.getElementById('hud-aug').textContent = `🤖 AI渗透 ${s.augThreat}%`;
+  document.getElementById('hud-aug').textContent = `🤖 AI ${s.augThreat}%`;
 
   const buyoutBtn = document.getElementById('btn-buyout');
   if (s.ownsShop) {
-    buyoutBtn.textContent = '🏆 永久产权店主';
+    buyoutBtn.textContent = '🏆 已拥有地契';
     buyoutBtn.disabled = true;
   } else {
-    buyoutBtn.textContent = `🔑 买断产权 (${s.buyoutPrice} CR)`;
+    buyoutBtn.textContent = `🔑 买断地契(${s.buyoutPrice})`;
     buyoutBtn.disabled = s.credits < s.buyoutPrice;
   }
 }
 
 function renderLeftPanel() {
   const s = gameState;
-
-  // 今日紧俏行情
   document.getElementById('market-hot').innerHTML = `
     📈 今日紧俏溢价 (+25%)：<strong style="color:#4ade80;">${CATEGORY_NAMES[s.hotCategory] || '民生补给'}</strong>
   `;
 
-  // 派系声望条
-  const facContainer = document.getElementById('faction-list');
-  facContainer.innerHTML = Object.values(FACTIONS).map(f => {
+  const w = s.dailyWanted;
+  document.getElementById('wanted-box').innerHTML = w ? `
+    <div style="display:flex;justify-content:space-between;color:#fca5a5;font-weight:700;font-size:11.5px;">
+      <span>🚨 治安悬赏通缉</span>
+      <span>+${w.bounty} CR</span>
+    </div>
+    <div style="font-size:12px;color:#f8fafc;font-weight:700;margin-top:2px;">${w.name}</div>
+    <div style="font-size:11px;color:#fde047;margin-top:2px;">特征：${w.mark}</div>
+  ` : '';
+
+  document.getElementById('faction-list').innerHTML = Object.values(FACTIONS).map(f => {
     const val = s.rep[f.id] || 0;
     const pct = Math.max(4, Math.min(100, ((val + 50) / 150) * 100));
     const unlocked = val >= f.perkThreshold;
     return `
       <div class="faction-row" title="${f.desc}\n${f.perkDesc}">
-        <div class="faction-top">
-          <span style="color:${f.color};font-weight:700;">${f.name} ${unlocked ? '★特权激活' : ''}</span>
-          <span style="font-family:var(--font-mono);color:${val >= 0 ? '#e2e8f0' : '#fca5a5'};">${val}</span>
+        <div style="display:flex;justify-content:space-between;font-size:11.5px;">
+          <span style="color:${f.color};font-weight:700;">${f.name} ${unlocked ? '★特权' : ''}</span>
+          <span style="font-family:var(--font-mono);">${val}</span>
         </div>
         <div class="rep-bar-bg">
           <div class="rep-bar-fill" style="width:${pct}%;background:${f.color};"></div>
         </div>
-        <div style="font-size:11px;color:#64748b;margin-top:3px;">${f.perkDesc}</div>
       </div>
     `;
   }).join('');
 
-  // 今日治安局通缉令
-  const w = s.dailyWanted;
-  const wantedEl = document.getElementById('wanted-box');
-  if (w) {
-    wantedEl.innerHTML = `
-      <div class="wanted-header">
-        <span>🚨 今日治安悬赏通缉</span>
-        <span>赏金 +${w.bounty} CR</span>
-      </div>
-      <div style="font-size:12.5px;color:#f8fafc;font-weight:600;">${w.name}（${FACTIONS[w.faction].short}）</div>
-      <div style="font-size:11.5px;color:#cbd5e1;margin-top:2px;">罪名：${w.crime}</div>
-      <div style="font-size:11.5px;color:#fde047;margin-top:3px;">识别特征：${w.mark}</div>
-    `;
-  }
-
-  // 账本日志
-  const logEl = document.getElementById('log-box');
-  logEl.innerHTML = s.logs.slice(0, 25).map(l => `<div class="log-entry">${l}</div>`).join('');
+  document.getElementById('log-box').innerHTML = s.logs.slice(0, 30).map(l => `<div class="log-entry">${l}</div>`).join('');
 }
 
 // ----------------------------------------------------------------------------
-// 中央当铺柜台区渲染（访客互动 / 鉴定质询 / 议价 / 夜间行动）
+// 中央当铺柜台区渲染（支持单名顾客 1~4 件商品批量/勾选交易与逐件鉴伪！）
 // ----------------------------------------------------------------------------
 function renderCenterStage() {
   const s = gameState;
   const stageContainer = document.getElementById('center-content');
+  const underMount = document.getElementById('under-counter-mount');
   const queueInfo = document.getElementById('queue-counter');
 
   if (s.phase === 'night') {
-    queueInfo.textContent = '🌙 卷帘门已落下 · 夜间自由整备时段';
+    queueInfo.textContent = '🌙 打烊整备时段';
+    underMount.innerHTML = '';
     drawCustomerPortrait(document.getElementById('customer-canvas'), null, animTick);
     document.getElementById('customer-badges').innerHTML = `<span class="badge badge-purple">打烊整备</span>`;
     document.getElementById('customer-meta').innerHTML = `
-      <h3 style="font-size:17px;color:#e2e8f0;margin-bottom:6px;">第 ${s.day} 天夜晚 · 抉择你的夜间行动</h3>
+      <h3 style="font-size:15px;color:#e2e8f0;margin-bottom:5px;">第 ${s.day} 天夜晚 · 后室整备与外出行动</h3>
       <div class="dialogue-bubble">
-        白天的喧嚣暂时退去。你可以先在右侧面板<strong>操作后室机器合成高价货品</strong>或<strong>调整货架库存</strong>，然后选择一项夜间行动进入明天。
-        ${(!s.ownsShop && s.day >= s.rentDueDay) ? `<div style="margin-top:8px;color:#fda4af;font-weight:700;">⚠️ 今晚结账时房东将准时收缴本期房租 ${s.rentAmount} CR！（当前持有 ${s.credits} CR）</div>` : ''}
+        卷帘门已关闭。你可以先在右侧<strong>打开密封物资箱、刮彩票、向电话批发商订货、或开动机器生产</strong>，再选择下方一项夜间行动进入明天！
+        ${(!s.ownsShop && s.day >= s.rentDueDay) ? `<div style="margin-top:6px;color:#fda4af;font-weight:700;">⚠️ 今晚房东将收缴房租 ${s.rentAmount} CR！（当前持有 ${s.credits} CR）</div>` : ''}
       </div>
     `;
 
-    const hasRadBarrel = [...s.shelf, ...s.stash].some(i => i.templateId === 'rad_barrel');
+    const hasBarrel = getAllOwnedItemsWithLoc(s).some(x => x.item.templateId === 'rad_barrel');
     stageContainer.innerHTML = `
       <div class="deal-card">
-        <h4 style="color:var(--neon-cyan);margin-bottom:10px;">🌃 选择今晚外出或整备计划（执行后推进至第 ${s.day + 1} 天）</h4>
-        <div style="display:grid;gap:10px;">
+        <h4 style="color:var(--neon-cyan);margin-bottom:8px;">🌃 选择夜间行动（执行后进入第 ${s.day + 1} 天）</h4>
+        <div style="display:grid;gap:7px;">
           <div class="recipe-box">
             <div>
-              <div style="font-weight:700;color:#86efac;">🗑️ 溜去下层垃圾倾倒场拾荒 ${hasRadBarrel ? '<span class="badge badge-red">顺便倾倒放射性废料桶!</span>' : ''}</div>
-              <div style="font-size:12px;color:#94a3b8;">免费翻找 2~3 件金属/滤芯/浑浊水/旧零件，并安全丢弃店内所有高危放射性废料桶。</div>
+              <div style="font-weight:700;color:#86efac;">🗑️ 前往垃圾倾倒场翻找物资 ${hasBarrel ? '<span class="badge badge-red">顺便倾倒放射性废料桶!</span>' : ''}</div>
+              <div style="font-size:11.5px;color:#94a3b8;">免费翻出 3~4 件原料/彩票/甚至后勤箱与钥匙卡，并安全丢弃所有高危放射性废料桶。</div>
             </div>
             <button class="btn-success" id="act-night-scrap">出发拾荒</button>
           </div>
 
           <div class="recipe-box">
             <div>
-              <div style="font-weight:700;color:#e9d5ff;">🕶️ 潜入第13区地下黑市暗拍 (-130 CR)</div>
-              <div style="font-size:12px;color:#94a3b8;">支付 130 CR 盲盒入场费，必定淘回 1 件高价值真品硬货（义体/怀表/紫酒/加密芯片/遗物），黑市声望 +6。</div>
+              <div style="font-weight:700;color:#e9d5ff;">🎁 地下交易所盲盒套组暗拍 (-160 CR)</div>
+              <div style="font-size:11.5px;color:#94a3b8;">必得 1 个【随机部门密封物资箱】+ 1 张【配套部门钥匙卡】！回店即可刷卡爽开箱！</div>
             </div>
-            <button class="btn-purple" id="act-night-bm" ${s.credits < 130 ? 'disabled' : ''}>黑市淘货</button>
+            <button class="btn-purple" id="act-night-crate" ${s.credits < 160 ? 'disabled' : ''}>买箱+卡套组</button>
           </div>
 
           <div class="recipe-box">
             <div>
-              <div style="font-weight:700;color:#7dd3fc;">⚡ 留店检修聚变电容与抹除监控</div>
-              <div style="font-size:12px;color:#94a3b8;">店铺电力大幅恢复 +55（另加每晚基础回电 +20），且治安局嫌疑值下降 -15。</div>
+              <div style="font-weight:700;color:#7dd3fc;">⚡ 留店检修聚变电容 & 消除案底</div>
+              <div style="font-size:11.5px;color:#94a3b8;">电力大幅恢复 +65⚡（另加基础回电 +22⚡），治安局嫌疑值 -18%。</div>
             </div>
-            <button class="btn-primary" id="act-night-rest">检修休整</button>
+            <button class="btn-primary" id="act-night-rest">留店休整</button>
           </div>
         </div>
       </div>
     `;
 
     document.getElementById('act-night-scrap').onclick = () => triggerNight('dump_scrapyard');
-    document.getElementById('act-night-bm').onclick = () => triggerNight('black_market');
+    document.getElementById('act-night-crate').onclick = () => triggerNight('underground_crate');
     document.getElementById('act-night-rest').onclick = () => triggerNight('rest_recharge');
     return;
   }
 
-  // 营业阶段：渲染当前访客
+  // 营业阶段
   const c = s.currentCustomer;
-  queueInfo.textContent = `今日剩余排队访客：${s.customersQueue.length} 人`;
+  queueInfo.textContent = `门外排队：还有 ${s.customersQueue.length} 位访客`;
   drawCustomerPortrait(document.getElementById('customer-canvas'), c, animTick);
 
   if (!c) {
     stageContainer.innerHTML = '';
+    underMount.innerHTML = '';
     return;
   }
 
-  // 访客身份徽章
   const fac = FACTIONS[c.faction] || FACTIONS.lower;
-  let badgesHtml = `<span class="badge" style="background:rgba(15,23,42,0.8);color:${fac.color};border-color:${fac.color};">${fac.short}</span>`;
-  if (c.isSecurityRaid) badgesHtml += `<span class="badge badge-red">突击搜查</span>`;
-  if (c.type === 'story') badgesHtml += `<span class="badge badge-amber">特殊剧情</span>`;
+  let badgesHtml = `<span class="badge" style="background:#0a101d;color:${fac.color};border-color:${fac.color};">${fac.short}</span>`;
+  if (c.isSecurityRaid) badgesHtml += `<span class="badge badge-red">突击盘查</span>`;
+  if (c.type === 'story') badgesHtml += `<span class="badge badge-amber">剧情人物</span>`;
+  if (c.isOdin) badgesHtml += `<span class="badge badge-green">电话:51189</span>`;
   if (c.augScanned) {
     badgesHtml += c.isAug
-      ? `<span class="badge badge-red">🤖 确认AI改造体!</span>`
-      : `<span class="badge badge-green">✅ 确认人类</span>`;
+      ? `<span class="badge badge-red">🤖 确认改造体!</span>`
+      : `<span class="badge badge-green">✅ 人类</span>`;
   }
   document.getElementById('customer-badges').innerHTML = badgesHtml;
 
-  // 访客台词与外貌举止观察线索
   document.getElementById('customer-meta').innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
       <div>
-        <span style="font-size:17px;font-weight:800;color:#f8fafc;">${c.name}</span>
-        <span style="font-size:12px;color:#94a3b8;margin-left:6px;">· ${c.roleName}</span>
+        <span style="font-size:15px;font-weight:800;color:#f8fafc;">${c.name}</span>
+        <span style="font-size:11.5px;color:#94a3b8;margin-left:5px;">· ${c.roleName}</span>
       </div>
-      ${c.patience ? `<span style="font-size:12px;color:#fbbf24;">耐心：${'★'.repeat(c.patience)}${'☆'.repeat(Math.max(0, c.maxPatience - c.patience))}</span>` : ''}
+      ${c.patience ? `<span style="font-size:11.5px;color:#fbbf24;">耐心 ${'★'.repeat(c.patience)}${'☆'.repeat(Math.max(0, c.maxPatience - c.patience))}</span>` : ''}
     </div>
     <div class="dialogue-bubble">${c.dialogue}</div>
-    ${c.behaviorNote ? `<div class="behavior-clue">👁️ <strong>柜台观察记录：</strong>${c.behaviorNote}${getVisualAugHintText(c)}</div>` : ''}
+    ${c.behaviorNote ? `<div class="behavior-clue">👁️ <strong>观察：</strong>${c.behaviorNote}${getVisualAugHintText(c)}</div>` : ''}
   `;
 
-  // 分支 1：剧情人物交互
+  // 1. 剧情角色
   if (c.type === 'story') {
+    underMount.innerHTML = '';
     stageContainer.innerHTML = `
       <div class="deal-card">
-        <h4 style="color:#fbbf24;margin-bottom:10px;">🎭 关键抉择（你的决定将影响派系关系与后续故事线）</h4>
-        <div style="display:flex;flex-direction:column;gap:8px;">
+        <h4 style="color:#fbbf24;margin-bottom:7px;">🎭 剧情抉择</h4>
+        <div style="display:flex;flex-direction:column;gap:6px;">
           ${c.choices.map((ch, idx) => `
-            <button class="${idx === 0 ? 'btn-primary' : ''}" data-story-eff="${ch.effect}" style="text-align:left;padding:10px 12px;">
+            <button class="${idx === 0 ? 'btn-primary' : ''}" data-story-eff="${ch.effect}" style="text-align:left;padding:8px 10px;white-space:normal;">
               ➤ ${ch.label}
             </button>
           `).join('')}
@@ -342,37 +385,42 @@ function renderCenterStage() {
     `;
     stageContainer.querySelectorAll('[data-story-eff]').forEach(btn => {
       btn.onclick = () => {
-        const eff = btn.getAttribute('data-story-eff');
-        const res = resolveStoryChoice(s, eff);
-        if (!res.ok) {
-          sfx.play('fail');
-          showToast(res.msg, 'warn');
-        } else {
-          sfx.play('coin');
-          showToast(res.msg, 'good');
-          renderAll();
-        }
+        const res = resolveStoryChoice(s, btn.getAttribute('data-story-eff'));
+        sfx.play(res.ok ? 'coin' : 'fail');
+        showToast(res.msg, res.ok ? 'good' : 'warn');
+        renderAll();
       };
     });
     return;
   }
 
-  // 分支 2：治安局突击搜查！
+  // 2. 治安部突击盘查
   if (c.isSecurityRaid) {
-    const illegalOnShelf = s.shelf.filter(it => getItemIllegalityReason(it, s) !== null);
+    underMount.innerHTML = '';
+    const exposed = getAllOwnedItemsWithLoc(s).filter(x => !x.shieldedFromRaid && getItemIllegalityReason(x.item, s) !== null);
     stageContainer.innerHTML = `
       <div class="deal-card" style="border-color:#ef4444;">
-        <h4 style="color:#fca5a5;margin-bottom:8px;">🚨 治安局突击搜查正在进行！</h4>
-        <p style="font-size:12.5px;color:#cbd5e1;margin-bottom:10px;">
-          当前明面货架上有 <strong style="color:${illegalOnShelf.length ? '#f87171' : '#4ade80'};">${illegalOnShelf.length} 件</strong> 无证军火、未洗白赃物或违禁品！
-          ${illegalOnShelf.length > 0 ? '<br>💡 <strong>提示：现在立刻在右侧【库存与暗格】点击“藏入暗格”还来得及藏匿！</strong>' : ''}
+        <h4 style="color:#fca5a5;margin-bottom:6px;">🚨 治安部突击盘查！</h4>
+        <p style="font-size:12px;color:#cbd5e1;margin-bottom:9px;">
+          当前非屏蔽明面区共有 <strong style="color:${exposed.length ? '#f87171' : '#4ade80'};">${exposed.length} 件</strong> 违规/无证/赃物暴露在外！
+          （装在<strong>走私者免检伪装箱</strong>或<strong>秘密暗格</strong>内的物品绝对安全！）
         </p>
-        <div style="display:flex;flex-wrap:wrap;gap:10px;">
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+          ${exposed.length > 0 ? `<button class="btn-purple" id="btn-raid-quickhide">🕵️ 一键把违规品塞入免检暗仓!</button>` : ''}
           <button class="btn-primary" id="btn-raid-comply">👐 打开货架配合检查</button>
-          <button class="btn-amber" id="btn-raid-bribe">🤫 塞钱打点霍克警督 (-${c.bribeCost} CR)</button>
+          <button class="btn-amber" id="btn-raid-bribe">🤫 塞钱消灾 (-${c.bribeCost} CR)</button>
         </div>
       </div>
     `;
+    const qh = document.getElementById('btn-raid-quickhide');
+    if (qh) {
+      qh.onclick = () => {
+        const res = quickHideAllIllegal(s);
+        sfx.play(res.ok ? 'craft' : 'fail');
+        showToast(res.msg, res.ok ? 'good' : 'warn');
+        renderAll();
+      };
+    }
     document.getElementById('btn-raid-comply').onclick = () => {
       const res = handleSecurityRaid(s, 'comply');
       sfx.play(res.clean ? 'coin' : 'alert');
@@ -381,208 +429,225 @@ function renderCenterStage() {
     };
     document.getElementById('btn-raid-bribe').onclick = () => {
       const res = handleSecurityRaid(s, 'bribe');
-      if (!res.ok) {
-        sfx.play('fail');
-        showToast(res.msg, 'warn');
-      } else {
-        sfx.play('coin');
-        showToast(res.msg, 'good');
-        renderAll();
-      }
+      sfx.play(res.ok ? 'coin' : 'fail');
+      showToast(res.msg, res.ok ? 'good' : 'warn');
+      renderAll();
     };
     return;
   }
 
-  // 分支 3：普通/特殊顾客（卖货给当铺 / 买当铺货 / 鉴定委托 / 空架离开）
-  let dealHtml = '';
-
+  // 3. 多物品买卖 / 鉴定委托顾客
   if (c.intent === 'empty_leave') {
-    dealHtml = `
+    stageContainer.innerHTML = `
       <div class="deal-card">
-        <p style="color:#94a3b8;margin-bottom:10px;">主货架上没有可出售的商品（暗格内的商品顾客看不见）。</p>
-        <button class="btn-primary" id="btn-next-empty">送走顾客</button>
+        <p style="color:#94a3b8;margin-bottom:8px;">主货架和公开箱包里没有顾客可买的商品（也可去电话批发商随时进货！）。</p>
+        <button class="btn-primary" id="btn-refuse">👋 送走顾客</button>
       </div>
     `;
-  } else if (c.intent === 'sell_to_shop' || c.intent === 'appraise_request') {
-    const item = c.offerItem;
-    const tpl = ITEM_TEMPLATES[item.templateId];
-    const fairEst = evaluateItemFairPrice(item, s);
-    dealHtml = `
+  } else if (c.intent === 'appraise_request') {
+    const item = c.offerEntries[0].item;
+    stageContainer.innerHTML = `
       <div class="deal-card">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
-          <span class="badge ${c.intent === 'appraise_request' ? 'badge-amber' : 'badge-cyan'}">
-            ${c.intent === 'appraise_request' ? '🏅 鉴定委员会委托单（无需收购，判真伪赚佣金）' : '📥 顾客向你兜售物品'}
-          </span>
-          <span style="font-family:var(--font-mono);font-size:12px;color:#94a3b8;">
-            图鉴正品参考价: ~${tpl.baseValue} CR ${s.hotCategory === item.category ? '🔥紧俏' : ''}
-          </span>
+        <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+          <span class="badge badge-amber">🏅 鉴定委员会专单（判真伪直接拿高额佣金）</span>
         </div>
-
-        <div class="deal-item-header">
-          <div class="deal-item-icon">${item.icon}</div>
-          <div style="flex:1;">
-            <div style="font-size:15px;font-weight:700;color:#f8fafc;">
-              ${item.name}
-              ${(item.inspectedVisual || item.inspectedDeep) && item.isStolen ? '<span class="badge badge-amber">⚠️ 疑似带追踪码赃物</span>' : ''}
+        <div class="multi-item-row">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:26px;">${item.icon}</span>
+            <div style="flex:1;">
+              <div style="font-weight:700;color:#f8fafc;">${item.name}</div>
+              <div style="font-size:11.5px;color:#94a3b8;">${item.desc}</div>
             </div>
-            <div style="font-size:12px;color:#94a3b8;">${item.desc}</div>
+            <button data-insp-vis="0" ${item.inspectedVisual ? 'disabled' : ''}>🔍 放大镜(免费)</button>
+            <button data-insp-deep="0" ${item.inspectedDeep ? 'disabled' : ''}>🔬 光谱(-10⚡)</button>
           </div>
-          ${c.intent === 'sell_to_shop' ? `
-            <div style="text-align:right;">
-              <div style="font-size:11px;color:#94a3b8;">对方当前要价</div>
-              <div style="font-size:20px;font-weight:800;color:#fde047;font-family:var(--font-mono);">${c.askingPrice} CR</div>
-            </div>
-          ` : ''}
+          ${renderInspectionReportHtml(item)}
+        </div>
+        <div class="haggle-bar">
+          <button class="btn-success" id="btn-appraise-true">✅ 判定：原装真品</button>
+          <button class="btn-danger" id="btn-appraise-fake">❌ 判定：伪造赝品</button>
+          <button id="btn-refuse">👋 婉拒</button>
+        </div>
+      </div>
+    `;
+  } else if (c.intent === 'sell_to_shop') {
+    // 卖家带来 1~4 件商品！支持一键全检、单件挑瑕疵压价、勾选想买的那几件！
+    const selCount = c.offerEntries.filter(e => e.selected).length;
+    const totalAsk = getCustomerSelectedTotal(c);
+    const anyUninspected = c.offerEntries.some(e => !e.item.inspectedVisual);
+
+    stageContainer.innerHTML = `
+      <div class="deal-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;flex-wrap:wrap;gap:6px;">
+          <span class="badge badge-cyan">📥 卖家共拿出 ${c.offerEntries.length} 件货品（可勾选挑着买！）</span>
+          ${anyUninspected ? `<button class="btn-primary" id="btn-insp-all">🔍 放大镜一键全检 (${c.offerEntries.length}件免费)</button>` : `<span style="font-size:11px;color:#86efac;">✓ 外观已全部过眼</span>`}
         </div>
 
-        <!-- 鉴定工具栏 -->
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;">
-          <button id="btn-insp-visual" ${item.inspectedVisual ? 'disabled' : ''}>
-            🔍 放大镜外观核验 (免费)
+        ${c.offerEntries.map((entry, idx) => {
+          const item = entry.item;
+          const tpl = ITEM_TEMPLATES[item.templateId];
+          const fair = evaluateItemFairPrice(item, s);
+          const showConfront = openConfrontIdx === idx && item.inspectedVisual && !item.confronted;
+          return `
+            <div class="multi-item-row ${entry.selected ? '' : 'unselected'}">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <input type="checkbox" data-toggle-idx="${idx}" ${entry.selected ? 'checked' : ''} style="width:16px;height:16px;cursor:pointer;" title="勾选是否购买此件">
+                <span style="font-size:24px;">${item.icon}</span>
+                <div style="flex:1;min-width:130px;">
+                  <div style="font-weight:700;color:#f8fafc;font-size:12.5px;">
+                    ${item.name}
+                    <span style="font-size:10.5px;color:#94a3b8;font-weight:400;">(占${item.slots}格 · 估值~${fair})</span>
+                    ${(item.inspectedVisual || item.inspectedDeep) && item.isStolen ? '<span class="badge badge-amber">赃物</span>' : ''}
+                    ${item.confronted && item.isFake ? '<span class="badge badge-red">已揭穿暴降!</span>' : ''}
+                  </div>
+                  <div style="font-size:11px;color:#94a3b8;">${item.desc}</div>
+                </div>
+
+                <div style="display:flex;align-items:center;gap:4px;">
+                  <button data-insp-vis="${idx}" ${item.inspectedVisual ? 'disabled' : ''}>🔍</button>
+                  <button data-insp-deep="${idx}" ${item.inspectedDeep ? 'disabled' : ''} title="光谱仪深度透视(-10⚡)">🔬</button>
+                  ${(item.inspectedVisual && !item.confronted && tpl.fakeSigns && tpl.fakeSigns.length > 0) ? `
+                    <button class="btn-amber" data-open-conf="${idx}">⚡揭穿假货</button>
+                  ` : ''}
+                  <span style="font-family:var(--font-mono);font-size:14px;font-weight:800;color:#fde047;min-width:62px;text-align:right;">
+                    ${Math.round(entry.askPrice * (c.haggleMult || 1))} CR
+                  </span>
+                </div>
+              </div>
+
+              ${renderInspectionReportHtml(item)}
+
+              ${showConfront ? `
+                <div style="background:#1c1124;border:1px solid #f59e0b;border-radius:5px;padding:6px;margin-top:5px;">
+                  <div style="font-size:11px;color:#fcd34d;margin-bottom:4px;font-weight:700;">指出确凿伪造证据（选对单价暴砍 ~70%）：</div>
+                  <div style="display:flex;flex-direction:column;gap:4px;">
+                    ${tpl.fakeSigns.map(fs => `
+                      <button data-conf-idx="${idx}" data-conf-reason="${fs.reason}" style="text-align:left;font-size:11px;white-space:normal;">
+                        ❗ 指控：${fs.reason}
+                      </button>
+                    `).join('')}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        }).join('')}
+
+        <div class="haggle-bar">
+          <button class="btn-success" id="btn-buy-direct" ${selCount === 0 ? 'disabled' : ''}>
+            💰 买下已选 ${selCount} 件 (共 ${totalAsk} CR)
           </button>
-          <button id="btn-insp-deep" ${item.inspectedDeep ? 'disabled' : ''}>
-            🔬 光谱仪深度透视 (-10⚡)
-          </button>
-          ${(c.intent === 'sell_to_shop' && item.inspectedVisual && !item.confronted) ? `
-            <button class="btn-amber" id="btn-open-confront">⚡ 指出假货瑕疵压价！</button>
-          ` : ''}
+          <div style="display:flex;align-items:center;gap:4px;">
+            <input type="number" id="inp-haggle" class="price-input" value="${Math.max(5, Math.round(totalAsk * 0.82))}" min="5" max="99999">
+            <button class="btn-primary" id="btn-haggle-sub" ${selCount === 0 ? 'disabled' : ''}>🗣️ 整单砍价</button>
+          </div>
+          <button id="btn-refuse" style="margin-left:auto;">👋 不买送客</button>
         </div>
-
-        <!-- 鉴定结果展示面板 -->
-        ${renderInspectionReportHtml(item)}
-
-        <!-- 质询瑕疵选择折叠栏 -->
-        <div id="confront-panel" class="hidden" style="background:#1a1122;border:1px solid #f59e0b;border-radius:6px;padding:9px;margin-top:8px;">
-          <div style="font-size:12px;color:#fcd34d;margin-bottom:6px;font-weight:700;">
-            请选择你发现的确凿造假证据（若指控正确对方将暴降价格；冤枉真货会掉声望！）：
-          </div>
-          <div style="display:flex;flex-direction:column;gap:5px;">
-            ${(tpl.fakeSigns || []).map((fs, i) => `
-              <button class="btn-confront-reason" data-reason="${fs.reason}" style="text-align:left;font-size:12px;">
-                ❗ 指控瑕疵 ${i + 1}：${fs.reason}
-              </button>
-            `).join('')}
-          </div>
-        </div>
-
-        ${c.intent === 'sell_to_shop' ? `
-          <div class="haggle-bar">
-            <button class="btn-success" id="btn-buy-direct">💰 按 ${c.askingPrice} CR 直接买下</button>
-            <div style="display:flex;align-items:center;gap:5px;">
-              <input type="number" id="inp-haggle" class="price-input" value="${Math.max(8, Math.round(c.askingPrice * 0.82))}" min="5" max="9999">
-              <button class="btn-primary" id="btn-haggle-sub">🗣️ 还价博弈</button>
-            </div>
-            <button id="btn-refuse">👋 拒绝送客</button>
-            <span style="font-size:11.5px;color:#64748b;margin-left:auto;">当前你的估值: ~${fairEst} CR</span>
-          </div>
-        ` : `
-          <div class="haggle-bar">
-            <button class="btn-success" id="btn-appraise-true">✅ 出具报告：真品无疑</button>
-            <button class="btn-danger" id="btn-appraise-fake">❌ 出具报告：系伪造赝品</button>
-            <button id="btn-refuse">👋 婉拒委托</button>
-          </div>
-        `}
       </div>
     `;
   } else if (c.intent === 'buy_from_shop') {
-    const targetItem = s.shelf.find(i => i.uid === c.wantedBuyItemUid);
-    const illegalWarn = targetItem ? getItemIllegalityReason(targetItem, s) : null;
-    dealHtml = `
+    // 买家一次看中你店里的 1~4 件商品！可自由勾选卖哪几件！
+    const sellableMap = new Map(getShopSellableItems(s).map(i => [i.uid, i]));
+    const selCount = c.buyEntries.filter(e => e.selected).length;
+    const totalOffer = getCustomerSelectedTotal(c);
+    const anyIllegal = c.buyEntries.some(e => {
+      const it = sellableMap.get(e.itemUid);
+      return e.selected && it && getItemIllegalityReason(it, s) !== null;
+    });
+
+    stageContainer.innerHTML = `
       <div class="deal-card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <span class="badge badge-green">📤 顾客想购买你货架上的商品</span>
-          ${illegalWarn ? `<span class="badge badge-red">⚠️ 违规风险：留意对方是否便衣钓鱼!</span>` : ''}
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;flex-wrap:wrap;gap:6px;">
+          <span class="badge badge-green">📤 买家想打包求购 ${c.buyEntries.length} 件商品（可勾选出售）</span>
+          ${anyIllegal ? `<span class="badge badge-red">⚠️ 含管制/违禁品：警惕便衣钓鱼！</span>` : ''}
         </div>
 
-        ${targetItem ? `
-          <div class="deal-item-header">
-            <div class="deal-item-icon">${targetItem.icon}</div>
-            <div style="flex:1;">
-              <div style="font-size:15px;font-weight:700;color:#f8fafc;">
-                ${targetItem.name}
-                ${targetItem.isFake ? '<span class="badge badge-red">赝品次货</span>' : '<span class="badge badge-cyan">正品</span>'}
-                ${targetItem.isStolen ? '<span class="badge badge-amber">赃物</span>' : ''}
+        ${c.buyEntries.map((entry, idx) => {
+          const item = sellableMap.get(entry.itemUid);
+          if (!item) return '';
+          const ill = getItemIllegalityReason(item, s);
+          return `
+            <div class="multi-item-row ${entry.selected ? '' : 'unselected'}">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <input type="checkbox" data-toggle-idx="${idx}" ${entry.selected ? 'checked' : ''} style="width:16px;height:16px;cursor:pointer;">
+                <span style="font-size:22px;">${item.icon}</span>
+                <div style="flex:1;">
+                  <div style="font-weight:700;color:#f8fafc;font-size:12.5px;">
+                    ${item.name}
+                    ${item.isFake ? '<span class="badge badge-red">赝品</span>' : ''}
+                    ${item.isStolen ? '<span class="badge badge-amber">赃物</span>' : ''}
+                    ${ill ? '<span class="badge badge-red">违规</span>' : ''}
+                  </div>
+                  <div style="font-size:11px;color:#94a3b8;">市价基准: ${item.baseValue} CR</div>
+                </div>
+                <div style="font-family:var(--font-mono);font-size:14px;font-weight:800;color:#4ade80;">
+                  +${Math.round(entry.unitOffer * (c.haggleMult || 1))} CR
+                </div>
               </div>
-              <div style="font-size:12px;color:#94a3b8;">基准市价: ${targetItem.baseValue} CR · ${illegalWarn || '合法合规商品'}</div>
             </div>
-            <div style="text-align:right;">
-              <div style="font-size:11px;color:#94a3b8;">买家当前出价</div>
-              <div style="font-size:20px;font-weight:800;color:#4ade80;font-family:var(--font-mono);">${c.currentOffer} CR</div>
-            </div>
-          </div>
+          `;
+        }).join('')}
 
-          <div class="haggle-bar">
-            <button class="btn-success" id="btn-sell-direct">💵 按 ${c.currentOffer} CR 立即成交</button>
-            <div style="display:flex;align-items:center;gap:5px;">
-              <input type="number" id="inp-haggle" class="price-input" value="${Math.round(c.currentOffer * 1.18)}" min="5" max="9999">
-              <button class="btn-primary" id="btn-haggle-sub">📈 加价博弈</button>
-            </div>
-            <button id="btn-refuse">👋 不卖送客</button>
+        <div class="haggle-bar">
+          <button class="btn-success" id="btn-sell-direct" ${selCount === 0 ? 'disabled' : ''}>
+            💵 出售已选 ${selCount} 件 (收款 +${totalOffer} CR)
+          </button>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <input type="number" id="inp-haggle" class="price-input" value="${Math.round(totalOffer * 1.18)}" min="5" max="99999">
+            <button class="btn-primary" id="btn-haggle-sub" ${selCount === 0 ? 'disabled' : ''}>📈 整单加价</button>
           </div>
-        ` : `<p>目标商品已被移走。</p><button id="btn-refuse">送客</button>`}
+          <button id="btn-refuse" style="margin-left:auto;">👋 不卖送客</button>
+        </div>
       </div>
     `;
   }
 
-  // 柜台下战术防卫操作栏（AI扫描仪、通缉举报、霰弹枪轰击！）
-  const underCounterHtml = `
+  // 底部固定挂载柜台下安防系统
+  underMount.innerHTML = `
     <div class="under-counter-bar">
-      <div style="font-size:12px;color:#fda4af;font-weight:700;">
-        🛡️ 柜台下安防系统：
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:7px;">
-        <button id="btn-aug-scan" title="消耗20点电力扫描对方体内是否有失控AI芯片">
-          📡 AI改造体扫描 (-20⚡)
-        </button>
-        <button class="btn-amber" id="btn-report-wanted" title="若认出对方符合左栏今日通缉犯特征，可秘密报警领赏">
-          🚨 举报通缉犯
-        </button>
-        <button class="btn-danger" id="btn-shotgun" title="确认对方是失控AI改造体(Aug)时可合法当场击毙领赏！切勿误杀真人类！">
-          💥 拔出霰弹枪击毙
-        </button>
+      <span style="font-size:11.5px;color:#fda4af;font-weight:700;">🛡️ 柜台下安防：</span>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button id="btn-aug-scan">📡 AI扫描(-20⚡)</button>
+        <button class="btn-amber" id="btn-report-wanted">🚨 举报通缉犯</button>
+        <button class="btn-danger" id="btn-shotgun">💥 霰弹枪击毙</button>
       </div>
     </div>
   `;
 
-  stageContainer.innerHTML = dealHtml + underCounterHtml;
   bindCounterEvents(s, c);
 }
 
 function getVisualAugHintText(c) {
   if (!c.isAug) return '';
-  if (c.augVisualType === 'chip') return ' <span style="color:#fda4af;">（细看肖像：右耳后似乎有微弱红点闪烁…）</span>';
-  if (c.augVisualType === 'pupil') return ' <span style="color:#67e8f9;">（细看肖像：双瞳泛着诡异异色反光且从不眨眼…）</span>';
-  if (c.augVisualType === 'smile') return ' <span style="color:#fda4af;">（细看肖像：嘴角弧度僵硬得像尺子量出来一样…）</span>';
+  if (c.augVisualType === 'chip') return ' <span style="color:#fda4af;">(右耳后闪烁红光芯片!)</span>';
+  if (c.augVisualType === 'pupil') return ' <span style="color:#67e8f9;">(双瞳异色反光且不眨眼!)</span>';
+  if (c.augVisualType === 'smile') return ' <span style="color:#fda4af;">(嘴角呈机械固定假笑!)</span>';
   return '';
 }
 
 function renderInspectionReportHtml(item) {
   const tpl = ITEM_TEMPLATES[item.templateId];
-  if (!item.inspectedVisual && !item.inspectedDeep) {
-    return `<div class="inspect-findings" style="color:#64748b;">尚未检验商品细节。建议先用【放大镜】核验包装、封口或纯度！</div>`;
-  }
+  if (!item.inspectedVisual && !item.inspectedDeep) return '';
 
   const lines = [];
   const signs = tpl.authenticSigns || {};
   const keys = Object.keys(signs);
 
   keys.forEach((k, idx) => {
-    // 基础放大镜可看前2项特征；若有第3项或深层瑕疵，光谱仪可100%全看清，放大镜看大部分
     const isFlawHere = item.isFake && item.fakeFlaw && item.fakeFlaw.key === k;
     const hiddenWithoutDeep = (idx >= 2 && !item.inspectedDeep && !isFlawHere);
-
     if (hiddenWithoutDeep) {
-      lines.push(`<div class="finding-line" style="color:#64748b;">• [深层指标需光谱仪透视]</div>`);
+      lines.push(`<div style="color:#64748b;">• [深层指标需光谱仪透视]</div>`);
     } else if (isFlawHere) {
-      lines.push(`<div class="finding-line finding-Sus">⚠️ 异常破绽：${item.fakeFlaw.badText}</div>`);
+      lines.push(`<div class="finding-Sus">⚠️ 造假破绽：${item.fakeFlaw.badText}</div>`);
     } else {
-      lines.push(`<div class="finding-line finding-ok">✓ 核验正常：${signs[k]}</div>`);
+      lines.push(`<div class="finding-ok">✓ 正常：${signs[k]}</div>`);
     }
   });
 
   if (item.inspectedDeep) {
-    lines.push(`<div class="finding-line" style="color:#38bdf8;border-top:1px dashed #1e293b;margin-top:4px;padding-top:4px;">
-      🔬 光谱仪总结论：${item.isFake ? '❌ 确认为伪造次品！' : '✅ 100% 原装真品'} · ${item.isStolen ? `⚠️ 检测到失主防盗报案码（冷却剩 ${item.heatDays} 天）` : '无防盗追踪码'}
+    lines.push(`<div style="color:#38bdf8;margin-top:3px;border-top:1px dashed #1e293b;padding-top:3px;">
+      🔬 光谱结论：${item.isFake ? '❌ 伪造赝品！' : '✅ 100% 原厂正品'} · ${item.isStolen ? `⚠️ 赃物追踪码(剩${item.heatDays}天)` : '无追踪码'}
     </div>`);
   }
 
@@ -590,47 +655,59 @@ function renderInspectionReportHtml(item) {
 }
 
 function bindCounterEvents(s, c) {
-  const btnNextEmpty = document.getElementById('btn-next-empty');
-  if (btnNextEmpty) {
-    btnNextEmpty.onclick = () => {
+  document.querySelectorAll('[data-toggle-idx]').forEach(chk => {
+    chk.onchange = () => {
       sfx.play('click');
-      refuseCustomer(s);
-      renderAll();
+      toggleDealEntrySelection(c, Number(chk.getAttribute('data-toggle-idx')));
+      renderCenterStage();
     };
-  }
+  });
 
-  const btnVisual = document.getElementById('btn-insp-visual');
-  if (btnVisual) {
-    btnVisual.onclick = () => {
-      const res = inspectItem(s, c.offerItem, 'visual');
+  const btnInspAll = document.getElementById('btn-insp-all');
+  if (btnInspAll) {
+    btnInspAll.onclick = () => {
+      const res = inspectAllSellerItems(s);
       sfx.play('scan');
       showToast(res.msg, 'info');
       renderAll();
     };
   }
 
-  const btnDeep = document.getElementById('btn-insp-deep');
-  if (btnDeep) {
-    btnDeep.onclick = () => {
-      const res = inspectItem(s, c.offerItem, 'deep');
+  document.querySelectorAll('[data-insp-vis]').forEach(btn => {
+    btn.onclick = () => {
+      const idx = Number(btn.getAttribute('data-insp-vis'));
+      const res = inspectItem(s, c.offerEntries[idx].item, 'visual');
+      sfx.play('scan');
+      showToast(res.msg, 'info');
+      renderAll();
+    };
+  });
+
+  document.querySelectorAll('[data-insp-deep]').forEach(btn => {
+    btn.onclick = () => {
+      const idx = Number(btn.getAttribute('data-insp-deep'));
+      const res = inspectItem(s, c.offerEntries[idx].item, 'deep');
       sfx.play(res.ok ? 'scan' : 'fail');
       showToast(res.msg, res.ok ? 'good' : 'warn');
       renderAll();
     };
-  }
+  });
 
-  const btnOpenConfront = document.getElementById('btn-open-confront');
-  if (btnOpenConfront) {
-    btnOpenConfront.onclick = () => {
-      sfx.play('click');
-      document.getElementById('confront-panel').classList.toggle('hidden');
-    };
-  }
-
-  document.querySelectorAll('.btn-confront-reason').forEach(btn => {
+  document.querySelectorAll('[data-open-conf]').forEach(btn => {
     btn.onclick = () => {
-      const reason = btn.getAttribute('data-reason');
-      const res = confrontSellerFake(s, reason);
+      sfx.play('click');
+      const idx = Number(btn.getAttribute('data-open-conf'));
+      openConfrontIdx = (openConfrontIdx === idx) ? null : idx;
+      renderCenterStage();
+    };
+  });
+
+  document.querySelectorAll('[data-conf-idx]').forEach(btn => {
+    btn.onclick = () => {
+      const idx = Number(btn.getAttribute('data-conf-idx'));
+      const reason = btn.getAttribute('data-conf-reason');
+      openConfrontIdx = null;
+      const res = confrontSellerFake(s, idx, reason);
       sfx.play(res.success ? 'coin' : 'alert');
       showToast(res.msg, res.success ? 'good' : 'warn');
       renderAll();
@@ -640,7 +717,8 @@ function bindCounterEvents(s, c) {
   const btnBuy = document.getElementById('btn-buy-direct');
   if (btnBuy) {
     btnBuy.onclick = () => {
-      const res = executeBuyFromCustomer(s, c.askingPrice);
+      openConfrontIdx = null;
+      const res = executeBuyFromCustomer(s);
       sfx.play(res.ok ? 'coin' : 'fail');
       showToast(res.msg, res.ok ? 'good' : 'warn');
       renderAll();
@@ -650,7 +728,7 @@ function bindCounterEvents(s, c) {
   const btnSell = document.getElementById('btn-sell-direct');
   if (btnSell) {
     btnSell.onclick = () => {
-      const res = executeSellToCustomer(s, c.currentOffer);
+      const res = executeSellToCustomer(s);
       sfx.play(res.stingCaught ? 'alert' : 'coin');
       showToast(res.msg, res.stingCaught ? 'warn' : 'good');
       renderAll();
@@ -669,36 +747,20 @@ function bindCounterEvents(s, c) {
   }
 
   const btnAppTrue = document.getElementById('btn-appraise-true');
-  if (btnAppTrue) {
-    btnAppTrue.onclick = () => {
-      const res = fulfillAppraisal(s, true);
-      sfx.play('coin');
-      showToast(res.msg, 'info');
-      renderAll();
-    };
-  }
-
+  if (btnAppTrue) btnAppTrue.onclick = () => { sfx.play('coin'); showToast(fulfillAppraisal(s, true).msg, 'info'); renderAll(); };
   const btnAppFake = document.getElementById('btn-appraise-fake');
-  if (btnAppFake) {
-    btnAppFake.onclick = () => {
-      const res = fulfillAppraisal(s, false);
-      sfx.play('coin');
-      showToast(res.msg, 'info');
-      renderAll();
-    };
-  }
+  if (btnAppFake) btnAppFake.onclick = () => { sfx.play('coin'); showToast(fulfillAppraisal(s, false).msg, 'info'); renderAll(); };
 
   const btnRefuse = document.getElementById('btn-refuse');
   if (btnRefuse) {
     btnRefuse.onclick = () => {
+      openConfrontIdx = null;
       sfx.play('door');
-      const res = refuseCustomer(s);
-      showToast(res.msg, 'info');
+      showToast(refuseCustomer(s).msg, 'info');
       renderAll();
     };
   }
 
-  // 柜台下三件套：扫描、举报、霰弹枪
   const btnScan = document.getElementById('btn-aug-scan');
   if (btnScan) {
     btnScan.onclick = () => {
@@ -723,8 +785,7 @@ function bindCounterEvents(s, c) {
   if (btnShotgun) {
     btnShotgun.onclick = () => {
       if (!c.augScanned) {
-        const sure = window.confirm(`⚠️ 警告：你尚未用扫描仪确认【${c.name}】是否为失控 AI 改造体！\n一旦误杀真人类将被治安局重罚 350 CR！确定要直接扣动扳机吗？`);
-        if (!sure) return;
+        if (!window.confirm(`⚠️ 尚未用扫描仪验证【${c.name}】是否为 AI 改造体！误杀活人将重罚 360 CR！确认开枪？`)) return;
       }
       sfx.play('shotgun');
       const res = shootCustomerWithShotgun(s);
@@ -749,7 +810,7 @@ function triggerNight(choice) {
 }
 
 // ----------------------------------------------------------------------------
-// 右侧多功能经营面板（库存&秘密暗格 / 后室生产链 / 设备许可商店 / 经营指南）
+// 右侧 5 合 1 经营面板渲染（含暗区式套包扩容箱可视化展开 + 电话大宗批发商！）
 // ----------------------------------------------------------------------------
 function renderRightTabs() {
   const s = gameState;
@@ -760,208 +821,419 @@ function renderRightTabs() {
   const body = document.getElementById('right-tab-body');
 
   if (activeTab === 'inventory') {
-    const shelfUsed = usedSlots(s.shelf);
-    const stashUsed = usedSlots(s.stash);
-    const curWantedUid = (s.currentCustomer && s.currentCustomer.intent === 'buy_from_shop')
-      ? s.currentCustomer.wantedBuyItemUid
-      : null;
-
-    body.innerHTML = `
-      <div style="margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-weight:700;color:#e2e8f0;">📦 明面主货架 (${shelfUsed}/${s.shelfMaxSlots} 格)</span>
-        <span style="font-size:11.5px;color:#94a3b8;">大件占2格 · 小件占1格</span>
-      </div>
-      <div class="inv-grid">
-        ${s.shelf.length === 0 ? `<div style="grid-column:1/-1;color:#64748b;font-size:12px;padding:10px;">主货架空空如也。</div>` : s.shelf.map(it => renderInvItemCard(it, s, 'shelf', curWantedUid)).join('')}
-      </div>
-
-      <div style="margin:12px 0 8px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #1e293b;padding-top:10px;">
-        <span style="font-weight:700;color:#c084fc;">🗄️ 柜台下秘密暗格 (${stashUsed}/${s.stashMaxSlots} 格)</span>
-        <span style="font-size:11.5px;color:#a855f7;">防治安官搜查 · 顾客不可见</span>
-      </div>
-      <div class="inv-grid">
-        ${s.stash.length === 0 ? `<div style="grid-column:1/-1;color:#64748b;font-size:12px;padding:10px;">暗格为空。可将赃物、无证武器或违禁品藏在这里躲避突击搜查！</div>` : s.stash.map(it => renderInvItemCard(it, s, 'stash', null)).join('')}
-      </div>
-    `;
-
-    body.querySelectorAll('[data-move-uid]').forEach(btn => {
-      btn.onclick = () => {
-        const res = toggleItemStorage(s, btn.getAttribute('data-move-uid'));
-        sfx.play(res.ok ? 'click' : 'fail');
-        showToast(res.msg, res.ok ? 'info' : 'warn');
-        renderAll();
-      };
-    });
-
-    body.querySelectorAll('[data-charge-uid]').forEach(btn => {
-      btn.onclick = () => {
-        const res = useBatteryForPower(s, btn.getAttribute('data-charge-uid'));
-        sfx.play('craft');
-        showToast(res.msg, 'good');
-        renderAll();
-      };
-    });
-
-    body.querySelectorAll('[data-scrub-uid]').forEach(btn => {
-      btn.onclick = () => {
-        const res = scrubStolenItem(s, btn.getAttribute('data-scrub-uid'));
-        sfx.play(res.ok ? 'craft' : 'fail');
-        showToast(res.msg, res.ok ? 'good' : 'warn');
-        renderAll();
-      };
-    });
+    renderInventoryAndContainersTab(s, body);
+  } else if (activeTab === 'merchants') {
+    renderWholesaleMerchantsTab(s, body);
   } else if (activeTab === 'workshop') {
-    const ownedMachines = s.machines.map(id => MACHINES[id]).filter(Boolean);
-    body.innerHTML = `
-      <div style="font-size:12px;color:#94a3b8;margin-bottom:10px;">
-        ⚙️ 后室生产线可将廉价废料、浑浊水、损坏枪械加工成高利润商品（白天与夜晚均可随时开动机器）。
-      </div>
-      ${ownedMachines.length === 0 ? `
-        <div class="machine-card" style="text-align:center;color:#94a3b8;padding:18px;">
-          当前后室尚未安装任何生产机器。<br>请前往【证照&设备】标签页购置净水器、改装台、蒸馏釜或解码仪！
-        </div>
-      ` : ownedMachines.map(m => `
-        <div class="machine-card">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <strong style="color:var(--neon-cyan);font-size:14px;">${m.icon} ${m.name}</strong>
-            <span class="badge badge-cyan">已通电就绪</span>
-          </div>
-          <div style="font-size:12px;color:#94a3b8;margin:4px 0 6px;">${m.desc}</div>
-          ${m.recipes.map(r => `
-            <div class="recipe-box">
-              <div style="flex:1;">
-                <div style="font-size:12.5px;font-weight:700;color:#f1f5f9;">${r.name} (-${r.power}⚡)</div>
-                <div style="font-size:11.5px;color:#94a3b8;">${r.note}</div>
-              </div>
-              <button class="btn-primary" data-machine="${m.id}" data-recipe="${r.id}">合成加工</button>
-            </div>
-          `).join('')}
-        </div>
-      `).join('')}
-    `;
-
-    body.querySelectorAll('[data-recipe]').forEach(btn => {
-      btn.onclick = () => {
-        const res = runMachineRecipe(s, btn.getAttribute('data-machine'), btn.getAttribute('data-recipe'));
-        sfx.play(res.ok ? 'craft' : 'fail');
-        showToast(res.msg, res.ok ? 'good' : 'warn');
-        renderAll();
-      };
-    });
+    renderWorkshopTab(s, body);
   } else if (activeTab === 'upgrades') {
-    const machineListHtml = Object.values(MACHINES).map(m => {
+    renderUpgradesTab(s, body);
+  } else if (activeTab === 'guide') {
+    renderGuideTab(body);
+  }
+}
+
+// 标签 1：库存、暗区突围式套包扩容箱展开视图、开箱与刮刮乐操作
+function renderInventoryAndContainersTab(s, body) {
+  const shelfUsed = usedSlots(s.shelf);
+  const stashUsed = usedSlots(s.stash);
+  const allContainers = [...s.shelf, ...s.stash].filter(i => i.isContainer);
+
+  // 校验当前展开的扩容箱是否依然存在
+  const activeBag = allContainers.find(c => c.uid === openedContainerUid) || null;
+  if (!activeBag) openedContainerUid = null;
+
+  const buyerWantedIds = new Set(
+    (s.currentCustomer && s.currentCustomer.intent === 'buy_from_shop')
+      ? s.currentCustomer.buyEntries.map(e => e.itemUid)
+      : []
+  );
+
+  // 渲染已展开的套包扩容箱独立子仓库窗口！
+  let openedBagHtml = '';
+  if (activeBag) {
+    const usedInBag = containerUsedSlots(activeBag);
+    const cells = [];
+    for (let i = 0; i < activeBag.containerCap; i++) {
+      cells.push(`<div class="slot-cell ${i < usedInBag ? (activeBag.shielded ? 'filled-purple' : 'filled') : ''}"></div>`);
+    }
+
+    openedBagHtml = `
+      <div class="opened-bag-window ${activeBag.shielded ? 'shielded' : ''}">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <strong style="color:${activeBag.shielded ? '#e9d5ff' : '#67e8f9'};font-size:13px;">
+              📂 已展开套包：${activeBag.icon} ${activeBag.name}
+            </strong>
+            <div style="font-size:11px;color:#94a3b8;">
+              外占仅 ${activeBag.slots} 格 → 内部独立容量 <strong>${usedInBag}/${activeBag.containerCap} 格</strong>
+              ${activeBag.shielded ? ' · 🛡️ <span style="color:#d8b4fe;">铅屏蔽免检保护中！</span>' : ''}
+            </div>
+          </div>
+          <button id="btn-close-bag">收起 ▲</button>
+        </div>
+
+        <div class="slot-meter">${cells.join('')}</div>
+
+        <div class="inv-grid" style="margin-bottom:2px;">
+          ${activeBag.contents.length === 0
+            ? `<div style="grid-column:1/-1;color:#64748b;font-size:11.5px;padding:6px;">此扩容箱内部为空。可在下方任意物品卡片选择“装入套包”塞进来！</div>`
+            : activeBag.contents.map(sub => renderInvItemCard(sub, s, 'container', activeBag, allContainers, buyerWantedIds)).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  body.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:4px;flex-wrap:wrap;">
+      <span style="font-size:11.5px;color:#94a3b8;">💡 点击扩容箱【📂打开套包】查看内部格子；点击密封箱【🔑刷卡开箱】！</span>
+      <button class="btn-purple" id="btn-quick-hide-top" title="一键把暴露在外的违禁品和赃物塞进免检伪装箱或暗格">🕵️ 一键藏匿违禁</button>
+    </div>
+
+    ${openedBagHtml}
+
+    <div style="margin-bottom:5px;display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-weight:700;color:#e2e8f0;">📦 明面主货架 (${shelfUsed}/${s.shelfMaxSlots} 格)</span>
+      <span style="font-size:11px;color:#64748b;">套包只占1~2格却能装4~12格!</span>
+    </div>
+    <div class="inv-grid">
+      ${s.shelf.length === 0
+        ? `<div style="grid-column:1/-1;color:#64748b;font-size:11.5px;padding:8px;">主货架为空，快去【☎️电话批发】整箱进货吧！</div>`
+        : s.shelf.map(it => renderInvItemCard(it, s, 'shelf', null, allContainers, buyerWantedIds)).join('')}
+    </div>
+
+    <div style="margin:8px 0 5px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #1e293b;padding-top:7px;">
+      <span style="font-weight:700;color:#c084fc;">🗄️ 柜台下固定暗格 (${stashUsed}/${s.stashMaxSlots} 格 · 免检)</span>
+    </div>
+    <div class="inv-grid">
+      ${s.stash.length === 0
+        ? `<div style="grid-column:1/-1;color:#64748b;font-size:11.5px;padding:6px;">固定暗格为空。</div>`
+        : s.stash.map(it => renderInvItemCard(it, s, 'stash', null, allContainers, buyerWantedIds)).join('')}
+    </div>
+  `;
+
+  // 绑定库存区操作事件
+  const btnCloseBag = document.getElementById('btn-close-bag');
+  if (btnCloseBag) {
+    btnCloseBag.onclick = () => {
+      sfx.play('click');
+      openedContainerUid = null;
+      renderRightTabs();
+    };
+  }
+
+  document.getElementById('btn-quick-hide-top').onclick = () => {
+    const res = quickHideAllIllegal(s);
+    sfx.play(res.ok ? 'craft' : 'fail');
+    showToast(res.msg, res.ok ? 'good' : 'warn');
+    renderAll();
+  };
+
+  body.querySelectorAll('[data-open-bag]').forEach(btn => {
+    btn.onclick = () => {
+      sfx.play('click');
+      const uid = btn.getAttribute('data-open-bag');
+      openedContainerUid = (openedContainerUid === uid) ? null : uid;
+      renderRightTabs();
+    };
+  });
+
+  body.querySelectorAll('[data-open-crate]').forEach(btn => {
+    btn.onclick = () => {
+      const res = openSealedCrate(s, btn.getAttribute('data-open-crate'));
+      sfx.play(res.ok ? (res.isFakeCrate ? 'fail' : 'coin') : 'fail');
+      showToast(res.msg, res.ok && !res.isFakeCrate ? 'good' : 'warn');
+      renderAll();
+    };
+  });
+
+  body.querySelectorAll('[data-use-item]').forEach(btn => {
+    btn.onclick = () => {
+      const res = useConsumableItem(s, btn.getAttribute('data-use-item'));
+      sfx.play(res.ok ? 'coin' : 'fail');
+      showToast(res.msg, res.hitJackpot ? 'good' : 'info');
+      renderAll();
+    };
+  });
+
+  body.querySelectorAll('[data-scrub-uid]').forEach(btn => {
+    btn.onclick = () => {
+      const res = scrubStolenItem(s, btn.getAttribute('data-scrub-uid'));
+      sfx.play(res.ok ? 'craft' : 'fail');
+      showToast(res.msg, res.ok ? 'good' : 'warn');
+      renderAll();
+    };
+  });
+
+  body.querySelectorAll('.move-select').forEach(sel => {
+    sel.onchange = () => {
+      const uid = sel.getAttribute('data-item-uid');
+      const target = sel.value;
+      if (!target) return;
+      const res = moveItemToTarget(s, uid, target);
+      sfx.play(res.ok ? 'click' : 'fail');
+      showToast(res.msg, res.ok ? 'info' : 'warn');
+      renderAll();
+    };
+  });
+}
+
+function renderInvItemCard(item, s, zone, parentBag, allContainers, buyerWantedIds) {
+  const illegalReason = getItemIllegalityReason(item, s);
+  const shieldedNow = (zone === 'stash') || (parentBag && parentBag.shielded);
+  const isExposedIllegal = Boolean(illegalReason && !shieldedNow);
+  const isWantedByBuyer = buyerWantedIds.has(item.uid);
+  const fairVal = evaluateItemFairPrice(item, s);
+
+  let cardCls = 'inv-card';
+  if (item.isContainer) cardCls += item.shielded ? ' is-shielded-container' : ' is-container';
+  if (isExposedIllegal) cardCls += ' illegal';
+  if (isWantedByBuyer) cardCls += ' wanted-buy';
+
+  // 构建移动位置下拉菜单（主货架 / 固定暗格 / 各个套包扩容箱！）
+  const moveOptions = [`<option value="">⇄ 移至...</option>`];
+  if (zone !== 'shelf') moveOptions.push(`<option value="shelf">📦 主货架</option>`);
+  if (zone !== 'stash') moveOptions.push(`<option value="stash">🗄️ 固定暗格(免检)</option>`);
+  if (!item.isContainer) {
+    for (const bag of allContainers) {
+      if (!parentBag || parentBag.uid !== bag.uid) {
+        const free = bag.containerCap - containerUsedSlots(bag);
+        moveOptions.push(`<option value="${bag.uid}">${bag.icon} 装入:${bag.name.split(' ')[0]}(余${free}格)</option>`);
+      }
+    }
+  }
+
+  let usableBtnLabel = '';
+  if (item.isUsable === 'scratcher') usableBtnLabel = '🎟️ 刮奖!';
+  else if (item.isUsable === 'scratcher_pack') usableBtnLabel = '🎫 五连刮!';
+  else if (item.isUsable === 'drink_luck') usableBtnLabel = '🍀 喝下!';
+  else if (item.isUsable === 'charge_power') usableBtnLabel = '⚡ 充电';
+
+  return `
+    <div class="${cardCls}">
+      <div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span style="font-size:20px;">${item.icon}</span>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11.5px;font-weight:700;color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${item.name}\n${item.desc}">
+              ${item.name}
+            </div>
+            <div style="font-size:10.5px;color:#94a3b8;">
+              ${item.isContainer
+                ? `占${item.slots}格 → <strong>内${containerUsedSlots(item)}/${item.containerCap}格</strong>`
+                : `~${fairVal} CR · 占${item.slots}格`}
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;flex-wrap:wrap;gap:2px;margin-top:4px;">
+          ${item.isContainer && item.shielded ? '<span class="badge badge-purple">免检套包</span>' : ''}
+          ${item.isContainer && !item.shielded ? '<span class="badge badge-cyan">扩容套包</span>' : ''}
+          ${item.isSealedCrate ? '<span class="badge badge-amber">密封盲盒箱</span>' : ''}
+          ${item.isFake ? '<span class="badge badge-red">赝品</span>' : ''}
+          ${item.isStolen ? `<span class="badge badge-amber">赃物(${item.heatDays}d)</span>` : ''}
+          ${isExposedIllegal ? '<span class="badge badge-red">暴露违禁!</span>' : ''}
+          ${illegalReason && shieldedNow ? '<span class="badge badge-purple">已隐蔽保护</span>' : ''}
+          ${isWantedByBuyer ? '<span class="badge badge-green">买家求购</span>' : ''}
+        </div>
+      </div>
+
+      <div class="inv-actions">
+        ${item.isContainer ? `
+          <button class="${openedContainerUid === item.uid ? 'btn-amber' : 'btn-primary'}" data-open-bag="${item.uid}">
+            ${openedContainerUid === item.uid ? '📂 正在查看' : `📂 打开套包(${containerUsedSlots(item)}/${item.containerCap})`}
+          </button>
+        ` : ''}
+        ${item.isSealedCrate ? `<button class="btn-amber" data-open-crate="${item.uid}">🔑 刷卡开箱!</button>` : ''}
+        ${usableBtnLabel ? `<button class="btn-success" data-use-item="${item.uid}">${usableBtnLabel}</button>` : ''}
+        ${item.isStolen && s.machines.includes('scrambler') ? `<button class="btn-purple" data-scrub-uid="${item.uid}">💻洗白</button>` : ''}
+        <select class="move-select" data-item-uid="${item.uid}">${moveOptions.join('')}</select>
+      </div>
+    </div>
+  `;
+}
+
+// 标签 2：星环加密电话批发供货商（整箱/批量低价进货、买套包扩容箱、买密封箱与钥匙卡！）
+function renderWholesaleMerchantsTab(s, body) {
+  body.innerHTML = `
+    <div style="font-size:11.5px;color:#94a3b8;margin-bottom:8px;">
+      ☎️ <strong>星环专线批发网：</strong>不同于门外零散顾客，你可以随时拨号向五大批发商<strong>整箱大宗拿货</strong>、抢购<strong>套包扩容箱</strong>与<strong>密封物资箱+钥匙卡</strong>！（每日早间自动补满库存）
+    </div>
+    ${WHOLESALE_MERCHANTS.map(m => {
+      const unlocked = s.unlockedMerchants.includes(m.id);
+      const freeUnlock = (m.id === 'sawyer_exchange' && s.rep.blackmarket >= 25);
+      return `
+        <div class="machine-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;">
+            <div>
+              <strong style="color:var(--neon-cyan);font-size:13px;">${m.icon} [${m.code}] ${m.name}</strong>
+              <div style="font-size:11px;color:#cbd5e1;">${m.role}</div>
+            </div>
+            ${unlocked
+              ? `<span class="badge badge-green">已接通</span>`
+              : `<button class="btn-amber" data-unlock-merch="${m.id}">🔓 接通专线 (${freeUnlock ? '声望免费!' : `${m.unlockCost} CR`})</button>`}
+          </div>
+          <div style="font-size:11px;color:#94a3b8;margin:4px 0 6px;">${m.desc}</div>
+
+          ${unlocked ? m.catalog.map(c => {
+            const tpl = ITEM_TEMPLATES[c.tplId];
+            const left = s.merchantDailyStock[`${m.id}:${c.tplId}`] ?? c.stockPerDay;
+            return `
+              <div class="recipe-box">
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:12px;font-weight:700;color:#f8fafc;">
+                    ${tpl.icon} ${tpl.name} × ${c.packQty}
+                    <span class="badge badge-cyan">${c.tag}</span>
+                  </div>
+                  <div style="font-size:10.5px;color:#94a3b8;">
+                    零售单价基准 ${tpl.baseValue} CR · 今日余量: ${left} 批
+                  </div>
+                </div>
+                <button class="btn-success" data-ws-merch="${m.id}" data-ws-tpl="${c.tplId}" ${(left <= 0 || s.credits < c.price) ? 'disabled' : ''}>
+                  批发 ${c.price} CR
+                </button>
+              </div>
+            `;
+          }).join('') : `<div style="font-size:11px;color:#fcd34d;">🔒 ${m.unlockNote}</div>`}
+        </div>
+      `;
+    }).join('')}
+  `;
+
+  body.querySelectorAll('[data-unlock-merch]').forEach(btn => {
+    btn.onclick = () => {
+      const res = unlockWholesaleMerchant(s, btn.getAttribute('data-unlock-merch'));
+      sfx.play(res.ok ? 'coin' : 'fail');
+      showToast(res.msg, res.ok ? 'good' : 'warn');
+      renderAll();
+    };
+  });
+
+  body.querySelectorAll('[data-ws-merch]').forEach(btn => {
+    btn.onclick = () => {
+      const res = buyFromWholesaleMerchant(s, btn.getAttribute('data-ws-merch'), btn.getAttribute('data-ws-tpl'));
+      sfx.play(res.ok ? 'coin' : 'fail');
+      showToast(res.msg, res.ok ? 'good' : 'warn');
+      renderAll();
+    };
+  });
+}
+
+// 标签 3：后室机器生产合成
+function renderWorkshopTab(s, body) {
+  const owned = s.machines.map(id => MACHINES[id]).filter(Boolean);
+  body.innerHTML = `
+    <div style="font-size:11.5px;color:#94a3b8;margin-bottom:8px;">
+      ⚙️ 机器会自动调用货架、暗格及所有扩容箱内的原料进行合成。配合【☎️电话批发】低价买原料加工暴利翻倍！
+    </div>
+    ${owned.length === 0 ? `
+      <div class="machine-card" style="text-align:center;color:#94a3b8;padding:16px;">
+        尚未安装生产机器。请前往【📜证照设备】购置净水器、改装台、蒸馏釜、制卡仪或养鼠培育舱！
+      </div>
+    ` : owned.map(m => `
+      <div class="machine-card">
+        <div style="display:flex;justify-content:space-between;">
+          <strong style="color:var(--neon-cyan);">${m.icon} ${m.name}</strong>
+          <span class="badge badge-cyan">通电就绪</span>
+        </div>
+        <div style="font-size:11px;color:#94a3b8;margin:3px 0 5px;">${m.desc}</div>
+        ${m.recipes.map(r => `
+          <div class="recipe-box">
+            <div style="flex:1;">
+              <div style="font-size:12px;font-weight:700;color:#f1f5f9;">${r.name} (-${r.power}⚡)</div>
+              <div style="font-size:11px;color:#94a3b8;">${r.note}</div>
+            </div>
+            <button class="btn-primary" data-machine="${m.id}" data-recipe="${r.id}">加工</button>
+          </div>
+        `).join('')}
+      </div>
+    `).join('')}
+  `;
+
+  body.querySelectorAll('[data-recipe]').forEach(btn => {
+    btn.onclick = () => {
+      const res = runMachineRecipe(s, btn.getAttribute('data-machine'), btn.getAttribute('data-recipe'));
+      sfx.play(res.ok ? 'craft' : 'fail');
+      showToast(res.msg, res.ok ? 'good' : 'warn');
+      renderAll();
+    };
+  });
+}
+
+// 标签 4：购买后室机器、证照与扩建
+function renderUpgradesTab(s, body) {
+  body.innerHTML = `
+    <h4 style="color:var(--neon-cyan);margin-bottom:6px;">🏭 五大流派后室生产机器</h4>
+    ${Object.values(MACHINES).map(m => {
       const owned = s.machines.includes(m.id);
       return `
         <div class="machine-card">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <strong style="color:#f8fafc;">${m.icon} ${m.name}</strong>
-            <span style="font-family:var(--font-mono);color:#fde047;font-weight:700;">${owned ? '已安装' : `${m.cost} CR`}</span>
+          <div style="display:flex;justify-content:space-between;">
+            <strong>${m.icon} ${m.name}</strong>
+            <span style="color:#fde047;font-family:var(--font-mono);font-weight:700;">${owned ? '已安装' : `${m.cost} CR`}</span>
           </div>
-          <p style="font-size:12px;color:#94a3b8;margin:5px 0 8px;">${m.desc}</p>
+          <p style="font-size:11px;color:#94a3b8;margin:4px 0 6px;">${m.desc}</p>
           <button class="${owned ? '' : 'btn-primary'}" data-buy-up="${m.id}" ${owned ? 'disabled' : ''}>
-            ${owned ? '✓ 已拥有该设备' : `购置设备 (${m.cost} CR)`}
+            ${owned ? '✓ 已拥有' : `购置机器 (${m.cost} CR)`}
           </button>
         </div>
       `;
-    }).join('');
+    }).join('')}
 
-    const upListHtml = UPGRADES_AND_LICENSES.map(u => {
+    <h4 style="color:#4ade80;margin:10px 0 6px;">📜 经营许可证、扫描仪与仓库扩建</h4>
+    ${UPGRADES_AND_LICENSES.map(u => {
       const owned = s.tools.includes(u.id) || s.licenses.includes(u.id);
       return `
         <div class="machine-card">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <strong style="color:#f8fafc;">${u.icon} ${u.name}</strong>
-            <span style="font-family:var(--font-mono);color:#fde047;font-weight:700;">${owned ? '已激活' : `${u.cost} CR`}</span>
+          <div style="display:flex;justify-content:space-between;">
+            <strong>${u.icon} ${u.name}</strong>
+            <span style="color:#fde047;font-family:var(--font-mono);font-weight:700;">${owned ? '已激活' : `${u.cost} CR`}</span>
           </div>
-          <p style="font-size:12px;color:#94a3b8;margin:5px 0 8px;">${u.desc}</p>
+          <p style="font-size:11px;color:#94a3b8;margin:4px 0 6px;">${u.desc}</p>
           <button class="${owned ? '' : 'btn-success'}" data-buy-up="${u.id}" ${owned ? 'disabled' : ''}>
             ${owned ? '✓ 已解锁' : `购买解锁 (${u.cost} CR)`}
           </button>
         </div>
       `;
-    }).join('');
+    }).join('')}
+  `;
 
-    body.innerHTML = `
-      <h4 style="color:var(--neon-cyan);margin-bottom:8px;">🏭 后室生产链重型设备</h4>
-      ${machineListHtml}
-      <h4 style="color:#4ade80;margin:14px 0 8px;">📜 官方许可证、鉴定仪器与扩建</h4>
-      ${upListHtml}
-    `;
-
-    body.querySelectorAll('[data-buy-up]').forEach(btn => {
-      btn.onclick = () => {
-        const res = purchaseShopUpgrade(s, btn.getAttribute('data-buy-up'));
-        sfx.play(res.ok ? 'coin' : 'fail');
-        showToast(res.msg, res.ok ? 'good' : 'warn');
-        renderAll();
-      };
-    });
-  } else if (activeTab === 'guide') {
-    body.innerHTML = `
-      <div style="display:flex;flex-direction:column;gap:10px;font-size:12.5px;color:#cbd5e1;">
-        <div class="machine-card">
-          <strong style="color:var(--neon-cyan);">1. 🔍 真伪鉴定与质询大砍价</strong>
-          <p style="margin-top:4px;">收货前先点【放大镜外观核验】（免费）。一旦看到红色异常破绽，点击<strong>【指出假货瑕疵压价】</strong>并选对造假原因，卖家会当场暴降 65%~75% 价格！你既可以拒收，也可以白菜价买进再处理。</p>
-        </div>
-        <div class="machine-card">
-          <strong style="color:#fda4af;">2. 🤖 识别失控 AI 改造体（Aug）</strong>
-          <p style="margin-top:4px;">潜伏在人群中的失控 AI 宿主有 6 大蛛丝马迹：<strong>右耳后红光芯片、异色不眨眼瞳孔、僵硬对称假笑、机械抽搐、阵营服饰错位、生硬协议式台词</strong>。可用【AI扫描仪】100%验明正身，拔出<strong>霰弹枪击毙</strong>可领高额赏金！切忌误杀活人！</p>
-        </div>
-        <div class="machine-card">
-          <strong style="color:#c084fc;">3. 🗄️ 赃物、许可证与突击检查</strong>
-          <p style="margin-top:4px;">未持证的武器/药剂、带追踪码的赃物、脉冲步枪与猩红星尘摆在明面货架上会被<strong>便衣钓鱼执法</strong>或<strong>治安官查抄</strong>！遇到检查前赶紧把红框物品塞进【秘密暗格】。赃物放满 2 晚或用【序列号打磨机】即可洗白。</p>
-        </div>
-        <div class="machine-card">
-          <strong style="color:#fde047;">4. 🏠 房租与买断自由多结局</strong>
-          <p style="margin-top:4px;">每 4 天房东上门收租且金额递增。攒够 <strong>5,000 CR</strong> 点击右上角【买断产权】，将根据你的阵营声望与剧情抉择解锁不同结局，之后还可继续无尽自由经营！</p>
-        </div>
-      </div>
-    `;
-  }
+  body.querySelectorAll('[data-buy-up]').forEach(btn => {
+    btn.onclick = () => {
+      const res = purchaseShopUpgrade(s, btn.getAttribute('data-buy-up'));
+      sfx.play(res.ok ? 'coin' : 'fail');
+      showToast(res.msg, res.ok ? 'good' : 'warn');
+      renderAll();
+    };
+  });
 }
 
-function renderInvItemCard(item, s, loc, curWantedUid) {
-  const illegalReason = getItemIllegalityReason(item, s);
-  const fairVal = evaluateItemFairPrice(item, s);
-  const slots = itemSlotCost(item);
-  const isWantedByBuyer = curWantedUid === item.uid;
-
-  return `
-    <div class="inv-card ${illegalReason && loc === 'shelf' ? 'illegal' : ''} ${isWantedByBuyer ? 'wanted-buy' : ''}">
-      <div>
-        <div class="inv-card-top">
-          <span style="font-size:22px;">${item.icon}</span>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:12.5px;font-weight:700;color:#f8fafc;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${item.name}">
-              ${item.name}
-            </div>
-            <div style="font-size:11px;color:#94a3b8;">
-              估值 ~${fairVal} CR · 占${slots}格
-            </div>
-          </div>
-        </div>
-        <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:5px;">
-          ${item.isFake ? '<span class="badge badge-red">赝品</span>' : ''}
-          ${item.isStolen ? `<span class="badge badge-amber">赃物(${item.heatDays}天)</span>` : ''}
-          ${item.questTag ? '<span class="badge badge-purple">剧情寄存</span>' : ''}
-          ${illegalReason && loc === 'shelf' ? '<span class="badge badge-red">违规暴露!</span>' : ''}
-          ${isWantedByBuyer ? '<span class="badge badge-green">当前买家求购</span>' : ''}
-        </div>
+// 标签 5：原版进阶机制掌柜手册
+function renderGuideTab(body) {
+  body.innerHTML = `
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:11.5px;color:#cbd5e1;">
+      <div class="machine-card">
+        <strong style="color:var(--neon-cyan);">1. 🎒 暗区式「套包扩容箱」与「走私者免检箱」</strong>
+        <p style="margin-top:3px;">向杰克逊博士购买腰包(占1扩4)、行军包(占2扩8)、军用包(占2扩12)，在货架只占1~2格，点击<strong>【📂打开套包】</strong>即可展开全新的独立大容量仓库！其中紫色的<strong>【走私者伪装箱】</strong>自带铅屏蔽，把违禁品装进去连治安官突击搜查都绝对搜不到！</p>
       </div>
-
-      <div class="inv-actions">
-        <button data-move-uid="${item.uid}">
-          ${loc === 'shelf' ? '🗄️ 藏入暗格' : '📦 摆上货架'}
-        </button>
-        ${item.templateId === 'energy_cell' ? `<button class="btn-primary" data-charge-uid="${item.uid}">⚡ 充电</button>` : ''}
-        ${item.isStolen && s.machines.includes('scrambler') ? `<button class="btn-purple" data-scrub-uid="${item.uid}">💻 洗白</button>` : ''}
+      <div class="machine-card">
+        <strong style="color:#fcd34d;">2. 📦 五类密封物资箱 + 钥匙卡盲盒暴富</strong>
+        <p style="margin-top:3px;">后勤、医疗、工程、治安、罚没物证柜五种密封箱，搭配对应部门钥匙卡（或万能指挥官卡）点击<strong>【🔑刷卡开箱】</strong>可爆出“永恒”精华液、自充电零点能电池、脉冲步枪等神装！喝下<strong>【液体好运】</strong>再开箱/刮彩票欧气拉满！</p>
+      </div>
+      <div class="machine-card">
+        <strong style="color:#4ade80;">3. ☎️ 电话批发商大宗进货 + 多物品交易</strong>
+        <p style="margin-top:3px;">顾客现在一次会带 2~4 件货或求购多件商品，你可以<strong>勾选只买真货/只卖高利货</strong>并整单砍价！随时在【☎️电话批发】整箱低价进原料，用机器合成高价品卖给上层主厨、奥丁或开箱狂人！</p>
+      </div>
+      <div class="machine-card">
+        <strong style="color:#fda4af;">4. 🤖 猎杀 AI 改造体（Aug）与买断地契</strong>
+        <p style="margin-top:3px;">留意顾客耳后红光芯片、异色瞳孔、僵硬假笑与机械台词，用扫描仪确认后拔出<strong>霰弹枪击毙</strong>领赏！攒够 6,000 CR 点击右上角【买断地契】解锁专属结局！</p>
       </div>
     </div>
   `;
 }
 
 // ----------------------------------------------------------------------------
-// 结局结算弹窗渲染
+// 结局结算弹窗
 // ----------------------------------------------------------------------------
 function renderGameOverModal() {
   const modal = document.getElementById('ending-modal');
@@ -969,41 +1241,34 @@ function renderGameOverModal() {
     modal.classList.add('hidden');
     return;
   }
-
   const end = gameState.gameOver;
   const st = gameState.stats;
   modal.classList.remove('hidden');
 
   document.getElementById('ending-content').innerHTML = `
-    <div style="text-align:center;margin-bottom:16px;">
-      <div style="font-size:46px;margin-bottom:6px;">${end.victory ? '🏆' : '💀'}</div>
-      <h2 style="font-size:24px;color:${end.victory ? '#fde047' : '#f87171'};margin-bottom:8px;">${end.title}</h2>
-      <p style="font-size:14.5px;color:#e2e8f0;max-width:640px;margin:0 auto;line-height:1.65;">${end.desc}</p>
+    <div style="text-align:center;margin-bottom:12px;">
+      <div style="font-size:40px;">${end.victory ? '🏆' : '💀'}</div>
+      <h2 style="font-size:20px;color:${end.victory ? '#fde047' : '#f87171'};margin:4px 0;">${end.title}</h2>
+      <p style="font-size:13px;color:#e2e8f0;line-height:1.6;">${end.desc}</p>
     </div>
 
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;background:#090e1a;padding:14px;border-radius:8px;border:1px solid #1e293b;margin-bottom:18px;text-align:center;">
-      <div><div style="color:#94a3b8;font-size:12px;">经营天数</div><div style="font-size:18px;font-weight:700;color:#38bdf8;">${gameState.day} 天</div></div>
-      <div><div style="color:#94a3b8;font-size:12px;">累计营业收入</div><div style="font-size:18px;font-weight:700;color:#fde047;">${st.totalEarned} CR</div></div>
-      <div><div style="color:#94a3b8;font-size:12px;">识破赝品/鉴定</div><div style="font-size:18px;font-weight:700;color:#4ade80;">${st.fakesExposed} 次</div></div>
-      <div><div style="color:#94a3b8;font-size:12px;">猎杀AI改造体</div><div style="font-size:18px;font-weight:700;color:#c084fc;">${st.augsEliminated} 具</div></div>
-      <div><div style="color:#94a3b8;font-size:12px;">后室制造货品</div><div style="font-size:18px;font-weight:700;color:#f472b6;">${st.itemsCrafted} 件</div></div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:#080d18;padding:10px;border-radius:7px;border:1px solid #1e293b;margin-bottom:14px;text-align:center;">
+      <div><div style="color:#94a3b8;font-size:11px;">经营天数</div><div style="font-size:15px;font-weight:700;color:#38bdf8;">${gameState.day} 天</div></div>
+      <div><div style="color:#94a3b8;font-size:11px;">累计营收</div><div style="font-size:15px;font-weight:700;color:#fde047;">${st.totalEarned} CR</div></div>
+      <div><div style="color:#94a3b8;font-size:11px;">刷卡开箱</div><div style="font-size:15px;font-weight:700;color:#fbbf24;">${st.cratesOpened || 0} 箱</div></div>
+      <div><div style="color:#94a3b8;font-size:11px;">识破假货</div><div style="font-size:15px;font-weight:700;color:#4ade80;">${st.fakesExposed} 次</div></div>
+      <div><div style="color:#94a3b8;font-size:11px;">猎杀改造体</div><div style="font-size:15px;font-weight:700;color:#c084fc;">${st.augsEliminated} 具</div></div>
+      <div><div style="color:#94a3b8;font-size:11px;">后室合成</div><div style="font-size:15px;font-weight:700;color:#f472b6;">${st.itemsCrafted} 件</div></div>
     </div>
 
-    <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap;">
-      ${end.victory ? `<button class="btn-success" id="btn-endless">🚀 继续无尽自由经营（免房租）</button>` : ''}
-      <button class="btn-primary" id="btn-restart-new">🔄 选择新职业重开一局</button>
+    <div style="display:flex;justify-content:center;gap:10px;">
+      ${end.victory ? `<button class="btn-success" id="btn-endless">🚀 继续无尽自由经营</button>` : ''}
+      <button class="btn-primary" id="btn-restart-new">🔄 选择新职业重开</button>
     </div>
   `;
 
-  const btnEndless = document.getElementById('btn-endless');
-  if (btnEndless) {
-    btnEndless.onclick = () => {
-      sfx.play('coin');
-      continueEndlessAfterVictory(gameState);
-      renderAll();
-    };
-  }
-
+  const btnEnd = document.getElementById('btn-endless');
+  if (btnEnd) btnEnd.onclick = () => { sfx.play('coin'); continueEndlessAfterVictory(gameState); renderAll(); };
   document.getElementById('btn-restart-new').onclick = () => {
     localStorage.removeItem(SAVE_KEY);
     modal.classList.add('hidden');
@@ -1012,42 +1277,48 @@ function renderGameOverModal() {
 }
 
 // ----------------------------------------------------------------------------
-// 启动与全局事件绑定
+// 初始化
 // ----------------------------------------------------------------------------
 function initApp() {
-  // 标签页切换
   document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.onclick = () => {
       sfx.play('click');
       activeTab = btn.getAttribute('data-tab');
       renderRightTabs();
-    });
+    };
   });
 
-  // 顶部功能按钮
-  document.getElementById('btn-buyout').addEventListener('click', () => {
+  document.getElementById('btn-buyout').onclick = () => {
     if (!gameState) return;
     const res = buyoutShopProperty(gameState);
-    if (!res.ok) {
-      sfx.play('fail');
-      showToast(res.msg, 'warn');
-    } else {
-      sfx.play('coin');
-      renderAll();
-    }
-  });
+    sfx.play(res.ok ? 'coin' : 'fail');
+    if (!res.ok) showToast(res.msg, 'warn');
+    renderAll();
+  };
 
-  document.getElementById('btn-mute').addEventListener('click', (e) => {
+  document.getElementById('btn-fullscreen').onclick = () => {
+    sfx.play('click');
+    toggleFullscreenLandscape();
+  };
+
+  const startFsBtn = document.getElementById('btn-start-fullscreen');
+  if (startFsBtn) {
+    startFsBtn.onclick = () => {
+      sfx.play('click');
+      toggleFullscreenLandscape();
+    };
+  }
+
+  document.getElementById('btn-mute').onclick = (e) => {
     sfx.muted = !sfx.muted;
-    e.currentTarget.textContent = sfx.muted ? '🔇 静音' : '🔊 音效';
-  });
+    e.currentTarget.textContent = sfx.muted ? '🔇' : '🔊';
+  };
 
-  document.getElementById('btn-newgame-top').addEventListener('click', () => {
+  document.getElementById('btn-newgame-top').onclick = () => {
     sfx.play('click');
     openStartModal(true);
-  });
+  };
 
-  // 肖像微动画循环（呼吸、眨眼、AI改造体芯片闪烁与机械抽搐）
   setInterval(() => {
     animTick++;
     if (gameState && gameState.phase === 'open') {
@@ -1055,7 +1326,6 @@ function initApp() {
     }
   }, 110);
 
-  // 打开开局界面
   openStartModal(false);
 }
 

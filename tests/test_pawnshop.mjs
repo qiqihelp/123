@@ -1,19 +1,27 @@
 import assert from 'node:assert/strict';
+import { ITEM_TEMPLATES, WHOLESALE_MERCHANTS, CUSTOMER_ARCHETYPES } from '../game/js/data.js';
 import {
   createNewGameState,
   createItemInstance,
+  usedSlots,
+  containerUsedSlots,
+  getAllOwnedItemsWithLoc,
+  moveItemToTarget,
+  quickHideAllIllegal,
+  openSealedCrate,
+  useConsumableItem,
+  unlockWholesaleMerchant,
+  buyFromWholesaleMerchant,
   inspectItem,
   confrontSellerFake,
-  haggleWithCustomer,
+  toggleDealEntrySelection,
+  getCustomerSelectedTotal,
   executeBuyFromCustomer,
   executeSellToCustomer,
   scanCustomerForAug,
   shootCustomerWithShotgun,
-  toggleItemStorage,
   handleSecurityRaid,
   runMachineRecipe,
-  scrubStolenItem,
-  purchaseShopUpgrade,
   performNightActionAndSleep,
   buyoutShopProperty
 } from '../game/js/engine.js';
@@ -24,110 +32,154 @@ function check(cond, name) {
   passed++;
 }
 
-// 1. 测试 5 大职业初始化
-for (const prof of ['apprentice', 'water_merchant', 'gunsmith', 'chemist', 'fence']) {
+// 1. 验证道具池丰富度（50+ 道具、5大密封物资箱、7款套包扩容箱、15类顾客原型、5大批发商）
+check(Object.keys(ITEM_TEMPLATES).length >= 50, 'At least 50 distinct item templates');
+check(WHOLESALE_MERCHANTS.length >= 5, 'At least 5 wholesale merchants');
+check(CUSTOMER_ARCHETYPES.length >= 15, 'At least 15 distinct customer archetypes');
+
+// 2. 验证全部 6 大职业开局（含隐藏驯鼠人）自带套包扩容箱
+for (const prof of ['apprentice', 'water_merchant', 'gunsmith', 'chemist', 'fence', 'rat_rancher']) {
   const st = createNewGameState(prof);
   check(st.profession === prof, `Init profession ${prof}`);
-  check(st.shelf.length > 0, `Starting items exist for ${prof}`);
-  check(st.currentCustomer !== null, `Day 1 customer spawned for ${prof}`);
+  const hasBag = [...st.shelf, ...st.stash].some(i => i.isContainer);
+  check(hasBag, `${prof} starts with an expansion container bag`);
 }
 
-// 2. 测试假货鉴定与当面揭穿暴降价格
+// 3. 测试暗区突围式「套包扩容箱」（占2格扩出12格 + 禁止无限套娃 + 走私者伪装箱免检防盘查）
 {
   const st = createNewGameState('apprentice');
-  const fakeCig = createItemInstance('cig_redstar', { isFake: true });
+  st.shelf = [];
+  st.stash = [];
+  const milBag = createItemInstance('backpack_military'); // 外占2格，内扩12格
+  const smugglerBox = createItemInstance('smuggler_bay'); // 外占2格，内扩9格且免检屏蔽！
+  st.shelf.push(milBag, smugglerBox);
+  check(usedSlots(st.shelf) === 4, 'Two large containers only occupy 4 outer shelf slots');
+
+  // 禁止容器套进另一个容器
+  const subAttempt = moveItemToTarget(st, milBag.uid, smugglerBox.uid);
+  check(!subAttempt.ok, 'Prevent infinite container-inside-container nesting');
+
+  // 往军用包里塞 6 件占1格的商品，外层主货架占用依然只占 4 格！
+  for (let i = 0; i < 6; i++) {
+    const w = createItemInstance('pure_water');
+    st.shelf.push(w);
+    const mv = moveItemToTarget(st, w.uid, milBag.uid);
+    check(mv.ok, `Pack item ${i} into military bag`);
+  }
+  check(usedSlots(st.shelf) === 4 && containerUsedSlots(milBag) === 6, 'Outer slots remain 4 while bag holds 6 items');
+
+  // 测试走私者伪装箱（虽摆在明面货架上，但内部装违禁品完全免疫治安官盘查！）
+  const contraband = createItemInstance('dream_dust');
+  st.shelf.push(contraband);
+  const hideRes = quickHideAllIllegal(st);
+  check(hideRes.ok && containerUsedSlots(smugglerBox) > 0, 'Quick-hide moves contraband into shielded smuggler bay');
+
   st.currentCustomer = {
-    id: 'test_seller',
+    id: 'raid_1',
+    type: 'raid',
+    isSecurityRaid: true,
+    name: '伦警官',
+    faction: 'security',
+    bribeCost: 165
+  };
+  const raidRes = handleSecurityRaid(st, 'comply');
+  check(raidRes.ok && raidRes.clean, 'Shielded smuggler bay on shelf completely hides contraband during Security Raid');
+}
+
+// 4. 测试五类密封物资箱 + 对应部门钥匙卡 / 万能指挥官卡开箱系统
+{
+  const st = createNewGameState('apprentice');
+  // 学徒自带后勤物资箱 + 后勤钥匙卡
+  const allBefore = getAllOwnedItemsWithLoc(st);
+  const crateEntry = allBefore.find(x => x.item.templateId === 'crate_service');
+  check(Boolean(crateEntry), 'Apprentice has sealed service crate');
+
+  const openRes = openSealedCrate(st, crateEntry.item.uid);
+  check(openRes.ok && openRes.lootNames.length >= 2 && st.stats.cratesOpened === 1, 'Keycard opens sealed crate and spawns rolled loot');
+}
+
+// 5. 测试液体好运药水 + 5连刮刮乐彩票
+{
+  const st = createNewGameState('fence');
+  const luckPotion = createItemInstance('liquid_luck');
+  const pack5 = createItemInstance('scratcher_pack');
+  st.shelf.push(luckPotion, pack5);
+
+  const drinkRes = useConsumableItem(st, luckPotion.uid);
+  check(drinkRes.ok && st.luck >= 80 && st.luckBuffDays === 3, 'Liquid Luck boosts luck by +75 for 3 days');
+
+  const scratchRes = useConsumableItem(st, pack5.uid);
+  check(scratchRes.ok, 'Scratcher 5-pack resolves cleanly');
+}
+
+// 6. 测试批发供货商电话批量采购 & 解锁暗网专线
+{
+  const st = createNewGameState('apprentice');
+  st.credits = 2000;
+  // 向 GP 矿业考尔森批量买 4 桶浑浊水整箱包
+  const wsBuy = buyFromWholesaleMerchant(st, 'caulson_mining', 'dirty_water');
+  check(wsBuy.ok, 'Wholesale bulk purchase of 4x dirty_water succeeds');
+
+  // 解锁索耶地下黑市交易所并买密封工程箱
+  const unl = unlockWholesaleMerchant(st, 'sawyer_exchange');
+  check(unl.ok && st.unlockedMerchants.includes('sawyer_exchange'), 'Unlock Sawyer underground wholesale line');
+  const buyCrate = buyFromWholesaleMerchant(st, 'sawyer_exchange', 'crate_engineering');
+  check(buyCrate.ok, 'Buy sealed engineering crate from Sawyer');
+}
+
+// 7. 测试单名顾客携带多件商品：逐件鉴伪砍价 + 勾选部分购买
+{
+  const st = createNewGameState('apprentice');
+  st.credits = 1000;
+  const fakeRib = createItemInstance('rib_sandwich', { isFake: true });
+  const realPlasma = createItemInstance('plasma_cartridge', { isFake: false });
+  const junkWater = createItemInstance('dirty_water', { isFake: false });
+
+  st.currentCustomer = {
+    id: 'multi_seller',
     type: 'customer',
-    name: '测试拾荒客',
+    name: '批发拾荒客',
     faction: 'lower',
     intent: 'sell_to_shop',
-    offerItem: fakeCig,
-    askingPrice: 100,
-    minAcceptPrice: 75,
+    offerEntries: [
+      { item: fakeRib, askPrice: 150, selected: true },
+      { item: realPlasma, askPrice: 300, selected: true },
+      { item: junkWater, askPrice: 30, selected: true }
+    ],
+    haggleMult: 1.0,
+    minSellMult: 0.75,
     patience: 3,
     maxPatience: 3
   };
-  const r1 = inspectItem(st, fakeCig, 'visual');
-  check(r1.ok && fakeCig.inspectedVisual, 'Magnifier visual inspection works');
 
-  const r2 = confrontSellerFake(st, fakeCig.fakeFlaw.reason);
-  check(r2.ok && r2.success && st.currentCustomer.askingPrice < 40, 'Confronting fake slashes price dramatically');
+  inspectItem(st, fakeRib, 'visual');
+  const conf = confrontSellerFake(st, 0, fakeRib.fakeFlaw.reason);
+  check(conf.ok && conf.success && st.currentCustomer.offerEntries[0].askPrice < 60, 'Confronting specific item #0 slashes its price');
 
-  const creditsBefore = st.credits;
-  const r3 = executeBuyFromCustomer(st, st.currentCustomer.askingPrice);
-  check(r3.ok && st.credits < creditsBefore, 'Buying slashed item succeeds');
+  // 取消勾选第3件脏水，只买前2件
+  toggleDealEntrySelection(st.currentCustomer, 2);
+  const expectedSum = st.currentCustomer.offerEntries[0].askPrice + 300;
+  check(getCustomerSelectedTotal(st.currentCustomer) === expectedSum, 'Multi-item selection total updates accurately');
+
+  const buyMulti = executeBuyFromCustomer(st);
+  check(buyMulti.ok, 'Executing multi-item selective purchase succeeds');
 }
 
-// 3. 测试秘密暗格藏匿与治安官突击搜查（藏进暗格免罚，留在货架被抄）
+// 8. 测试驯鼠人培育舱产特级生肉 & 夜间行动 & 买断地契
 {
-  const st = createNewGameState('fence');
-  st.shelf = [createItemInstance('pulse_rifle', { inspectedVisual: true })]; // 违禁品
-  st.stash = [];
-  const moveRes = toggleItemStorage(st, st.shelf[0].uid);
-  check(moveRes.ok && st.shelf.length === 0 && st.stash.length === 1, 'Move contraband to secret stash');
+  const st = createNewGameState('rat_rancher');
+  const breedRes = runMachineRecipe(st, 'rat_cage', 'breed_meat_morsel');
+  check(breedRes.ok, 'Rat rancher breeds 2x premium raw meat');
 
-  st.currentCustomer = {
-    id: 'raid_test',
-    type: 'raid',
-    isSecurityRaid: true,
-    name: '霍克警督',
-    faction: 'security',
-    bribeCost: 160
-  };
-  const raidClean = handleSecurityRaid(st, 'comply');
-  check(raidClean.ok && raidClean.clean && st.stash.length === 1, 'Stash protects contraband from raid');
-}
-
-// 4. 测试后室机器生产链（净水器 & 序列号打磨机洗白赃物）
-{
-  const st = createNewGameState('water_merchant');
-  const beforePure = st.shelf.filter(i => i.templateId === 'pure_water').length;
-  const craftRes = runMachineRecipe(st, 'purifier', 'purify_water_clean');
-  const afterPure = st.shelf.filter(i => i.templateId === 'pure_water').length;
-  check(craftRes.ok && afterPure === beforePure + 2, 'Water purifier produces 2 pure_water');
-
-  const fenceSt = createNewGameState('fence');
-  const stolenWatch = fenceSt.shelf.find(i => i.isStolen);
-  check(Boolean(stolenWatch), 'Fence starts with a stolen item');
-  const scrubRes = scrubStolenItem(fenceSt, stolenWatch.uid);
-  check(scrubRes.ok && !stolenWatch.isStolen, 'Scrambler scrubs stolen tag');
-}
-
-// 5. 测试 AI 改造体扫描与霰弹枪合法击毙赏金
-{
-  const st = createNewGameState('gunsmith');
-  st.currentCustomer = {
-    id: 'aug_1',
-    type: 'customer',
-    name: '诡异访客',
-    faction: 'lower',
-    isAug: true,
-    augScanned: false,
-    intent: 'sell_to_shop',
-    offerItem: createItemInstance('scrap_metal')
-  };
-  const scanRes = scanCustomerForAug(st);
-  check(scanRes.ok && scanRes.isAug && st.currentCustomer.augScanned, 'Aug scanner detects rogue AI host');
-
-  const cBefore = st.credits;
-  const shotRes = shootCustomerWithShotgun(st);
-  check(shotRes.ok && shotRes.correctKill && st.credits > cBefore && st.stats.augsEliminated === 1, 'Shotgun eliminates confirmed Aug and awards bounty');
-}
-
-// 6. 测试夜间行动、交租与买断产权多结局
-{
-  const st = createNewGameState('apprentice');
-  // 清空当天队列进入夜晚
   st.customersQueue = [];
   st.currentCustomer = null;
   st.phase = 'night';
-  const nightRes = performNightActionAndSleep(st, 'dump_scrapyard');
-  check(nightRes.ok && st.day === 2 && st.phase === 'open', 'Night scrapyard advances to Day 2');
+  const nightRes = performNightActionAndSleep(st, 'underground_crate');
+  check(nightRes.ok && st.day === 2, 'Night underground crate pack advances to Day 2');
 
-  st.credits = 6000;
-  const buyRes = buyoutShopProperty(st);
-  check(buyRes.ok && st.ownsShop && st.gameOver && st.gameOver.victory, 'Buyout unlocks victory ending');
+  st.credits = 7000;
+  const winRes = buyoutShopProperty(st);
+  check(winRes.ok && st.ownsShop && st.gameOver.victory, 'Buyout deed triggers victory ending');
 }
 
-console.log(`✅ All ${passed} Deepspace Pawnshop engine assertions passed!`);
+console.log(`✅ All ${passed} Deepspace Pawnshop 2.0 assertions passed!`);
