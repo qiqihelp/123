@@ -1,0 +1,5 @@
+title: 原版拓展
+description: 原版拓展模组：新增双炮塔追踪导弹坦克，高伤高射程，慢射速慢移速
+minVersion: 1.15
+tags: units
+thumbnail: mod-thumbnail.png
