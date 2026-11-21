@@ -1,0 +1,18 @@
+# 打包产物（源码入库，产物不入库）
+*.rwmod
+*_unpacked/
+
+# 素材包原始投放（归位后才入库）
+intake/*.zip
+intake/*.rwmod
+intake/*.7z
+intake/*.rar
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# 编辑器/系统
+.DS_Store
+Thumbs.db

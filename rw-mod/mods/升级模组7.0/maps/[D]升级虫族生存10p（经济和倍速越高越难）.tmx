@@ -1,0 +1,2851 @@
+<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
+<map version="1.2" orientation="orthogonal" renderorder="right-down" width="301" height="305" tilewidth="20" tileheight="20" nextobjectid="0">
+  <properties>
+    <property name="sw1" value="1102" />
+    <property name="sw2" value="1164" />
+    <property name="sw3" value="1122" />
+    <property name="sw4" value="1173" />
+    <property name="sw5" value="1217" />
+    <property name="sw6" value="1050" />
+  </properties>
+  <tileset firstgid="371" name="misc" columns="3" tilecount="18" tileheight="20" tilewidth="20">
+    <image source="bitmaps/misc.png" width="79" height="120" />
+    <tile id="4">
+      <properties>
+        <property name="res_pool" value="" />
+      </properties>
+    </tile>
+    <tile id="9">
+      <properties>
+        <property name="team" value="none" />
+        <property name="unit" value="tree" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset source="units.tsx" firstgid="509" />
+  <tileset firstgid="1046" name="水" columns="3" tilecount="9" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAAAXNSR0IArs4c6QAAAARzQklUCAgI
+CHwIZIgAAADqSURBVGiB7dsxDsIwEERRB1EjxGU4DC0dJWeho6XL2RDiAlC5whbZJXKW7/klCGme
+nKQKw3ncv1JHrZYe0DqB6a1rX1wvh5Y7Zu94uhU/L57wv2NTqhs+wARsrmTp7h4WmF71Kf2tzXY3
+5w5zz8fd9TvXCS+N/WWDGRwBm/NsMYEjYXPWTZPBEbE5y7buntIC0xOYnsD0BKYnMD2B6QlMT2B6
+AtMTmJ7A9ASmJzA9gekJTG8y2PtORYss20wnHBFt3WS+pCOhPVtc93AEtHeD+z2tCGhPekrTE7j2
+Jjml4gmT0YP+twRPYHpvtuwvD0FN5hwAAAAASUVORK5CYII=
+</property>
+    </properties>
+    <image source="../MT2/水.png" width="60" height="60" />
+    <terraintypes>
+      <terrain name="水" tile="4" />
+    </terraintypes>
+    <tile id="6" terrain="-1,0,-1,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="7" terrain="0,0,-1,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="8" terrain="0,-1,-1,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="5" terrain="0,-1,0,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="2" terrain="-1,-1,0,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="1" terrain="-1,-1,0,0">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="0" terrain="-1,-1,-1,0">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="3" terrain="-1,0,-1,0">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="4" terrain="0,0,0,0">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="1055" name="陆地2" columns="3" tilecount="9" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAAAXNSR0IArs4c6QAAAARzQklUCAgI
+CHwIZIgAAADkSURBVGiB7doxEoIwEIVhcCwdxoKKmjt4MK/lkaipLByGHvuEDKxMNL79vzKkyJtl
+s03q++O2VI6cfn2AbyOwunNiXaWv63BhNfA4TNHGf9T1zVIFod390gRW5y5w6paOdH2T8xyHjcO0
+ax8V3nK9tDnO8bHX/DTtd1dhAqsz93Ao7KGwx3N/t3JXYQKrO9zDWz2V+7uVuwoTWB1zWB2B1TGH
+1RFYHXNYHYHVMYfVEVgdc1gdgdUxh9URWJ25h61vKkpDhVP2voMqnbsKE1idu8Crl1bpD0kNopf9
+7ipMYHXuAr8B9KVGvWG/Sb0AAAAASUVORK5CYII=
+</property>
+    </properties>
+    <image source="../MT2/陆地2.png" width="60" height="60" />
+    <terraintypes>
+      <terrain name="陆地" tile="4" />
+    </terraintypes>
+    <tile id="6" terrain="-1,0,-1,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="7" terrain="0,0,-1,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="8" terrain="0,-1,-1,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="5" terrain="0,-1,0,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="3" terrain="-1,0,-1,0">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="2" terrain="-1,-1,0,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="1" terrain="-1,-1,0,0">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="0" terrain="-1,-1,-1,0">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="4" terrain="0,0,0,0" />
+  </tileset>
+  <tileset firstgid="1064" name="岩浆" columns="3" tilecount="9" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAAAXNSR0IArs4c6QAAAARzQklUCAgI
+CHwIZIgAAAHsSURBVGiB7ZsxTsQwEEW9CLQFBUWqRdqSM8ABuBEdB+A0HIEDcI9IuAoFEgWigCqL
+yY7HPx4r2fz4lSSe9Y+dn7E9bB6eb3/cijibuwNTUwWzUwWzcx678Pr06ZrdvsiPdL5VY0nXU220
+OJ1v3d3jpXhPVHDfMPzRzrejOtC37WPltA3pY8T69L/P72LcqOBhR5vd3jTiuW2HgrS4yENVBZ8C
+6IMKp7OGKjic0vf+4+j69cUW6ozE2/cXFE+6T+IleH00VJcuZVqnBNVnCXmHqQQjM5JKMMIkLo0a
+D4pkbqFLayOtjvDYZGFOmlIuvSTRCKt7h+kEmzIt58JpfXV0zWJGlizNAt0Ip6iC2VmdYDjTsizd
+LG3HYko8lor2aUoKztlMm5vsXJqR1QmGMq0YqBlNbW6db92Nk/el6UZ4NethlLoeXjqpQZrt5AE1
+KNzIsOUm3QinoBNscmnn+Izr5E8PUaSzYwmT4NIZlCXTQhc4dO9wCirB9fRQgGoDwFzjEQaYy6DG
+bNgjAxMVvKSRHUN0SrMlHD1UpoVAKdi8POx8e6iDymN7iCNVzv39Lf9EMYxdpPQwt1ZSKx1E7hmi
+mSlitHAlHsrwASHtU/WSY2Kk+lz8s2T9lGlVtGh7bZt2U/+rhZwqmJ0qmJ1fmJf065VR2KkAAAAA
+SUVORK5CYII=
+</property>
+    </properties>
+    <image source="../MT2/岩浆.png" width="60" height="60" />
+    <terraintypes>
+      <terrain name="岩浆" tile="4" />
+    </terraintypes>
+    <tile id="4" terrain="0,0,0,0">
+      <properties>
+        <property name="lava" value="" />
+      </properties>
+    </tile>
+    <tile id="7" terrain="0,0,-1,-1">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="8" terrain="0,-1,-1,-1">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="6" terrain="-1,0,-1,-1">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="3" terrain="-1,0,-1,0">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="5" terrain="0,-1,0,-1">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="2" terrain="-1,-1,0,-1">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="1" terrain="-1,-1,0,0">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="0" terrain="-1,-1,-1,0">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="1073" name="矿" columns="1" tilecount="1" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAARzQklUCAgI
+CHwIZIgAAAChSURBVDiN3dWxDoMgEMbxv8ZHcuh4D8XgABOLAw/l6MA7tUOjsRb0UJIm/Ua4/ELI
+Xa6x1j6pmA7Ae18Fc869QYBpmhiMuQSNISAiALTL4WAMYwiXsO1D2u1lKbrHvsASNIUlwQU9S64m
+Cd7Jb8A5RuYYVWB3XgKPvldh8Dd/eBvUNrYKzE3APrmJ+gC12BG6gqVYDl37UETUzXuUpvYKeAH/
+GECV8nHI7AAAAABJRU5ErkJggg==
+</property>
+    </properties>
+    <image source="../MT2/矿.png" width="20" height="20" />
+    <tile id="0">
+      <properties>
+        <property name="res_pool" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="1074" name="土" columns="4" tilecount="16" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYAAACOEfKtAAAAAXNSR0IArs4c6QAAAARzQklUCAgI
+CHwIZIgAAAMOSURBVHic7ZxBbtswEEUpwaiDrJpNgZ7BWXWTE6RAkOP0Wt0aBnqDbtqNfYYC3aQr
+Iw4CuYtiBIodShQ/RVHOfxvHiinI33+GMxSh6svXu7Mh0dRzX8DSoYAgK/vNr99Pc13Hovj44ab9
+mw4EWWkH775tcl/HIvj++fDfMToQhAKCqCHc4elPhssomJv3vf+mA0EoIMhwCNucXia6jMJYvwv+
+KB0IMs6BHS5tDaKKGhUv4HodPbRITicTIyJDGIQCglBAEAoIQgFBgDLGc8JP3SJ0tz+ax81V9Pm2
+h+fO+4fba2OMMfW5GTVWxr3+SNsM0IEgyR2YGnHObn9sX0Mc3VR1O3ZK6ECQ5A4UpwgPt9emMWE5
+K+R8QzRV1xPu+PvEXzm5gG54iWzuZKChhZx2bKuI6gtr9/jLz9fB6xjD5DmwPjdme3j25qOxDjOm
+K6pvfKzjx8IcCFL8LKyx2x9bF8qr+M3nPDc3poIOBJncgW49JjlLjtlJ3p4c+jqOx82VMc5xcZhv
+Fp6qJqQDQbLlwFAnxDpFc2rf7J8KOhBktlnYdYwvV4au5Ejuc8+7uE7EhxtKQ2WFCKd1MH2iaktY
+NqmXs4qqA7U8pomQp8cIgzkQpCgH2kiIa6s7feRYA7ShA0FmqwO1urCpam8vO7SaM+Q8+VzqWZgO
+BMmeA31ONOZfeeKWN4jztFUb3pUrjOJmYa1DQbiYTsR3r8QOQe1ehy9EQ24RaB1L6nsiRYUwUsPt
+9sc25+WsBYsScIkUlwNj3ZO7AxHoQJBsDvTtsrKxZ2Df7OvbG6PVj8iOiFDoQJDsOTA0V4lzQraE
+2Lgdim+lOhV0IMhkDgztaVMx1x6Z5AJKyA0JFvrFQm8qhe4KW2wrJ+TaNSVoqz4pYQ4ESe5AN3TR
+XfqxyL5EgeuBhZLcge4vfG9WyZeQQrEnjNTOE+hAEAoIQgFBKCAIBQSJn4Uv7hEocQ+doANBKCDI
+uBAe8USftwIdCEIBQYZDeOD5eW8dOhCEAoKoIaw9rZbo0IEgHQfaT+gmYdCBIBQQ5C8KewiAoaJR
+wgAAAABJRU5ErkJggg==
+</property>
+    </properties>
+    <image source="../MT2/土.png" width="80" height="80" />
+    <terraintypes>
+      <terrain name="土" tile="9" />
+    </terraintypes>
+    <tile id="12" terrain="-1,0,-1,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="13" terrain="0,0,-1,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="14" terrain="0,0,-1,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="15" terrain="0,-1,-1,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="11" terrain="0,-1,0,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="7" terrain="0,-1,0,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="3" terrain="-1,-1,0,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="2" terrain="-1,-1,0,0">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="1" terrain="-1,-1,0,0">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="0" terrain="-1,-1,-1,0">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="4" terrain="-1,0,-1,0">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="8" terrain="-1,0,-1,0">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="9" terrain="0,0,0,0" />
+    <tile id="5" terrain="0,0,0,0" />
+    <tile id="6" terrain="0,0,0,0" />
+    <tile id="10" terrain="0,0,0,0" />
+  </tileset>
+  <tileset firstgid="1090" name="陆地" columns="5" tilecount="25" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+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
+AAAAAElFTkSuQmCC
+</property>
+    </properties>
+    <image source="../MT2/陆地.png" width="100" height="100" />
+    <tile id="22">
+      <properties>
+        <property name="lava-cliff" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="1115" name="沙漠" columns="4" tilecount="16" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYAAACOEfKtAAAAAXNSR0IArs4c6QAAAARzQklUCAgI
+CHwIZIgAAAJ3SURBVHic7ZzNUcMwEIXXHq70QBHM0Ah37lxpIA1wzZ07jTBDEemBAswBDI4sxbbe
+/lib/S4ZR8iSHpb1LO+me3l/GOiXw90zoRxOR/gcZ+er7FOpH6+PHx3Sn5Q+1+iQ/dO24LgY1tCn
+XxxOR2L9FxmiIeJMQCK+abg0ALScow8oWQGJcBHHjpcGsLYchfuenFIWEBhAWjd3PGwor+6HsHhE
+pSnMKF76/fiZ3meXyjf3Q0E8IqJuamOI9FYvSS6JJ2tjHIhHpDuO8IEgbn3gQA58oCXjRdCsD9wL
+TfrAvdCkD9wLWjNovoiEeJsIHwiS9YEeMPWBHggfCKLlA7uvzzfWJ7fb+6ddP8hwj7foA4N1hIAg
+ISBICAgSAoKEgCAhIEgICBICgoSAICEgSAgIsnk7y8NODSc90f+L9FGcVKSlckrKr4me6GfvLB38
+9HipPHd8LfREy1dUbfk1MIvOQuGOfuImNlR3RggIwj7duG8J3IgGWHrC7L2wJ8zeC3MhlSeypZ5Z
+fCCKVJ7I1npm8YEIUnkiW+tpGHzRVZgz2+jSuXLlJtma3HBF/Wvk1NUivgp7ifovoWJjLDYb3PlA
+bRFN4wMl0L5PmeeJcGJ5k2/SB07xLB6R8aOcaNtWeSKceMr+LBE+ECR8IEj4QJDwgSA3kiePVRjE
+ahU2y9aUwGIVNsvWlCJW4QZxtwprE7sxXG3HbgzQduzGAG2HD8Tb1SB8IEj4QBC3Nsa9D5TOR1H7
+1Q7uE+YiVMdBDDRPmZgOsFReW2/Wj9OxrdgYovOB1OSj1NbTymNR9YFoPkptPclFTHwK/wVE7iQZ
+p70pvBPhpHDrA7X4Bp/PWq7y0w40AAAAAElFTkSuQmCC
+</property>
+    </properties>
+    <image source="../MT2/沙漠.png" width="80" height="80" />
+  </tileset>
+  <tileset firstgid="1131" name="鱼" columns="2" tilecount="4" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAACgAAAAoCAYAAACM/rhtAAAAAXNSR0IArs4c6QAAAARzQklUCAgI
+CHwIZIgAAAGvSURBVFiF7ZUxTsMwFIb/IhiArRNzJzrEitQxKlOkqBOqOABD4Ro9STv0AIgRRcpU
+xFKJFLkDLOQADAxILUMlzNA4dS3bOGk7IPlbbNl59pfn+AVwOBwOh8Ph+M/U9rWwTwgTF59SWmmv
+wx35wCeEyWODZp0hT0IPq/kXC1GfEMaf2yqDKqk49AAAUTLbGB826wCA29dPpAZJnxAWhx46yQwp
+pbVKGTSJXZ8+YTQPEIde0ReFh806elhnSCUnUkpQFhOlMDfHnl1+YTQP0MlFdS+5yJboZm/Fp2Al
+qBOrwkMeu8iWOGkcFS0fE+WsBEU5lZh4jLr+4OIYo3GwIcaluKQOoyCX2yZjMmK2VBm0FlTJRcnM
+WrbdCoHxNwDg8TnBDYJijh8lsnwgb+PQwz3O0QWY8RvUZa5MJmUpWU51iyOAxaGHuOGhA7CU0tqB
+boNdHqvIlUYOWBVxuX5qBU3Ii5SJMxVpYC2Z6o5YVSxlqSl9x4f0jHhrZdqtEFF/YvWb45K8rwyw
+vb26sgKsSstdf4IfxaZlMAapqv1fiP/iqlJ7xSeEVXkxh8PhcDj2wy9dVugeiGbJtgAAAABJRU5E
+rkJggg==
+</property>
+    </properties>
+    <image source="../MT2/鱼.png" width="40" height="40" />
+  </tileset>
+  <tileset firstgid="1135" name="树" columns="4" tilecount="16" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYAAACOEfKtAAAAAXNSR0IArs4c6QAAAARzQklUCAgI
+CHwIZIgAAARdSURBVHic7Zs/TtxAFMY/R76AHYkt6JIsglu4SAkSqSMhEQnJlGk4RaSUuxIFElJq
+mtC7iJQjQCBARQES6wtYcorlecdjjz3rtedNYH7Vejz2zn5+M++PZwGHw+FwOBwOh8PhcDgcDofD
+4XA4HI6Xj8c9ABVhEOTi8SxNrRzrG+4ByIRBkIdhkJ/f7swfrwec3+4gDINcFtUGrBMQAL79TgEA
+5zc7OL/ZKbXZhlUChkGQ7x6l2Frbw8XjadF+8XiKrbU97B6llanNjTUChkGQ+9OotZ8/jawS0QoB
+dcUjbBKRXcBlxSNsEZFdwP8d1thKZX3bt2c4iBeOZGttD8fTU/x896nSN4sT1hiR7Yvbpi6JCEAp
+HsEpIsuXiuJlcQL6/BBdY5SMi37bt2cAUBJP7CNeyyWib/oLAWg/tiar63rPvjHuRMIgyP1JVHtO
+tD4Vqj7+hMcrGxVQte5lcVL7edl+HKENzxQWByCsYXQsrm0EtYn9bMCYgG1eV1eQtn7+NEIYJ7kp
+h2JkCj+Lpz21/GmE7DApjrPDqkW2XG+s9GXMd3VN2bpgMqRxqdyKGI2exGklW6McRDdR11f0yiYD
+aitSuWXEI+SM5NWkcmSFq4hHyCIC5l8+sQg4lDPhsET2TKQuo2jKRpquedGZSBjq/7AiDsznMR21
+Z3HiwWsJpr35d81mZizRiIBNBQQV/mSetmVx4sntbdcBMJaNsOfCTdiS7zYx+BNqchp1RYNVkO9n
+wqmwZiJidWVV+n4YugwqoE4RQSgcdPWeuarYYKKoMJiAYRDkszT1ZCdQx9PFesVZtPEQXQOYe2aV
+Y8nixJulqTekiIOtD3LGQdBUIwEAVLIJ8TqxkCoXX58u14v+bzfva61w6AxlkJvqiEeiqVK5LE4K
+gd5u3pfO1aWBD9E1i4i9hzFN00UWr4mny/Wi39Nl+wunUTJ+7tc8tr5FHGYNbMsWnlGJKbePknFp
+yre1y/jTaLDFapBAui1boB/dtQojoi3ipL+QScR4HDhKxhgl48q6RqisskkouucoGQ8iUhO9CrhM
+uKAKolVC6aydOsF03yFN7xa47EZJHRH7Em+ITKXXpVUIX+gpa91ffIUplrAeomsPAEbJOM8Oi4A5
+BxalLaJl3V1cg37DGaNxoA5NwbTqvO49h4gDB61UrCIkUN3usey9TLwnMVK1VS3cfa1JKs/7Ygqq
+8g8RBF1qrayhdD3Hq032PdLA6lP8Ve6RFunyqpN7cznBPgBC1xptsDoRKwZBtIlom3iAvbuzcpRL
+/PKxNVjzJAmywu+fP5Tav/74C8Au6wMsssAwWPyh+svH95Xz1GbD/+NE2AUk4faPN7B/vNHaf/94
+oyQ2N2w7E0gAHdFk6JqTg6sc4J3WLAKSxan4deMDyGrayohCcolo5d6Yq7s/uLrjHoUerFt8gW5T
+WOTk4AoA3zRmcyJ9/uBXnQt3tURuyyPYBSR0hbRFOMKKQYi0xXe2CEf8A25wbNHUJLMjAAAAAElF
+TkSuQmCC
+</property>
+    </properties>
+    <image source="../MT2/树.png" width="80" height="80" />
+    <tile id="5">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="6">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="9">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="10">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="13">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="14">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="1151" name="仙人掌" columns="3" tilecount="9" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+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
+</property>
+    </properties>
+    <image source="../MT2/仙人掌.png" width="60" height="60" />
+    <tile id="3">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="4">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="1">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="5">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+    <tile id="7">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="1160" name="岩石块" columns="3" tilecount="9" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAAAXNSR0IArs4c6QAAAARzQklUCAgI
+CHwIZIgAAAF0SURBVGiB7ZpRDoIwDECH8SjKCZZwFU3wdH7oVUw4gXIX/arRSjPYOtzavi8DCCmv
+HaOj6fv+6VbiPj5+trW7/eL/pLBhPVsFbHNfoPPeOefcbRgm94cMQgbg43BmzM2E1Qxzp2Ys2QyD
+2VS4zAJWw7HAnT4djl/bz9cLy/mpWl6KOsNN6DlcymDDhTrDs2s4NCP6N8U9h0vBApaOuoCzvzz8
+C2qQVWdYXcDiUhrP5TFmGID32drm0lOdlc8YxKV0SNBPwFydilLRXcP38fE2zNWpKA29hjvvXee9
+WLOAPsPSR2WMPsPwA9cuVx+4NPQZlj4qY/QZpnZIq13ADNdOaIVEnWF1AYtL6cUdj9qxGkZYwNKx
+gKVjAUvHApbO7JmWlPdj0nC72xf/MVoMQcOxX8fim4X731SXFKAyKlWC1TDF0u4mGAIjsDJPmcPH
+5+qLm+FczP1mhDLNxVfAnyeHC0tbbCMNw+icujIRe8OwaS7U1fAL3UV9FRLF5kQAAAAASUVORK5C
+YII=
+</property>
+    </properties>
+    <image source="../MT2/岩石块.png" width="60" height="60" />
+    <terraintypes>
+      <terrain name="岩石块" tile="4" />
+    </terraintypes>
+    <tile id="0" terrain="-1,-1,-1,0">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="3" terrain="-1,0,-1,0">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="6" terrain="-1,0,-1,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="7" terrain="0,0,-1,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="8" terrain="0,-1,-1,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="5" terrain="0,-1,0,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="2" terrain="-1,-1,0,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="1" terrain="-1,-1,0,0">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="4" terrain="0,0,0,0" />
+  </tileset>
+  <tileset firstgid="1169" name="深色" columns="3" tilecount="9" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAAAXNSR0IArs4c6QAAAARzQklUCAgI
+CHwIZIgAAACbSURBVGiB7dmxDYAwDABBQHQ0MAqTsBqbMQpsACtYSiDo/VenyMuNlfTbPt1dIkPr
+C3zNYDqD6QymM5hujB48j/nNexRb1it0Lt2EDaYzmM5gOoPpwptWVHTjiaq94aWbsMF0BtMZTGcw
+ncF0BtMZTGcwncF01d+0/v7LmG7CBtMZTGcwncF04U2r9q9gK+kmbDCdwXQG0xlM9wAuxgtpGZRz
+FAAAAABJRU5ErkJggg==
+</property>
+    </properties>
+    <image source="../MT2/深色.png" width="60" height="60" />
+    <terraintypes>
+      <terrain name="陆地深色" tile="4" />
+    </terraintypes>
+    <tile id="0" terrain="-1,-1,-1,0">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="3" terrain="-1,0,-1,0">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="6" terrain="-1,0,-1,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="7" terrain="0,0,-1,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="8" terrain="0,-1,-1,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="5" terrain="0,-1,0,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="2" terrain="-1,-1,0,-1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="1" terrain="-1,-1,0,0">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="4" terrain="0,0,0,0" />
+  </tileset>
+  <tileset firstgid="1178" name="小形树" columns="1" tilecount="1" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAAAXNSR0IArs4c6QAAAARzQklUCAgI
+CHwIZIgAAADYSURBVDiNxZQxDsIgFIZ/iAk9QFcOwVUcPYO7azfr7uoVvAqHcPUAMhScaJ7Ag0ZJ
+/JYmBf738V5T4B+Ms17GWS9b9opq0EUHAFDKAACcswCA5+nBnmMX0rBIK1SyYQE+DVsLBPhYsBm4
+mg1GTvsjACB9ng83SfdSitrcdSO1a3fvYXfDcg+ZgURqg/mo0DLLTF/WQ0BS09WwFBanSqHv1GCy
+aYtvzDJT0lPBfaAl0+l+zUJS2Cm3bJ2zxSnvagdSW86qaUihtpwVpfhz+IXugWwPKVt6F3kDXpNy
+99LmO/4AAAAASUVORK5CYII=
+</property>
+    </properties>
+    <image source="../MT2/小形树.png" width="20" height="20" />
+    <tile id="0">
+      <properties>
+        <property name="large-rock" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="1204" name="深水" columns="3" tilecount="9" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAAAXNSR0IArs4c6QAAAARzQklUCAgI
+CHwIZIgAAADTSURBVGiB7ZpBCsIwEEVjkFJKewUP5R09oSLiQl25sKuUSWrmz3u7LhLy+KT8pjmc
+zpd3MvB6Xn+eH/ebZbrm5H8vYG8QVudYa6Le9+4XEi5l/Xb2QriEEVZn8x721qzWhEsYYXU2C+dh
+SXlYWqxlF0hYHYTVCSdsblreCJcwwuqYm9Y4zWmc5qqLagkJq4Nw8UCnX03hEuZcWh26tDoIq4Ow
+OpxLq0OXVoempY75nhY3ADoHYXVoWuogrI5ZmH9LnYOwOtWEvexlEi4e6LRxhUv4Ay6XJGttunob
+AAAAAElFTkSuQmCC
+</property>
+    </properties>
+    <image source="../MT2/深水.png" width="60" height="60" />
+    <terraintypes>
+      <terrain name="深水" tile="4" />
+    </terraintypes>
+    <tile id="4" terrain="0,0,0,0">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+    <tile id="7" terrain="0,0,-1,-1">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+    <tile id="8" terrain="0,-1,-1,-1">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+    <tile id="5" terrain="0,-1,0,-1">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+    <tile id="6" terrain="-1,0,-1,-1">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+    <tile id="3" terrain="-1,0,-1,0">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+    <tile id="2" terrain="-1,-1,0,-1">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+    <tile id="1" terrain="-1,-1,0,0">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+    <tile id="0" terrain="-1,-1,-1,0">
+      <properties>
+        <property name="water" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <tileset firstgid="1213" name="泥土" columns="3" tilecount="9" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAAAXNSR0IArs4c6QAAAARzQklUCAgI
+CHwIZIgAAACDSURBVGiB7dqxDcJQDEBBgrIrYohUDIFSZh+2YQCywpciQLq8q134ya2n92v7XE7k
++u8Ffq1gXcG6gnUF6+bRwee6fHOPw+63x9Dc6S5csK5gXcG6gnUF6wrWFawrWFewrmBdwbqCdQXr
+CtYVrCtYV7CuYF3BuqmPeFzBuoJ1BesK1u3Z5Qo39OhjDAAAAABJRU5ErkJggg==
+</property>
+    </properties>
+    <image source="../MT2/泥土.png" width="60" height="60" />
+  </tileset>
+  <tileset firstgid="1438" name="你是水不是岩浆" columns="3" tilecount="15" tileheight="20" tilewidth="20">
+    <properties>
+      <property name="embedded_png">
+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
+AABJRU5ErkJggg==
+
+</property>
+    </properties>
+    <image source="/storage/emulated/0/NotTiled/sample/RW maps/export202509301522372991.png" width="60" height="100" />
+    <tile id="3">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="0">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="1">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="2">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="5">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="8">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="6">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="7">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="10">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="9">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="11">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="12">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="13">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="14">
+      <properties>
+        <property name="large-cliff" value="" />
+      </properties>
+    </tile>
+    <tile id="4">
+      <properties>
+        <property name="water-bridge" value="" />
+      </properties>
+    </tile>
+  </tileset>
+  <layer name="Ground" width="301" height="305">
+    <data encoding="base64" compression="gzip">
+   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
+  </data>
+  </layer>
+  <layer name="Items" width="301" height="305">
+    <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAAO3dS2rDQAwG4An4Qj5XHqsYEkjou71DTlstQ1ehTeqR/H1gyMKLAYsfWxnLrQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADAOc68AAACAjJ7iefI5jhfPlUACr5FVb3G8yywggY/Iqs84vmQWAABAKfrqQCb66kAm+uoAAAAAAGQ3reZeAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADwCOMw9wrgPtQyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFVNq7lXAAAAAAAAAEBl66G1zTD3KgBus4282sksAAAoZx/3+ZN7fSCJQ+TVUWYBSZwir84yCwCgPP01IBP9NSCT6/7aKLsAgGTcvwAAAAAAAEtgjh6QiTl6AAAAADld9HQAAAAAAAAAAAAAAAAAIC3f8QHgXsxBBTIxBxUAAAAA4H/sh9Ym/VigY9dz1g/x+yizgCROkVdnmQUAsFj6bkAm+m5AJvpuAAAAAAAAPJq5jUAm5jYCLNNF9gMAAAAAAAAAAAs3JttHlW29AAAAAAAAAAAAmFML5GJOLQAAAABAf8wauJ/q3+tRKwAAwE/2MAKZ2MMIMI/qvXMAlkEPhB7sowYndcgN9EDowSFq8KgOgSROkVdnmQUAAAAAAAAAAAAAQOfMbwAAqjPfA8jEfA8AAAAAAAAAAAAAAAAAAAAAAAAAAACA+fmuDwAAAAAAAAAAAAAAAAAAAAAAlayH1jZm6wBJbCOvdjILAAAAAAAAumc/ApX0VM89raUS+xGopKd67mktAAAAAAAAAAAAAADU4R0bIBPv2AAAAAAAAAAAAAAA9+S9ivpcYyrxXkV9rjEAAAAA9Gm8sW/nvL+dBwAAAAAAAD3r/f+2KucBAAAAAAAAAAAAAAAAAADAb30DFWaT8HSaBQA=
+  </data>
+  </layer>
+  <layer name="Units" width="301" height="305">
+    <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAAO3auw2DAAxFUQgD0mSBNGyShgH4s0LYECFqmodQunPqKxdu7aIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAID/ql5Z9w67UxO0bTivD7sx7OawW8Nuu7EXAAAAAAAAAOCZvcy6Orznf8LuG3Zd2A1hN4XdEnY/fw4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHBxAN39ZX50mgUA
+  </data>
+  </layer>
+  <objectgroup name="Triggers">
+    <object name="map_info" id="1" x="40" y="41" width="203" height="122">
+      <properties>
+        <property name="type" value="survival" />
+        <property name="fog" value="map" />
+        <property name="introText" value="xx铁锈元年,虫族入侵,遍布毒气,时间异常。另,陆军部分叛变,而空海…by乖乖的懒" />
+        <property name="winCondition" value="NONE" />
+        <property name="loseCondition" value="allUnitsAndBuildings" />
+        <property name="survivalWaves">
++3:00 适应期 - 0 坦克T3
++0:30 侦查者和小虫子 - 10 侦察者T3,5 颚虫T1
++1:00 好多小坦 - 30 坦克T3
++0:45 巨型虫子和气垫 - 10 重型气垫坦克T3,3 巨型喷射虫T3
++0:00 巨型虫子和气垫 - 3 巨型喷射虫T3
++0:45 会飞的虫子 - 8 大型虫蜂T1
++0:00 会飞的虫子 - 8 巨爆虫T2
++0:00 会飞的虫子 - 17 巨爆虫T1
++0:00 会飞的虫子 - 17 巨爆虫T1
++1:00 大坦克？母与子 - 15 重型坦克T3
++0:00 大坦克？母与子 - 20 颚虫T2
++0:00 大坦克？母与子 - 10 大型母虫T2
++1:00 激光喷射 - 20 激光坦克T3,5 巨型喷射虫T3
++0:00 激光喷射 - 12 巨型喷射虫T3
++0:45 远距离打击 - 25 重型火炮T3,15 火炮机甲T3
++0:00 远距离打击 - 30 防空导弹坦克T3
++0:30 蚂蚁？ - 50 撕裂虫T2,40 小型撕裂虫T2
++0:30 盾与矛 - 40 猛犸坦克T3
++0:00 盾与矛 - 40 等离子坦克T3
++0:45 盾与虫 - 40 对地导弹坦克T3
++0:00 盾与虫 - 10 巨型喷射虫T3
++0:00 盾与虫 - 50 颚虫T2
++0:15 小小的但很多 - 60 坦克T3
++0:00 小小的但很多 - 80 颚虫T2
++0:00 小小的但很多 - 60 悬浮坦克T3
++0:00 小小的但很多 - 50 喷射虫T3
++0:55 蜜蜂？实验坦克 - 50 工蜂,3 概念型悬浮坦克T3,6 概念型坦克T3,20 重型拦截战机T2
++1:00 空军叛变 - 0 坦克T3,20 重型拦截战机T2
++0:30 蚊子与直升机 - 60 高机动武装直升机T2,30 攻击直升机T2,20 重型拦截战机T2
++0:30 陆空协同 - 12 嗜骨虫,20 重型拦截战机T2
++0:00 陆空协同 - 8 噩虫
++0:00 陆空协同 - 40 武装喷气机T2
++0:00 陆空协同 - 20 重型拦截战机T2
++1:30 虫子似乎在谋划在什么？ - 0 原型坦克T2
++0:10 是虫塔！ - 0 原型坦克T2
++0:40 坦克和虫子似乎更高级了 - 30 原型坦克T1,20 重型拦截战机T2
++0:00 坦克和虫子似乎更高级了 - 20 原型坦克T2
++0:00 坦克和虫子似乎更高级了 - 10 巨型泵射虫T2
++0:45 蜂拥而至 - 30 巨型虫蜂
++0:00 蜂拥而至 - 30 重型拦截战机T2
++0:00 蜂拥而至 - 10 虎排蜂T2
++1:00 堡垒及小虫王！ - 10 飞行巨堡T1,15 六翼T2,10 猎手阿尔法T1
++1:00 虫陆空三体 - 50 标准机甲T2,40 噩虫,30 导弹战机T2,20 重型拦截战机T2
++0:35 火与核爆 - 15 烈焰机甲T2,60 核爆虫,20 重型拦截战机T2
++0:35 机甲与虫 - 20 重机枪机甲T2,30 巨型母虫,20 重型拦截战机T2
++0:55 远距离的喷射 - 30 高能离子机甲T2,30 棱镜坦克T2,40 巨型泵射虫T2
++1:30 大量巨虫的进击 - 40 噩虫,60 嗜骨虫,40 巨型嗜骨虫,40 重型拦截战机T2
++0:40 大量喷射虫 - 50 巨型泵射虫T2,40 重型拦截战机T2
++0:30 陆军协同 - 60 重型猛犸坦克T2
++0:30 空军协同 - 70 轰炸战机T2
++1:00 空中有雷 - 80 两栖喷气战机T2,60 重型拦截战机T2
++1:00 虫协同陆空压迫海军中 - 0 原型气垫坦克T2
++0:30 海域不安全了 - 0 拦截战斗机
++0:30 海上快艇与自爆 - 100 核爆虫,40 重型拦截战机T2
++0:10 大量自爆虫，注意防空！ - 100 核爆虫,40 重型拦截战机T2
++1:00 陆地在振动！ - 80 猎手阿尔法T2,30 重型拦截战机T2
++0:30 巨型喷射虫协同 - 60 巨型泵射虫T2
++0:40 大量陆空来袭 - 60 原型坦克T2,60 高能离子坦克T2,20 重型拦截战机T2
++0:20 大量陆空来袭 - 80 六翼T2,60 重型拦截战机T2
++0:50 蝗虫吗？ - 70 蝗虫武装直升机,50 巨型嗜骨虫
++0:20 蝗虫吗？ - 40 蝗虫武装直升机,50 巨型嗜骨虫
++1:00 好大的虫子 - 40 巨型迸射虫
++0:30 小虫子跟进 - 60 巨型泵射虫T2,50 迸射虫
++0:50 很多机甲和小坦预示着？ - 45 机枪机甲T2,45 机枪坦克T2,30 嗜骨虫
++0:30 很多机甲和小坦预示着？ - 45 原型机甲,45 主战坦克,50 巨型嗜骨虫
++1:00 大量远距离打击预示着？ - 40 重炮机甲T2,30 自行巨炮T2,30 战锤重炮坦克T2
++0:00 大量远距离打击预示着？ - 40 高能离子机甲T2
++0:30 大量远距离打击预示着？ - 20 巨炮机甲,20 重型巨炮,30 攻城锤坦克,30 聚能离子机甲
++1:00 盾与平台 - 30 巨型防空机械装甲T2,50 高能离子坦克T2,50 重型对地导弹坦克T2
++0:30 盾与平台 - 30 概念型防空机械装甲,30 聚能离子坦克,40 巨型对地导弹坦克
++1:00 大量原型坦克预示着？ - 60 原型坦克T2,60 噩虫
++0:30 大量原型坦克预示着？ - 80 星空号,50 猎手阿尔法T2
++1:00 大量飞机预示着？ - 80 高机动武装直升机T2,80 攻击直升机T2,80 导弹战机T2
++0:30 大量飞机预示着？ - 60 蝗虫武装直升机,70 导弹战斗机,60 直升飞机,50 重型拦截战机T2
++1:00 注意防空 - 50 轰炸战机T2,50 重型拦截战机T2
++0:30 注意防空 - 50 轰炸战斗机
++0:00 注意防空 - 50 轰炸战斗机,50 核爆虫,30 重型拦截战斗机
++0:40 大量工蜂预示着什么？ - 80 工蜂,80 核爆虫
++0:30 大量工蜂预示着什么？ - 6 杀人蜂,70 巨型虫蜂
++0:10 大量工蜂预示着什么？ - 8 杀人蜂,70 巨型虫蜂
++1:00 虫族撕开裂缝，赶快撤离前线 - 0 杀戮者,25 猎手阿尔法T2
++0:30 注意修补防线 - 0 杀人蜂
++0:30 大量种类的虫子 - 40 噩虫,40 巨型嗜骨虫,40 嗜骨虫
++0:30 喷射与实验 - 20 巨型迸射虫
++0:01 喷射与实验 - 20 巨型迸射虫
++0:01 喷射与实验 - 10 巨型迸射虫
++0:01 喷射与实验 - 1 杀人蜂
++0:01 喷射与实验 - 1 泰坦型坦克
++0:01 喷射与实验 - 1 泰坦型坦克
++0:01 喷射与实验 - 1 泰坦型悬浮坦克
++0:01 喷射与实验 - 1 泰坦型悬浮坦克
++1:30 很多的大雷 - 10 巨象坦克,10 两栖战机
++0:01 很多的大雷 - 10 巨象坦克,10 两栖战机
++0:01 很多的大雷 - 10 巨象坦克,10 两栖战机
++0:01 很多的大雷 - 10 巨象坦克,10 两栖战机
++0:01 很多的大雷 - 10 巨象坦克,10 两栖战机
++1:30 陆地导弹和耐打王 - 2 杀戮者,10 巨型对地导弹坦克,10 巨型防空导弹坦克
++0:01 陆地导弹和耐打王 - 2 杀戮者,10 巨型对地导弹坦克,10 巨型防空导弹坦克
++0:01 陆地导弹和耐打王 - 2 杀戮者,10 巨型对地导弹坦克,10 巨型防空导弹坦克
++0:01 陆地导弹和耐打王 - 2 杀戮者,10 巨型对地导弹坦克,10 巨型防空导弹坦克
++0:01 陆地导弹和耐打王 - 2 杀戮者,10 巨型对地导弹坦克,10 巨型防空导弹坦克
++0:40 实验和小虫子 - 3 泰坦型悬浮坦克,20 巨型嗜骨虫,20 核爆虫
++0:00 实验和小虫子 - 4 泰坦型悬浮坦克,20 巨型嗜骨虫,20 核爆虫
++0:00 实验和小虫子 - 3 泰坦型悬浮坦克,20 巨型嗜骨虫,20 核爆虫
++0:00 实验和小虫子 - 4 泰坦型悬浮坦克,20 巨型嗜骨虫,20 核爆虫
++0:00 实验和小虫子 - 1 赤焰机甲,20 巨型嗜骨虫,20 核爆虫
++0:00 实验和小虫子 - 1 赤焰机甲,20 巨型嗜骨虫,20 核爆虫
++0:00 实验和小虫子 - 1 赤焰机甲,20 巨型嗜骨虫,20 核爆虫
++0:00 实验和小虫子 - 1 赤焰机甲,20 巨型嗜骨虫,20 核爆虫
++0:00 实验和小虫子 - 1 杀人蜂
++0:00 实验和小虫子 - 1 杀人蜂
++0:00 实验和小虫子 - 1 杀人蜂
++0:00 实验和小虫子 - 1 杀人蜂
++0:00 实验和小虫子 - 1 杀人蜂
++2:30 小部队跟进 - 80 原型机甲,10 巨型嗜骨虫,10 核爆虫
++0:10 小部队跟进 - 40 原型机甲,10 巨型嗜骨虫,10 核爆虫
++0:10 跟进！跟进！ - 40 原型机甲,10 巨型嗜骨虫,10 核爆虫
++0:05 跟进！ - 60 原型机甲,10 巨型嗜骨虫,10 核爆虫
++0:30 来割小麦了？ - 100 蝗虫武装直升机,10 巨型嗜骨虫,10 核爆虫
++0:08 来割小麦了？ - 100 武装战斗机,10 巨型嗜骨虫,10 核爆虫
++0:06 来割小麦了？- 50 蝗虫武装直升机,10 巨型嗜骨虫,10 核爆虫
++0:02 来割小麦了？ - 50 武装战斗机,10 巨型嗜骨虫,10 核爆虫
++1:00 空军的进击 - 20 AA光能射束战机,10 巨型嗜骨虫,10 核爆虫,15 巨型迸射虫
++0:01 空军的进击 - 20 轰炸战斗机,10 巨型嗜骨虫,10 核爆虫,15 巨型迸射虫
++0:01 空军的进击 - 20 AA光能射束战机,10 巨型嗜骨虫,10 核爆虫,15 巨型迸射虫
++0:01 空军的进击 - 20 轰炸战斗机,10 巨型嗜骨虫,10 核爆虫,15 巨型迸射虫
++0:01 空军的进击 - 10 AA光能射束战机,10 巨型嗜骨虫,10 核爆虫,15 巨型迸射虫
++0:01 空军的进击 - 10 轰炸战斗机,10 巨型嗜骨虫,10 核爆虫,15 巨型迸射虫
++0:01 空军的进击 - 10 AA光能射束战机,10 巨型嗜骨虫,10 核爆虫,15 巨型迸射虫
++0:50 掩护！ - 40 重型拦截战斗机,15 核爆虫,15 巨型虫蜂,15 工蜂
++0:01 掩护！ - 30 武装战斗机,15 核爆虫,15 巨型虫蜂,15 工蜂
++0:01 掩护！ - 40 重型拦截战斗机,15 核爆虫,15 巨型虫蜂,15 工蜂
++0:01 掩护！ - 30 武装战斗机,15 核爆虫,15 巨型虫蜂,15 工蜂
++0:01 掩护！ - 40 重型拦截战斗机,15 核爆虫,15 巨型虫蜂,15 工蜂
++0:01 掩护！ - 30 武装战斗机,15 核爆虫,15 巨型虫蜂,15 工蜂
++0:01 掩护！ - 40 重型拦截战斗机,15 核爆虫,15 巨型虫蜂,15 工蜂
++0:01 掩护！ - 30 武装战斗机,15 核爆虫,15 巨型虫蜂,15 工蜂
++0:01 掩护！ - 40 重型拦截战斗机,15 核爆虫,15 巨型虫蜂,15 工蜂
++0:01 掩护！ - 70 两栖战机,15 核爆虫,15 巨型虫蜂,15 工蜂
++0:01 掩护！ - 70 两栖战机,15 核爆虫,15 巨型虫蜂,15 工蜂
++2:30 防空洞在哪？ - 50 轰炸战斗机,15 巨型虫蜂
++0:01 防空洞在哪 - 30 轰炸战斗机,15 巨型虫蜂
++0:01 防空洞在哪 - 30 轰炸战斗机,15 巨型虫蜂
++0:01 防空洞在哪 - 20 轰炸战斗机,15 巨型虫蜂
++0:02 防空洞在哪 - 50 导弹战斗机,15 巨型虫蜂
++0:09 防空洞在哪 - 40 导弹战斗机,15 巨型虫蜂
++0:06 防空洞在哪 - 30 导弹战斗机,15 巨型虫蜂
++0:01 防空洞在哪 - 50 导弹战斗机,15 巨型虫蜂
++0:40 只是远距离搓个澡 - 30 聚能离子机甲,15 巨型迸射虫
++0:15 只是远距离搓个澡 - 30 聚能离子机甲,15 巨型迸射虫
++0:10 只是远距离搓个澡 - 10 聚能离子机甲,15 巨型迸射虫
++0:05 只是远距离搓个澡 - 10 聚能离子坦克,15 巨型迸射虫
++0:05 只是远距离搓个澡 - 15 聚能离子坦克,15 巨型迸射虫
++1:00 来点真核弹！！！ - 2 泰坦型战斗蜘蛛,30 核爆虫
++0:01 来点真核弹！！！ - 2 泰坦型战斗蜘蛛,30 核爆虫
++0:01 来点真核弹！！！ - 2 泰坦型战斗蜘蛛,30 核爆虫
++0:01 来点真核弹！！！ - 3 泰坦型战斗蜘蛛,30 核爆虫
++1:00 电力平台 - 40 光棱坦克,30 巨型嗜骨虫
++0:15 电力平台 - 30 光棱坦克,30 巨型嗜骨虫
++0:10 电力平台 - 30 光棱坦克,30 巨型嗜骨虫
++0:05 电力平台 - 26 光棱坦克,30 巨型嗜骨虫
++0:01 电力平台 - 22 光棱坦克,30 巨型嗜骨虫
++0:30 电力平台 - 20 特斯拉机甲平台,30 巨型嗜骨虫
++0:01 电力平台 - 20 特斯拉机甲平台,30 巨型嗜骨虫
++0:30 火力少年王！ - 20 火力平台,30 巨型嗜骨虫
++0:01 火力少年王！ - 20 火力平台,30 巨型嗜骨虫
++0:01 火力少年王！ - 20 火力平台,30 巨型嗜骨虫
++0:01 火力少年王！ - 20 火力平台,30 巨型嗜骨虫
++0:10 偷塞只蜘蛛 - 1 泰坦型战斗蜘蛛
++1:00 ？攻城？ - 60 攻城锤坦克,30 巨型嗜骨虫
++0:15 ？攻城？ - 40 攻城锤坦克,30 巨型嗜骨虫
++0:10 ？攻城？ - 40 攻城锤坦克,30 巨型嗜骨虫
++0:05 ？攻城？ - 10 攻城锤坦克,20 巨型嗜骨虫
++0:00 ？攻城？ - 10 攻城锤坦克,20 巨型嗜骨虫
++0:01 ？攻城？ - 10 攻城锤坦克,20 巨型嗜骨虫
++1:00 飞蛾扑火 - 100 武装战斗机,20 巨型嗜骨虫
++0:01 飞蛾扑火 - 80 武装战斗机,20 巨型嗜骨虫
++0:01 飞蛾扑火 - 60 武装战斗机,20 巨型嗜骨虫
++0:15 飞蛾扑火 - 50 主战坦克,20 巨型嗜骨虫
++0:01 飞蛾扑火 - 40 主战坦克,20 巨型嗜骨虫
++0:01 飞蛾扑火 - 30 主战坦克,20 巨型嗜骨虫
++0:01 飞蛾扑火 - 20 主战坦克,20 巨型嗜骨虫
++0:01 飞蛾扑火 - 10 主战坦克,20 巨型嗜骨虫
++0:30 休息一下 - 0 主战坦克
++0:30 马上回来 - 0 主战坦克
++0:15 虫王亲征 - 5 杀戮者,20 巨型迸射虫
++0:01 虫王亲征 - 4 杀戮者,20 巨型迸射虫
++0:01 虫王亲征 - 4 杀戮者,20 巨型迸射虫
++0:01 虫王亲征 - 5 杀戮者,20 巨型迸射虫
++0:01 虫王亲征 - 3 杀戮者,20 巨型迸射虫
++0:30 天上下蛋了？还是免费的？ - 60 AA光能射束战机,20 巨型迸射虫
++0:05 天上下蛋了？还是免费的？ - 50 轰炸战斗机,20 巨型迸射虫
++0:04 天上下蛋了？还是免费的？ - 60 轰炸战斗机,20 巨型迸射虫
++0:03 天上下蛋了？还是免费的？ - 40 概念型防空机械装甲,20 巨型迸射虫
++0:20 不好是毛毛雨！ - 25 星辰,20 巨型迸射虫
++0:01 不好是毛毛雨！ - 25 星辰,20 巨型迸射虫
++0:01 不好是毛毛雨！ - 25 星辰,20 巨型迸射虫
++0:15 小心你的空中建造者 - 40 重型拦截战斗机
++0:01 小心你的空中建造者 - 60 重型拦截战斗机
++0:01 小心你的空中建造者 - 60 重型拦截战斗机
++0:01 小心你的空中建造者 - 40 重型拦截战斗机
++0:50 天降火球？ - 10 赤焰机甲,15 巨型迸射虫
++0:01 天降火球？ - 9 赤焰机甲,15 巨型迸射虫
++0:01 天降火球？ - 8 赤焰机甲,15 巨型迸射虫
++0:01 天降火球？ - 7 赤焰机甲,15 巨型迸射虫
++0:01 天降火球？ - 6 赤焰机甲,15 巨型迸射虫
++0:31 移动基地 - 2 泰坦型移动基地,15 巨型迸射虫
++0:01 移动基地 - 3 泰坦型移动基地,15 巨型迸射虫
++0:10 移动基地 - 2 泰坦型移动基地,15 巨型迸射虫
++0:10 还有小弟？！ - 70 概念型移动基地T2
++0:01 还有小弟？！ - 60 概念型移动基地T2
++0:01 还有小弟？！ - 50 概念型移动基地T2
++0:01 还有小弟？！ - 40 概念型移动基地T2
++0:01 还有小弟？！ - 30 概念型移动基地T2
++0:50 各式各样的泰坦 - 8 泰坦型悬浮坦克
++0:01 各式各样的泰坦 - 6 泰坦型坦克,2 杀戮者
++0:01 各式各样的泰坦 - 4 泰坦型移动基地,1 杀戮者
++0:15 各式各样的泰坦 - 3 泰坦型战斗蜘蛛,10 巨型迸射虫
++0:20 各式各样的泰坦 - 1 模块化泰坦蜘蛛,50 巨型虫蜂
++3:00 虫族窃取最高科技中… - 1 帝空
++0:01 虫族vs铁锈大陆 - 2 杀戮者
++0:01 虫族vs铁锈大陆 - 2 杀戮者
++0:01 虫族vs铁锈大陆 - 2 杀戮者
++0:01 虫族vs铁锈大陆 - 2 杀戮者
++0:01 虫族vs铁锈大陆 - 2 杀戮者
++2:00 虫子滚出铁锈大陆 - 0 武装战斗机
+</property>
+      </properties>
+    </object>
+    <object name="介绍1" type="unitDetect" id="91" x="300" y="300" width="20" height="20">
+      <properties>
+        <property name="globalMessage" value="提示:毒圈会不定时进行缩圈，共四次。" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="delay" value="10s" />
+      </properties>
+    </object>
+    <object name="介绍2" type="unitDetect" id="91" x="300" y="300" width="20" height="20">
+      <properties>
+        <property name="globalMessage" value="解决方法:摧毁地图中心的维护湾即可" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="delay" value="20s" />
+      </properties>
+    </object>
+    <object name="介绍3" type="unitDetect" id="91" x="300" y="300" width="20" height="20">
+      <properties>
+        <property name="globalMessage" value="地图内存在着时间，注意合理分配哦！" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="delay" value="30s" />
+      </properties>
+    </object>
+    <object name="介绍4" type="unitDetect" id="91" x="300" y="300" width="20" height="20">
+      <properties>
+        <property name="globalMessage" value="提示:援兵会自动过来，无需前往支援点！" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="delay" value="40s" />
+      </properties>
+    </object>
+    <object name="剧情1" type="unitDetect" id="91" x="300" y="300" width="20" height="20">
+      <properties>
+        <property name="globalMessage" value="xx铁锈元年,虫族入侵,遍布毒气,时间异常。另外,陆军部分叛变,而空海…" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="delay" value="0s" />
+      </properties>
+    </object>
+    <object name="剧情2" type="unitDetect" id="91" x="300" y="300" width="20" height="20">
+      <properties>
+        <property name="globalMessage" value="适应结束，铁锈vs虫族正式开战！" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="delay" value="180s" />
+      </properties>
+    </object>
+    <object name="剧情3" type="unitDetect" id="91" x="300" y="300" width="20" height="20">
+      <properties>
+        <property name="globalMessage" value="虫族:嘻嘻,坚持了8分钟不错嘛～不过,还能坚持的了多久呢" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="delay" value="480s" />
+      </properties>
+    </object>
+    <object name="剧情4" type="unitDetect" id="91" x="300" y="300" width="20" height="20">
+      <properties>
+        <property name="globalMessage" value="虫族:哼哼哼,杂鱼玩家们真是不死心呢,杂库杂库♥" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="delay" value="540s" />
+      </properties>
+    </object>
+    <object name="基础毒圈" type="unitAdd" id="5" x="3020" y="3020" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="damagingBorder(techLevel=30)" />
+        <property name="deactivatedBy" value="jinzhiduquan" />
+      </properties>
+    </object>
+    <object name="ai" type="team_info" id="10" x="40" y="60" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="ai" value="survival" />
+        <property name="lockAiDifficulty" value="3" />
+      </properties>
+    </object>
+    <object name="检测维护湾" type="unitDetect" id="16" x="3020" y="3020" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="minUnits" value="1" />
+        <property name="id" value="jihuoduquan" />
+        <property name="resetActivationAfter" value="0s" />
+      </properties>
+    </object>
+    <object name="毒圈1" type="unitAdd" id="21" x="3020" y="3020" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="damagingBorder(techLevel=29)" />
+        <property name="activatedBy" value="jihuoduquan" />
+        <property name="alsoActivate" value="毒圈2" />
+        <property name="deactivatedBy" value="WB" />
+        <property name="warmup" value="180s" />
+        <property name="globalMessage" value="毒气蔓延①" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+      </properties>
+    </object>
+    <object name="毒圈2" type="unitAdd" id="21" x="3020" y="3020" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="damagingBorder(techLevel=28)" />
+        <property name="id" value="毒圈2" />
+        <property name="alsoActivate" value="毒圈3" />
+        <property name="deactivatedBy" value="WB" />
+        <property name="warmup" value="120s" />
+        <property name="globalMessage" value="毒气蔓延②" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+      </properties>
+    </object>
+    <object name="毒圈3" type="unitAdd" id="21" x="3020" y="3020" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="damagingBorder(techLevel=27)" />
+        <property name="id" value="毒圈3" />
+        <property name="alsoActivate" value="毒圈4" />
+        <property name="deactivatedBy" value="WB" />
+        <property name="warmup" value="120s" />
+        <property name="globalMessage" value="毒气蔓延③" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+      </properties>
+    </object>
+    <object name="毒圈4" type="unitAdd" id="21" x="3020" y="3020" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="damagingBorder(techLevel=26)" />
+        <property name="id" value="毒圈4" />
+        <property name="deactivatedBy" value="WB" />
+        <property name="warmup" value="180s" />
+        <property name="globalMessage" value="毒气蔓延④" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+      </properties>
+    </object>
+    <object name="毒圈5" type="unitAdd" id="21" x="3020" y="3020" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="damagingBorder(techLevel=100)" />
+        <property name="activatedBy" value="WB" />
+        <property name="globalMessage" value="毒气已被净化！" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+      </properties>
+    </object>
+    <object name="wenzi" type="mapText" id="90" x="3020" y="3020" width="20" height="20">
+      <properties>
+        <property name="text" value="摧毁维护湾以阻止缩圈" />
+        <property name="textColor" value="red" />
+        <property name="textSize" value="12" />
+        <property name="deactivatedBy" value="WB" />
+      </properties>
+    </object>
+    <object name="维护湾" type="unitAdd" id="24" x="3020" y="3020" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="维护湾*1" />
+      </properties>
+    </object>
+    <object name="炮塔T3" type="unitAdd" id="25" x="3100" y="3020" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="炮塔T3*1" />
+      </properties>
+    </object>
+    <object name="炮塔T3" type="unitAdd" id="26" x="2940" y="3020" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="炮塔T3*1" />
+      </properties>
+    </object>
+    <object name="jinzhiduquan" type="unitDetect" id="27" x="3020" y="3020" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="maxUnits" value="1" />
+        <property name="resetActivationAfter" value="0" />
+        <property name="id" value="A-1" />
+      </properties>
+    </object>
+    <object name="虫族巢穴T2" type="unitAdd" id="29" x="1160" y="1300" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="虫族巢穴T2*2" />
+      </properties>
+    </object>
+    <object name="保护" type="unitAdd" id="29" x="1160" y="1300" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="广射炮T2*50,巨炮T2*50" />
+      </properties>
+    </object>
+    <object name="虫族巢穴T3" type="unitAdd" id="29" x="1160" y="1300" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="虫族巢穴T3*1" />
+        <property name="warmup" value="750s" />
+      </properties>
+    </object>
+    <object name="虫族巢穴T2" type="unitAdd" id="30" x="4860" y="1300" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="虫族巢穴T2*1" />
+      </properties>
+    </object>
+    <object name="保护" type="unitAdd" id="29" x="4860" y="1300" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="广射炮T2*50,巨炮T2*50" />
+      </properties>
+    </object>
+    <object name="虫族巢穴T3" type="unitAdd" id="29" x="4860" y="1300" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="虫族巢穴T3*1" />
+        <property name="warmup" value="800s" />
+      </properties>
+    </object>
+    <object name="黑夜提示" type="unitDetect" id="70" x="2420" y="1860" width="20" height="20">
+      <properties>
+        <property name="globalMessage" value="20s后进入黑夜！" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="delay" value="115s" />
+        <property name="repeatDelay" value="150s" />
+      </properties>
+    </object>
+    <object name="飞3" type="unitAdd" id="7" x="2600" y="7140" width="20" height="20">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="spawnUnits" value="飞行测试模块*1" />
+        <property name="delay" value="60s" />
+        <property name="resetActivationAfter" value="150s" />
+        <property name="globalMessage" value="下午！" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+      </properties>
+    </object>
+    <object name="检测3" type="unitDetect" id="8" x="2560" y="7100" width="100" height="100">
+      <properties>
+        <property name="minUnits" value="1" />
+        <property name="id" value="3" />
+        <property name="resetActivationAfter" value="0s" />
+      </properties>
+    </object>
+    <object name="删除3" type="unitRemove" id="9" x="2560" y="7100" width="100" height="100">
+      <properties>
+        <property name="activatedBy" value="3" />
+        <property name="warmup" value="60s" />
+        <property name="resetActivationAfter" value="150s" />
+      </properties>
+    </object>
+    <object name="检测1" type="unitDetect" id="3" x="2840" y="7100" width="100" height="100">
+      <properties>
+        <property name="minUnits" value="1" />
+        <property name="id" value="1" />
+        <property name="resetActivationAfter" value="0s" />
+      </properties>
+    </object>
+    <object name="飞1" type="unitAdd" id="4" x="2880" y="7140" width="20" height="20">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="spawnUnits" value="飞行测试模块*1" />
+        <property name="delay" value="100s" />
+        <property name="resetActivationAfter" value="150s" />
+        <property name="globalMessage" value="晚上！" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+      </properties>
+    </object>
+    <object name="删除1" type="unitRemove" id="5" x="2840" y="7100" width="100" height="100">
+      <properties>
+        <property name="activatedBy" value="1" />
+        <property name="warmup" value="40s" />
+        <property name="resetActivationAfter" value="150s" />
+      </properties>
+    </object>
+    <object name="飞2" type="unitAdd" id="7" x="3160" y="7140" width="20" height="20">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="spawnUnits" value="飞行测试模块*1" />
+        <property name="delay" value="140s" />
+        <property name="resetActivationAfter" value="150s" />
+        <property name="globalMessage" value="午夜降临！" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+      </properties>
+    </object>
+    <object name="检测2" type="unitDetect" id="8" x="3120" y="7100" width="100" height="100">
+      <properties>
+        <property name="minUnits" value="1" />
+        <property name="id" value="2" />
+        <property name="resetActivationAfter" value="0s" />
+      </properties>
+    </object>
+    <object name="删除2" type="unitRemove" id="9" x="3120" y="7100" width="100" height="100">
+      <properties>
+        <property name="activatedBy" value="2" />
+        <property name="warmup" value="10s" />
+        <property name="resetActivationAfter" value="150s" />
+        <property name="globalMessage" value="早上！" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+      </properties>
+    </object>
+    <object name="attack_point" id="10" x="3020" y="2660" width="20" height="20" />
+    <object name="attack_point" id="11" x="3840" y="2080" width="20" height="20" />
+    <object name="attack_point" id="12" x="2180" y="2080" width="20" height="20" />
+    <object name="虫族巢穴T2" type="unitAdd" id="53" x="3020" y="400" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="虫族巢穴T2*2" />
+      </properties>
+    </object>
+    <object name="虫塔" type="unitAdd" id="55" x="2500" y="5260" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巨型虫塔*2" />
+        <property name="warmup" value="880s" />
+      </properties>
+    </object>
+    <object name="防御塔" type="unitAdd" id="55" x="2500" y="5260" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="棱镜防御塔T2*3" />
+        <property name="warmup" value="880s" />
+      </properties>
+    </object>
+    <object name="虫塔" type="unitAdd" id="57" x="2660" y="5260" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巨型虫塔*2" />
+        <property name="warmup" value="880s" />
+      </properties>
+    </object>
+    <object name="虫塔" type="unitAdd" id="58" x="3140" y="5260" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巨型虫塔*2" />
+        <property name="warmup" value="880s" />
+      </properties>
+    </object>
+    <object name="虫塔" type="unitAdd" id="59" x="2820" y="5260" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巨型虫塔*2" />
+        <property name="warmup" value="880s" />
+      </properties>
+    </object>
+    <object name="虫塔" type="unitAdd" id="60" x="3300" y="5260" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巨型虫塔*2" />
+        <property name="warmup" value="880s" />
+      </properties>
+    </object>
+    <object name="虫塔" type="unitAdd" id="61" x="2980" y="5260" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巨型虫塔*2" />
+        <property name="warmup" value="880s" />
+      </properties>
+    </object>
+    <object name="虫塔" type="unitAdd" id="62" x="2980" y="5260" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巨型虫塔*2" />
+        <property name="warmup" value="880s" />
+      </properties>
+    </object>
+    <object name="虫塔" type="unitAdd" id="63" x="3460" y="5260" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巨型虫塔*2" />
+        <property name="warmup" value="880s" />
+      </properties>
+    </object>
+    <object name="attack_point" id="50" x="3020" y="3160" width="20" height="20" />
+    <object name="防御塔" type="unitAdd" id="50" x="2660" y="5260" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="棱镜防御塔T2*3" />
+        <property name="warmup" value="880s" />
+      </properties>
+    </object>
+    <object name="防御塔" type="unitAdd" id="51" x="2820" y="5260" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="棱镜防御塔T2*3" />
+        <property name="warmup" value="880s" />
+      </properties>
+    </object>
+    <object name="防御塔" type="unitAdd" id="52" x="2980" y="5260" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="棱镜防御塔T2*3" />
+        <property name="warmup" value="880s" />
+      </properties>
+    </object>
+    <object name="防御塔" type="unitAdd" id="53" x="3140" y="5260" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="棱镜防御塔T2*3" />
+        <property name="warmup" value="880s" />
+      </properties>
+    </object>
+    <object name="防御塔" type="unitAdd" id="54" x="3300" y="5260" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="棱镜防御塔T2*3" />
+        <property name="warmup" value="880s" />
+      </properties>
+    </object>
+    <object name="防御塔" type="unitAdd" id="55" x="3460" y="5260" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="棱镜防御塔T2*3" />
+        <property name="warmup" value="880s" />
+      </properties>
+    </object>
+    <object name="海军支援1左" type="unitAdd" id="50" x="1980" y="3000" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="武装导弹舰T2*40,重型战列舰T2*30,重机枪艇T2*40" />
+        <property name="warmup" value="1640s" />
+        <property name="alsoActivate" value="Z-l1" />
+        <property name="globalMessage" value="海军来袭①" />
+        <property name="globalMessage_textColor" value="blue" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="海军支援1右" type="unitAdd" id="50" x="4040" y="3000" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="武装导弹舰T2*40,重型战列舰T2*30,重机枪艇T2*40" />
+        <property name="warmup" value="1640s" />
+        <property name="showOnMap" value="true" />
+        <property name="alsoActivate" value="Z-r1" />
+      </properties>
+    </object>
+    <object name="支援2" type="unitAdd" id="50" x="1980" y="3000" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巨型战舰T2*15,巨型战舰T1*10" />
+        <property name="warmup" value="40s" />
+        <property name="id" value="Z-l1" />
+        <property name="alsoActivate" value="Z-l2" />
+        <property name="globalMessage" value="海军来袭②" />
+        <property name="globalMessage_textColor" value="blue" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="支援2" type="unitAdd" id="50" x="4040" y="3000" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巨型战舰T2*15,巨型战舰T1*10" />
+        <property name="warmup" value="40s" />
+        <property name="showOnMap" value="true" />
+        <property name="id" value="Z-r1" />
+        <property name="alsoActivate" value="Z-r2" />
+      </properties>
+    </object>
+    <object name="支援3" type="unitAdd" id="50" x="1980" y="3000" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巨型导弹舰T2*15,巨型导弹舰T1*15" />
+        <property name="warmup" value="60s" />
+        <property name="id" value="Z-l2" />
+        <property name="alsoActivate" value="Z-l3" />
+        <property name="globalMessage" value="海军来袭③" />
+        <property name="globalMessage_textColor" value="blue" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="支援3" type="unitAdd" id="50" x="4040" y="3000" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巨型导弹舰T2*15,巨型导弹舰T1*15" />
+        <property name="warmup" value="60s" />
+        <property name="showOnMap" value="true" />
+        <property name="id" value="Z-r2" />
+        <property name="alsoActivate" value="Z-r3" />
+      </properties>
+    </object>
+    <object name="支援4" type="unitAdd" id="50" x="1980" y="3000" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="航空巨舰T2*15,唐冠螺号T2*12,重型机枪艇*40" />
+        <property name="warmup" value="50s" />
+        <property name="id" value="Z-l3" />
+        <property name="alsoActivate" value="Z-l4" />
+        <property name="globalMessage" value="海军来袭④" />
+        <property name="globalMessage_textColor" value="blue" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="支援4" type="unitAdd" id="50" x="4040" y="3000" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="航空巨舰T2*15,唐冠螺号T2*12,重型机枪艇*40" />
+        <property name="warmup" value="50s" />
+        <property name="showOnMap" value="true" />
+        <property name="id" value="Z-r3" />
+        <property name="alsoActivate" value="Z-r4" />
+      </properties>
+    </object>
+    <object name="支援5" type="unitAdd" id="50" x="1980" y="3000" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巨型潜艇T2*15" />
+        <property name="warmup" value="30s" />
+        <property name="id" value="Z-l4" />
+        <property name="globalMessage" value="水下波动！" />
+        <property name="globalMessage_textColor" value="blue" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="支援5" type="unitAdd" id="50" x="4040" y="3000" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巨型潜艇T2*15" />
+        <property name="warmup" value="30s" />
+        <property name="showOnMap" value="true" />
+        <property name="id" value="Z-r4" />
+      </properties>
+    </object>
+    <object name="固定刷兵点左1" type="unitAdd" id="50" x="1980" y="3000" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巨型战列舰*10" />
+        <property name="warmup" value="1900s" />
+        <property name="resetActivationAfter" value="60s" />
+        <property name="globalMessage" value="战列舰来袭！" />
+        <property name="globalMessage_textColor" value="blue" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="固定刷兵点右1" type="unitAdd" id="50" x="4040" y="3000" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巨型战列舰*10" />
+        <property name="warmup" value="1900s" />
+        <property name="resetActivationAfter" value="60s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="固定刷兵点左2" type="unitAdd" id="50" x="1980" y="3000" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="概念型战舰*1,导弹战舰*1" />
+        <property name="warmup" value="2160s" />
+        <property name="resetActivationAfter" value="120s" />
+        <property name="globalMessage" value="战舰来袭！" />
+        <property name="globalMessage_textColor" value="blue" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="固定刷兵点右2" type="unitAdd" id="50" x="4040" y="3000" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="概念型战舰*1,导弹战舰*1" />
+        <property name="warmup" value="2160s" />
+        <property name="resetActivationAfter" value="120s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="我军固定支援点1" type="unitAdd" id="50" x="1400" y="4700" width="20" height="20">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="spawnUnits" value="重型防空导弹坦克T2(spawnChance=0.5343,maxSpawnLimit=2),高能离子坦克T2(spawnChance=0.54403,maxSpawnLimit=2),原型坦克T2(spawnChance=0.5353,maxSpawnLimit=2),重型对地导弹坦克T2(spawnChance=0.5133,maxSpawnLimit=2),战锤重炮坦克T2(spawnChance=0.5363,maxSpawnLimit=2),原型气垫坦克T2(spawnChance=0.5313,maxSpawnLimit=2),棱镜坦克T2(spawnChance=0.5233,maxSpawnLimit=2),重型猛犸坦克T2(spawnChance=0.5233,maxSpawnLimit=2),标准机甲T2(spawnChance=0.5343,maxSpawnLimit=2),导弹机甲T2(spawnChance=0.5313,maxSpawnLimit=2),移动平台T2(spawnChance=0.5353,maxSpawnLimit=2),重炮机甲T2(spawnChance=0.5333,maxSpawnLimit=2),重机枪机甲T2(spawnChance=0.5363,maxSpawnLimit=2),高能离子机甲T2(spawnChance=0.5299,maxSpawnLimit=2),烈焰机甲T2(spawnChance=0.5315,maxSpawnLimit=2),巨型防空机械装甲T2(spawnChance=0.5233,maxSpawnLimit=2),特斯拉机甲塔T2(spawnChance=0.5329,maxSpawnLimit=2),高机动武装直升机T2(spawnChance=0.5313,maxSpawnLimit=2),重型拦截战机T2(spawnChance=0.5233,maxSpawnLimit=2),拦截战机T2(spawnChance=0.5333,maxSpawnLimit=2),攻击直升机T2(spawnChance=0.5333,maxSpawnLimit=2),武装喷气机T2(spawnChance=0.5333,maxSpawnLimit=2),两栖喷气战机T2(spawnChance=0.5333,maxSpawnLimit=2),AA棱镜射束战机T2(spawnChance=0.5303,maxSpawnLimit=2),轰炸战机T2(spawnChance=0.5313,maxSpawnLimit=2),导弹战机T2(spawnChance=0.5333,maxSpawnLimit=2),六翼T2(spawnChance=0.5333,maxSpawnLimit=2),巨型喷射虫T3(spawnChance=0.5333,maxSpawnLimit=2)" />
+        <property name="warmup" value="300s" />
+        <property name="resetActivationAfter" value="90s" />
+        <property name="globalMessage" value="我军支援已到位" />
+        <property name="globalMessage_textColor" value="green" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="showOnMap" value="true" />
+        <property name="deactivatedBy" value="B-1" />
+      </properties>
+    </object>
+    <object name="固定支援点文字1" type="mapText" id="90" x="1400" y="4700" width="20" height="20">
+      <properties>
+        <property name="text" value="支援点1" />
+        <property name="textColor" value="green" />
+        <property name="textSize" value="12" />
+        <property name="deactivatedBy" value="B-1" />
+      </properties>
+    </object>
+    <object name="我军固定支援点2" type="unitAdd" id="50" x="4620" y="4700" width="20" height="20">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="spawnUnits" value="重型防空导弹坦克T2(spawnChance=0.5343,maxSpawnLimit=2),高能离子坦克T2(spawnChance=0.54403,maxSpawnLimit=2),原型坦克T2(spawnChance=0.5353,maxSpawnLimit=2),重型对地导弹坦克T2(spawnChance=0.5133,maxSpawnLimit=2),战锤重炮坦克T2(spawnChance=0.5363,maxSpawnLimit=2),原型气垫坦克T2(spawnChance=0.5313,maxSpawnLimit=2),棱镜坦克T2(spawnChance=0.5233,maxSpawnLimit=2),重型猛犸坦克T2(spawnChance=0.5233,maxSpawnLimit=2),标准机甲T2(spawnChance=0.5343,maxSpawnLimit=2),导弹机甲T2(spawnChance=0.5313,maxSpawnLimit=2),移动平台T2(spawnChance=0.5353,maxSpawnLimit=2),重炮机甲T2(spawnChance=0.5333,maxSpawnLimit=2),重机枪机甲T2(spawnChance=0.5363,maxSpawnLimit=2),高能离子机甲T2(spawnChance=0.5299,maxSpawnLimit=2),烈焰机甲T2(spawnChance=0.5315,maxSpawnLimit=2),巨型防空机械装甲T2(spawnChance=0.5233,maxSpawnLimit=2),特斯拉机甲塔T2(spawnChance=0.5329,maxSpawnLimit=2),高机动武装直升机T2(spawnChance=0.5313,maxSpawnLimit=2),重型拦截战机T2(spawnChance=0.5233,maxSpawnLimit=2),拦截战机T2(spawnChance=0.5333,maxSpawnLimit=2),攻击直升机T2(spawnChance=0.5333,maxSpawnLimit=2),武装喷气机T2(spawnChance=0.5333,maxSpawnLimit=2),两栖喷气战机T2(spawnChance=0.5333,maxSpawnLimit=2),AA棱镜射束战机T2(spawnChance=0.5303,maxSpawnLimit=2),轰炸战机T2(spawnChance=0.5313,maxSpawnLimit=2),导弹战机T2(spawnChance=0.5333,maxSpawnLimit=2),六翼T2(spawnChance=0.5333,maxSpawnLimit=2),巨型喷射虫T3(spawnChance=0.5333,maxSpawnLimit=2)" />
+        <property name="warmup" value="300s" />
+        <property name="resetActivationAfter" value="90s" />
+        <property name="globalMessage" value="我军支援已到位" />
+        <property name="globalMessage_textColor" value="green" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="showOnMap" value="true" />
+        <property name="deactivatedBy" value="B-1" />
+      </properties>
+    </object>
+    <object name="固定支援点文字2" type="mapText" id="90" x="4620" y="4700" width="20" height="20">
+      <properties>
+        <property name="text" value="支援点2" />
+        <property name="textColor" value="green" />
+        <property name="textSize" value="12" />
+        <property name="deactivatedBy" value="B-1" />
+      </properties>
+    </object>
+    <object name="核爆通告" type="unitDetect" id="50" x="0" y="1400" width="20" height="20">
+      <properties>
+        <property name="warmup" value="2610s" />
+        <property name="globalMessage" value="虫族全面入侵,全部清场，这次我看你们还能坚持多久" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+      </properties>
+    </object>
+    <object name="虫族巢穴T6" type="unitAdd" id="50" x="1160" y="1300" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="虫族巢穴T6*5" />
+        <property name="warmup" value="2700s" />
+      </properties>
+    </object>
+    <object name="虫族巢穴T6" type="unitAdd" id="51" x="3020" y="400" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="虫族巢穴T6*3" />
+        <property name="warmup" value="2700s" />
+      </properties>
+    </object>
+    <object name="虫族巢穴T6" type="unitAdd" id="52" x="4860" y="1300" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="虫族巢穴T6*5" />
+        <property name="warmup" value="2700s" />
+      </properties>
+    </object>
+    <object name="虫族巢穴T6" type="unitAdd" id="55" x="3000" y="2480" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="虫族巢穴T6*10" />
+        <property name="warmup" value="2700s" />
+        <property name="globalMessage" value="人类杂鱼们！希望你们能给我带来点欢愉♥" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+      </properties>
+    </object>
+    <object name="虫族防御" type="unitAdd" id="56" x="2780" y="2700" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巨型虫塔*10,重型机炮T2*10,光能防御塔*5" />
+        <property name="warmup" value="2700s" />
+      </properties>
+    </object>
+    <object name="虫族防御" type="unitAdd" id="58" x="3240" y="2700" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巨型虫塔*10,重型机炮T2*10,光能防御塔*5" />
+        <property name="warmup" value="2700s" />
+      </properties>
+    </object>
+    <object name="降临随机实验单位" type="unitAdd" id="58" x="3240" y="2700" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="杀人蜂(spawnChance=0.55033,maxSpawnLimit=2),泰坦型坦克(spawnChance=0.55033,maxSpawnLimit=2),泰坦型悬浮坦克(spawnChance=0.55033,maxSpawnLimit=2),泰坦型战斗蜘蛛(spawnChance=0.55003,maxSpawnLimit=2),泽拉迪(spawnChance=0.55003,maxSpawnLimit=2),泰坦型移动基地(spawnChance=0.55009,maxSpawnLimit=2),模块化泰坦蜘蛛(spawnChance=0.55009,maxSpawnLimit=2),杀戮者(spawnChance=0.55009,maxSpawnLimit=2)" />
+        <property name="warmup" value="2760s" />
+        <property name="resetActivationAfter" value="90s" />
+        <property name="globalMessage" value="虫族使用了黑洞传送！" />
+        <property name="globalMessage_textColor" value="blue" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="偷矿" type="unitAdd" id="58" x="2220" y="5940" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="赤焰机甲*2" />
+        <property name="warmup" value="2820s" />
+        <property name="resetActivationAfter" value="210s" />
+        <property name="globalMessage" value="偷家♥嘻嘻" />
+        <property name="globalMessage_textColor" value="yellow" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="偷矿" type="unitAdd" id="58" x="2420" y="5940" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="赤焰机甲*2" />
+        <property name="warmup" value="2820s" />
+        <property name="resetActivationAfter" value="210s" />
+      </properties>
+    </object>
+    <object name="偷矿" type="unitAdd" id="58" x="2620" y="5940" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="赤焰机甲*2" />
+        <property name="warmup" value="2820s" />
+        <property name="resetActivationAfter" value="210s" />
+      </properties>
+    </object>
+    <object name="偷矿" type="unitAdd" id="58" x="2820" y="5940" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="赤焰机甲*2" />
+        <property name="warmup" value="2820s" />
+        <property name="resetActivationAfter" value="210s" />
+      </properties>
+    </object>
+    <object name="偷矿" type="unitAdd" id="58" x="3020" y="5940" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="赤焰机甲*2" />
+        <property name="warmup" value="2820s" />
+        <property name="resetActivationAfter" value="210s" />
+      </properties>
+    </object>
+    <object name="偷矿" type="unitAdd" id="58" x="3220" y="5940" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="赤焰机甲*2" />
+        <property name="warmup" value="2820s" />
+        <property name="resetActivationAfter" value="210s" />
+      </properties>
+    </object>
+    <object name="偷矿" type="unitAdd" id="58" x="3420" y="5940" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="赤焰机甲*2" />
+        <property name="warmup" value="2820s" />
+        <property name="resetActivationAfter" value="210s" />
+      </properties>
+    </object>
+    <object name="偷矿" type="unitAdd" id="58" x="3620" y="5940" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="赤焰机甲*2" />
+        <property name="warmup" value="2820s" />
+        <property name="resetActivationAfter" value="210s" />
+      </properties>
+    </object>
+    <object name="偷矿" type="unitAdd" id="58" x="3820" y="5940" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="赤焰机甲*2" />
+        <property name="warmup" value="2820s" />
+        <property name="resetActivationAfter" value="210s" />
+      </properties>
+    </object>
+    <object name="3号固定刷兵点左" type="unitAdd" id="58" x="1620" y="2360" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="星空号*10,巨象坦克*10" />
+        <property name="warmup" value="2820s" />
+        <property name="resetActivationAfter" value="60s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="3号固定刷兵点右" type="unitAdd" id="58" x="4400" y="2360" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="星空号*10,巨象坦克*10" />
+        <property name="warmup" value="2820s" />
+        <property name="resetActivationAfter" value="60s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="4号固定刷兵点左" type="unitAdd" id="58" x="1620" y="2560" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="杀戮者*1" />
+        <property name="warmup" value="2860s" />
+        <property name="resetActivationAfter" value="60s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="4号固定刷兵点右" type="unitAdd" id="58" x="4400" y="2560" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="杀戮者*1" />
+        <property name="warmup" value="2860s" />
+        <property name="resetActivationAfter" value="60s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="支援的防御塔" type="unitAdd" id="52" x="2200" y="5420" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="spawnUnits" value="高射炮T2*1,炮塔T2*1" />
+        <property name="warmup" value="40s" />
+        <property name="globalMessage" value="我军炮塔已支援" />
+        <property name="globalMessage_textColor" value="green" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="支援的防御塔" type="unitAdd" id="53" x="2400" y="5420" width="20" height="20">
+      <properties>
+        <property name="team" value="2" />
+        <property name="spawnUnits" value="高射炮T2*1,炮塔T2*1" />
+        <property name="warmup" value="40s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="支援的防御塔" type="unitAdd" id="53" x="2600" y="5420" width="20" height="20">
+      <properties>
+        <property name="team" value="3" />
+        <property name="spawnUnits" value="高射炮T2*1,炮塔T2*1" />
+        <property name="warmup" value="40s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="支援的防御塔" type="unitAdd" id="53" x="2800" y="5420" width="20" height="20">
+      <properties>
+        <property name="team" value="4" />
+        <property name="spawnUnits" value="高射炮T2*1,炮塔T2*1" />
+        <property name="warmup" value="40s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="支援的防御塔" type="unitAdd" id="53" x="3000" y="5420" width="20" height="20">
+      <properties>
+        <property name="team" value="5" />
+        <property name="spawnUnits" value="高射炮T2*1,炮塔T2*1" />
+        <property name="warmup" value="40s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="支援的防御塔" type="unitAdd" id="53" x="3200" y="5420" width="20" height="20">
+      <properties>
+        <property name="team" value="6" />
+        <property name="spawnUnits" value="高射炮T2*1,炮塔T2*1" />
+        <property name="warmup" value="40s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="支援的防御塔" type="unitAdd" id="53" x="3400" y="5420" width="20" height="20">
+      <properties>
+        <property name="team" value="7" />
+        <property name="spawnUnits" value="高射炮T2*1,炮塔T2*1" />
+        <property name="warmup" value="40s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="支援的防御塔" type="unitAdd" id="53" x="3600" y="5420" width="20" height="20">
+      <properties>
+        <property name="team" value="8" />
+        <property name="spawnUnits" value="高射炮T2*1,炮塔T2*1" />
+        <property name="warmup" value="40s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="支援的防御塔" type="unitAdd" id="53" x="3800" y="5420" width="20" height="20">
+      <properties>
+        <property name="team" value="9" />
+        <property name="spawnUnits" value="高射炮T2*1,炮塔T2*1" />
+        <property name="warmup" value="40s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="attack_point" id="54" x="3040" y="3160" width="20" height="20" />
+    <object name="attack_point" id="55" x="2520" y="3820" width="20" height="20" />
+    <object name="attack_point" id="56" x="3420" y="3820" width="20" height="20" />
+    <object name="角落固定刷兵点左1" type="unitAdd" id="50" x="40" y="5960" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巨型嗜骨虫*10" />
+        <property name="warmup" value="1030s" />
+        <property name="resetActivationAfter" value="60s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="角落固定刷兵点右1" type="unitAdd" id="50" x="5980" y="5960" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巨型嗜骨虫*10" />
+        <property name="warmup" value="1030s" />
+        <property name="resetActivationAfter" value="60s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="角落固定刷兵点左2" type="unitAdd" id="50" x="40" y="5960" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="杀戮者*1" />
+        <property name="warmup" value="1450s" />
+        <property name="resetActivationAfter" value="120s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="角落固定刷兵点右2" type="unitAdd" id="50" x="5980" y="5960" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="杀戮者*1" />
+        <property name="warmup" value="1450s" />
+        <property name="resetActivationAfter" value="120s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="1" type="changeCredits" id="66" x="160" y="2180" width="20" height="20">
+      <properties>
+        <property name="add" value="500000000" />
+        <property name="team" value="0" />
+        <property name="warmup" value="2610s" />
+        <property name="globalMessage" value="我军经济支援5亿" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="globalMessage_textColor" value="green" />
+      </properties>
+    </object>
+    <object name="3" type="changeCredits" id="67" x="280" y="2180" width="20" height="20">
+      <properties>
+        <property name="add" value="500000000" />
+        <property name="team" value="2" />
+        <property name="warmup" value="2610s" />
+      </properties>
+    </object>
+    <object name="4" type="changeCredits" id="68" x="340" y="2180" width="20" height="20">
+      <properties>
+        <property name="add" value="500000000" />
+        <property name="team" value="3" />
+        <property name="warmup" value="2610s" />
+      </properties>
+    </object>
+    <object name="5" type="changeCredits" id="69" x="400" y="2180" width="20" height="20">
+      <properties>
+        <property name="add" value="500000000" />
+        <property name="team" value="4" />
+        <property name="warmup" value="2610s" />
+      </properties>
+    </object>
+    <object name="6" type="changeCredits" id="70" x="460" y="2180" width="20" height="20">
+      <properties>
+        <property name="add" value="500000000" />
+        <property name="team" value="5" />
+        <property name="warmup" value="2610s" />
+      </properties>
+    </object>
+    <object name="7" type="changeCredits" id="71" x="520" y="2180" width="20" height="20">
+      <properties>
+        <property name="add" value="500000000" />
+        <property name="team" value="6" />
+        <property name="warmup" value="2610s" />
+      </properties>
+    </object>
+    <object name="8" type="changeCredits" id="72" x="580" y="2180" width="20" height="20">
+      <properties>
+        <property name="add" value="500000000" />
+        <property name="team" value="7" />
+        <property name="warmup" value="2610s" />
+      </properties>
+    </object>
+    <object name="9" type="changeCredits" id="73" x="640" y="2180" width="20" height="20">
+      <properties>
+        <property name="add" value="500000000" />
+        <property name="team" value="8" />
+        <property name="warmup" value="2610s" />
+      </properties>
+    </object>
+    <object name="10" type="changeCredits" id="74" x="700" y="2180" width="20" height="20">
+      <properties>
+        <property name="add" value="500000000" />
+        <property name="team" value="9" />
+        <property name="warmup" value="2610s" />
+      </properties>
+    </object>
+    <object name="中立move1" type="move" id="51" x="1100" y="4500" width="740" height="440">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="target" value="目的地1" />
+        <property name="unload" value="" />
+        <property name="resetActivationAfter" value="90s" />
+        <property name="warmup" value="300s" />
+      </properties>
+    </object>
+    <object name="目的地1" type="point" id="52" x="2220" y="5280" width="20" height="20" />
+    <object name="中立move2" type="move" id="53" x="4200" y="4500" width="740" height="440">
+      <properties>
+        <property name="team" value="-1" />
+        <property name="target" value="目的地2" />
+        <property name="unload" value="" />
+        <property name="resetActivationAfter" value="90s" />
+        <property name="warmup" value="300s" />
+      </properties>
+    </object>
+    <object name="目的地2" type="point" id="54" x="3760" y="5280" width="20" height="20" />
+    <object name="蜘蛛" type="unitAdd" id="50" x="5240" y="3280" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="泰坦型战斗蜘蛛*1" />
+        <property name="warmup" value="2610s" />
+        <property name="resetActivationAfter" value="120s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="蜘蛛move" type="move" id="51" x="760" y="3260" width="60" height="60">
+      <properties>
+        <property name="team" value="1" />
+        <property name="target" value="目的地3" />
+        <property name="unload" value="" />
+        <property name="resetActivationAfter" value="100" />
+      </properties>
+    </object>
+    <object name="目的地3" type="point" id="53" x="2960" y="5420" width="20" height="20" />
+    <object name="蜘蛛" type="unitAdd" id="50" x="2120" y="3740" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="泰坦型战斗蜘蛛*1" />
+        <property name="warmup" value="2610s" />
+        <property name="resetActivationAfter" value="180s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="蜘蛛" type="unitAdd" id="51" x="1660" y="1900" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="泰坦型战斗蜘蛛*1" />
+        <property name="resetActivationAfter" value="210s" />
+        <property name="warmup" value="2610s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="蜘蛛" type="unitAdd" id="52" x="780" y="3280" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="泰坦型战斗蜘蛛*1" />
+        <property name="warmup" value="2610s" />
+        <property name="resetActivationAfter" value="150s" />
+        <property name="globalMessage" value="人形核弹！" />
+        <property name="globalMessage_textColor" value="blue" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="蜘蛛" type="unitAdd" id="53" x="4360" y="1900" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="泰坦型战斗蜘蛛*1" />
+        <property name="warmup" value="2610s" />
+        <property name="resetActivationAfter" value="240s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="蜘蛛" type="unitAdd" id="54" x="3900" y="3740" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="泰坦型战斗蜘蛛*1" />
+        <property name="warmup" value="2610s" />
+        <property name="resetActivationAfter" value="180s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="蜘蛛" type="unitAdd" id="55" x="3020" y="4040" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="泰坦型战斗蜘蛛*1" />
+        <property name="warmup" value="2610s" />
+        <property name="resetActivationAfter" value="300s" />
+        <property name="showOnMap" value="true" />
+      </properties>
+    </object>
+    <object name="蜘蛛move" type="move" id="50" x="1650" y="1890" width="40" height="40">
+      <properties>
+        <property name="team" value="1" />
+        <property name="target" value="目的地3" />
+        <property name="unload" value="" />
+        <property name="resetActivationAfter" value="100" />
+      </properties>
+    </object>
+    <object name="蜘蛛move" type="move" id="51" x="2100" y="3720" width="60" height="60">
+      <properties>
+        <property name="team" value="1" />
+        <property name="target" value="目的地3" />
+        <property name="unload" value="" />
+        <property name="resetActivationAfter" value="100" />
+      </properties>
+    </object>
+    <object name="蜘蛛move" type="move" id="52" x="3880" y="3720" width="60" height="60">
+      <properties>
+        <property name="team" value="1" />
+        <property name="target" value="目的地3" />
+        <property name="unload" value="" />
+        <property name="resetActivationAfter" value="100" />
+      </properties>
+    </object>
+    <object name="蜘蛛move" type="move" id="53" x="3010" y="4030" width="40" height="40">
+      <properties>
+        <property name="team" value="1" />
+        <property name="target" value="目的地3" />
+        <property name="unload" value="" />
+        <property name="resetActivationAfter" value="100" />
+      </properties>
+    </object>
+    <object name="蜘蛛move" type="move" id="54" x="4350" y="1890" width="40" height="40">
+      <properties>
+        <property name="team" value="1" />
+        <property name="target" value="目的地3" />
+        <property name="unload" value="" />
+        <property name="resetActivationAfter" value="100" />
+      </properties>
+    </object>
+    <object name="蜘蛛move" type="move" id="55" x="5220" y="3260" width="60" height="60">
+      <properties>
+        <property name="team" value="1" />
+        <property name="target" value="目的地3" />
+        <property name="unload" value="" />
+        <property name="resetActivationAfter" value="100" />
+      </properties>
+    </object>
+    <object name="反核" type="unitAdd" id="50" x="1260" y="1280" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巡航反核防御系统*1" />
+        <property name="warmup" value="10s" />
+      </properties>
+    </object>
+    <object name="反核" type="unitAdd" id="51" x="3020" y="300" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巡航反核防御系统*1" />
+        <property name="warmup" value="10s" />
+      </properties>
+    </object>
+    <object name="反核" type="unitAdd" id="52" x="4780" y="1200" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="巡航反核防御系统*1" />
+        <property name="warmup" value="10s" />
+      </properties>
+    </object>
+    <object name="检测帝空" type="unitDetect" id="50" x="0" y="0" width="6020" height="6100">
+      <properties>
+        <property name="unitType" value="帝空" />
+        <property name="alsoActivate" value="DK" />
+        <property name="resetActivationAfter" value="100" />
+      </properties>
+    </object>
+    <object name="飞行模块" type="unitAdd" id="51" x="100" y="-220" width="20" height="20">
+      <properties>
+        <property name="spawnUnits" value="飞行测试模块" />
+        <property name="team" value="1" />
+        <property name="warmup" value="4000s" />
+      </properties>
+    </object>
+    <object name="检测模块" type="unitDetect" id="53" x="100" y="-220" width="20" height="20">
+      <properties>
+        <property name="unitType" value="飞行测试模块*1" />
+        <property name="maxUnits" value="0" />
+        <property name="alsoActivate" value="DK" />
+        <property name="resetActivationAfter" value="100" />
+      </properties>
+    </object>
+    <object name="生成帝空" type="unitAdd" id="50" x="3000" y="2560" width="20" height="20">
+      <properties>
+        <property name="spawnUnits" value="帝空" />
+        <property name="team" value="1" />
+        <property name="id" value="DK" />
+        <property name="globalMessage" value="检测到帝空，虫族使用时光乱流" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="allToActivate" value="true" />
+      </properties>
+    </object>
+    <object name="ai行为" type="ai_allow_full_use" id="50" x="0" y="0" width="6020" height="2700" />
+    <object name="一次性核打击" type="unitAdd" id="50" x="1520" y="5240" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="泰坦型战斗蜘蛛*2" />
+        <property name="warmup" value="2610s" />
+      </properties>
+    </object>
+    <object name="一次性核打击" type="unitAdd" id="51" x="4500" y="5240" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="泰坦型战斗蜘蛛*2" />
+        <property name="warmup" value="2610s" />
+      </properties>
+    </object>
+    <object name="导弹舰固定点" type="unitAdd" id="50" x="760" y="3640" width="20" height="20">
+      <properties>
+        <property name="warmup" value="1820s" />
+        <property name="team" value="1" />
+        <property name="resetActivationAfter" value="120s" />
+        <property name="spawnUnits" value="导弹战舰*2" />
+      </properties>
+    </object>
+    <object name="导弹舰固定点" type="unitAdd" id="51" x="5260" y="3640" width="20" height="20">
+      <properties>
+        <property name="warmup" value="1820s" />
+        <property name="team" value="1" />
+        <property name="resetActivationAfter" value="120s" />
+        <property name="spawnUnits" value="导弹战舰*2" />
+      </properties>
+    </object>
+    <object name="塔" type="unitAdd" id="52" x="1100" y="4960" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="warmup" value="1830s" />
+        <property name="spawnUnits" value="光能防御塔T2*3" />
+        <property name="resetActivationAfter" value="120s" />
+      </properties>
+    </object>
+    <object name="塔" type="unitAdd" id="53" x="4920" y="4960" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="warmup" value="1830s" />
+        <property name="spawnUnits" value="光能防御塔T2*3" />
+        <property name="resetActivationAfter" value="120s" />
+      </properties>
+    </object>
+    <object name="模块事件" type="unitAdd" id="50" x="660" y="-1480" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="飞行测试模块(spawnChance=1,offsetRandomX=400)" />
+        <property name="resetActivationAfter" value="20s" />
+        <property name="warmup" value="1400s" />
+        <property name="deactivatedBy" value="jz-sj1,jz-sj2" />
+      </properties>
+    </object>
+    <object name="事件说明" type="unitDetect" id="51" x="540" y="-1480" width="20" height="20">
+      <properties>
+        <property name="delay" value="1200s" />
+        <property name="globalMessage" value="游戏已进行20分钟,现阶段开启随机事件" />
+        <property name="globalMessage_textColor" value="yellow" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+      </properties>
+    </object>
+    <object name="事件1" type="unitDetect" id="51" x="540" y="-1480" width="20" height="20">
+      <properties>
+        <property name="minUnits" value="1" />
+        <property name="unitType" value="飞行测试模块" />
+        <property name="id" value="shij1" />
+        <property name="globalMessage" value="触发事件:血月降临！" />
+        <property name="globalMessage_textColor" value="red" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+      </properties>
+    </object>
+    <object name="生成事件2" type="unitAdd" id="54" x="960" y="720" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="坦克T3*5" />
+        <property name="activatedBy" value="shij2" />
+      </properties>
+    </object>
+    <object name="事件2" type="unitDetect" id="56" x="780" y="-1480" width="20" height="20">
+      <properties>
+        <property name="minUnits" value="1" />
+        <property name="unitType" value="飞行测试模块" />
+        <property name="id" value="shij2" />
+        <property name="globalMessage" value="触发事件:移动WIFI！" />
+        <property name="globalMessage_textColor" value="green" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+      </properties>
+    </object>
+    <object name="禁止触发生成" type="unitDetect" id="57" x="540" y="-1480" width="20" height="20">
+      <properties>
+        <property name="minUnits" value="1" />
+        <property name="unitType" value="飞行测试模块" />
+        <property name="id" value="jz-sj1" />
+        <property name="resetActivationAfter" value="100" />
+      </properties>
+    </object>
+    <object name="禁止触发生成" type="unitDetect" id="58" x="780" y="-1480" width="20" height="20">
+      <properties>
+        <property name="minUnits" value="1" />
+        <property name="unitType" value="飞行测试模块" />
+        <property name="id" value="jz-sj2" />
+        <property name="resetActivationAfter" value="100" />
+      </properties>
+    </object>
+    <object name="删除影响" type="unitRemove" id="59" x="560" y="-1480" width="100" height="20">
+      <properties>
+        <property name="activatedBy" value="jz-sj1,jz-sj2" />
+      </properties>
+    </object>
+    <object name="删除影响" type="unitRemove" id="60" x="680" y="-1480" width="100" height="20">
+      <properties>
+        <property name="activatedBy" value="jz-sj1,jz-sj2" />
+      </properties>
+    </object>
+    <object name="删除影响" type="unitRemove" id="62" x="240" y="-1600" width="300" height="300">
+      <properties>
+        <property name="activatedBy" value="jz-sj1,jz-sj2" />
+      </properties>
+    </object>
+    <object name="删除影响" type="unitRemove" id="63" x="800" y="-1480" width="100" height="20">
+      <properties>
+        <property name="activatedBy" value="jz-sj1,jz-sj2" />
+      </properties>
+    </object>
+    <object name="删除影响" type="unitRemove" id="50" x="900" y="-1600" width="300" height="300">
+      <properties>
+        <property name="activatedBy" value="jz-sj1,jz-sj2" />
+      </properties>
+    </object>
+    <object name="删除影响" type="unitRemove" id="51" x="540" y="-1600" width="360" height="120">
+      <properties>
+        <property name="activatedBy" value="jz-sj1,jz-sj2" />
+      </properties>
+    </object>
+    <object name="删除影响" type="unitRemove" id="52" x="540" y="-1460" width="360" height="160">
+      <properties>
+        <property name="activatedBy" value="jz-sj1,jz-sj2" />
+      </properties>
+    </object>
+    <object name="视野塔" type="unitAdd" id="50" x="3020" y="2860" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="spawnUnits" value="战争塔楼T3(spawnChance=5,offsetHeight=-999)" />
+        <property name="warmup" value="60s" />
+        <property name="id" value="shiye1" />
+        <property name="globalMessage" value="我军成功获取视野" />
+        <property name="globalMessage_textColor" value="blue" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+        <property name="resetActivationAfter" value="90s" />
+      </properties>
+    </object>
+    <object name="删除视野" type="unitRemove" id="51" x="3000" y="2840" width="60" height="60">
+      <properties>
+        <property name="team" value="0" />
+        <property name="activatedBy" value="shiye1" />
+        <property name="warmup" value="20s" />
+        <property name="resetActivationAfter" value="90s" />
+      </properties>
+    </object>
+    <object name="视野塔" type="unitAdd" id="50" x="1940" y="1320" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="spawnUnits" value="战争塔楼T3(spawnChance=5,offsetHeight=-999)" />
+        <property name="warmup" value="60s" />
+        <property name="id" value="shiye2" />
+        <property name="resetActivationAfter" value="90s" />
+      </properties>
+    </object>
+    <object name="视野塔" type="unitAdd" id="51" x="4080" y="1320" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="spawnUnits" value="战争塔楼T3(spawnChance=5,offsetHeight=-999)" />
+        <property name="warmup" value="60s" />
+        <property name="id" value="shiye3" />
+        <property name="resetActivationAfter" value="90s" />
+      </properties>
+    </object>
+    <object name="删除视野" type="unitRemove" id="52" x="1920" y="1300" width="60" height="60">
+      <properties>
+        <property name="team" value="0" />
+        <property name="activatedBy" value="shiye2" />
+        <property name="warmup" value="20s" />
+        <property name="resetActivationAfter" value="90s" />
+      </properties>
+    </object>
+    <object name="删除视野" type="unitRemove" id="53" x="4060" y="1300" width="60" height="60">
+      <properties>
+        <property name="team" value="0" />
+        <property name="activatedBy" value="shiye3" />
+        <property name="warmup" value="20s" />
+        <property name="resetActivationAfter" value="90s" />
+      </properties>
+    </object>
+    <object name="生成事件1" type="unitAdd" id="50" x="3040" y="1320" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="泽拉迪*2" />
+        <property name="activatedBy" value="shij1" />
+      </properties>
+    </object>
+    <object name="生成事件1" type="unitAdd" id="51" x="1520" y="1540" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="泽拉迪*2" />
+        <property name="activatedBy" value="shij1" />
+      </properties>
+    </object>
+    <object name="生成事件1" type="unitAdd" id="52" x="4540" y="1480" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="泽拉迪*2" />
+        <property name="activatedBy" value="shij1" />
+      </properties>
+    </object>
+    <object name="生成事件2" type="unitAdd" id="54" x="3020" y="3260" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="概念型战斗蜘蛛T2(spawnChance=1,maxSpawnLimit=5,falling=true,offsetRandomXY=1000)" />
+        <property name="activatedBy" value="shij2" />
+      </properties>
+    </object>
+    <object name="生成事件2" type="unitAdd" id="55" x="1640" y="4400" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="概念型战斗蜘蛛T2(spawnChance=1,maxSpawnLimit=5,falling=true,offsetRandomXY=1000)" />
+        <property name="activatedBy" value="shij2" />
+      </properties>
+    </object>
+    <object name="生成事件2" type="unitAdd" id="56" x="4400" y="4340" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="概念型战斗蜘蛛T2(spawnChance=1,maxSpawnLimit=5,falling=true,offsetRandomXY=1000)" />
+        <property name="activatedBy" value="shij2" />
+      </properties>
+    </object>
+    <object name="生成事件2" type="unitAdd" id="57" x="3000" y="4960" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="概念型战斗蜘蛛T2(spawnChance=1,maxSpawnLimit=5,falling=true,offsetRandomXY=1000)" />
+        <property name="activatedBy" value="shij2" />
+      </properties>
+    </object>
+    <object name="生成事件1" type="unitAdd" id="50" x="1620" y="2620" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="杀人蜂*2" />
+        <property name="activatedBy" value="shij1" />
+      </properties>
+    </object>
+    <object name="生成事件1" type="unitAdd" id="51" x="4400" y="2660" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="杀人蜂*2" />
+        <property name="activatedBy" value="shij1" />
+      </properties>
+    </object>
+    <object name="生成事件1" type="unitAdd" id="52" x="3000" y="2160" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="杀人蜂*2" />
+        <property name="activatedBy" value="shij1" />
+      </properties>
+    </object>
+    <object name="检测偷家" type="unitAdd" id="50" x="2220" y="5820" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="spawnUnits" value="广射炮T2*1,赤焰喷射器T2*1,维护湾*2" />
+        <property name="warmup" value="2800s" />
+        <property name="globalMessage" value="我军提供一次性保护措施，请谨防虫族偷家！" />
+        <property name="globalMessage_textColor" value="green" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+      </properties>
+    </object>
+    <object name="检测偷家" type="unitAdd" id="51" x="2420" y="5820" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="spawnUnits" value="广射炮T2*1,赤焰喷射器T2*1,维护湾*2" />
+        <property name="warmup" value="2800s" />
+      </properties>
+    </object>
+    <object name="检测偷家" type="unitAdd" id="52" x="2620" y="5820" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="spawnUnits" value="广射炮T2*1,赤焰喷射器T2*1,维护湾*2" />
+        <property name="warmup" value="2800s" />
+      </properties>
+    </object>
+    <object name="检测偷家" type="unitAdd" id="53" x="2820" y="5820" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="spawnUnits" value="广射炮T2*1,赤焰喷射器T2*1,维护湾*2" />
+        <property name="warmup" value="2800s" />
+      </properties>
+    </object>
+    <object name="检测偷家" type="unitAdd" id="54" x="3020" y="5820" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="spawnUnits" value="广射炮T2*1,赤焰喷射器T2*1,维护湾*2" />
+        <property name="warmup" value="2800s" />
+      </properties>
+    </object>
+    <object name="检测偷家" type="unitAdd" id="55" x="3220" y="5820" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="spawnUnits" value="广射炮T2*1,赤焰喷射器T2*1,维护湾*2" />
+        <property name="warmup" value="2800s" />
+      </properties>
+    </object>
+    <object name="检测偷家" type="unitAdd" id="56" x="3420" y="5820" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="spawnUnits" value="广射炮T2*1,赤焰喷射器T2*1,维护湾*2" />
+        <property name="warmup" value="2800s" />
+      </properties>
+    </object>
+    <object name="检测偷家" type="unitAdd" id="57" x="3620" y="5820" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="spawnUnits" value="广射炮T2*1,赤焰喷射器T2*1,维护湾*2" />
+        <property name="warmup" value="2800s" />
+      </properties>
+    </object>
+    <object name="检测偷家" type="unitAdd" id="58" x="3820" y="5820" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="spawnUnits" value="广射炮T2*1,赤焰喷射器T2*1,维护湾*2" />
+        <property name="warmup" value="2800s" />
+      </properties>
+    </object>
+    <object name="测试" type="unitAdd" id="52" x="3020" y="9100" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="spawnUnits" value="维护湾(spawnChance=20,maxSpawnLimit=40,offsetHeight=-999)" />
+        <property name="id" value="baohu" />
+        <property name="resetActivationAfter" value="20s" />
+      </properties>
+    </object>
+    <object name="测试" type="unitAdd" id="52" x="3020" y="9100" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="spawnUnits" value="维护湾(spawnChance=20,maxSpawnLimit=40,offsetHeight=-999)" />
+        <property name="resetActivationAfter" value="1s" />
+      </properties>
+    </object>
+    <object name="删除维护湾" type="unitRemove" id="54" x="3000" y="9080" width="60" height="60">
+      <properties>
+        <property name="activatedBy" value="baohu" />
+        <property name="warmup" value="20s" />
+        <property name="resetActivationAfter" value="19.9s" />
+        <property name="team" value="0" />
+      </properties>
+    </object>
+    <object name="A1" type="unitAdd" id="50" x="3020" y="-1000" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="飞行测试模块*1" />
+        <property name="activatedBy" value="A-1" />
+      </properties>
+    </object>
+    <object name="A2" type="unitDetect" id="51" x="3020" y="-1000" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="minUnits" value="1" />
+        <property name="unitType" value="飞行测试模块" />
+        <property name="id" value="WB" />
+      </properties>
+    </object>
+    <object name="B1" type="unitDetect" id="50" x="3020" y="-520" width="20" height="20">
+      <properties>
+        <property name="minUnits" value="1" />
+        <property name="id" value="B-1" />
+        <property name="resetActivationAfter" value="0" />
+        <property name="unitType" value="飞行测试模块" />
+        <property name="team" value="1" />
+      </properties>
+    </object>
+    <object name="B2" type="unitAdd" id="51" x="3020" y="-520" width="20" height="20">
+      <properties>
+        <property name="team" value="1" />
+        <property name="spawnUnits" value="飞行测试模块*1" />
+        <property name="warmup" value="2610s" />
+        <property name="globalMessage" value="我军无法继续给予支援！" />
+        <property name="globalMessage_textColor" value="green" />
+        <property name="globalMessage_delayPerChar" value="0.1s" />
+      </properties>
+    </object>
+  </objectgroup>
+  <objectgroup name="UnitObjects">
+    <object name="玩家" id="49" x="3020" y="9000" width="20" height="20">
+      <properties>
+        <property name="team" value="0" />
+        <property name="unit" value="commandCenter" />
+        <property name="warmup" value="600s" />
+      </properties>
+    </object>
+    <object name="玩家" id="49" x="3020" y="9000" width="20" height="20">
+      <properties>
+        <property name="team" value="2" />
+        <property name="unit" value="commandCenter" />
+        <property name="warmup" value="600s" />
+      </properties>
+    </object>
+    <object name="玩家" id="49" x="3020" y="9000" width="20" height="20">
+      <properties>
+        <property name="team" value="3" />
+        <property name="unit" value="commandCenter" />
+        <property name="warmup" value="600s" />
+      </properties>
+    </object>
+    <object name="玩家" id="49" x="3020" y="9000" width="20" height="20">
+      <properties>
+        <property name="team" value="4" />
+        <property name="unit" value="commandCenter" />
+        <property name="warmup" value="600s" />
+      </properties>
+    </object>
+    <object name="玩家" id="49" x="3020" y="9000" width="20" height="20">
+      <properties>
+        <property name="team" value="5" />
+        <property name="unit" value="commandCenter" />
+        <property name="warmup" value="600s" />
+      </properties>
+    </object>
+    <object name="玩家" id="49" x="3020" y="9000" width="20" height="20">
+      <properties>
+        <property name="team" value="6" />
+        <property name="unit" value="commandCenter" />
+        <property name="warmup" value="600s" />
+      </properties>
+    </object>
+    <object name="玩家" id="49" x="3020" y="9000" width="20" height="20">
+      <properties>
+        <property name="team" value="7" />
+        <property name="unit" value="commandCenter" />
+        <property name="warmup" value="600s" />
+      </properties>
+    </object>
+    <object name="玩家" id="49" x="3020" y="9000" width="20" height="20">
+      <properties>
+        <property name="team" value="8" />
+        <property name="unit" value="commandCenter" />
+        <property name="warmup" value="600s" />
+      </properties>
+    </object>
+    <object name="玩家" id="49" x="3020" y="9000" width="20" height="20">
+      <properties>
+        <property name="team" value="9" />
+        <property name="unit" value="commandCenter" />
+        <property name="warmup" value="600s" />
+      </properties>
+    </object>
+  </objectgroup>
+</map>

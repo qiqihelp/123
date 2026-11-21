@@ -1,0 +1,5 @@
+title: My Mod
+description: 一句话简介你的模组
+minVersion: 1.15
+tags: units
+thumbnail: mod-thumbnail.png

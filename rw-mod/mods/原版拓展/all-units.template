@@ -1,0 +1,9 @@
+; all-units.template — 对本模组所有单位生效
+; 用途：全局自定义资源、通用特效/音效、统一数值调整
+; 注意：不要在这里写 [core] name，本文件不是单位
+
+; 示例：全局资源（按需启用/修改）
+; [global_resource_energy]
+; displayName: 能量
+; max: 100
+; startAmount: 0

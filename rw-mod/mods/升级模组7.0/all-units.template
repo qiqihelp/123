@@ -1,0 +1,337 @@
+[core]
+transportSlotsNeeded:1
+maxTransportingUnits:1
+transportUnitsEachUnitAlwaysUsesSingleSlot:true
+transportUnitsRequireTag:dj
+transportUnitsBlockOtherTransports:false
+transportUnitsRequireMovementType: AIR, WATER,LAND,HOVER,OVER_CLIFF_WATER,OVER_CLIFF
+transportUnitsAddUnloadOption:false
+autoTriggerCooldownTime:60
+maxShield:0
+shieldRegen:0
+nanoRange:0
+nanoRepairSpeed:0
+strictLevel: 1
+tags:SJ,ys
+energyMax:0
+selfRegenRate:0
+nanoFactorySpeed:1
+generation_active:if numberOfUnitsInAllTeams(withTag="ST")<1 and self.resource.stk==0
+[attack]
+maxAttackRange:0
+[movement]
+maxTurnSpeed:1
+[resource_DS]
+hidden:true
+[resource_DSK]
+hidden:true
+[resource_DSZJ]
+hidden:true
+[resource_SHDS]
+hidden:true
+[resource_SCDS]
+hidden:true
+[resource_SSDS]
+hidden:true
+[resource_HDDS]
+hidden:true
+[resource_NNDS]
+hidden:true
+[resource_XLDS]
+hidden:true
+[resource_SDDS]
+hidden:true
+[resource_GCDS]
+hidden:true
+[hiddenAction_DSK]
+autoTrigger:if (self.globalTeamTags(includes="EW") and self.lastConverted(withinSeconds=2) and self.resource.DSZJ==${core.price} or self.resource.kbk==1) and not self.tags(includes='ew')
+alsoTriggerAction:KB2
+temporarilyAddTags:ew
+requireConditional:if not self.tags(includes='ew')
+[hiddenAction_jzEW]
+autoTriggerOnEvent:created
+setHeight:customTarget1.shield
+setBodyRotation:select(self.globalTeamTags(includes="EW"),customTarget1.energy,-customTarget1.ammo)
+switchToTeam:customTarget1.height
+alsoTriggerAction:aiEW
+requireConditional:if customTarget1.hasTags(includes='CJJZ')
+[hiddenAction_aiEW]
+alsoTriggerAction:DSK
+autoTriggerOnEvent:created
+setResourcesWithLogic:SDDS=(int((self.dir*100)%10)+10*int((self.dir*10)%10)+1)*((int(self.height/1000000)%10)-1),NNDS=(int((self.dir*100)%10)+10*int((self.dir*10)%10)+1)*(int(self.height/100000)%10),HDDS=(int((self.dir*100)%10)+10*int((self.dir*10)%10)+1)*(int(self.height/10000)%10),XLDS=(int((self.dir*100)%10)+10*int((self.dir*10)%10)+1)*(int(self.height/1000)%10),SHDS=(int((self.dir*100)%10)+10*int((self.dir*10)%10)+1)*(int(self.height/100)%10),SSDS=(int((self.dir*100)%10)+10*int((self.dir*10)%10)+1)*(int(self.height/10)%10)/((int(self.dir*100000)%10)+1),SCDS=(int((self.dir*100)%10)+10*int((self.dir*10)%10)+1)*(int(self.height/1)%10)/((int(self.dir*10000)%10)+1),GCDS=(int((self.dir*100)%10)+10*int((self.dir*10)%10)+1)*(int(self.dir*1000)%10),DSZJ=${core.price},DS=int(self.dir)-1
+setHeight:0
+setBodyRotation:select(self.maxMoveSpeed>0,0,-90)
+requireConditional:if self.globalTeamTags(includes="EW") and self.height>999999
+[hiddenAction_SJEW]
+alsoTriggerAction:KB2
+autoTrigger:if self.resource.DSZJ!=${core.price} and self.globalTeamTags(includes="SJEW")
+autoTriggerOnEvent:completeAndActive
+setResourcesWithLogic:SDDS=min(5+self.resource.SXJ,int((0.5+0.1*self.resource.YQ)/(0.115+cos(rnd(0,91))))),NNDS=min(5+self.resource.SXJ,int((0.5+0.1*self.resource.YQ)/(0.115+cos(rnd(0,91))))),HDDS=min(5+self.resource.SXJ,int((0.5+0.1*self.resource.YQ)/(0.115+cos(rnd(0,91))))),XLDS=min(5+self.resource.SXJ,int((0.5+0.1*self.resource.YQ)/(0.115+cos(rnd(0,91))))),SHDS=min(5+self.resource.SXJ,int((0.5+0.1*self.resource.YQ)/(0.115+cos(rnd(0,91))))),SSDS=min(5+self.resource.SXJ,int((0.5+0.1*self.resource.YQ)/(0.115+cos(rnd(0,91))))),SCDS=min(5+self.resource.SXJ,int((0.5+0.1*self.resource.YQ)/(0.115+cos(rnd(0,91))))),GCDS=min(5+self.resource.SXJ,int((0.5+0.1*self.resource.YQ)/(0.115+cos(rnd(0,91))))),DSZJ=${core.price},DS=0,JYBS=0
+requireConditional:if self.globalTeamTags(includes="SJEW") and not customTarget1.hasTags(includes='CJJZ')
+[hiddenAction_DSZJ]
+autoTrigger:if self.resource.DSZJ!=${core.price} and self.globalTeamTags(includes="EW")
+addResourcesWithLogic:credits=(self.resource.SDDS+self.resource.NNDS+self.resource.HDDS+self.resource.XLDS+self.resource.SHDS+self.resource.SSDS+self.resource.SCDS+self.resource.GCDS)*self.resource.DSZJ,CHZ=self.resource.DS*self.resource.DSZJ
+alsoTriggerAction:DS
+requireConditional:if not self.globalTeamTags(includes="SJEW")
+[hiddenAction_DS]
+autoTriggerOnEvent:created
+temporarilyAddTags:ew
+setResourcesWithLogic:DS=select(self.globalTeamTags(includes="WX"),2000000000,select(self.globalTeamTags(includes="ZZ"),0,5)),DSZJ=${core.price},SDDS=0,XLDS=0,SHDS=0,HDDS=0,SCDS=0,SSDS=0,NNDS=0,GCDS=0,DSK=0,JYBS=0
+requireConditional:if self.globalTeamTags(includes="EW") and self.height<999999 and not customTarget1.hasTags(includes='CJJZ')
+[action_效率升级]
+isAlsoViewableByEnemies:true
+isAlsoViewableByAllies:true
+id:${core.price}
+isActive:if self.resource.DSK==0
+iconExtraImage:ROOT:素材/效率K.png
+displayType:upgrade
+isVisible:if self.globalTeamTags(includes="EW") and (${attack.canAttack}==false) and self.maxMoveSpeed==0 and ${attack.maxAttackRange}==0 and not (self.tags(includes='dan') or self.tags(includes='kuj')) or self.globalTeamTags(includes="WX")
+text:升级效率[%{self.resource.GCDS}]
+description:增加基础的1倍
+buildSpeed:${ 0.002 / core.nanoFactorySpeed }
+price:${core.price},DS=1
+setUnitStats:nanoFactorySpeed=${core.nanoFactorySpeed }*(1+self.resource.GCDS)
+addResourcesWithLogic:GCDS=1
+ai_isHighPriority:true
+[action_伤害升级]
+@copyFromSection:action_效率升级
+id:${core.price}+2
+iconExtraImage:ROOT:素材/伤害K.png
+isVisible:if self.globalTeamTags(includes="EW") and ${attack.canAttack}==true
+text:升级伤害[%{self.resource.SHDS}]
+description:增加基础的1.4倍
+price:${core.price},DS=1
+setUnitStats:shootDamageMultiplier=1.4*self.resource.SHDS+1
+addResourcesWithLogic:SHDS=1
+[action_血量升级]
+@copyFromSection:action_效率升级
+id:${core.price}+3
+iconExtraImage:ROOT:素材/血量K.png
+isVisible:if self.globalTeamTags(includes="EW")
+text:升级血量[%{self.resource.XLDS}]
+description:增加基础的1.4倍
+setUnitStats:maxHp=self.maxHp*(1+1.4/(1.4*self.resource.XLDS-0.4)),hp=self.hp*(1+1.4/(1.4*self.resource.XLDS-0.4)),selfRegenRate=${core.selfRegenRate}*(1+1.4*self.resource.XLDS)
+addResourcesWithLogic:XLDS=1
+[action_射程升级]
+@copyFromSection:action_效率升级
+id:${core.price}+5
+iconExtraImage:ROOT:素材/射程K.png
+isVisible:if self.globalTeamTags(includes="EW") and (${attack.canAttack}==true or ${core.nanoRange}>0)
+text:升级射程[%{self.resource.SCDS}]
+description:增加基础的0.1倍
+setUnitStats:maxAttackRange=${attack.maxAttackRange}*(1+0.1*self.resource.SCDS),nanoRange=${core.nanoRange}*(1+0.1*self.resource.SCDS)
+addResourcesWithLogic:SCDS=1
+[action_射速升级]
+@copyFromSection:action_效率升级
+id:${core.price}+6
+iconExtraImage:ROOT:素材/射速K.png
+isVisible:if self.globalTeamTags(includes="EW") and ${attack.canAttack}==true
+text:升级射速[%{self.resource.SSDS}]
+description:每秒多射击基础的一倍
+setUnitStats:shootDelayMultiplier=1/(self.resource.SSDS+1)
+addResourcesWithLogic:SSDS=1
+[hiddenAction_洗点数K]
+autoTrigger:if self.globalTeamTags(includes="EW") and self.resource.DSK==2
+alsoTriggerAction:KB2
+setResourcesWithLogic:SDDS=0,XLDS=0,SHDS=0,HDDS=0,SCDS=0,SSDS=0,NNDS=0,GCDS=0,DSK=0
+[action_洗点数]
+isAlsoViewableByEnemies:true
+isAlsoViewableByAllies:true
+ai_isDisabled:true
+id:${core.price}+8
+price:DSK=-1
+allowMultipleInQueue:false
+isVisible:if self.globalTeamTags(includes="EW")
+isActive:if self.globalTeamTags(includes="EW") and self.resource.DS<5 and numberOfUnitsInAllTeams(withTag="JXD")<1 and not self.globalTeamTags(includes="SJEW")
+text:洗点\n点数:[%{self.resource.DS}]
+description:返还升级点数与百分之80的资金
+buildSpeed:${ 0.0004 / core.nanoFactorySpeed }
+addResourcesWithLogic:credits=0.8*(self.resource.SDDS+self.resource.NNDS+self.resource.HDDS+self.resource.XLDS+self.resource.SHDS+self.resource.SSDS+self.resource.SCDS+self.resource.GCDS)*self.resource.DSZJ,DSK=1
+setResourcesWithLogic:DS=self.resource.SDDS+self.resource.NNDS+self.resource.HDDS+self.resource.XLDS+self.resource.SHDS+self.resource.SSDS+self.resource.SCDS+self.resource.GCDS+self.resource.DS
+[action_经验值]
+isActive:false
+displayType:infoOnlyNoBox
+text:经验进度:%{100*(self.resource.CHZ+${core.price}*self.timeAlive/120)/(${core.price}*(1+self.resource.JYBS)*(0.5*self.resource.JYBS+1))}%
+isVisible:if self.globalTeamTags(includes="JY") and self.resource.JYBS<5
+[decal_效率升级]
+total_frames:5
+layer:beforeUI
+onlyWhileAlive:true
+isVisible:if self.resource.GCDS!=0
+frame:min(self.resource.GCDS-1,4)
+alwaysStartDirAtZero:true
+image:ROOT:素材/效率.png
+xOffsetAbsolute:1.1*${core.radius}
+yOffsetAbsolute:1.1*${core.radius}
+imageScale:${core.radius}/110
+[decal_伤害升级]
+@copyFromSection:decal_效率升级
+isVisible:if self.resource.SHDS!=0 and ${attack.canAttack}==true
+frame:min(self.resource.SHDS-1,4)
+image:ROOT:素材/伤害.png
+xOffsetAbsolute:0.5*${core.radius}
+imageScale:${core.radius}/70
+[decal_血量升级]
+@copyFromSection:decal_效率升级
+isVisible:if self.resource.XLDS!=0
+frame:min(self.resource.XLDS-1,4)
+image:ROOT:素材/血量.png
+xOffsetAbsolute:0.3*${core.radius}
+imageScale:${core.radius}/40
+[decal_射程升级]
+@copyFromSection:decal_效率升级
+isVisible:if self.resource.SCDS!=0 and (${attack.canAttack}==true or ${core.nanoRange}>0)
+frame:min(self.resource.SCDS-1,4)
+image:ROOT:素材/射程.png
+xOffsetAbsolute:0.9*${core.radius}
+imageScale:${core.radius}/80
+[decal_射速升级]
+@copyFromSection:decal_效率升级
+isVisible:if self.resource.SSDS!=0 and ${attack.canAttack}==true
+frame:min(self.resource.SSDS-1,4)
+image:ROOT:素材/射速.png
+xOffsetAbsolute:0.7*${core.radius}
+imageScale:${core.radius}/70
+[resource_BF]
+hidden:true
+[resource_stk]
+hidden:true
+[hiddenAction_BF]
+autoTrigger:if (lastDamagedBy.hasTags(includes='BF') or numberOfUnitsInAllTeams(withTag="ST")>0) and (self.resource.stk==0 or self.lastConverted(withinSeconds=1))
+setCustomTarget2:lastDamagedBy
+setUnitStats:selfRegenRate=0,shieldRegen=0,shootDelayMultiplier=999999999,movespeed=0,maxTurnSpeed=0,nanoRange=0,nanoFactorySpeed=0,maxAttackRange=0
+setResourcesWithLogic:stk=1
+[hiddenAction_ST2]
+autoTrigger:if (CustomTarget2==nullUnit or distanceBetweenSquared(self, CustomTarget2)>CustomTarget2.ammo) and self.resource.stk==1 and numberOfUnitsInAllTeams(withTag="ST")<1
+alsoTriggerAction:KB2
+setResourcesWithLogic:stk=0,BF=0
+[resource_KB]
+hidden:true
+[hiddenAction_KBK]
+autoTrigger:if self.resource.KB>0
+addResourcesWithLogic:KB=-${core.autoTriggerCooldownTime}/7
+[resource_kbk]
+hidden:true
+[hiddenAction_KB]
+temporarilyAddTags:ew
+alsoTriggerAction:KB2
+autoTrigger:if self.resource.KB>0 and self.resource.kbk==0 and self.resource.stk==0
+setResourcesWithLogic:kbk=1,SHDS=3/14,SDDS=2
+[hiddenAction_KB1]
+temporarilyRemoveTags:ew
+autoTrigger:if self.resource.KB<=0 and self.resource.kbk==1
+setResourcesWithLogic:kbk=0,KB=0,SHDS=0,SDDS=0
+alsoTriggerAction:KB2
+alsoTriggerOrQueueActionConditional:if self.resource.stk==0
+[hiddenAction_KB2]
+setUnitStats:movespeed=${movement.moveSpeed}*(1+0.2*self.resource.SDDS),shootDamageMultiplier=1+1.4*self.resource.SHDS,hp=self.hp*${core.maxHp}*(1+1.4*self.resource.XLDS)/self.maxHp,maxHp=${core.maxHp}*(1+1.4*self.resource.XLDS),selfRegenRate=${core.selfRegenRate}*(1+1.4*self.resource.XLDS),shield=select(self.maxShield==0,0,self.shield*${core.maxShield}*(1+2*self.resource.HDDS)/self.maxShield),maxShield=${core.maxShield}*(1+2*self.resource.HDDS),shieldRegen=${core.shieldRegen}*(1+2*self.resource.HDDS),maxAttackRange=${attack.maxAttackRange}*(1+0.1*self.resource.SCDS),shootDelayMultiplier=1/(self.resource.SSDS+1),energy=select(self.maxEnergy==0,0,self.energy*${core.energyMax}*(1+self.resource.NNDS)/self.maxEnergy),maxEnergy=${core.energyMax}*(1+self.resource.NNDS),nanoFactorySpeed=${core.nanoFactorySpeed }*(1+self.resource.GCDS),maxTurnSpeed=${movement.maxTurnSpeed},nanoRange=${core.nanoRange}*(1+0.1*self.resource.SCDS)
+[hiddenAction_DEk]
+deleteSelf:true
+autoTrigger:if self.globalTeamTags(includes="QC")
+[graphics]
+showTransportBar:false
+[hiddenAction_潜艇yd]
+autoTrigger:if (self.tags(includes='kj') or self.tags(includes='luj')) and self.isInMap and self.height<=-1
+temporarilyRemoveTags:luj,kj
+[hiddenAction_空军yd]
+autoTrigger:if not self.tags(includes='kj') and self.height>6 and self.isInMap
+temporarilyAddTags:kj
+temporarilyRemoveTags:luj
+[hiddenAction_陆军yd]
+autoTrigger:if not self.tags(includes='luj') and self.height<6 and self.isInMap and self.height>-1
+temporarilyAddTags:luj
+temporarilyRemoveTags:kj
+[hiddenAction_运输1]
+autoTrigger:if (self.hasActiveWaypoint(type='loadInto') or self.hasActiveWaypoint(type='loadUp')) and self.activeWaypointTarget.activeWaypointTarget==self and (activeWaypointTarget.hasActiveWaypoint(type='loadInto') or activeWaypointTarget.hasActiveWaypoint(type='loadUp')) or (self.hasParent and self.transportingCount<1 and self.globalTeamTags(includes="DJ"))
+addUnitsIntoTransport:占位
+[hiddenAction_dj]
+autoTrigger:if not self.tags(includes='dj') and self.globalTeamTags(includes="DJ") and self.maxMoveSpeed>0 and not self.hasParent and (${attack.canAttack}==true or not self.isControlledByAI)
+temporarilyAddTags:dj
+[hiddenAction_dj2]
+autoTrigger:if self.isControlledByAI and numberOfUnitsInTeam(withinRange=200,withTag='dj')>1 and not self.hasActiveWaypoint(type='loadInto') and not self.hasParent and self.globalTeamTags(includes="DJ") and self.numberOfAttachedUnits<1 and numberOfUnitsInAllTeams(withTag="JDJ")<1 and self.maxMoveSpeed>0
+autoTriggerOnEvent:enteredTransport
+temporarilyRemoveTags:dj
+alsoTriggerAction:dj3
+alsoTriggerOrQueueActionConditional:if self.isControlledByAI
+[hiddenAction_dj3]
+autoTriggerOnEvent:created
+addWaypoint_prepend:true
+addWaypoint_type:loadUp
+addWaypoint_target_nearestUnit_maxRange:200
+addWaypoint_target_nearestUnit_team:own
+addWaypoint_target_nearestUnit_tagged:dj
+requireConditional:if self.globalTeamTags(includes="DJ") and not self.hasParent and self.maxMoveSpeed>0 and not self.globalTeamTags(includes="JDJ")
+[action_dj1]
+id:114
+highPriorityQueue:true
+buildSpeed:1
+text:卸下
+isVisible:if self.globalTeamTags(includes="DJ") and self.transportingCount>0 and not self.hasParent
+forceUnloadTransportNow:true
+[hiddenAction_splj]
+autoTrigger:if self.hasActiveWaypoint(type='attackmove') and activeWaypointTarget.numberOfUnitsInAllTeams(withinRange=30,withTag='ct')<1 and self.globalTeamTags(includes="yd")
+clearAllWaypoints:true
+autoTriggerOnEvent:newWaypointGivenByPlayer
+alsoTriggerAction:lj,lj3
+requireConditional:if (self.globalTeamTags(includes="yd") or self.globalTeamTags(includes="ydk")) and numberOfUnitsInEnemyTeam(withTag="ct",greaterThan=0)
+[hiddenAction_spljc]
+autoTrigger:if self.maxMoveSpeed>0 and not self.isAttacking and not self.isMoving and ${attack.canAttack}==true and self.globalTeamTags(includes="yd") and numberOfUnitsInEnemyTeam(withTag="ct",greaterThan=0) and  numberOfUnitsInTeam(withTag='标记K',lessThan=1) and self.timeAlive>1
+addResourcesWithLogic:lj=${core.price}
+[hiddenAction_lj]
+autoTrigger:if not self.hasActiveWaypoint(type='attackmove') and self.maxMoveSpeed>0 and (self.globalTeamTags(includes="yd") or self.globalTeamTags(includes="ydk")) and numberOfUnitsInEnemyTeam(withTag="ct",greaterThan=0) and numberOfUnitsInTeam(withTag='标记K',lessThan=1)
+addWaypoint_target_nearestUnit_tagged:ct
+addWaypoint_type: attackMove
+addWaypoint_target_nearestUnit_team:enemy
+addWaypoint_target_mapMustBeReachable:false
+requireConditional:if numberOfUnitsInTeam(withTag='标记K',lessThan=1)
+[hiddenAction_lj3]
+addWaypoint_prepend:true
+autoTrigger:if not self.hasActiveWaypoint(type='touchTarget') and self.maxMoveSpeed>0 and self.globalTeamTags(includes="yd") and numberOfUnitsInTeam(withTag='标记K',greaterThan=0) and numberOfUnitsInTeam(withinRange=150,withTag='标记K')<1
+addWaypoint_target_nearestUnit_tagged:标记K
+addWaypoint_type: touchTarget
+addWaypoint_target_nearestUnit_team:own
+addWaypoint_triggerActionIfMatched:splj
+addWaypoint_target_mapMustBeReachable:false
+[hiddenAction_感染]
+autoTrigger:if lastDamagedBy.globalTeamTags(includes="GR") and self.hasTakenDamage(withinSeconds=4) and (self.hp+self.shield)<(self.maxhp+self.maxShield)/10 and lastDamagedBy.teamId!=self.teamId
+switchToTeam:lastDamagedBy.teamId
+setResourcesWithLogic:hp=self.maxhp/2,shield=self.maxShield/2
+clearAllWaypoints:true
+[attachment_sp]
+x:0
+y:0
+addTransportedUnits: true
+isUnselectable: false
+canAttack:true
+keepAliveWhenParentDies:true
+prioritizeParentsMainTarget:true
+[global_resource_point]
+hidden:true
+[global_resource_pointK]
+hidden:true
+[hiddenAction_pointgive]
+autoTriggerOnEvent:destroyed
+takeResources:point=-${core.price},CHZ=-${core.price}
+takeResources_discardCollected:true
+takeResources_includeReference:lastDamagedBy
+requireConditional:if lastDamagedBy.teamId!=self.teamId and self.hasTakenDamage(withinSeconds=1)
+addResourcesWithLogic:pointK=${core.price},credits=select(lastDamagedBy.tags(includes='XFHX'),0.8*${core.price},0)
+[hiddenAction_BKGJ2]
+autoTrigger:if self.resource.CHZ+${core.price}*self.timeAlive/120>=${core.price}*(1+self.resource.JYBS)*(0.5*self.resource.JYBS+1) and self.globalTeamTags(includes="JY") and self.resource.JYBS<5
+addResourcesWithLogic:DS=1,JYBS=1
+[global_resource_lj]
+hidden:true
+[global_resource_YQ]
+hidden:true
+[global_resource_SXJ]
+hidden:true
+[resource_JYBS]
+hidden:true
+[resource_CHZ]
+hidden:true
+[resource_tnum]
+hidden:true
+[hiddenAction_tnum]
+autoTriggerOnEvent:created
+autoTrigger:if self.resource.tnum!=${core.transportSlotsNeeded}
+setResourcesWithLogic:tnum=${core.transportSlotsNeeded}
