@@ -150,6 +150,16 @@
                 <b></b> 占领中继站 <span id="relay-count">0 / 5</span>
               </div>
             </div>
+            <div id="placement-panel" class="placement-panel" hidden>
+              <div>
+                <strong id="placement-name"></strong
+                ><small id="placement-hint" role="status"></small>
+              </div>
+              <button id="placement-confirm" title="确认施工 (Enter)">
+                确认施工
+              </button>
+              <button id="placement-cancel" title="取消选址 (Esc)">取消</button>
+            </div>
             <div id="map-message" class="map-message" hidden></div>
             <div class="map-nav">
               <div class="zoom">
@@ -186,6 +196,7 @@
               <button id="units-tab" class="active" aria-pressed="true">
                 ▦ 部队</button
               ><button id="artillery-tab" aria-pressed="false">⊕ 火炮</button>
+              <button id="advanced-tab" aria-pressed="false">T2 / T3</button>
               <button id="build-tab" aria-pressed="false">⬡ 建筑</button>
               <button id="tech-tab" aria-pressed="false">✦ 科技</button>
             </div>
@@ -334,6 +345,14 @@
         </li>
         <li>
           绿色铀矿产出铀，可用于铀能电站、铀能维修站和铀能重坦。红方同样要派矿车采矿，并花钱扩建基地和生产增援。切断补给能拖慢敌军。
+        </li>
+        <li>
+          在「建筑」选择蓝图，在战场点击选址，再按「确认施工」。绿色表示可建造，红色表示有冲突。右键、Esc
+          或点「取消」可退出选址。
+        </li>
+        <li>
+          在「科技」研究 T2 和 T3，之后从「T2 /
+          T3」页生产高级部队。除了科技等级，研究中心还提供装甲、采矿、底盘和维修升级。
         </li>
         <li>派部队靠近黄色中继站，清除附近敌人并占领，即可获得额外矿石。</li>
         <li>

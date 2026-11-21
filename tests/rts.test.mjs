@@ -7,7 +7,12 @@ import {
   order,
   stop,
   income,
-  enqueue,
+  enqueue as submit,
+  placementBlocked,
+  units,
+  buildings,
+  movementSpeed,
+  repairRate,
   blocked,
   fleet,
   capacity,
@@ -31,6 +36,42 @@ import {
   rechargeShield,
   location,
 } from "../rts/sim.mjs";
+
+// Existing scenarios choose test sites explicitly; live construction has no default site.
+function enqueue(g, type) {
+  if (!buildings[type]) return submit(g, type);
+  const sites = [
+    [119, 497],
+    [293, 515],
+    [353, 464],
+    [248, 553],
+    [137, 425],
+    [375, 535],
+    [325, 554],
+    [100, 458],
+    [176, 530],
+    [210, 390],
+    [418, 478],
+    [126, 542],
+    [199, 544],
+    [357, 512],
+    [431, 520],
+    [254, 568],
+    [61, 517],
+    [97, 590],
+    [173, 591],
+    [243, 616],
+    [326, 611],
+    [385, 594],
+  ];
+  for (let x = 960; x < 1480; x += 81)
+    for (let y = 980; y < 1320; y += 81)
+      sites.push([(x - 850) * 0.75, (y - 320) * 0.8]);
+  const point = sites
+    .map(([x, y]) => location(x, y))
+    .find((p) => !placementBlocked(g, type, p));
+  return submit(g, type, point);
+}
 
 function advance(g, seconds) {
   for (let i = 0; i < Math.round(seconds * 30); i++) step(g, 1 / 30);
@@ -96,7 +137,9 @@ test("enemy waves arrive and leave the idle blue side vulnerable", () => {
   assert.equal(g.wave, 0);
   advance(g, 2);
   assert.equal(g.wave, 1);
-  assert.ok(g.actors.some((a) => a.team === -1 && a.order?.kind === "attack"));
+  assert.ok(g.red.production.some((q) => q.wave === 1));
+  advance(g, 12);
+  assert.ok(g.actors.some((a) => a.team === -1 && a.aiWave === 1));
   advance(g, 500);
   assert.equal(g.result, "defeat");
 });
@@ -451,12 +494,7 @@ test("late reinforcements respect per-wave and field caps and leave at least 54 
   step(g, 1 / 30);
   assert.ok(enemyFleet(g) + g.red.production.length - before <= ENEMY_MAX_WAVE);
   assert.ok(g.nextWave - g.time >= 54);
-  assert.equal(
-    g.red.production.filter(
-      (q) => q.type === "missileT2" || q.type === "plasmaTank",
-    ).length,
-    1,
-  );
+  assert.ok(g.red.production.some((q) => units[q.type].tech === "t2"));
   for (let i = 0; i < 240; i++) {
     step(g, 0.5);
     assert.ok(enemyFleet(g) + g.red.production.length <= ENEMY_UNIT_LIMIT);
@@ -572,4 +610,177 @@ test("uranium is mined and spent on equipment, with a distinct power upgrade and
   assert.ok(vehicle);
   assert.equal(vehicle.shield, catalog.uraniumTank.shield);
   assert.equal(enqueue(g, "uraniumRepair"), "");
+});
+
+test("building placement reserves exact coordinates; invalid attempts do not charge resources", () => {
+  const g = createGame();
+  g.ore = 3000;
+  const ore = g.ore;
+  const hq = g.actors.find((a) => a.team === 1 && a.type === "hq");
+  assert.match(submit(g, "factory"), /选择建造位置/);
+  assert.match(submit(g, "factory", { x: 2, y: H - 30 }), /边界/);
+  assert.match(submit(g, "factory", g.mines[0]), /矿脉/);
+  assert.match(submit(g, "factory", g.relays[0]), /中继站/);
+  assert.match(submit(g, "factory", hq), /建筑重叠/);
+  assert.equal(g.ore, ore);
+  assert.equal(g.construction.length, 0);
+  const a = { x: 996, y: 1150 },
+    b = { x: 1090, y: 1190 };
+  assert.equal(submit(g, "factory", a), "");
+  assert.equal(g.ore, ore - buildings.factory.cost);
+  assert.match(submit(g, "generator", a), /施工占地/);
+  assert.equal(submit(g, "generator", b), "");
+  a.x = 100; // mutating the caller's point cannot move a reservation
+  advance(g, 8.9);
+  assert.equal(factories(g).length, 1);
+  advance(g, 0.1);
+  assert.ok(factories(g).some((f) => f.x === 996 && f.y === 1150));
+  advance(g, 6);
+  assert.ok(
+    g.actors.some((f) => f.type === "generator" && f.x === b.x && f.y === b.y),
+  );
+});
+
+test("ten T2 vehicles and one T3 mech unlock at their own research tier", () => {
+  const g = createGame();
+  Object.assign(g, { ore: 20000, crystal: 600, uranium: 100 });
+  const t2 = Object.keys(units).filter((key) => units[key].tech === "t2");
+  const t3 = Object.keys(units).filter((key) => units[key].tech === "t3");
+  assert.equal(t2.length, 10);
+  assert.deepEqual(t3, ["titan"]);
+  assert.ok(t2.every((k) => /T2/.test(submit(g, k))));
+  assert.match(submit(g, "titan"), /T3/);
+  assert.equal(enqueue(g, "lab"), "");
+  advance(g, 9);
+  assert.match(startResearch(g, "t3"), /T2/);
+  assert.equal(startResearch(g, "t2"), "");
+  advance(g, 16.1);
+  for (const k of t2) assert.equal(submit(g, k), "");
+  g.uranium = 0;
+  assert.match(startResearch(g, "t3"), /铀不足/);
+  g.uranium = 100;
+  assert.equal(startResearch(g, "t3"), "");
+  assert.equal(g.uranium, 72);
+  advance(g, 23.9);
+  assert.match(submit(g, "titan"), /T3/);
+  advance(g, 0.2);
+  assert.equal(submit(g, "titan"), "");
+  assert.equal(g.uranium, 38);
+});
+
+test("losing a research center refunds all T3 research resources, including uranium", () => {
+  const g = createGame();
+  Object.assign(g, { ore: 5000, crystal: 100, uranium: 40 });
+  assert.equal(enqueue(g, "lab"), "");
+  advance(g, 9);
+  g.tech.add("t2");
+  assert.equal(startResearch(g, "t3"), "");
+  const balances = [g.ore, g.crystal, g.uranium];
+  g.actors.find((a) => a.team === 1 && a.type === "lab").hp = 0;
+  step(g, 0);
+  assert.deepEqual(
+    [g.ore, g.crystal, g.uranium],
+    balances.map((v, i) => v + [650, 60, 28][i]),
+  );
+  assert.equal(g.research, null);
+  assert.ok(!g.tech.has("t3"));
+});
+
+test("economy, armor and support upgrades affect the simulation, not just displayed stats", () => {
+  const g = createGame();
+  g.tech.add("extraction");
+  assert.equal(income(g), 14);
+  g.tech.add("logistics");
+  assert.equal(movementSpeed(g, { team: 1, type: "miner" }), 39);
+  assert.ok(
+    Math.abs(movementSpeed(g, { team: 1, type: "tank" }) - 43 * 1.12) < 1e-9,
+  );
+  g.tech.add("repairBoost");
+  assert.equal(repairRate(g, { team: 1, type: "fieldMedic" }), 11 * 1.3);
+  g.tech.add("armorPlating");
+  g.nextThink = Infinity;
+  const target = g.actors.find((a) => a.team === 1 && a.type === "tank"),
+    foe = g.actors.find((a) => a.team === -1 && a.type === "tank");
+  Object.assign(target, { x: 300, y: 300, type: "vanguard", hp: 395, cd: 100 });
+  Object.assign(foe, { x: 375, y: 300, type: "disruptor", cd: 0 });
+  step(g, 1 / 30);
+  assert.equal(
+    target.hp,
+    395 - Math.round(catalog.disruptor.damage * 0.8 * 0.9),
+  );
+  assert.ok(target.slowTime > 1.4);
+  const gun = g.actors.find((a) => a.team === -1 && a.type === "scout");
+  Object.assign(gun, { x: 500, y: 300, type: "railgun", cd: 0 });
+  const hp = target.hp;
+  step(g, 1 / 30);
+  assert.equal(target.hp, hp - catalog.railgun.damage);
+  const medic = g.actors.find((a) => a.team === 1 && a.type === "scout");
+  Object.assign(medic, { x: 300, y: 343, type: "fieldMedic", hp: 130 });
+  target.shield = 0;
+  const before = target.hp;
+  step(g, 0.1);
+  assert.ok(Math.abs(target.hp - before - 1.43) < 1e-8);
+  assert.equal(medic.hp, 130);
+});
+
+test("red buys a shield counter and chooses a less defended attack route", () => {
+  const make = (shields) => {
+    const g = createGame();
+    g.wave = 4;
+    g.nextWave = 0;
+    g.nextThink = Infinity;
+    g.red.nextEconomy = Infinity;
+    Object.assign(g.red, { ore: 3000, crystal: 120 });
+    g.red.tech.add("t2");
+    const p = location(600, 412);
+    for (const a of g.actors.filter((a) => a.team === 1 && a.type === "tank"))
+      Object.assign(a, p, shields ? { type: "uraniumTank", shield: 144 } : {});
+    step(g, 1 / 30);
+    return { g, p };
+  };
+  const { g, p } = make(true),
+    plain = make(false).g;
+  assert.equal(g.red.production[0].type, "disruptor");
+  assert.notEqual(plain.red.production[0].type, "disruptor");
+  assert.notDeepEqual(g.red.production[0].rally, p);
+  assert.ok(g.red.ore < 3000 && g.red.crystal < 120);
+  assert.ok(g.red.production.some((q) => q.type === "fieldMedic"));
+});
+
+test("T3 shells damage and slow enemies in their impact area without slowing allies", () => {
+  const g = createGame();
+  g.nextThink = Infinity;
+  const titan = g.actors.find((a) => a.team === 1 && a.type === "tank");
+  const [first, second] = g.actors.filter(
+    (a) => a.team === -1 && a.type === "scout",
+  );
+  const ally = g.actors.find((a) => a.team === 1 && a.type === "scout");
+  Object.assign(titan, { type: "titan", x: 300, y: 300, cd: 0 });
+  Object.assign(first, { x: 520, y: 300, hp: 200, cd: 100 });
+  Object.assign(second, { x: 540, y: 340, hp: 200, cd: 100 });
+  Object.assign(ally, { x: 530, y: 270, cd: 100 });
+  step(g, 1 / 30);
+  assert.equal(g.shells.length, 1);
+  advance(g, 0.8);
+  assert.ok(first.hp < second.hp && second.hp < 200);
+  assert.ok(first.slowTime > 2 && second.slowTime > 2);
+  assert.equal(ally.slowTime, 0);
+  advance(g, 2.5);
+  assert.equal(first.slowTime, 0);
+});
+
+test("a factory placed on the far edge deploys units inside the map and holds them locally", () => {
+  const g = createGame();
+  g.ore = 1000;
+  assert.equal(submit(g, "factory", { x: W - 25, y: H - 25 }), "");
+  advance(g, 9);
+  factories(g)[0].hp = 0;
+  assert.equal(submit(g, "scout"), "");
+  const ids = new Set(g.actors.map((a) => a.id));
+  advance(g, 5);
+  const scout = g.actors.find((a) => a.team === 1 && !ids.has(a.id));
+  assert.ok(
+    scout.x < W && scout.y < H && scout.x > W - 150 && scout.y > H - 150,
+  );
+  assert.equal(scout.order, null);
 });

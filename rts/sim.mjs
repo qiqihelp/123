@@ -175,6 +175,148 @@ export const units = {
     rate: 1.25,
     time: 13,
   },
+  vanguard: {
+    name: "壁垒守卫",
+    desc: "T2 · 重甲吸收火力",
+    cost: 430,
+    crystal: 14,
+    hp: 395,
+    speed: 27,
+    size: 19,
+    range: 124,
+    damage: 40,
+    rate: 1,
+    time: 12,
+    tech: "t2",
+    armor: 0.8,
+  },
+  interceptor: {
+    name: "游隼截击车",
+    desc: "T2 · 高速追击",
+    cost: 285,
+    crystal: 9,
+    hp: 142,
+    speed: 78,
+    size: 11,
+    range: 122,
+    damage: 23,
+    rate: 0.46,
+    time: 7,
+    tech: "t2",
+  },
+  railgun: {
+    name: "长矛轨道炮",
+    desc: "T2 · 远程反重甲",
+    cost: 490,
+    crystal: 19,
+    hp: 180,
+    speed: 29,
+    size: 16,
+    range: 252,
+    damage: 103,
+    rate: 3.15,
+    time: 14,
+    tech: "t2",
+    pierce: true,
+  },
+  disruptor: {
+    name: "扰流战车",
+    desc: "T2 · 破盾减速",
+    cost: 345,
+    crystal: 12,
+    hp: 188,
+    speed: 46,
+    size: 14,
+    range: 147,
+    damage: 28,
+    rate: 1.1,
+    time: 9,
+    tech: "t2",
+    shieldBonus: 2,
+    slow: 1.5,
+  },
+  fieldMedic: {
+    name: "随军维修车",
+    desc: "T2 · 移动范围维修",
+    cost: 315,
+    crystal: 12,
+    hp: 190,
+    speed: 43,
+    size: 14,
+    time: 9,
+    tech: "t2",
+    heal: 11,
+    radius: 79,
+  },
+  siegeBreaker: {
+    name: "破城攻坚炮",
+    desc: "T2 · 对建筑伤害 ×2",
+    cost: 570,
+    crystal: 22,
+    hp: 251,
+    speed: 24,
+    size: 19,
+    range: 232,
+    damage: 106,
+    rate: 3.6,
+    time: 16,
+    tech: "t2",
+    structureBonus: 2,
+  },
+  clusterLauncher: {
+    name: "蜂巢发射车",
+    desc: "T2 · 三发大范围溅射",
+    cost: 515,
+    crystal: 21,
+    hp: 172,
+    speed: 32,
+    size: 17,
+    range: 194,
+    damage: 32,
+    rate: 4.2,
+    time: 13,
+    tech: "t2",
+    missiles: 3,
+    flight: 0.69,
+    splash: 47,
+  },
+  ionSkirmisher: {
+    name: "离子突击车",
+    desc: "T2 · 机动等离子速射",
+    cost: 390,
+    crystal: 15,
+    hp: 141,
+    shield: 52,
+    speed: 56,
+    size: 13,
+    range: 138,
+    damage: 33,
+    rate: 0.63,
+    time: 10,
+    tech: "t2",
+    plasma: true,
+    flight: 0.24,
+  },
+  titan: {
+    name: "天穹攻城机甲",
+    desc: "T3 · 重型护盾与广域迟滞",
+    cost: 980,
+    crystal: 52,
+    uranium: 34,
+    hp: 610,
+    shield: 220,
+    speed: 23,
+    size: 26,
+    range: 284,
+    damage: 158,
+    rate: 4.8,
+    time: 24,
+    tech: "t3",
+    armor: 0.88,
+    splash: 64,
+    flight: 0.76,
+    slow: 2.5,
+  },
 };
 export const buildings = {
   generator: {
@@ -236,7 +378,7 @@ export const buildings = {
   },
   lab: {
     name: "研究中心",
-    desc: "解锁 T2 及分支科技",
+    desc: "解锁 T2、T3 及分支科技",
     cost: 245,
     hp: 310,
     size: 25,
@@ -315,15 +457,15 @@ export const techs = {
   },
   t2: {
     name: "T2 科技",
-    desc: "解锁等离子坦克与 T2 导弹坦克",
-    short: "解锁两种 T2 坦克",
+    desc: "解锁十种 T2 单位",
+    short: "解锁十种 T2 单位",
     cost: 300,
     crystal: 24,
     time: 16,
   },
   plasmaFocus: {
     name: "等离子聚焦",
-    desc: "等离子单发伤害 +18",
+    desc: "等离子坦克单发伤害 +18；不影响离子突击车。",
     short: "等离子伤害 +18",
     cost: 225,
     crystal: 22,
@@ -332,11 +474,56 @@ export const techs = {
   },
   guidance: {
     name: "制导升级",
-    desc: "两款导弹坦克单枚伤害 +8",
+    desc: "所有导弹单位单枚伤害 +8",
     short: "导弹单发伤害 +8",
     cost: 210,
     crystal: 18,
     time: 12,
+    requires: "t2",
+  },
+  extraction: {
+    name: "高效开采",
+    desc: "所有矿车的矿石、晶能和铀采集效率提高 25%，不影响被动收入。",
+    short: "矿车采集 +25%",
+    cost: 205,
+    crystal: 0,
+    time: 11,
+  },
+  armorPlating: {
+    name: "复合装甲",
+    desc: "所有车辆受到的车体伤害降低 10%；不影响护盾。轨道炮可穿透减伤。",
+    short: "车辆车体伤害 −10%",
+    cost: 345,
+    crystal: 23,
+    time: 14,
+    requires: "t2",
+  },
+  logistics: {
+    name: "机动底盘",
+    desc: "战斗车辆移动速度提高 12%，采矿车不受影响。",
+    short: "战斗车辆速度 +12%",
+    cost: 270,
+    crystal: 18,
+    time: 12,
+    requires: "t2",
+  },
+  repairBoost: {
+    name: "精密维修",
+    desc: "维修车和维修设施的维修速度提高 30%；不影响护盾恢复。",
+    short: "全体维修效率 +30%",
+    cost: 280,
+    crystal: 15,
+    time: 13,
+    requires: "t2",
+  },
+  t3: {
+    name: "T3 科技",
+    desc: "完成 T2 后可研究；解锁天穹攻城机甲。",
+    short: "解锁天穹攻城机甲",
+    cost: 650,
+    crystal: 60,
+    uranium: 28,
+    time: 24,
     requires: "t2",
   },
 };
@@ -510,6 +697,13 @@ export const enemyFleet = (g) =>
   g.actors.filter((a) => a.team === -1 && units[a.type] && a.hp > 0).length;
 export const productionFactor = (g) =>
   g.tech.has("rapidProduction") ? 0.7 : 1;
+const teamTech = (g, team) => (team === 1 ? g.tech : g.red.tech);
+export const movementSpeed = (g, a) =>
+  (catalog[a.type].speed || 0) *
+  (a.type !== "miner" && teamTech(g, a.team).has("logistics") ? 1.12 : 1);
+export const repairRate = (g, a) =>
+  (catalog[a.type].heal || 0) *
+  (teamTech(g, a.team).has("repairBoost") ? 1.3 : 1);
 const byTeam = (g, team, type) =>
   g.actors.filter(
     (a) => a.team === team && a.hp > 0 && (!type || a.type === type),
@@ -539,7 +733,8 @@ const mined = (g, key, team) =>
     (sum, a) =>
       sum +
       (a.team === team && a.hp > 0 && mining(g, a)
-        ? minerals[a.order.kindOfMine || "ore"][key] || 0
+        ? (minerals[a.order.kindOfMine || "ore"][key] || 0) *
+          (teamTech(g, team).has("extraction") ? 1.25 : 1)
         : 0),
     0,
   );
@@ -571,18 +766,20 @@ export function researchBlocked(g, key) {
   if (g.tech.has(key)) return "已完成";
   if (!owns(g, "lab")) return "请先建造研究中心";
   if (load(g) > capacity(g)) return "研究中心供电不足";
-  if (spec.requires && !g.tech.has(spec.requires)) return "需要先完成 T2 科技";
+  if (spec.requires && !g.tech.has(spec.requires))
+    return `需要先完成 ${spec.requires.toUpperCase()} 科技`;
   if (g.research) return "已有项目正在研究";
   if (g.ore + 1e-6 < spec.cost) return "矿石不足";
   if (g.crystal + 1e-6 < spec.crystal) return "晶能不足，请开采晶能矿";
+  if (spec.uranium && g.uranium + 1e-6 < spec.uranium)
+    return "铀不足，请开采铀矿";
   return "";
 }
 export function startResearch(g, key) {
   const reason = researchBlocked(g, key);
   if (reason) return reason;
   const s = techs[key];
-  g.ore -= s.cost;
-  g.crystal -= s.crystal;
+  transfer(g, s, -1);
   g.research = { key, left: s.time };
   return "";
 }
@@ -593,7 +790,8 @@ export function blocked(g, type) {
   if (!spec?.cost) return "该单位不能生产";
   if (g.result) return "战斗已结束";
   if (buildings[type] && g.construction.length >= 6) return "施工队列已满";
-  if (spec.tech && !g.tech.has(spec.tech)) return "需要先完成 T2 科技";
+  if (spec.tech && !g.tech.has(spec.tech))
+    return `需要先完成 ${spec.tech.toUpperCase()} 科技`;
   if (g.ore + 1e-6 < spec.cost) return "矿石不足";
   if (spec.crystal && g.crystal + 1e-6 < spec.crystal)
     return "晶能不足，请开采晶能矿";
@@ -617,12 +815,46 @@ export function blocked(g, type) {
     return "供电不足，请建造供电站";
   return "";
 }
-export function enqueue(g, type) {
-  const reason = blocked(g, type);
+// Construction coordinates stay fixed from order to completion. Ground textures are decorative.
+function siteBlocked(g, type, point, ignore) {
+  const size = buildings[type].size;
+  if (!Number.isFinite(point?.x) || !Number.isFinite(point?.y))
+    return "请在战场上选择建造位置";
+  if (
+    point.x < size ||
+    point.y < size ||
+    point.x > W - size ||
+    point.y > H - size
+  )
+    return "超出战场边界";
+  if (g.mines.some((m) => dist(m, point) < size + 27)) return "不能覆盖矿脉";
+  if (g.relays.some((r) => dist(r, point) < size + 35)) return "不能覆盖中继站";
+  const overlaps = (a) => dist(a, point) < catalog[a.type].size + size + 3;
+  if (g.actors.some((a) => a.hp > 0 && buildings[a.type] && overlaps(a)))
+    return "与已有建筑重叠";
+  if (
+    [...g.construction, g.red.construction].some(
+      (a) => a && a !== ignore && overlaps(a),
+    )
+  )
+    return "与施工占地重叠";
+  return "";
+}
+export function placementBlocked(g, type, point) {
+  return (
+    blocked(g, type) ||
+    (!buildings[type] ? "请选择建筑" : siteBlocked(g, type, point))
+  );
+}
+export function enqueue(g, type, point) {
+  const reason = buildings[type]
+    ? placementBlocked(g, type, point)
+    : blocked(g, type);
   if (reason) return reason;
   const spec = catalog[type];
   transfer(g, spec, -1);
-  (units[type] ? g.queue : g.construction).push({ type, left: spec.time });
+  if (units[type]) g.queue.push({ type, left: spec.time });
+  else g.construction.push({ type, left: spec.time, x: point.x, y: point.y });
   return "";
 }
 export function enqueueBatch(g, type) {
@@ -754,15 +986,26 @@ function floatDamage(g, target, value, shield) {
     shield,
   });
 }
-function strike(g, target, damage) {
+function strike(g, target, damage, effects = {}) {
   if (target.hp <= 0) return;
-  const absorbed = Math.min(target.shield || 0, damage);
+  const shieldBonus = effects.shieldBonus || 1;
+  const absorbed = Math.min(target.shield || 0, damage * shieldBonus);
   if (absorbed) {
     target.shield -= absorbed;
     target.shieldFlash = 0.18;
     floatDamage(g, target, absorbed, true);
   }
-  const hull = Math.min(target.hp, damage - absorbed);
+  const armor =
+    !units[target.type] || effects.pierce
+      ? 1
+      : (catalog[target.type].armor || 1) *
+        (teamTech(g, target.team).has("armorPlating") ? 0.9 : 1);
+  const hull = Math.min(
+    target.hp,
+    Math.round((damage - absorbed / shieldBonus) * armor),
+  );
+  if (effects.slow && units[target.type])
+    target.slowTime = Math.max(target.slowTime || 0, effects.slow);
   if (hull) {
     target.hp -= hull;
     target.hitFlash = 0.12;
@@ -794,16 +1037,16 @@ function explode(g, x, y, p) {
     if (b.hp <= 0 || b.team === p.team) continue;
     const d = dist(b, { x, y });
     if (d < p.radius)
-      strike(g, b, Math.ceil(p.damage * (1 - (0.6 * d) / p.radius)));
+      strike(g, b, Math.ceil(p.damage * (1 - (0.6 * d) / p.radius)), p);
   }
 }
 export function weaponDamage(g, a) {
   const s = catalog[a.type];
   return (
     (s.damage || 0) +
-    (a.team === 1 && s.missiles && g.tech.has("guidance")
+    (s.missiles && teamTech(g, a.team).has("guidance")
       ? 8
-      : a.team === 1 && s.plasma && g.tech.has("plasmaFocus")
+      : a.type === "plasmaTank" && teamTech(g, a.team).has("plasmaFocus")
         ? 18
         : 0)
   );
@@ -862,14 +1105,16 @@ function fire(g, a, b, s) {
       team: a.team,
       life: s.flight,
       total: s.flight,
-      damage: s.damage,
+      damage,
       radius: s.splash,
+      slow: s.slow,
     });
   } else {
     strike(
       g,
       b,
       Math.round(damage * (buildings[b.type] ? s.structureBonus || 1 : 1)),
+      s,
     );
     blast(g, b.x, b.y, s.damage > 30 ? 21 : 15, "spark");
     g.shots.push({ x: sx, y: sy, tx: b.x, ty: b.y, team: a.team, life: 0.14 });
@@ -965,9 +1210,58 @@ function enemyAI(g, dt) {
     (a) =>
       a.team === 1 && a.type === "miner" && a.hp > 0 && dist(a, blueHQ) > 90,
   );
+  const enemies = byTeam(g, 1).filter(
+    (a) => units[a.type]?.range || units[a.type]?.heal,
+  );
+  const support = byTeam(g, -1, "fieldMedic");
+  const exposedMiner = byTeam(g, -1, "miner").find((m) =>
+    enemies.some((b) => units[b.type].range && dist(m, b) < 145),
+  );
+  const escorts = exposedMiner
+    ? defenders
+        .filter((a) => !a.aiWave && !catalog[a.type].splash)
+        .sort((a, b) => dist(a, exposedMiner) - dist(b, exposedMiner))
+        .slice(0, 2)
+    : [];
+  // A wave gathers at its route entry until its factory orders arrive, with a time limit.
+  const currentWave = g.wave;
+  const staging =
+    g.time - g.lastWave < 27 &&
+    g.red.production.some((q) => q.wave === currentWave);
+  const danger = (p) =>
+    enemies.reduce((sum, b) => sum + Math.max(0, 1 - dist(p, b) / 260), 0);
+  for (const a of support) {
+    const ally = defenders
+      .filter((b) => !b.aiRetreat)
+      .sort(
+        (b, c) =>
+          (1 - c.hp / catalog[c.type].hp) * 125 -
+          dist(a, c) * 0.3 -
+          ((1 - b.hp / catalog[b.type].hp) * 125 - dist(a, b) * 0.3),
+      )[0];
+    if (ally) {
+      const n = Math.hypot(redHQ.x - ally.x, redHQ.y - ally.y) || 1;
+      a.order = {
+        kind: "move",
+        x: ally.x + (48 * (redHQ.x - ally.x)) / n,
+        y: ally.y + (48 * (redHQ.y - ally.y)) / n,
+      };
+    }
+  }
   for (const a of defenders) {
     const s = catalog[a.type];
     const local = enemyFor(g, a, s.range + 38);
+    const specialized = enemies
+      .filter((b) => rangeTo(a, b) <= s.range)
+      .sort((b, c) => {
+        const score = (v) =>
+          (1 - v.hp / catalog[v.type].hp) * 100 +
+          (s.shieldBonus && v.shield ? 105 : 0) +
+          (s.pierce && catalog[v.type].armor ? 90 : 0) +
+          (catalog[v.type].heal ? 60 : 0) -
+          dist(a, v) * 0.17;
+        return score(c) - score(b);
+      })[0];
     if (a.hp < s.hp * 0.33 && local && dist(a, redHQ) > 110) a.aiRetreat = true;
     if (a.aiRetreat && a.hp < s.hp * 0.72) {
       a.order = {
@@ -979,7 +1273,7 @@ function enemyAI(g, dt) {
     }
     a.aiRetreat = false;
     // Artillery backs up instead of driving into close combat; other units screen it.
-    if (s.splash && local && dist(a, local) < s.range * 0.63) {
+    if ((s.splash || s.pierce) && local && dist(a, local) < s.range * 0.63) {
       const d = dist(a, local) || 1;
       a.order = {
         kind: "move",
@@ -987,8 +1281,24 @@ function enemyAI(g, dt) {
         y: clamp(a.y + ((a.y - local.y) / d) * 85, 14, H - 14),
       };
     } else if (intruder) {
-      a.order = { kind: "target", id: (local || intruder).id };
+      a.order = { kind: "target", id: (specialized || local || intruder).id };
+    } else if (escorts.includes(a)) {
+      a.order = {
+        kind: "attack",
+        x: exposedMiner.x - 20,
+        y: exposedMiner.y + 22,
+      };
+    } else if (s.tech && specialized) {
+      a.order = { kind: "target", id: specialized.id };
     } else if (a.aiWave) {
+      if (a.aiWave === currentWave && staging && !a.aiPassedLane) {
+        a.order = {
+          kind: "attack",
+          x: a.aiLane.x + 30 + (a.id % 3) * 20,
+          y: a.aiLane.y + ((a.id % 4) - 1.5) * 24,
+        };
+        continue;
+      }
       if (dist(a, a.aiLane) < 110 || dist(a, blueHQ) < 230)
         a.aiPassedLane = true;
       const goal = a.aiPassedLane
@@ -1001,96 +1311,77 @@ function enemyAI(g, dt) {
         x: goal.x + ((a.id % 3) - 1) * 25,
         y: goal.y + ((a.id % 4) - 1.5) * 24,
       };
-    } else if (relay && g.time > 12 && a.type === "scout" && a.id % 2 === 0) {
-      a.order = { kind: "attack", ...relay };
+    } else if (relay && g.time > 12 && s.speed >= 60 && a.id % 2 === 0) {
+      const target = g.relays
+        .filter((r) => r.owner !== -1)
+        .sort(
+          (b, c) =>
+            dist(a, b) +
+            danger(b) * 175 -
+            (b.owner === 1 ? 50 : 0) -
+            (dist(a, c) + danger(c) * 175 - (c.owner === 1 ? 50 : 0)),
+        )[0];
+      a.order = { kind: "attack", ...target };
     } else {
       a.order = null;
     }
   }
 }
-const buildingSites = [
-  [119, 497],
-  [293, 515],
-  [353, 464],
-  [248, 553],
-  [137, 425],
-  [375, 535],
-  [325, 554],
-  [100, 458],
-  [176, 530],
-  [210, 390],
-  [418, 478],
-  [126, 542],
-  [199, 544],
-  [357, 512],
-  [431, 520],
-  [254, 568],
-  [61, 517],
-  [97, 590],
-  [173, 591],
-  [243, 616],
-  [326, 611],
-  [385, 594],
-].map(([x, y]) => field(x, y));
 function advanceConstruction(g, dt) {
   const job = g.construction[0];
   if (!job || (job.left -= dt) > 1e-8) return;
-  const t = job.type,
-    s = catalog[t];
-  g.construction.shift();
-  const pos = buildingSites.find(
-    ([x, y]) =>
-      !g.actors.some(
-        (a) =>
-          a.hp > 0 &&
-          buildings[a.type] &&
-          dist(a, { x, y }) < (catalog[a.type].size + s.size) * 0.86,
-      ),
-  );
-  if (pos) {
-    spawn(g, t, 1, ...pos);
-    g.events.push(s.name + "施工完成。");
+  const { type, x, y } = g.construction.shift();
+  if (!siteBlocked(g, type, job)) {
+    spawn(g, type, 1, x, y);
+    g.events.push(catalog[type].name + "施工完成。");
   } else {
-    transfer(g, s, 1);
-    g.events.push("基地没有空余建造位置，已退款。");
+    transfer(g, catalog[type], 1);
+    g.events.push("建造位置被占用，已退回资源。");
   }
 }
 function finishUnit(g, job, factory) {
-  const primary = g.actors.find(
-    (a) => a.team === 1 && a.type === "factory" && a.hp > 0,
-  );
+  const originalFactory = dist(factory, location(169, 474)) < 1;
   const entrance = {
     x: factory.x + 43 + (g.serial % 3) * 24,
     y: factory.y + 16 - (g.serial % 5) * 22,
   };
-  // Additional factories may be adjacent. Pick a free exit instead of spawning inside a building.
-  if (factory !== primary) {
-    for (let i = 0; i < 8; i++) {
-      const angle = (((i + g.serial) % 8) * Math.PI) / 4;
-      const p = {
-        x: factory.x + Math.cos(angle) * 48,
-        y: factory.y + Math.sin(angle) * 48,
-      };
-      if (
-        !g.actors.some(
-          (a) =>
-            a.hp > 0 &&
-            dist(a, p) < catalog[a.type].size + catalog[job.type].size * 0.8,
+  const size = catalog[job.type].size;
+  const inBounds = (p) =>
+    p.x >= size && p.y >= size && p.x <= W - size && p.y <= H - size;
+  // Hand-placed factories can hug the map edge or face neighboring buildings.
+  if (!originalFactory || !inBounds(entrance)) {
+    let exit;
+    for (const radius of [catalog[factory.type].size + size + 4, 70, 96]) {
+      for (let i = 0; i < 12 && !exit; i++) {
+        const angle = (((i + g.serial) % 12) * Math.PI) / 6;
+        const p = {
+          x: factory.x + Math.cos(angle) * radius,
+          y: factory.y + Math.sin(angle) * radius,
+        };
+        if (
+          inBounds(p) &&
+          !g.actors.some(
+            (a) => a.hp > 0 && dist(a, p) < catalog[a.type].size + size * 0.8,
+          )
         )
-      ) {
-        Object.assign(entrance, p);
-        break;
+          exit = p;
       }
+      if (exit) break;
     }
+    if (exit) Object.assign(entrance, exit);
   }
+  entrance.x = clamp(entrance.x, size, W - size);
+  entrance.y = clamp(entrance.y, size, H - size);
   const a = spawn(g, job.type, 1, entrance.x, entrance.y);
   const point = g.rally
     ? {
         x: clamp(g.rally.x + ((a.id % 4) - 1.5) * 17, 12, W - 12),
         y: clamp(g.rally.y + ((a.id % 3) - 1) * 18, 12, H - 12),
       }
-    : location(284 + (g.serial % 3) * 25, 461 - (g.serial % 4) * 27);
-  a.order = { kind: "move", ...point };
+    : originalFactory
+      ? location(284 + (g.serial % 3) * 25, 461 - (g.serial % 4) * 27)
+      : null;
+  if (point) a.order = { kind: "move", ...point };
 }
 function advanceProduction(g, dt) {
   if (!g.queue.length) return;
@@ -1168,13 +1459,8 @@ function redBuild(g, type) {
   const candidates = type === "outpost" ? outpostSites : redSites;
   const at = candidates.find(
     (p) =>
-      !g.actors.some(
-        (a) =>
-          a.hp > 0 &&
-          ((buildings[a.type] &&
-            dist(a, p) < (catalog[a.type].size + s.size) * 0.91) ||
-            (a.team === 1 && dist(a, p) < (type === "outpost" ? 105 : 62))),
-      ),
+      !siteBlocked(g, type, p) &&
+      !byTeam(g, 1).some((a) => dist(a, p) < (type === "outpost" ? 105 : 62)),
   );
   if (!at) return false;
   transfer(r, s, -1);
@@ -1201,14 +1487,7 @@ function advanceEnemyIndustry(g, dt) {
   r.uranium = Math.min(99999, r.uranium + uraniumIncome(g, -1) * dt);
   const job = r.construction;
   if (job && (job.left -= dt) <= 1e-8) {
-    if (
-      !g.actors.some(
-        (a) =>
-          a.hp > 0 &&
-          buildings[a.type] &&
-          dist(a, job) < (catalog[a.type].size + catalog[job.type].size) * 0.91,
-      )
-    ) {
+    if (!siteBlocked(g, job.type, job, job)) {
       spawn(g, job.type, -1, job.x, job.y);
       if (job.type === "outpost" || job.type === "factory")
         g.events.push("侦测到红方" + catalog[job.type].name + "建成。");
@@ -1220,9 +1499,10 @@ function advanceEnemyIndustry(g, dt) {
       transfer(r, techs[r.research.key], 1);
       r.research = null;
     } else if (load(g, -1) <= capacity(g, -1) && (r.research.left -= dt) <= 0) {
-      r.tech.add(r.research.key);
+      const finished = r.research.key;
+      r.tech.add(finished);
       r.research = null;
-      g.events.push("红方完成 T2 科技。");
+      g.events.push("红方完成" + techs[finished].name + "。");
     }
   }
   const available = byTeam(g, -1, "factory");
@@ -1254,8 +1534,8 @@ function advanceEnemyIndustry(g, dt) {
       f.y + 64 + (g.serial % 2) * 26,
     );
     if (q.wave) {
-      a.aiWave = true;
-      a.aiLane = aiLanes[(q.wave + (lane % 2)) % aiLanes.length];
+      a.aiWave = q.wave;
+      a.aiLane = q.rally || aiLanes[(q.wave + (lane % 2)) % aiLanes.length];
     }
     return false;
   });
@@ -1337,6 +1617,26 @@ function manageEnemyBase(g) {
     return;
   }
   if (
+    r.tech.has("t2") &&
+    !r.research &&
+    byTeam(g, -1, "lab").length &&
+    load(g, -1) <= capacity(g, -1)
+  ) {
+    const priority =
+      g.time > 215 ? ["t3", "armorPlating", "repairBoost"] : ["extraction"];
+    const upgrade = priority.find(
+      (key) =>
+        !r.tech.has(key) &&
+        affordable(r, techs[key]) &&
+        r.ore - techs[key].cost >= 280,
+    );
+    if (upgrade) {
+      transfer(r, techs[upgrade], -1);
+      r.research = { key: upgrade, left: techs[upgrade].time };
+      return;
+    }
+  }
+  if (
     g.time > 140 &&
     r.ore >= 460 &&
     !byTeam(g, -1, "uraniumPlant").length &&
@@ -1358,25 +1658,84 @@ function reinforce(g) {
   const r = g.red;
   const room = ENEMY_UNIT_LIMIT - enemyFleet(g) - r.production.length;
   const wave = g.wave + 1;
-  const late =
-    wave >= 5 && r.tech.has("t2")
-      ? wave % 2
-        ? "missileT2"
-        : "plasmaTank"
-      : wave >= 4 && r.uranium >= 24
-        ? "uraniumTank"
-        : wave >= 4
-          ? "missileTank"
-          : "tank";
+  const enemies = byTeam(g, 1),
+    arms = enemies.filter((a) => units[a.type]?.range);
+  const shields = arms.filter((a) => catalog[a.type].shield).length;
+  const armor = arms.filter(
+    (a) => catalog[a.type].armor || catalog[a.type].hp >= 300,
+  ).length;
+  const defenses = enemies.filter(
+    (a) => buildings[a.type]?.range && a.type !== "hq",
+  ).length;
+  const clustered = arms.some(
+    (a) => arms.filter((b) => dist(a, b) < 68).length >= 4,
+  );
+  const counter =
+    shields >= 2
+      ? "disruptor"
+      : armor >= 2
+        ? "railgun"
+        : defenses >= 2
+          ? "siegeBreaker"
+          : clustered
+            ? "clusterLauncher"
+            : wave % 2
+              ? "missileT2"
+              : "plasmaTank";
+  const support =
+    byTeam(g, -1, "fieldMedic").length ||
+    r.production.some((q) => q.type === "fieldMedic")
+      ? "vanguard"
+      : "fieldMedic";
   const roster =
     wave < 3
       ? ["tank", "scout", "lightArtillery", "tank"]
-      : [late, "tank", "scout", "lightArtillery", "tank", "heavy"];
+      : r.tech.has("t2")
+        ? [
+            ...(r.tech.has("t3") &&
+            !byTeam(g, -1, "titan").length &&
+            !r.production.some((q) => q.type === "titan")
+              ? ["titan"]
+              : []),
+            counter,
+            support,
+            "vanguard",
+            "interceptor",
+            "ionSkirmisher",
+            "tank",
+            "scout",
+            "lightArtillery",
+          ]
+        : [
+            wave >= 4 ? "uraniumTank" : "tank",
+            "tank",
+            "scout",
+            "lightArtillery",
+            "missileTank",
+            "heavy",
+          ];
+  const route =
+    wave < 3
+      ? null
+      : [...aiLanes].sort((a, b) => {
+          const risk = (p) =>
+            enemies.reduce(
+              (v, e) =>
+                v +
+                (catalog[e.type].range || 0) *
+                  Math.max(0, 1 - dist(p, e) / 280),
+              0,
+            );
+          return risk(a) - risk(b);
+        })[0];
   const n = Math.min(ENEMY_MAX_WAVE, room, 2 + wave, roster.length);
   let paid = 0;
   for (const type of roster) {
     if (paid >= n) break;
-    if (redOrder(g, type, wave)) paid++;
+    if (redOrder(g, type, wave)) {
+      r.production.at(-1).rally = route;
+      paid++;
+    }
   }
   g.lastWave = g.time;
   if (!paid) {
@@ -1404,8 +1763,7 @@ export function step(g, dt) {
     const r = g.research,
       spec = techs[r.key];
     if (!owns(g, "lab")) {
-      g.ore += spec.cost;
-      g.crystal += spec.crystal;
+      transfer(g, spec, 1);
       g.research = null;
       g.events.push("研究中心损毁，研究资源已退回。");
     } else if (load(g) <= capacity(g) && (r.left -= dt) <= 0) {
@@ -1434,16 +1792,22 @@ export function step(g, dt) {
     )
       continue;
     rechargeShield(a, s, dt);
+    a.slowTime = Math.max(0, (a.slowTime || 0) - dt);
+    const speed = movementSpeed(g, a) * (a.slowTime ? 0.65 : 1);
     if (s.heal) {
       for (const ally of g.actors)
         if (
+          ally !== a &&
           ally.team === a.team &&
           units[ally.type] &&
           ally.hp > 0 &&
           ally.hp < catalog[ally.type].hp &&
           dist(a, ally) <= s.radius
         ) {
-          ally.hp = Math.min(catalog[ally.type].hp, ally.hp + s.heal * dt);
+          ally.hp = Math.min(
+            catalog[ally.type].hp,
+            ally.hp + repairRate(g, a) * dt,
+          );
           ally.repairGlow = 0.2;
         }
     }
@@ -1463,18 +1827,18 @@ export function step(g, dt) {
       a.aim = Math.atan2(foe.y - a.y, foe.x - a.x);
       if (a.cd <= 0) fire(g, a, foe, s);
     }
-    if (s.speed && o && !mining(g, a)) {
+    if (speed && o && !mining(g, a)) {
       if (o.kind === "target") {
-        if (rangeTo(a, focus) > s.range) move(a, focus, s.speed, dt);
+        if (rangeTo(a, focus) > s.range) move(a, focus, speed, dt);
       } else if (o.kind !== "attack" || !foe) {
         if (o.kind === "attack" && o.center && s.range) {
-          o.atArea ||= move(a, o, s.speed, dt);
+          o.atArea ||= move(a, o, speed, dt);
           if (o.atArea) {
             const nearby = enemyFor(g, a, s.range + 150, o.center);
-            if (nearby) move(a, nearby, s.speed, dt);
+            if (nearby) move(a, nearby, speed, dt);
             else a.order = null;
           }
-        } else if (move(a, o, s.speed, dt) && o.kind !== "mine") a.order = null;
+        } else if (move(a, o, speed, dt) && o.kind !== "mine") a.order = null;
       }
     }
     if (!foe) a.aim = a.angle;

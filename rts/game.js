@@ -23,6 +23,7 @@ import {
   createGame,
   blocked,
   enqueue,
+  placementBlocked,
   selected,
   order,
   stop,
@@ -67,13 +68,11 @@ const divisions = {
   },
   artillery: {
     title: "火炮支援",
-    types: [
-      "lightArtillery",
-      "heavyArtillery",
-      "missileTank",
-      "plasmaTank",
-      "missileT2",
-    ],
+    types: ["lightArtillery", "heavyArtillery", "missileTank"],
+  },
+  advanced: {
+    title: "高级部队 · T2 / T3",
+    types: Object.keys(units).filter((type) => units[type].tech),
   },
   build: {
     title: "基地建设",
@@ -101,6 +100,7 @@ let g = createGame(),
   tab = "units",
   batchMode = false,
   mode = "auto",
+  placement = null,
   pointer = null,
   lastTap = null,
   boxIds = null,
@@ -182,12 +182,55 @@ function fit(p) {
 }
 function setMode(next) {
   mode = next;
+  if (next !== "build" && placement) {
+    placement = null;
+    refreshPlacement();
+  }
   $("move").classList.toggle("active", mode === "move");
   $("attack").classList.toggle("active", mode === "attack");
   $("rally-button").setAttribute("aria-pressed", String(mode === "rally"));
   $("move").setAttribute("aria-pressed", String(mode === "move"));
   $("attack").setAttribute("aria-pressed", String(mode === "attack"));
 }
+function refreshPlacement() {
+  $("placement-panel").hidden = !placement;
+  if (!placement) return;
+  const { type, point } = placement;
+  const reason = point && placementBlocked(g, type, point);
+  $("placement-name").textContent = catalog[type].name;
+  const hint = point
+    ? reason || `坐标 ${point.x}, ${point.y} · 可建造`
+    : "点击战场选址，绿色标记表示可以建造。";
+  if ($("placement-hint").textContent !== hint)
+    $("placement-hint").textContent = hint;
+  $("placement-confirm").disabled = !point || Boolean(reason);
+}
+function chooseBuilding(type) {
+  placement = { type, point: null, hover: null };
+  lastTap = null;
+  setMode("build");
+  refreshPlacement();
+  status("选址中：确认施工前不会扣除资源。");
+}
+function commitPlacement() {
+  if (!placement?.point) return;
+  const { type, point } = placement;
+  const reason = enqueue(g, type, point);
+  if (reason) {
+    status(reason);
+    refreshPlacement();
+    return;
+  }
+  setMode("auto");
+  status(catalog[type].name + "已加入施工队列。");
+  beep(560, 0.035);
+  refresh();
+}
+$("placement-confirm").onclick = commitPlacement;
+$("placement-cancel").onclick = () => {
+  setMode("auto");
+  status("已取消选址。");
+};
 function issue(p, m, targetId) {
   if (g.result) return;
   const pt = fit(p);
@@ -277,7 +320,9 @@ function hitUnit(pt, touch = false, team = 0) {
 }
 canvas.addEventListener("contextmenu", (e) => {
   e.preventDefault();
-  if (e.pointerType !== "touch" && !touches.size) issue(pos(e), "auto");
+  if (e.pointerType === "touch" || touches.size) return;
+  if (placement) $("placement-cancel").click();
+  else issue(pos(e), "auto");
 });
 canvas.addEventListener("pointerdown", (e) => {
   if (e.button !== 0 && e.button !== 1) return;
@@ -307,6 +352,8 @@ canvas.addEventListener("pointermove", (e) => {
   if (touches.has(e.pointerId)) touches.set(e.pointerId, e);
   if (boxIds) return;
   const p = pos(e);
+  if (placement && e.pointerType !== "touch" && !pointer?.pan)
+    placement.hover = { x: Math.round(p.x), y: Math.round(p.y) };
   $("coords").innerHTML =
     `SEC 07 <span>//</span> ${String(Math.floor(clamp(p.x, 0, W))).padStart(4, "0")} : ${String(Math.floor(clamp(p.y, 0, H))).padStart(3, "0")}`;
   if (pointer?.id !== e.pointerId) return;
@@ -336,7 +383,7 @@ function finishPointer(e, cancelled = false) {
     if (!cancelled) {
       touches.set(e.pointerId, e);
       const box = touchBox();
-      if (box) selectBox(box, false, 5 / view.s);
+      if (box && !placement) selectBox(box, false, 5 / view.s);
     }
     boxIds = null;
   }
@@ -352,6 +399,13 @@ function finishPointer(e, cancelled = false) {
   const { from: a, to: b } = drag;
   const boxSelection = !drag.touch && isDrag(drag);
   if (drag.touch && isDrag(drag)) return;
+  if (placement) {
+    if (!boxSelection) {
+      placement.point = { x: Math.round(b.x), y: Math.round(b.y) };
+      refreshPlacement();
+    }
+    return;
+  }
   if (!boxSelection && mode !== "auto") {
     const enemy = mode === "attack" ? hitUnit(b, drag.touch, -1) : null;
     lastTap = null;
@@ -554,7 +608,16 @@ window.addEventListener("keydown", (e) => {
   if (k === "m") setOrderButton("move");
   if (k === "f") setOrderButton("attack");
   if (k === "x") halt();
+  if (k === "enter" && placement) {
+    e.preventDefault();
+    commitPlacement();
+    return;
+  }
   if (k === "escape") {
+    if (placement) {
+      $("placement-cancel").click();
+      return;
+    }
     setMode("auto");
     g.selected.clear();
     refreshSelection();
@@ -564,6 +627,7 @@ window.addEventListener("keydown", (e) => {
 });
 window.addEventListener("keyup", (e) => keys.delete(e.key.toLowerCase()));
 function setTab(name) {
+  if (name !== "build" && placement) setMode("auto");
   tab = name;
   Object.keys(divisions).forEach((t) => {
     const el = $(t + "-tab");
@@ -588,7 +652,13 @@ function setTab(name) {
             ? " research-root"
             : " research-independent")
       : "unit-card" +
-        (spec.tech ? " tier-unit" : spec.uranium ? " uranium-unit" : "");
+        (spec.tech === "t3"
+          ? " tier-unit tier-three"
+          : spec.tech
+            ? " tier-unit"
+            : spec.uranium
+              ? " uranium-unit"
+              : "");
     const info = document.createElement("span");
     info.innerHTML = `<span class="unit-name">${spec.name}</span><span class="unit-desc">${isTech ? spec.short : spec.desc}</span>`;
     const cost = document.createElement("span");
@@ -600,6 +670,10 @@ function setTab(name) {
     btn.append(info, cost);
     if (isTech) btn.append(state);
     btn.onclick = (event) => {
+      if (!isTech && !units[type]) {
+        chooseBuilding(type);
+        return;
+      }
       if (!isTech && units[type] && (batchMode || event.shiftKey)) {
         const { added, requested, reason } = enqueueBatch(g, type);
         status(
@@ -749,7 +823,11 @@ function refresh() {
   $("enemy-orders").textContent = String(g.red.production.length);
   $("research-hud").hidden = tab !== "tech";
   $("production-hud").hidden = tab === "tech";
-  $("research-tier").textContent = g.tech.has("t2") ? "T2" : "T1";
+  $("research-tier").textContent = g.tech.has("t3")
+    ? "T3"
+    : g.tech.has("t2")
+      ? "T2"
+      : "T1";
   $("power").innerHTML = load(g) + ` <span>/ ${capacity(g)}</span>`;
   $("population").innerHTML = fleet(g) + ` <span>/ ${UNIT_LIMIT}</span>`;
   const remaining = Math.max(0, Math.ceil(g.nextWave - g.time));
@@ -769,7 +847,7 @@ function refresh() {
   $("relay-count").textContent = count + " / " + g.relays.length;
   $("objective-relay").classList.toggle("done", count === g.relays.length);
   $("objective-main").classList.toggle("done", g.result === "victory");
-  const inProduction = tab === "units" || tab === "artillery";
+  const inProduction = ["units", "artillery", "advanced"].includes(tab);
   const n = factories(g).length,
     active = g.queue.filter((job) => job.factory).length;
   $("factory-tools").hidden = !inProduction;
@@ -837,6 +915,7 @@ function refresh() {
     g.events.length = 0;
   }
   if (g.result && shownResult !== g.result) {
+    setMode("auto");
     shownResult = g.result;
     updatePause();
     status(
@@ -847,6 +926,7 @@ function refresh() {
     beep(g.result === "victory" ? 780 : 170, 0.07);
   }
   refreshSelection();
+  refreshPlacement();
 }
 function render(now) {
   c.setTransform(1, 0, 0, 1, 0, 0);
@@ -896,6 +976,21 @@ function render(now) {
     c.fill();
     marker(c, x, y + 22, "RALLY", 1);
   }
+  for (const [index, job] of g.construction.entries())
+    if (visible(job.x, job.y)) {
+      const size = catalog[job.type].size;
+      c.globalAlpha = 0.42;
+      structure(c, job.type, 1, job.x, job.y, 0);
+      c.globalAlpha = 1;
+      brackets(c, job.x, job.y, size, "#e7c783");
+      marker(
+        c,
+        job.x,
+        job.y - size - 9,
+        index === 0 ? `${Math.ceil(job.left)}s` : `#${index + 1}`,
+        1,
+      );
+    }
   for (const r of g.relays) if (visible(r.x, r.y)) relay(c, r);
   const marked = new Set(
     selected(g)
@@ -950,6 +1045,13 @@ function render(now) {
         s.size * 0.9,
         `rgba(255,194,116,${u.hitFlash * 5})`,
       );
+    if (u.slowTime > 0) {
+      c.strokeStyle = "#9ce7eeb8";
+      c.lineWidth = 1;
+      c.beginPath();
+      c.ellipse(u.x, u.y + 2, s.size + 3, s.size * 0.55, 0, 0, Math.PI * 2);
+      c.stroke();
+    }
     if (u.repairGlow > 0) {
       const y = u.y - s.size - 15 - ((g.time * 11) % 6);
       c.fillStyle = "#c1ecad";
@@ -1049,6 +1151,22 @@ function render(now) {
       );
       c.stroke();
     }
+  }
+  const preview = placement?.point || placement?.hover;
+  if (preview && visible(preview.x, preview.y)) {
+    const { x, y } = preview;
+    const size = catalog[placement.type].size;
+    const color = placementBlocked(g, placement.type, preview)
+      ? "#f28f7d"
+      : "#bbec94";
+    c.globalAlpha = 0.62;
+    structure(c, placement.type, 1, x, y, 0);
+    c.globalAlpha = 1;
+    brackets(c, x, y, size, color);
+    c.strokeStyle = color;
+    c.setLineDash([4, 4]);
+    c.strokeRect(x - size, y - size, size * 2, size * 2);
+    c.setLineDash([]);
   }
   c.setTransform(1, 0, 0, 1, 0, 0);
   c.font = "bold 13px monospace";

@@ -554,6 +554,87 @@ function muzzle(c, x, y, t, size = 1) {
   c.restore();
 }
 const kick = (t, scale) => scale * Math.pow(clamp(t / 0.24, 0, 1), 1.9);
+const advancedStyles = {
+  vanguard: [15, 10, 14, 6, "#d8bc7b"],
+  interceptor: [12, 7, 14, 2, "#a7eddb"],
+  railgun: [13, 8, 25, 4, "#bca9f4"],
+  disruptor: [12, 8, 14, 3, "#6ad7f1"],
+  fieldMedic: [12, 8, 0, 0, "#9de4a3"],
+  siegeBreaker: [15, 10, 23, 6, "#ed9d76"],
+  clusterLauncher: [14, 10, 14, 4, "#edbd80"],
+  ionSkirmisher: [11, 8, 14, 5, "#c498f4"],
+  titan: [17, 13, 25, 8, "#f0cf83"],
+};
+function advancedVehicle(c, type, set, x, y, angle, aim, recoil, salvoLane) {
+  const [length, width, barrel, caliber, accent] = advancedStyles[type];
+  const [d, m, b, l, hi, k] = set;
+  const titan = type === "titan",
+    wheels = type === "interceptor" || type === "fieldMedic";
+  c.save();
+  c.translate(Math.round(x), Math.round(y));
+  c.rotate(angle);
+  rect(c, -length - 2, -width + 2, length * 2 + 6, width * 2 + 3, "#161b1b68");
+  for (const side of [-1, 1]) {
+    const y = side * width;
+    if (wheels || titan) {
+      for (const px of titan ? [-13, 8] : [-9, 0, 8]) {
+        if (titan) {
+          line(c, px, side * 5, px + side * 2, side * 17, k, 7);
+          box(c, px - 5, y + side * 4 - 4, 10, 8, set);
+          rect(c, px - 2, y + side * 4 - 1, 5, 2, accent);
+        } else {
+          rect(c, px - 3, y - 2, 6, 5, k);
+          rect(c, px - 1, y, 2, 2, d);
+        }
+      }
+    } else {
+      rect(c, -length, y - 3, length * 2, 6, k);
+      for (let px = -length + 2; px < length - 1; px += 4)
+        rect(c, px, y - 2, 1, 4, "#626a59");
+      rect(c, -length + 3, y - side * 4, length * 2 - 6, 2, accent);
+    }
+  }
+  box(c, -length, -width + 3, length * 2, width * 2 - 6, set);
+  rect(c, -length + 2, -width + 4, 4, width * 2 - 8, d);
+  rect(c, length - 4, -width + 4, 3, 2, hi);
+  rect(c, length - 4, width - 6, 3, 2, hi);
+  if (type === "fieldMedic") {
+    box(c, -7, -6, 13, 12, set);
+    rect(c, -5, -4, 8, 8, k);
+    rect(c, -4, -1, 6, 2, accent);
+    rect(c, -2, -3, 2, 6, accent);
+    line(c, -6, -3, -12, -11, k, 1);
+    rect(c, -13, -12, 3, 2, accent);
+  } else {
+    c.rotate(aim - angle);
+    box(c, -8, -(titan ? 8 : 6), 15, titan ? 16 : 12, set);
+    rect(c, -7, -3, 5, 6, k);
+    rect(c, -6, -2, 3, 4, accent);
+    c.translate(-kick(recoil, titan ? 12 : 8), 0);
+    if (type === "clusterLauncher") {
+      for (const side of [-1, 1]) {
+        const y = side * 4;
+        box(c, 1, y - 3, barrel, 6, set);
+        rect(c, 3, y - 1, 9, 2, accent);
+        rect(c, barrel - 1, y - 1, 3, 3, k);
+        if (salvoLane === side) muzzle(c, barrel + 1, y, recoil);
+      }
+    } else {
+      rect(c, 4, -caliber / 2, barrel - 3, caliber, k);
+      rect(c, 5, -caliber / 2, barrel - 6, Math.max(1, caliber * 0.45), l);
+      rect(c, barrel - 4, -caliber / 2 - 1, 4, caliber + 2, accent);
+      if (type === "railgun" || type === "disruptor")
+        for (const side of [-1, 1])
+          rect(c, 6, side * 3 - 1, barrel - 6, 2, accent);
+      if (titan) {
+        rect(c, 8, -8, 7, 3, l);
+        rect(c, 8, 5, 7, 3, l);
+      }
+      muzzle(c, barrel, 0, recoil, titan ? 1.65 : 1);
+    }
+  }
+  c.restore();
+}
 export function vehicle(
   c,
   type,
@@ -565,6 +646,10 @@ export function vehicle(
   recoil = 0,
   salvoLane = 0,
 ) {
+  if (advancedStyles[type]) {
+    advancedVehicle(c, type, colors[team], x, y, angle, aim, recoil, salvoLane);
+    return;
+  }
   const set = colors[team],
     [d, m, b, l, hi, k] = set,
     missile = Boolean(units[type].missiles),
@@ -878,7 +963,11 @@ export function icon(type) {
   cv.height = 42;
   cv.setAttribute("aria-hidden", "true");
   const c = cv.getContext("2d");
-  if (units[type]) vehicle(c, type, 1, 22, 21, -0.42);
+  if (type === "titan" || type === "railgun" || type === "siegeBreaker") {
+    c.translate(23, 21);
+    c.scale(0.8, 0.8);
+    vehicle(c, type, 1, 0, 0, -0.42);
+  } else if (units[type]) vehicle(c, type, 1, 22, 21, -0.42);
   else {
     c.save();
     c.translate(24, 21);
