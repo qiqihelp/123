@@ -43,6 +43,21 @@
 | `F` | 2× 变速 |
 | 右键 / `Esc` | 取消选择 |
 
+## 部署
+
+本游戏是纯静态页面，仓库已配置好自动发布：
+
+1. 打开仓库 **Settings → Pages → Build and deployment → Source**，选择 **GitHub Actions**（只需点一次）。
+2. 之后每次向 `main` 推送改动，`.github/workflows/build.yml` 都会重新构建并把 `mathwar/` 一起发布。
+
+发布后的地址：
+
+- 本游戏：`https://qiqihelp.github.io/123/mathwar/`
+- 仓库主站（回声之谷）：`https://qiqihelp.github.io/123/`
+
+> 如果暂时不想启用 Pages，也可以用 jsDelivr 直接读仓库里的文件（免部署）：
+> `https://cdn.jsdelivr.net/gh/qiqihelp/123/mathwar/index.html`
+
 ## 本地运行
 
 ```bash
