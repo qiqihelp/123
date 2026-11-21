@@ -95,14 +95,14 @@ jobs:
       # 在 runner 上被强制用 Node 24 运行，deploy-pages 因此读不到 artifact，
       # 报 "No artifacts named github-pages were found"（artifact 其实已经上传成功）。
       - name: Package for GitHub Pages
-        if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+        if: github.ref == 'refs/heads/main'
         uses: actions/upload-pages-artifact@v5
         with:
           path: build-web
 
       # 诊断：让 runner 自己报告它看到的 artifact 列表（失败时用于定位）
       - name: Show artifacts seen by runner
-        if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+        if: github.ref == 'refs/heads/main'
         run: |
           echo "run id: $GITHUB_RUN_ID / attempt: $GITHUB_RUN_ATTEMPT"
           curl -sS -H "Authorization: Bearer ${{ github.token }}" \
@@ -112,7 +112,7 @@ jobs:
 
       # 不加 continue-on-error：部署失败必须让工作流变红，不能再出现"假绿"
       - name: Deploy to GitHub Pages
-        if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+        if: github.ref == 'refs/heads/main'
         id: deployment
         uses: actions/deploy-pages@v5
 
