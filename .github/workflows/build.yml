@@ -9,6 +9,7 @@ on:
 permissions:
   contents: read
 
+# Pages 只有 main 分支能发布，避免多个 Arena 分支互相覆盖站点内容
 concurrency:
   group: pages-${{ github.ref }}
   cancel-in-progress: true
@@ -85,15 +86,30 @@ jobs:
           mkdir -p build-web/mathwar
           cp -r mathwar/. build-web/mathwar/
 
+      # 两个 Pages action 都升到 node24 版本：旧版本（v3 / v4）声明的是 node20，
+      # 在 runner 上被强制用 Node 24 运行，deploy-pages 因此读不到 artifact，
+      # 报 "No artifacts named github-pages were found"（artifact 其实已经上传成功）。
       - name: Package for GitHub Pages
-        uses: actions/upload-pages-artifact@v3
-        continue-on-error: true
+        if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+        uses: actions/upload-pages-artifact@v5
         with:
           path: build-web
 
+      # 诊断：让 runner 自己报告它看到的 artifact 列表（失败时用于定位）
+      - name: Show artifacts seen by runner
+        if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+        run: |
+          echo "run id: $GITHUB_RUN_ID / attempt: $GITHUB_RUN_ATTEMPT"
+          curl -sS -H "Authorization: Bearer ${{ github.token }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/runs/$GITHUB_RUN_ID/artifacts" \
+            | head -c 800
+
+      # 不加 continue-on-error：部署失败必须让工作流变红，不能再出现"假绿"
       - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
-        continue-on-error: true
+        if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
+        id: deployment
+        uses: actions/deploy-pages@v5
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
