@@ -7155,10 +7155,20 @@ function initApp() {
     startFsBtn.onclick = () => {
       sfx.play('click');
       toggleFullscreenLandscape().then(() => {
+        // 隐藏左上角按钮（如果存在）
+        const topBtn = document.getElementById('btn-fullscreen');
+        if (topBtn) topBtn.style.display = 'none';
+        // 隐藏弹窗按钮
         startFsBtn.style.display = 'none';
+        modal.classList.add('hidden');
+        renderAll();
       }).catch((err) => {
         console.error('Fullscreen failed:', err);
+        const topBtn = document.getElementById('btn-fullscreen');
+        if (topBtn) topBtn.style.display = 'none';
         startFsBtn.style.display = 'none';
+        modal.classList.add('hidden');
+        renderAll();
         showToast('全屏受限，已强制横屏！', 'info');
       });
     };

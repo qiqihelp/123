@@ -84,26 +84,40 @@ let animTick = 0;
 async function toggleFullscreenLandscape() {
   try {
     const docEl = document.documentElement;
+    const btn = document.getElementById('btn-fullscreen');
     if (!document.fullscreenElement && !document.webkitFullscreenElement) {
       if (docEl.requestFullscreen) {
         await docEl.requestFullscreen();
       } else if (docEl.webkitRequestFullscreen) {
-        docEl.webkitRequestFullscreen();
+        await docEl.webkitRequestFullscreen();
       }
       if (screen.orientation && screen.orientation.lock) {
         try { await screen.orientation.lock('landscape'); } catch (_) {}
       }
+      if (btn) btn.style.display = 'none';
       showToast('已开启全屏横屏沉浸模式！', 'good');
+      
+      // 监听退出事件以恢复按钮
+      const exitHandler = () => {
+        if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+          if (btn) btn.style.display = 'block';
+        }
+      };
+      document.addEventListener('fullscreenchange', exitHandler);
+      document.addEventListener('webkitfullscreenchange', exitHandler);
     } else {
       if (document.exitFullscreen) await document.exitFullscreen();
       else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+      if (btn) btn.style.display = 'block';
     }
   } catch (_) {
     showToast('当前浏览器内嵌环境限制原生全屏，已自动启用视口 100% 横屏布局！', 'info');
+    const btn = document.getElementById('btn-fullscreen');
+    if (btn) btn.style.display = 'none';
   }
 }
 
-function showToast(msg, kind = 'info') {
+function showToast(msg, kind = 'info') {function showToast(msg, kind = 'info') {function showToast(msg, kind = 'info') {
   const box = document.getElementById('toast-container');
   if (!box) return;
   const el = document.createElement('div');
@@ -1351,50 +1365,6 @@ function initApp() {
       });
     };
   }
-
-  const startFsBtn = document.getElementById('btn-start-fullscreen');
-  if (startFsBtn) {
-    startFsBtn.onclick = () => {
-      sfx.play('click');
-      toggleFullscreenLandscape().then(() => {
-        // 隐藏左上角按钮（如果存在）
-        const topBtn = document.getElementById('btn-fullscreen');
-        if (topBtn) topBtn.style.display = 'none';
-        // 隐藏弹窗按钮
-        startFsBtn.style.display = 'none';
-        modal.classList.add('hidden');
-        renderAll();
-      }).catch((err) => {
-        console.error('Fullscreen failed:', err);
-        const topBtn = document.getElementById('btn-fullscreen');
-        if (topBtn) topBtn.style.display = 'none';
-        startFsBtn.style.display = 'none';
-        modal.classList.add('hidden');
-        renderAll();
-        showToast('全屏受限，已强制横屏！', 'info');
-      });
-    };
-  }
-
-  document.getElementById('btn-mute').onclick = (e) => {
-    sfx.muted = !sfx.muted;
-    e.currentTarget.textContent = sfx.muted ? '🔇' : '🔊';
-  };
-
-  document.getElementById('btn-newgame-top').onclick = () => {
-    sfx.play('click');
-    openStartModal(true);
-  };
-
-  setInterval(() => {
-    animTick++;
-    if (gameState && gameState.phase === 'open') {
-      drawCustomerPortrait(document.getElementById('customer-canvas'), gameState.currentCustomer, animTick);
-    }
-  }, 110);
-
-  openStartModal(false);
-}
 
 window.addEventListener('DOMContentLoaded', initApp);
 
