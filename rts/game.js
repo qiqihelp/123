@@ -13,6 +13,7 @@ import {
   techs,
   minerals,
   crystalIncome,
+  uraniumIncome,
   researchBlocked,
   startResearch,
   units,
@@ -54,7 +55,15 @@ const canvas = $("map"),
 const divisions = {
   units: {
     title: "部署单位",
-    types: ["miner", "scout", "tank", "heavy", "raider", "assault"],
+    types: [
+      "miner",
+      "scout",
+      "tank",
+      "heavy",
+      "raider",
+      "assault",
+      "uraniumTank",
+    ],
   },
   artillery: {
     title: "火炮支援",
@@ -76,6 +85,9 @@ const divisions = {
       "refinery",
       "mortar",
       "lab",
+      "outpost",
+      "uraniumPlant",
+      "uraniumRepair",
     ],
   },
   tech: { title: "研究中心 · 科技树", types: Object.keys(techs) },
@@ -575,12 +587,13 @@ function setTab(name) {
           : type === "t2"
             ? " research-root"
             : " research-independent")
-      : "unit-card" + (spec.tech ? " tier-unit" : "");
+      : "unit-card" +
+        (spec.tech ? " tier-unit" : spec.uranium ? " uranium-unit" : "");
     const info = document.createElement("span");
     info.innerHTML = `<span class="unit-name">${spec.name}</span><span class="unit-desc">${isTech ? spec.short : spec.desc}</span>`;
     const cost = document.createElement("span");
     cost.className = "unit-cost";
-    cost.innerHTML = `◆ ${spec.cost}${spec.crystal ? ` <span class="crystal-cost">◇ ${spec.crystal}</span>` : ""}`;
+    cost.innerHTML = `◆ ${spec.cost}${spec.crystal ? ` <span class="crystal-cost">◇ ${spec.crystal}</span>` : ""}${spec.uranium ? ` <span class="uranium-cost">U ${spec.uranium}</span>` : ""}`;
     if (!isTech) btn.append(icon(type));
     const state = document.createElement("span");
     state.className = "research-state";
@@ -729,6 +742,11 @@ function refresh() {
   $("income").textContent = "+" + income(g);
   $("crystal").textContent = Math.floor(g.crystal);
   $("crystal-income").textContent = "+" + crystalIncome(g);
+  $("uranium").textContent = Math.floor(g.uranium);
+  $("uranium-income").textContent = "+" + uraniumIncome(g);
+  $("enemy-ore").textContent = Math.floor(g.red.ore);
+  $("enemy-income").textContent = "+" + income(g, -1) + "/s";
+  $("enemy-orders").textContent = String(g.red.production.length);
   $("research-hud").hidden = tab !== "tech";
   $("production-hud").hidden = tab === "tech";
   $("research-tier").textContent = g.tech.has("t2") ? "T2" : "T1";
@@ -741,9 +759,9 @@ function refresh() {
   $("enemy-count").textContent = `${enemyFleet(g)} / ${ENEMY_UNIT_LIMIT}`;
   $("wave-time").textContent = reinforces
     ? g.waveWaiting
-      ? "整编中"
+      ? g.waveWaiting
       : two(Math.floor(remaining / 60)) + ":" + two(remaining % 60)
-    : "—";
+    : "等待工厂";
   $("wave-progress").style.width = reinforces
     ? 100 * clamp((g.time - g.lastWave) / (g.nextWave - g.lastWave), 0, 1) + "%"
     : "0%";
@@ -888,6 +906,22 @@ function render(now) {
   for (const u of ordered) {
     if (!visible(u.x, u.y)) continue;
     const s = catalog[u.type];
+    if (mining(g, u)) {
+      const m = u.order,
+        color = minerals[m.kindOfMine || "ore"].color;
+      c.globalAlpha = 0.44;
+      c.strokeStyle = color;
+      c.lineWidth = 1;
+      c.setLineDash([2, 5]);
+      c.lineDashOffset = -(g.time * 12) % 7;
+      c.beginPath();
+      c.moveTo(m.x, m.y);
+      c.lineTo(u.x, u.y);
+      c.stroke();
+      c.setLineDash([]);
+      c.lineDashOffset = 0;
+      c.globalAlpha = 1;
+    }
     if (units[u.type])
       vehicle(
         c,
@@ -959,6 +993,10 @@ function render(now) {
     if (visible(r.x, r.y)) marker(c, r.x, r.y + 49, "RELAY " + r.name, r.owner);
   for (const u of g.actors.filter((a) => a.type === "hq"))
     marker(c, u.x, u.y - 46, u.team === 1 ? "BLUE HQ" : "RED HQ", u.team);
+  for (const post of g.actors.filter(
+    (a) => a.type === "outpost" && visible(a.x, a.y),
+  ))
+    marker(c, post.x, post.y - 29, "OUTPOST", post.team);
   for (const mine of g.mines)
     if (visible(mine.x, mine.y)) {
       const spec = minerals[mine.kind];

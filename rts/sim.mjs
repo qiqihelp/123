@@ -161,6 +161,20 @@ export const units = {
     splash: 29,
     tech: "t2",
   },
+  uraniumTank: {
+    name: "铀能重坦",
+    desc: "重型护盾 · 掩护前线",
+    cost: 390,
+    uranium: 24,
+    hp: 335,
+    shield: 144,
+    speed: 32,
+    size: 19,
+    range: 147,
+    damage: 58,
+    rate: 1.25,
+    time: 13,
+  },
 };
 export const buildings = {
   generator: {
@@ -168,6 +182,7 @@ export const buildings = {
     desc: "电力上限 +8",
     cost: 140,
     hp: 230,
+    powerSupply: 8,
     size: 22,
     time: 6,
   },
@@ -228,6 +243,40 @@ export const buildings = {
     time: 9,
     powerDraw: 3,
   },
+  uraniumPlant: {
+    name: "铀能电站",
+    desc: "电力上限 +16",
+    cost: 290,
+    uranium: 18,
+    hp: 350,
+    size: 26,
+    time: 11,
+    powerSupply: 16,
+  },
+  uraniumRepair: {
+    name: "铀能维修站",
+    desc: "广域维修 · 21 点/秒",
+    cost: 270,
+    uranium: 22,
+    hp: 360,
+    size: 25,
+    time: 10,
+    powerDraw: 3,
+    heal: 21,
+    radius: 112,
+  },
+  outpost: {
+    name: "前线指挥站",
+    desc: "自动防守 · 矿石 +3/秒",
+    cost: 260,
+    hp: 540,
+    size: 24,
+    time: 11,
+    income: 3,
+    range: 118,
+    damage: 15,
+    rate: 1.05,
+  },
   hq: {
     name: "指挥中心",
     hp: 1150,
@@ -245,6 +294,13 @@ export const buildings = {
     size: 25,
   },
 };
+// Apply the skirmish balance to the source of truth used by combat and unit dossiers.
+export const BUILDING_HP_FACTOR = 1.55;
+export const BASE_DAMAGE_FACTOR = 0.75;
+for (const spec of Object.values(buildings))
+  spec.hp = Math.round(spec.hp * BUILDING_HP_FACTOR);
+for (const spec of [...Object.values(units), ...Object.values(buildings)])
+  if (spec.damage) spec.damage = Math.round(spec.damage * BASE_DAMAGE_FACTOR);
 export const UNIT_LIMIT = 60;
 export const ENEMY_UNIT_LIMIT = 11;
 export const ENEMY_MAX_WAVE = 6;
@@ -307,6 +363,14 @@ export const minerals = {
     crystal: 4,
     color: "#e993cb",
   },
+  uranium: {
+    name: "铀矿",
+    label: "URANIUM",
+    ore: 3,
+    crystal: 0,
+    uranium: 3,
+    color: "#bee485",
+  },
 };
 const mine = (x, y, kind = "ore") => ({ x, y, kind });
 const localMine = (x, y, kind) => ({ ...location(x, y), kind: kind || "ore" });
@@ -317,6 +381,17 @@ export function createGame() {
   const g = {
     ore: 640,
     crystal: 0,
+    uranium: 0,
+    red: {
+      ore: 430,
+      crystal: 0,
+      uranium: 0,
+      tech: new Set(),
+      production: [],
+      construction: null,
+      research: null,
+      nextEconomy: 7,
+    },
     tech: new Set(),
     research: null,
     time: 0,
@@ -370,6 +445,12 @@ export function createGame() {
       mine(2235, 1200, "crystal"),
       mine(1765, 1250, "ore"),
       mine(1330, 1190, "rich"),
+      localMine(318, 526, "uranium"),
+      localMine(908, 218, "uranium"),
+      mine(512, 271, "uranium"),
+      mine(910, 1100, "uranium"),
+      mine(2040, 1138, "uranium"),
+      mine(2685, 500, "uranium"),
     ],
     selected: new Set(),
   };
@@ -382,7 +463,7 @@ export function createGame() {
   spawn(g, "generator", -1, ...field(813, 183));
   spawn(g, "turret", -1, ...field(704, 173));
   const miner = spawn(g, "miner", 1, ...field(186, 367), -2.15);
-  miner.order = { ...g.mines[0], kindOfMine: g.mines[0].kind, kind: "mine" };
+  miner.order = mineOrder(g.mines[0]);
   spawn(g, "scout", 1, ...field(365, 360), -0.65);
   spawn(g, "scout", 1, ...field(383, 400), -0.57);
   g.selected.add(spawn(g, "tank", 1, ...field(316, 377), -0.6).id);
@@ -392,6 +473,8 @@ export function createGame() {
   spawn(g, "lightArtillery", -1, ...field(806, 229), 2.55);
   spawn(g, "scout", -1, ...field(698, 245), 2.55);
   spawn(g, "scout", -1, ...field(756, 253), 2.55);
+  const redMiner = spawn(g, "miner", -1, ...field(803, 352));
+  redMiner.order = mineOrder(g.mines[1]);
   return g;
 }
 function spawn(g, type, team, x, y, angle = team === 1 ? -0.7 : 2.4) {
@@ -427,47 +510,61 @@ export const enemyFleet = (g) =>
   g.actors.filter((a) => a.team === -1 && units[a.type] && a.hp > 0).length;
 export const productionFactor = (g) =>
   g.tech.has("rapidProduction") ? 0.7 : 1;
-export const generatorCount = (g) =>
-  g.actors.filter((a) => a.team === 1 && a.type === "generator" && a.hp > 0)
-    .length;
-export const capacity = (g) => 4 + 8 * generatorCount(g);
-export const load = (g) =>
-  6 +
-  g.actors.reduce(
-    (sum, a) =>
-      sum + (a.team === 1 && a.hp > 0 ? catalog[a.type].powerDraw || 0 : 0),
-    0,
+const byTeam = (g, team, type) =>
+  g.actors.filter(
+    (a) => a.team === team && a.hp > 0 && (!type || a.type === type),
   );
-export const mining = (g, a) =>
-  a.type === "miner" && a.order?.kind === "mine" && dist(a, a.order) < 32;
-export const relayCount = (g) => g.relays.filter((r) => r.owner === 1).length;
-export const income = (g) =>
+export const capacity = (g, team = 1) =>
   4 +
   g.actors.reduce(
     (sum, a) =>
       sum +
-      (a.team === 1 && a.hp > 0 && mining(g, a)
-        ? minerals[a.order.kindOfMine || "ore"].ore
-        : 0),
+      (a.team === team && a.hp > 0 ? catalog[a.type].powerSupply || 0 : 0),
     0,
-  ) +
-  5 * relayCount(g) +
-  (load(g) <= capacity(g)
-    ? g.actors.reduce(
-        (sum, a) =>
-          sum + (a.team === 1 && a.hp > 0 ? catalog[a.type].income || 0 : 0),
-        0,
-      )
-    : 0);
-export const crystalIncome = (g) =>
+  );
+export const load = (g, team = 1) =>
+  6 +
+  g.actors.reduce(
+    (sum, a) =>
+      sum + (a.team === team && a.hp > 0 ? catalog[a.type].powerDraw || 0 : 0),
+    0,
+  );
+const mineOrder = (m) => ({ ...m, kindOfMine: m.kind || "ore", kind: "mine" });
+export const mining = (g, a) =>
+  a.type === "miner" && a.order?.kind === "mine" && dist(a, a.order) < 32;
+export const relayCount = (g, team = 1) =>
+  g.relays.filter((r) => r.owner === team).length;
+const mined = (g, key, team) =>
   g.actors.reduce(
     (sum, a) =>
       sum +
-      (a.team === 1 && a.hp > 0 && mining(g, a)
-        ? minerals[a.order.kindOfMine || "ore"].crystal
+      (a.team === team && a.hp > 0 && mining(g, a)
+        ? minerals[a.order.kindOfMine || "ore"][key] || 0
         : 0),
     0,
   );
+export const income = (g, team = 1) =>
+  (team === 1 ? 4 : 0) +
+  mined(g, "ore", team) +
+  5 * relayCount(g, team) +
+  (load(g, team) <= capacity(g, team)
+    ? g.actors.reduce(
+        (sum, a) =>
+          sum + (a.team === team && a.hp > 0 ? catalog[a.type].income || 0 : 0),
+        0,
+      )
+    : 0);
+export const crystalIncome = (g, team = 1) => mined(g, "crystal", team);
+export const uraniumIncome = (g, team = 1) => mined(g, "uranium", team);
+const affordable = (wallet, s) =>
+  wallet.ore + 1e-6 >= (s.cost || 0) &&
+  wallet.crystal + 1e-6 >= (s.crystal || 0) &&
+  wallet.uranium + 1e-6 >= (s.uranium || 0);
+function transfer(wallet, s, sign) {
+  wallet.ore += sign * (s.cost || 0);
+  wallet.crystal += sign * (s.crystal || 0);
+  wallet.uranium += sign * (s.uranium || 0);
+}
 export function researchBlocked(g, key) {
   const spec = techs[key];
   if (!spec || g.result) return "战斗已结束";
@@ -500,6 +597,8 @@ export function blocked(g, type) {
   if (g.ore + 1e-6 < spec.cost) return "矿石不足";
   if (spec.crystal && g.crystal + 1e-6 < spec.crystal)
     return "晶能不足，请开采晶能矿";
+  if (spec.uranium && g.uranium + 1e-6 < spec.uranium)
+    return "铀不足，请开采铀矿";
   if (units[type] && !owns(g, "factory")) return "请先建造兵工厂";
   if (units[type] && fleet(g) + g.queue.length >= UNIT_LIMIT)
     return "部队已达上限";
@@ -522,8 +621,7 @@ export function enqueue(g, type) {
   const reason = blocked(g, type);
   if (reason) return reason;
   const spec = catalog[type];
-  g.ore -= spec.cost;
-  g.crystal -= spec.crystal || 0;
+  transfer(g, spec, -1);
   (units[type] ? g.queue : g.construction).push({ type, left: spec.time });
   return "";
 }
@@ -589,7 +687,7 @@ export function order(g, x, y, mode = "auto", targetId) {
       enemy && catalog[a.type].range
         ? { kind: "target", id: enemy.id }
         : deposit && a.type === "miner"
-          ? { ...deposit, kindOfMine: deposit.kind || "ore", kind: "mine" }
+          ? mineOrder(deposit)
           : attack
             ? { kind: "attack", ...pos, center: point }
             : { kind: "move", ...pos };
@@ -849,7 +947,7 @@ function enemyAI(g, dt) {
   if (g.time < g.nextThink) return;
   g.nextThink = g.time + 0.6;
   const defenders = g.actors.filter(
-    (a) => a.team === -1 && units[a.type] && a.hp > 0,
+    (a) => a.team === -1 && units[a.type]?.range && a.hp > 0,
   );
   const intruder = g.actors
     .filter(
@@ -953,7 +1051,7 @@ function advanceConstruction(g, dt) {
     spawn(g, t, 1, ...pos);
     g.events.push(s.name + "施工完成。");
   } else {
-    g.ore += s.cost;
+    transfer(g, s, 1);
     g.events.push("基地没有空余建造位置，已退款。");
   }
 }
@@ -999,8 +1097,7 @@ function advanceProduction(g, dt) {
   const available = factories(g);
   if (!available.length) {
     for (const job of g.queue) {
-      g.ore += catalog[job.type].cost;
-      g.crystal += catalog[job.type].crystal || 0;
+      transfer(g, catalog[job.type], 1);
     }
     g.queue.length = 0;
     g.events.push("所有兵工厂损毁，生产订单已退款。");
@@ -1035,55 +1132,274 @@ function advanceProduction(g, dt) {
         .join("、") + "已部署。",
     );
 }
+const redSites = [
+  [885, 135],
+  [820, 67],
+  [930, 104],
+  [873, 73],
+  [793, 54],
+  [932, 178],
+  [870, 183],
+  [950, 245],
+  [975, 155],
+  [773, 60],
+  [870, 268],
+].map(([x, y]) => location(x, y));
+const outpostSites = [
+  [682, 298],
+  [654, 270],
+  [753, 307],
+  [902, 283],
+  [865, 314],
+].map(([x, y]) => location(x, y));
+const redEligible = (g, s) =>
+  affordable(g.red, s) &&
+  (!s.tech || g.red.tech.has(s.tech)) &&
+  (!s.power || capacity(g, -1) >= s.power);
+function redBuild(g, type) {
+  const r = g.red,
+    s = buildings[type];
+  if (
+    r.construction ||
+    !redEligible(g, s) ||
+    (s.powerDraw && load(g, -1) + s.powerDraw > capacity(g, -1))
+  )
+    return false;
+  const candidates = type === "outpost" ? outpostSites : redSites;
+  const at = candidates.find(
+    (p) =>
+      !g.actors.some(
+        (a) =>
+          a.hp > 0 &&
+          ((buildings[a.type] &&
+            dist(a, p) < (catalog[a.type].size + s.size) * 0.91) ||
+            (a.team === 1 && dist(a, p) < (type === "outpost" ? 105 : 62))),
+      ),
+  );
+  if (!at) return false;
+  transfer(r, s, -1);
+  r.construction = { type, left: s.time, ...at };
+  return true;
+}
+function redOrder(g, type, wave = 0) {
+  const r = g.red,
+    s = units[type];
+  if (
+    enemyFleet(g) + r.production.length >= ENEMY_UNIT_LIMIT ||
+    !byTeam(g, -1, "factory").length ||
+    !redEligible(g, s)
+  )
+    return false;
+  transfer(r, s, -1);
+  r.production.push({ type, left: s.time, wave });
+  return true;
+}
+function advanceEnemyIndustry(g, dt) {
+  const r = g.red;
+  r.ore = Math.min(99999, r.ore + income(g, -1) * dt);
+  r.crystal = Math.min(99999, r.crystal + crystalIncome(g, -1) * dt);
+  r.uranium = Math.min(99999, r.uranium + uraniumIncome(g, -1) * dt);
+  const job = r.construction;
+  if (job && (job.left -= dt) <= 1e-8) {
+    if (
+      !g.actors.some(
+        (a) =>
+          a.hp > 0 &&
+          buildings[a.type] &&
+          dist(a, job) < (catalog[a.type].size + catalog[job.type].size) * 0.91,
+      )
+    ) {
+      spawn(g, job.type, -1, job.x, job.y);
+      if (job.type === "outpost" || job.type === "factory")
+        g.events.push("侦测到红方" + catalog[job.type].name + "建成。");
+    } else transfer(r, catalog[job.type], 1);
+    r.construction = null;
+  }
+  if (r.research) {
+    if (!byTeam(g, -1, "lab").length) {
+      transfer(r, techs[r.research.key], 1);
+      r.research = null;
+    } else if (load(g, -1) <= capacity(g, -1) && (r.research.left -= dt) <= 0) {
+      r.tech.add(r.research.key);
+      r.research = null;
+      g.events.push("红方完成 T2 科技。");
+    }
+  }
+  const available = byTeam(g, -1, "factory");
+  const alive = new Map(available.map((f) => [f.id, f]));
+  if (!r.production.length) return;
+  if (!available.length) {
+    for (const q of r.production) transfer(r, units[q.type], 1);
+    r.production.length = 0;
+    return;
+  }
+  const working = new Set();
+  for (const q of r.production) {
+    if (!alive.has(q.factory)) q.factory = null;
+    else working.add(q.factory);
+  }
+  const idle = available.filter((f) => !working.has(f.id));
+  let cursor = 0;
+  for (const q of r.production)
+    if (!q.factory && cursor < idle.length) q.factory = idle[cursor++].id;
+  r.production = r.production.filter((q) => {
+    if (!q.factory || (q.left -= dt) > 1e-8) return true;
+    const f = alive.get(q.factory),
+      lane = g.serial % 3;
+    const a = spawn(
+      g,
+      q.type,
+      -1,
+      f.x - 62 + lane * 25,
+      f.y + 64 + (g.serial % 2) * 26,
+    );
+    if (q.wave) {
+      a.aiWave = true;
+      a.aiLane = aiLanes[(q.wave + (lane % 2)) % aiLanes.length];
+    }
+    return false;
+  });
+}
+function manageEnemyBase(g) {
+  const r = g.red;
+  if (g.time < r.nextEconomy) return;
+  r.nextEconomy = g.time + 4;
+  const hq = byTeam(g, -1, "hq")[0];
+  if (!hq) return;
+  const blue = byTeam(g, 1).filter(
+    (a) => units[a.type]?.range || buildings[a.type]?.range,
+  );
+  const miners = byTeam(g, -1, "miner");
+  const safe = (m) => !blue.some((a) => dist(a, m) < 135);
+  const used = new Set();
+  for (let i = 0; i < miners.length; i++) {
+    const a = miners[i];
+    if (blue.some((u) => dist(u, a) < 112)) {
+      a.order = { kind: "move", x: hq.x + 55, y: hq.y - 44 };
+      continue;
+    }
+    const role =
+      i === 0
+        ? "ore"
+        : i === 1 && g.time < 95
+          ? "uranium"
+          : i === 1 && miners.length > 2
+            ? "uranium"
+            : "crystal";
+    const nearby = g.mines.filter((m) => dist(m, hq) < 760 && safe(m));
+    const score = (m) =>
+      dist(m, a) +
+      dist(m, hq) * 0.22 +
+      (used.has(m) ? 260 : 0) -
+      (minerals[m.kind][role] || 0) * (role === "ore" ? 12 : 100);
+    nearby.sort((u, v) => score(u) - score(v));
+    const target = nearby[0];
+    if (target) {
+      used.add(target);
+      a.order = mineOrder(target);
+    }
+  }
+  const workshop = byTeam(g, -1, "factory").length;
+  const minerOrders = r.production.filter((q) => q.type === "miner").length;
+  if (!workshop && r.construction?.type !== "factory") {
+    redBuild(g, "factory");
+    return;
+  }
+  if (
+    miners.length + minerOrders < (g.time > 124 ? 3 : 2) &&
+    redOrder(g, "miner")
+  )
+    return;
+  if (r.construction) return;
+  if (load(g, -1) > capacity(g, -1)) {
+    redBuild(g, "generator");
+    return;
+  }
+  if (g.time > 64 && !byTeam(g, -1, "outpost").length && redBuild(g, "outpost"))
+    return;
+  if (g.time > 98 && workshop < 2 && r.ore >= 420 && redBuild(g, "factory"))
+    return;
+  if (
+    g.time > 115 &&
+    r.ore >= 365 &&
+    !byTeam(g, -1, "lab").length &&
+    redBuild(g, "lab")
+  )
+    return;
+  if (
+    byTeam(g, -1, "lab").length &&
+    !r.tech.has("t2") &&
+    !r.research &&
+    affordable(r, techs.t2)
+  ) {
+    transfer(r, techs.t2, -1);
+    r.research = { key: "t2", left: techs.t2.time };
+    return;
+  }
+  if (
+    g.time > 140 &&
+    r.ore >= 460 &&
+    !byTeam(g, -1, "uraniumPlant").length &&
+    redBuild(g, "uraniumPlant")
+  )
+    return;
+  if (
+    g.time > 170 &&
+    r.ore >= 480 &&
+    !byTeam(g, -1, "uraniumRepair").length &&
+    redBuild(g, "uraniumRepair")
+  )
+    return;
+  if (g.time > 85 && r.ore >= 420 && byTeam(g, -1, "turret").length < 2)
+    redBuild(g, "turret");
+}
 function reinforce(g) {
   if (g.time < g.nextWave) return;
-  const base = g.actors.find(
-    (a) => a.team === -1 && a.type === "factory" && a.hp > 0,
-  );
-  if (!base) return;
-  const room = ENEMY_UNIT_LIMIT - enemyFleet(g);
-  if (room <= 0) {
-    g.waveWaiting = true;
-    g.lastWave = g.time;
-    g.nextWave = g.time + 18;
+  const r = g.red;
+  const room = ENEMY_UNIT_LIMIT - enemyFleet(g) - r.production.length;
+  const wave = g.wave + 1;
+  const late =
+    wave >= 5 && r.tech.has("t2")
+      ? wave % 2
+        ? "missileT2"
+        : "plasmaTank"
+      : wave >= 4 && r.uranium >= 24
+        ? "uraniumTank"
+        : wave >= 4
+          ? "missileTank"
+          : "tank";
+  const roster =
+    wave < 3
+      ? ["tank", "scout", "lightArtillery", "tank"]
+      : [late, "tank", "scout", "lightArtillery", "tank", "heavy"];
+  const n = Math.min(ENEMY_MAX_WAVE, room, 2 + wave, roster.length);
+  let paid = 0;
+  for (const type of roster) {
+    if (paid >= n) break;
+    if (redOrder(g, type, wave)) paid++;
+  }
+  g.lastWave = g.time;
+  if (!paid) {
+    g.waveWaiting =
+      room <= 0
+        ? "整编中"
+        : !byTeam(g, -1, "factory").length
+          ? "等待工厂"
+          : "资金不足";
+    g.nextWave = g.time + 16;
     return;
   }
   g.waveWaiting = false;
-  g.wave++;
-  g.lastWave = g.time;
-  // Keep a recovery interval even in the late game. At most one advanced unit per wave.
+  g.wave = wave;
   g.nextWave = g.time + Math.max(54, 66 - (g.wave - 1) * 3);
-  const late =
-    g.wave >= 7
-      ? g.wave % 2
-        ? "missileT2"
-        : "plasmaTank"
-      : g.wave >= 4
-        ? "missileTank"
-        : "tank";
-  const roster =
-    g.wave < 3
-      ? ["tank", "scout", "lightArtillery", "tank"]
-      : ["tank", "scout", "lightArtillery", late, "tank", "heavy"];
-  const n = Math.min(ENEMY_MAX_WAVE, room, 2 + g.wave, roster.length);
-  for (let i = 0; i < n; i++) {
-    const a = spawn(
-      g,
-      roster[i],
-      -1,
-      base.x - 58 + (i % 3) * 28,
-      base.y + 90 + Math.floor(i / 3) * 31,
-    );
-    a.aiWave = true;
-    a.aiLane = aiLanes[(g.wave + (i % 2)) % aiLanes.length];
-  }
-  g.events.push("第 " + g.wave + " 波敌方增援：" + n + " 台。");
+  g.events.push("红方第 " + g.wave + " 波已出资生产 " + paid + " 台增援。");
 }
 export function step(g, dt) {
   if (g.result) return;
   g.time += dt;
   g.ore = Math.min(99999, g.ore + income(g) * dt);
   g.crystal = Math.min(99999, g.crystal + crystalIncome(g) * dt);
+  g.uranium = Math.min(99999, g.uranium + uraniumIncome(g) * dt);
   if (g.research) {
     const r = g.research,
       spec = techs[r.key];
@@ -1100,16 +1416,23 @@ export function step(g, dt) {
   }
   advanceConstruction(g, dt);
   advanceProduction(g, dt);
+  advanceEnemyIndustry(g, dt);
+  manageEnemyBase(g);
   reinforce(g);
   enemyAI(g, dt);
-  const brownout = load(g) > capacity(g);
+  const blueBrownout = load(g) > capacity(g),
+    redBrownout = load(g, -1) > capacity(g, -1);
   for (const a of g.actors) {
     a.recoil = Math.max(0, a.recoil - dt);
     a.hitFlash = Math.max(0, a.hitFlash - dt);
     a.repairGlow = Math.max(0, a.repairGlow - dt);
     a.shieldFlash = Math.max(0, a.shieldFlash - dt);
     const s = catalog[a.type];
-    if (a.hp <= 0 || (brownout && a.team === 1 && s.powerDraw)) continue;
+    if (
+      a.hp <= 0 ||
+      (s.powerDraw && (a.team === 1 ? blueBrownout : redBrownout))
+    )
+      continue;
     rechargeShield(a, s, dt);
     if (s.heal) {
       for (const ally of g.actors)

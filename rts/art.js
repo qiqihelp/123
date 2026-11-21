@@ -286,6 +286,7 @@ const mineColors = {
   rich: ["#e8c578", "#ba934c", "#82663f", "#ffe5a7"],
   crystal: ["#bcabea", "#8c74ce", "#605397", "#e7d6f9"],
   prism: ["#edabd1", "#cd73aa", "#8f5189", "#fbe4e9"],
+  uranium: ["#d0e88a", "#99bf65", "#597a49", "#ebfac0"],
 };
 function mine(c, x, y, kind) {
   const palette = mineColors[kind];
@@ -574,6 +575,7 @@ export function vehicle(
       "plasmaTank",
       "assault",
       "missileT2",
+      "uraniumTank",
     ].includes(type),
     scout = type === "scout",
     miner = type === "miner",
@@ -614,6 +616,17 @@ export function vehicle(
       rect(c, 10, y, 2, 4, "#cdd0a7");
       if (salvoLane === (y < 0 ? -1 : 1)) muzzle(c, 14, y + 2, recoil, 0.82);
     }
+  } else if (type === "uraniumTank") {
+    c.rotate(aim - angle);
+    box(c, -8, -6, 16, 12, set);
+    rect(c, -5, -4, 8, 8, "#54704d");
+    rect(c, -3, -2, 5, 4, "#c7e88d");
+    for (const y of [-7, 5]) rect(c, -8, y, 11, 2, "#acc682");
+    c.translate(-kick(recoil, 8), 0);
+    rect(c, 3, -3, 18, 6, k);
+    rect(c, 4, -2, 16, 3, l);
+    rect(c, 13, -3, 4, 6, "#9dbc76");
+    muzzle(c, 21, 0, recoil, 1.2);
   } else if (type === "plasmaTank") {
     c.rotate(aim - angle);
     box(c, -7, -5, 14, 10, set);
@@ -732,6 +745,35 @@ export function structure(c, type, team, x, y, angle = 0, recoil = 0) {
     }
     rect(c, -3, -9, 6, 20, d);
     rect(c, -1, -7, 2, 12, "#cdd794");
+  } else if (type === "uraniumPlant") {
+    rect(c, -24, -17, 52, 41, "#222c1d70");
+    box(c, -22, -18, 44, 37, set);
+    for (const x of [-16, 3]) {
+      box(c, x, -23, 13, 29, set);
+      rect(c, x + 3, -19, 6, 21, "#566d43");
+      rect(c, x + 4, -16, 4, 14, "#b2d67d");
+      rect(c, x + 5, -15, 2, 10, "#e0f0a2");
+    }
+    box(c, -17, 10, 32, 7, set);
+    rect(c, -11, 12, 20, 2, "#a7c675");
+  } else if (type === "outpost") {
+    rect(c, -24, -17, 52, 40, "#1f291b70");
+    box(c, -21, -16, 42, 33, set);
+    box(c, -17, -17, 34, 14, set);
+    rect(c, -13, -14, 20, 5, k);
+    for (let i = -11; i < 7; i += 4) rect(c, i, -13, 2, 2, hi);
+    line(c, -13, -15, -13, -29, k, 2);
+    rect(c, -17, -29, 8, 2, l);
+    box(c, -11, 4, 22, 10, set);
+    rect(c, -7, 8, 13, 6, k);
+    c.save();
+    c.rotate(angle);
+    box(c, -4, -4, 9, 8, set);
+    c.translate(-kick(recoil, 6), 0);
+    rect(c, 3, -2, 13, 4, k);
+    rect(c, 4, -1, 11, 2, l);
+    muzzle(c, 16, 0, recoil);
+    c.restore();
   } else if (type === "lab") {
     rect(c, -23, -15, 52, 39, "#22233575");
     box(c, -22, -16, 44, 32, set);
@@ -749,13 +791,17 @@ export function structure(c, type, team, x, y, angle = 0, recoil = 0) {
     for (let i = -10; i < 13; i += 6) rect(c, i, 10, 3, 2, "#c8a9f3");
     line(c, 17, -5, 17, -24, k, 3);
     rect(c, 15, -25, 8, 3, "#d0ade8");
-  } else if (type === "repair") {
+  } else if (type === "repair" || type === "uraniumRepair") {
     rect(c, -22, -13, 49, 36, "#1b221966");
     box(c, -22, -16, 44, 34, set);
     box(c, -18, -15, 36, 12, set);
     rect(c, -12, -2, 24, 17, k);
     for (let i = -11; i < 12; i += 3) rect(c, i, 0, 1, 14, "#4c6751");
-    rect(c, -4, -12, 8, 6, "#719b7a");
+    if (type === "uraniumRepair") {
+      rect(c, -21, -16, 6, 31, "#a8c575");
+      rect(c, 15, -16, 6, 31, "#a8c575");
+    }
+    rect(c, -4, -12, 8, 6, type === "uraniumRepair" ? "#a0bd6c" : "#719b7a");
     rect(c, -1, -13, 2, 8, "#d1eab9");
     rect(c, -4, -10, 8, 2, "#d1eab9");
     for (const x of [-18, 15]) {

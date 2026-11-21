@@ -19,6 +19,12 @@ const notes = {
   missileT2: "每轮连续发射四枚追踪导弹，射程比基础型号更远。装填间隔也更长。",
   plasmaTank:
     "发射高伤害等离子弹。护盾优先承受伤害，每 0.5 秒恢复 4 点；车体损伤不会自行恢复，可到维修站修理。",
+  uraniumTank:
+    "消耗铀生产的重型护盾战车，可承受集中火力，适合掩护后排。护盾会自行恢复，车体受损需要维修。",
+  uraniumPlant: "消耗铀建造的高容量电站，为基地提供额外的电力，不持续消耗铀。",
+  uraniumRepair: "以铀建造的广域维修设施，持续修复作用范围内的友方车辆。",
+  outpost:
+    "扩建基地用的前线指挥站，可自动防守并增加矿石收入。并非主指挥中心，不能代替主基地的胜负判定。",
   turret: "自动对射程内敌军开火。适合守护基地与矿车，不需要手动指定目标。",
   mortar: "远程溅射防御。适合应对集群敌军，但装填较慢，最好和普通防御塔配合。",
   repair:
@@ -61,7 +67,7 @@ export function unitProfile(g, group) {
   if (spec.heal) add("维修能力", `${spec.heal} / 秒 · 半径 ${spec.radius}`);
   if (spec.income) add("矿石收入", `+${spec.income} / 秒`);
   if (spec.powerDraw) add("耗电", spec.powerDraw);
-  if (a.type === "generator") add("供电上限", "+8");
+  if (spec.powerSupply) add("供电上限", "+" + spec.powerSupply);
   if (a.type === "factory") {
     add("并行工位", "1 / 座");
     const job = g.queue.find((j) => j.factory === a.id);
@@ -73,11 +79,12 @@ export function unitProfile(g, group) {
     );
   }
   if (a.type === "miner") add("矿石采集", "每秒 2–14（依矿种）");
+  if (a.type === "miner") add("铀采集", "铀矿每秒 +3");
   if (a.type === "miner") add("晶能采集", "每秒 0–4（依矿种）");
   if (spec.cost)
     add(
       "造价",
-      `${spec.cost} 矿石${spec.crystal ? ` + ${spec.crystal} 晶能` : ""}`,
+      `${spec.cost} 矿石${spec.crystal ? ` + ${spec.crystal} 晶能` : ""}${spec.uranium ? ` + ${spec.uranium} 铀` : ""}`,
     );
   if (spec.time)
     add(

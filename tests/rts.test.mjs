@@ -23,6 +23,7 @@ import {
   W,
   H,
   crystalIncome,
+  uraniumIncome,
   minerals,
   techs,
   researchBlocked,
@@ -102,25 +103,38 @@ test("enemy waves arrive and leave the idle blue side vulnerable", () => {
 
 test("a reinforced push can win the skirmish without manipulating unit state", () => {
   const g = createGame();
-  const combat = ["tank", "scout", "heavyArtillery", "lightArtillery"];
+  const combat = ["tank", "scout", "assault", "lightArtillery"];
   const send = (x, y) => {
     choose(g, combat);
     const p = location(x, y);
     order(g, p.x, p.y, "sweep");
   };
-  const p = location(415, 326);
-  assert.ok(setRally(g, p.x, p.y));
+  const p = location(416, 330);
+  setRally(g, p.x, p.y);
   send(484, 179);
-  for (const t of ["factory", "tank", "tank"]) assert.equal(enqueue(g, t), "");
-  advance(g, 18 + 1 / 30);
-  assert.equal(enqueue(g, "generator"), "");
-  advance(g, 12);
-  assert.equal(enqueueBatch(g, "tank").added, 2);
-  send(735, 175);
-  advance(g, 10);
-  if (g.ore >= 240) assert.equal(enqueue(g, "lightArtillery"), "");
-  send(735, 175);
-  advance(g, 32);
+  for (const type of ["factory", "miner", "tank"])
+    assert.equal(enqueue(g, type), "");
+  const build = new Map([
+    [19, "generator"],
+    [24, "lightArtillery"],
+    [32, "assault"],
+    [48, "assault"],
+    [56, "lightArtillery"],
+    [72, "lightArtillery"],
+    [80, "assault"],
+  ]);
+  for (let i = 0; i < 100 * 30 && !g.result; i++) {
+    step(g, 1 / 30);
+    if (i === 390) {
+      const miner = g.actors
+        .filter((a) => a.team === 1 && a.type === "miner")
+        .at(-1);
+      g.selected = new Set([miner.id]);
+      order(g, g.mines[0].x, g.mines[0].y, "move");
+    }
+    if (build.has(i / 30)) assert.equal(enqueue(g, build.get(i / 30)), "");
+    if ([35, 50, 65, 79].includes(i / 30)) send(749, 142);
+  }
   assert.equal(g.result, "victory");
   const endedAt = g.time;
   advance(g, 10);
@@ -428,21 +442,24 @@ test("late reinforcements respect per-wave and field caps and leave at least 54 
   const g = createGame();
   g.nextThink = Infinity;
   g.wave = 8;
+  g.red.nextEconomy = Infinity;
+  g.red.ore = 4000;
+  g.red.crystal = 100;
+  g.red.tech.add("t2");
   g.nextWave = 0;
   const before = enemyFleet(g);
   step(g, 1 / 30);
-  assert.ok(enemyFleet(g) - before <= ENEMY_MAX_WAVE);
+  assert.ok(enemyFleet(g) + g.red.production.length - before <= ENEMY_MAX_WAVE);
   assert.ok(g.nextWave - g.time >= 54);
   assert.equal(
-    g.actors.filter(
-      (a) =>
-        a.team === -1 && (a.type === "missileT2" || a.type === "plasmaTank"),
+    g.red.production.filter(
+      (q) => q.type === "missileT2" || q.type === "plasmaTank",
     ).length,
     1,
   );
   for (let i = 0; i < 240; i++) {
     step(g, 0.5);
-    assert.ok(enemyFleet(g) <= ENEMY_UNIT_LIMIT);
+    assert.ok(enemyFleet(g) + g.red.production.length <= ENEMY_UNIT_LIMIT);
   }
   assert.ok(g.waveWaiting, "a full army waits instead of spawning more");
 });
@@ -455,7 +472,104 @@ test("unit dossiers display current stats and completed research bonuses", () =>
   const profile = unitProfile(g, [a]);
   const stats = Object.fromEntries(profile.stats);
   assert.equal(stats["生命值"], "221 / 245");
-  assert.equal(stats["单枚伤害"], 53);
+  assert.equal(stats["单枚伤害"], 42);
   assert.equal(stats["每轮连发"], "4 枚");
   assert.equal(stats["生产时间"], "10.5 秒");
+});
+
+test("structures survive longer and standard weapons deal a quarter less damage", () => {
+  assert.equal(catalog.hq.hp, 1783);
+  assert.equal(catalog.factory.hp, 868);
+  assert.equal(catalog.tank.damage, 18);
+  assert.equal(catalog.plasmaTank.damage, 65);
+  assert.equal(catalog.heavyArtillery.damage, 84);
+});
+
+test("red cannot launch a free wave or advance an order it cannot afford", () => {
+  const g = createGame();
+  g.actors = g.actors.filter((a) => !(a.team === -1 && a.type === "miner"));
+  g.red.ore = 0;
+  g.red.nextEconomy = Infinity;
+  g.nextThink = Infinity;
+  g.nextWave = 0;
+  const before = enemyFleet(g);
+  advance(g, 20);
+  assert.equal(income(g, -1), 0);
+  assert.equal(g.red.ore, 0);
+  assert.equal(g.wave, 0);
+  assert.equal(g.red.production.length, 0);
+  assert.equal(enemyFleet(g), before);
+  assert.equal(g.waveWaiting, "资金不足");
+  g.red.ore = catalog.scout.cost;
+  g.nextWave = g.time;
+  step(g, 1 / 30);
+  assert.equal(g.wave, 1);
+  assert.equal(g.red.ore, 0);
+  assert.deepEqual(
+    g.red.production.map((q) => q.type),
+    ["scout"],
+  );
+  advance(g, 4.9);
+  assert.equal(enemyFleet(g), before);
+  advance(g, 0.1);
+  assert.equal(enemyFleet(g), before + 1);
+});
+
+test("red pays for miners, mines uranium and builds a command outpost and extra workshop", () => {
+  const g = createGame();
+  g.nextWave = Infinity;
+  advance(g, 17);
+  assert.equal(
+    g.actors.filter((a) => a.team === -1 && a.type === "miner").length,
+    2,
+  );
+  assert.ok(uraniumIncome(g, -1) > 0);
+  advance(g, 100);
+  assert.ok(g.actors.some((a) => a.team === -1 && a.type === "outpost"));
+  assert.ok(
+    g.actors.filter((a) => a.team === -1 && a.type === "factory").length >= 2,
+  );
+  assert.ok(g.red.ore > 0 && g.red.uranium > 0);
+});
+
+test("red can rebuild its destroyed factory by paying and waiting for construction", () => {
+  const g = createGame();
+  g.nextWave = Infinity;
+  g.red.nextEconomy = 0;
+  g.actors = g.actors.filter(
+    (a) => !(a.team === -1 && ["miner", "factory"].includes(a.type)),
+  );
+  g.red.ore = catalog.factory.cost;
+  step(g, 1 / 30);
+  assert.equal(g.red.ore, 0);
+  assert.equal(g.red.construction.type, "factory");
+  assert.ok(!g.actors.some((a) => a.team === -1 && a.type === "factory"));
+  advance(g, 9.1);
+  assert.ok(g.actors.some((a) => a.team === -1 && a.type === "factory"));
+});
+
+test("uranium is mined and spent on equipment, with a distinct power upgrade and hull shield", () => {
+  const g = createGame();
+  g.ore = 2500;
+  assert.match(blocked(g, "uraniumPlant"), /铀不足/);
+  const m = g.mines.find((m) => m.kind === "uranium");
+  const miner = g.actors.find((a) => a.team === 1 && a.type === "miner");
+  Object.assign(miner, { x: m.x, y: m.y });
+  g.selected = new Set([miner.id]);
+  order(g, m.x, m.y, "move");
+  assert.equal(uraniumIncome(g), 3);
+  advance(g, 6);
+  assert.ok(g.uranium >= 18 - 1e-6);
+  assert.equal(enqueue(g, "uraniumPlant"), "");
+  assert.ok(Math.abs(g.uranium) < 1e-6);
+  advance(g, 11.1);
+  assert.equal(capacity(g), 28);
+  assert.equal(enqueue(g, "uraniumTank"), "");
+  advance(g, 13.1);
+  const vehicle = g.actors.find(
+    (a) => a.team === 1 && a.type === "uraniumTank",
+  );
+  assert.ok(vehicle);
+  assert.equal(vehicle.shield, catalog.uraniumTank.shield);
+  assert.equal(enqueue(g, "uraniumRepair"), "");
 });

@@ -72,6 +72,13 @@
                 ><em id="crystal-income">+0</em>
               </div>
             </div>
+            <div class="resource uranium">
+              <span class="res-icon">⬡</span>
+              <div>
+                <small>铀 / U</small><strong id="uranium">0</strong
+                ><em id="uranium-income">+0</em>
+              </div>
+            </div>
             <div class="resource mint">
               <span class="res-icon">ϟ</span>
               <div>
@@ -214,10 +221,19 @@
               <div class="unit-list" id="unit-list"></div>
               <div class="wave">
                 <div>
-                  <span>敌方增援 <b id="enemy-count">4 / 11</b></span
+                  <span>敌方增援 <b id="enemy-count">5 / 11</b></span
                   ><strong id="wave-time">00:55</strong>
                 </div>
                 <div class="wave-track"><i id="wave-progress"></i></div>
+                <div
+                  class="red-budget"
+                  title="红方的资金来自采矿、领地和前线指挥站"
+                >
+                  <span
+                    >红方矿石 <b id="enemy-ore">430</b>
+                    <small id="enemy-income">+8/s</small></span
+                  ><span>生产中 <b id="enemy-orders">0</b></span>
+                </div>
               </div>
             </div>
             <div class="selected">
@@ -315,6 +331,9 @@
         <li>
           研究中心的「快速生产」可让所有兵工厂的生产耗时减少 30%，不需要先完成
           T2。选中任何己方单位，可打开「属性」查看详细资料。
+        </li>
+        <li>
+          绿色铀矿产出铀，可用于铀能电站、铀能维修站和铀能重坦。红方同样要派矿车采矿，并花钱扩建基地和生产增援。切断补给能拖慢敌军。
         </li>
         <li>派部队靠近黄色中继站，清除附近敌人并占领，即可获得额外矿石。</li>
         <li>
