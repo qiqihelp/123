@@ -124,3 +124,15 @@ tests/             # 单元测试与流程测试
 ## 📄 License
 
 MIT
+
+
+## 🚀 v3.0 疯狂扩张里程碑 (续)
+- **PAGS (Pawnshop Augmentation Guide System) 升级**：
+  - **AI 改造体扫描系统**：新增 `scanCustomerForAug` 逻辑优化，支持 `vigilant`（警觉）特性与 `neural_core`（神经核心模块）减耗。
+  - **改造体猎手结局**：击杀 3 个以上改造体且治安声望 ≥ 40 触发。
+  - **AI 威胁系统**：难度与特性（AI威胁/哨兵紊乱症）影响赏金与扫描概率。
+  - **图鉴扩充**：在“掌柜手册”标签页新增 PAGS 专区（显示 AI 改造体类型、扫描成功率、赏金倍率）。
+
+## 🛠️ 技术细节 (续)
+- **PAGS 逻辑**：在 `game/js/engine.js` 中完善了 `scanCustomerForAug`、`shootCustomerWithShotgun` 与 `getModuleEffects`（神经核心模块加成）。
+- **PAGS 视图**：在 `game/js/main.js` 中更新了“掌柜手册”标签页的渲染逻辑，展示 PAGS 统计数据（猎杀数、赏金、威胁度）。

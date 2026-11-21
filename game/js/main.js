@@ -1263,10 +1263,30 @@ function renderUpgradesTab(s, body) {
   });
 }
 
-// 标签 5：原版进阶机制掌柜手册
+// // 标签 5：PAGS 掌柜手册 (Pawnshop Augmentation Guide System)
 function renderGuideTab(body) {
+  const s = gameState;
+  const scans = s.pags?.scans || 0;
+  const bounty = s.pags?.bountyMultiplier || 1.0;
+  const cores = s.pags?.neuralCoreModules || 0;
+  const threat = s.pags?.threatLevel || 0;
+  const elims = s.pags?.eliminations || 0;
+
   body.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:8px;font-size:11.5px;color:#cbd5e1;">
+      <!-- PAGS Statistics -->
+      <div class="machine-card" style="background:#1e293b;border:1px solid #334155;border-radius:6px;padding:8px;margin-bottom:8px;">
+        <strong style="color:#22d3ee;">📡 PAGS (Pawnshop Augmentation Guide System) 统计</strong>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;">
+          <span class="badge" style="background:#0f172a;color:#22d3ee;padding:2px 6px;border-radius:4px;border:1px solid #22d3ee;">扫描次数: ${scans}</span>
+          <span class="badge" style="background:#0f172a;color:#fbbf24;padding:2px 6px;border-radius:4px;border:1px solid #fbbf24;">赏金倍率: ×${bounty.toFixed(2)}</span>
+          <span class="badge" style="background:#0f172a;color:#a855f7;padding:2px 6px;border-radius:4px;border:1px solid #a855f7;">神经核心: ${cores}</span>
+          <span class="badge" style="background:#0f172a;color:#ef4444;padding:2px 6px;border-radius:4px;border:1px solid #ef4444;">威胁等级: ${threat}</span>
+          <span class="badge" style="background:#0f172a;color:#10b981;padding:2px 6px;border-radius:4px;border:1px solid #10b981;">清除数: ${elims}</span>
+        </div>
+      </div>
+
+      <!-- Original Guide Content -->
       <div class="machine-card">
         <strong style="color:var(--neon-cyan);">1. 🎒 暗区式「套包扩容箱」与「走私者免检箱」</strong>
         <p style="margin-top:3px;">向杰克逊博士购买腰包(占1扩4)、行军包(占2扩8)、军用包(占2扩12)，在货架只占1~2格，点击<strong>【📂打开套包】</strong>即可展开全新的独立大容量仓库！其中紫色的<strong>【走私者伪装箱】</strong>自带铅屏蔽，把违禁品装进去连治安官突击搜查都绝对搜不到！</p>
@@ -1278,10 +1298,6 @@ function renderGuideTab(body) {
       <div class="machine-card">
         <strong style="color:#4ade80;">3. ☎️ 电话批发商大宗进货 + 多物品交易</strong>
         <p style="margin-top:3px;">顾客现在一次会带 2~4 件货或求购多件商品，你可以<strong>勾选只买真货/只卖高利货</strong>并整单砍价！随时在【☎️电话批发】整箱低价进原料，用机器合成高价品卖给上层主厨、奥丁或开箱狂人！</p>
-      </div>
-      <div class="machine-card">
-        <strong style="color:#fda4af;">4. 🤖 猎杀 AI 改造体（Aug）与买断地契</strong>
-        <p style="margin-top:3px;">留意顾客耳后红光芯片、异色瞳孔、僵硬假笑与机械台词，用扫描仪确认后拔出<strong>霰弹枪击毙</strong>领赏！攒够 6,000 CR 点击右上角【买断地契】解锁专属结局！</p>
       </div>
     </div>
   `;
