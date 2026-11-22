@@ -102,6 +102,7 @@ private:
     float noise2D(float x, float z) const;
     float fbm2D(float x, float z, int octaves = 4) const;
     float hash3D(int x, int y, int z) const;
+    float noise3D(float x, float y, float z) const;
     void placeTree(int tx, int baseY, int tz);
     bool isSolidForPhysics(int x, int y, int z) const;
     bool playerCollides(float px, float py, float pz) const;

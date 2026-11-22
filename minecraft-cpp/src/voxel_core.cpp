@@ -40,6 +40,33 @@ float VoxelWorld::hash3D(int x, int y, int z) const {
     return static_cast<float>(h & 0xFFFFu) / 65535.0f;
 }
 
+float VoxelWorld::noise3D(float x, float y, float z) const {
+    int xi = static_cast<int>(std::floor(x));
+    int yi = static_cast<int>(std::floor(y));
+    int zi = static_cast<int>(std::floor(z));
+    float xf = x - static_cast<float>(xi);
+    float yf = y - static_cast<float>(yi);
+    float zf = z - static_cast<float>(zi);
+    auto sm = [](float t) { return t * t * (3.0f - 2.0f * t); };
+    float u = sm(xf), v = sm(yf), w = sm(zf);
+    auto lerp = [](float a, float b, float t) { return a + (b - a) * t; };
+
+    float c000 = hash3D(xi, yi, zi);
+    float c100 = hash3D(xi + 1, yi, zi);
+    float c010 = hash3D(xi, yi + 1, zi);
+    float c110 = hash3D(xi + 1, yi + 1, zi);
+    float c001 = hash3D(xi, yi, zi + 1);
+    float c101 = hash3D(xi + 1, yi, zi + 1);
+    float c011 = hash3D(xi, yi + 1, zi + 1);
+    float c111 = hash3D(xi + 1, yi + 1, zi + 1);
+
+    float x00 = lerp(c000, c100, u);
+    float x10 = lerp(c010, c110, u);
+    float x01 = lerp(c001, c101, u);
+    float x11 = lerp(c011, c111, u);
+    return lerp(lerp(x00, x10, v), lerp(x01, x11, v), w);
+}
+
 float VoxelWorld::noise2D(float x, float z) const {
     int xi = static_cast<int>(std::floor(x));
     int zi = static_cast<int>(std::floor(z));
@@ -116,13 +143,20 @@ void VoxelWorld::generate(uint32_t seed) {
                 } else if (y >= h - 3) {
                     setBlock(x, y, z, (h <= SEA_LEVEL + 1) ? BLK_SAND : BLK_DIRT);
                 } else {
-                    float ore = hash3D(x, y, z);
-                    if (y <= 6 && ore > 0.965f) {
-                        setBlock(x, y, z, BLK_DIAMOND);
-                    } else if (y <= 11 && ore > 0.945f) {
-                        setBlock(x, y, z, BLK_GOLD);
+                    float cave = noise3D(static_cast<float>(x) * 0.12f,
+                                         static_cast<float>(y) * 0.16f,
+                                         static_cast<float>(z) * 0.12f);
+                    if (y >= 2 && y <= h - 3 && h > SEA_LEVEL + 1 && cave > 0.72f) {
+                        setBlock(x, y, z, BLK_AIR);
                     } else {
-                        setBlock(x, y, z, BLK_STONE);
+                        float ore = hash3D(x, y, z);
+                        if (y <= 6 && ore > 0.962f) {
+                            setBlock(x, y, z, BLK_DIAMOND);
+                        } else if (y <= 11 && ore > 0.942f) {
+                            setBlock(x, y, z, BLK_GOLD);
+                        } else {
+                            setBlock(x, y, z, BLK_STONE);
+                        }
                     }
                 }
             }
