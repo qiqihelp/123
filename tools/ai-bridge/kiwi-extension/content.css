@@ -1,0 +1,278 @@
+/* AI Agent Bridge — 面板样式（全部带 aib- 前缀，避免与页面冲突） */
+
+#aib-bubble {
+  position: fixed;
+  right: 14px;
+  bottom: 88px;
+  z-index: 2147483000;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  border: 1px solid rgba(94, 234, 212, 0.35);
+  background: rgba(22, 24, 29, 0.95);
+  color: #5eead4;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), 0 0 14px rgba(16, 163, 127, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: transform 0.15s ease;
+}
+#aib-bubble:active { transform: scale(0.92); }
+#aib-bubble.aib-bubble-dot::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #34d399;
+  border: 2px solid #16181d;
+}
+
+#aib-panel {
+  position: fixed;
+  right: 12px;
+  bottom: 150px;
+  z-index: 2147483001;
+  width: 340px;
+  max-width: calc(100vw - 24px);
+  max-height: 72vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: rgba(22, 24, 29, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+  color: #e8eaed;
+  font-size: 12px;
+  font-family: -apple-system, "PingFang SC", "Noto Sans SC", "MiSans", Roboto, sans-serif;
+  padding: 12px 12px 10px;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+}
+#aib-panel * { box-sizing: border-box; }
+.aib-hidden { display: none !important; }
+
+.aib-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 2px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 10px;
+}
+.aib-title { font-size: 13px; font-weight: 700; color: #e8eaed; }
+.aib-ver { font-size: 10px; color: #6b7280; font-family: monospace; }
+.aib-spacer { flex: 1; }
+.aib-iconbtn {
+  background: rgba(255, 255, 255, 0.07);
+  border: none;
+  color: #bdc1c6;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  line-height: 1;
+}
+.aib-iconbtn:active { background: rgba(255, 255, 255, 0.15); }
+
+.aib-statusrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 8px 10px;
+  margin-bottom: 10px;
+}
+.aib-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #fbbf24; flex: 0 0 auto;
+}
+.aib-dot.aib-online { background: #34d399; box-shadow: 0 0 8px rgba(52, 211, 153, 0.8); }
+.aib-dot.aib-offline { background: #f87171; box-shadow: 0 0 8px rgba(248, 113, 113, 0.8); }
+.aib-status-text { font-size: 11px; line-height: 1.45; color: #bdc1c6; word-break: break-word; }
+
+.aib-label {
+  display: block;
+  font-size: 10px;
+  color: #9aa0a6;
+  margin: 8px 2px 4px;
+  letter-spacing: 0.4px;
+}
+.aib-row { display: flex; gap: 6px; align-items: center; }
+.aib-input {
+  flex: 1;
+  min-width: 0;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: #e8eaed;
+  font-size: 12px;
+  padding: 8px 10px;
+  outline: none;
+}
+.aib-input:focus { border-color: rgba(16, 163, 127, 0.6); }
+
+.aib-btn {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e8eaed;
+  font-size: 12px;
+  border-radius: 10px;
+  padding: 8px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.aib-btn:active { background: rgba(255, 255, 255, 0.15); }
+.aib-btn-primary {
+  background: rgba(16, 163, 127, 0.18);
+  border-color: rgba(16, 163, 127, 0.55);
+  color: #5eead4;
+}
+.aib-btn-green {
+  width: 100%;
+  background: #10a37f;
+  border: 1px solid #10a37f;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 12px;
+  padding: 10px;
+  cursor: pointer;
+  margin-top: 8px;
+}
+.aib-btn-green:active { background: #0d8a6c; }
+.aib-btn-block { width: 100%; margin-top: 6px; }
+
+/* 模式分段选择 */
+.aib-modes { display: flex; gap: 6px; margin-bottom: 4px; }
+.aib-mode {
+  flex: 1;
+  text-align: center;
+  font-size: 11px;
+  padding: 7px 4px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: #bdc1c6;
+  cursor: pointer;
+}
+.aib-mode.aib-mode-on {
+  background: rgba(16, 163, 127, 0.2);
+  border-color: rgba(16, 163, 127, 0.6);
+  color: #5eead4;
+  font-weight: 700;
+}
+.aib-mode-hint { font-size: 10px; color: #6b7280; margin: 2px 2px 0; line-height: 1.5; min-height: 15px; }
+
+.aib-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #bdc1c6;
+  margin: 8px 2px 0;
+  cursor: pointer;
+}
+
+/* 粘贴区 */
+.aib-paste {
+  width: 100%;
+  min-height: 74px;
+  resize: vertical;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  color: #e8eaed;
+  font-size: 11px;
+  font-family: ui-monospace, monospace;
+  padding: 8px 10px;
+  outline: none;
+}
+
+/* 结果输出 */
+.aib-out {
+  width: 100%;
+  min-height: 84px;
+  max-height: 180px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(16, 163, 127, 0.3);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 10px;
+  font-family: ui-monospace, monospace;
+  color: #a7f3d0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-top: 6px;
+}
+
+/* 执行历史 */
+.aib-log {
+  max-height: 130px;
+  overflow-y: auto;
+  margin-top: 4px;
+}
+.aib-log-item {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.3);
+  border-left: 3px solid #34d399;
+  border-radius: 8px;
+  padding: 4px 7px;
+  margin-bottom: 4px;
+  font-size: 10px;
+}
+.aib-log-item.aib-fail { border-left-color: #f87171; }
+.aib-log-tool { font-family: ui-monospace, monospace; color: #e8eaed; font-weight: 600; }
+.aib-log-detail { color: #6b7280; font-family: ui-monospace, monospace; word-break: break-all; flex: 1; }
+.aib-log-empty { text-align: center; color: #6b7280; font-size: 11px; padding: 10px 0; }
+
+.aib-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 10px;
+  color: #6b7280;
+}
+.aib-link {
+  background: none; border: none; color: #8ab4f8;
+  font-size: 10px; cursor: pointer; padding: 0; text-decoration: underline;
+}
+
+/* toast */
+#aib-toast-wrap {
+  position: fixed;
+  right: 14px;
+  bottom: 150px;
+  z-index: 2147483002;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 280px;
+}
+.aib-toast {
+  background: rgba(22, 24, 29, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-left: 3px solid #34d399;
+  color: #e8eaed;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 9px 12px;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  transition: opacity 0.3s, transform 0.3s;
+}
+.aib-toast.aib-warn { border-left-color: #fbbf24; }
+.aib-toast.aib-err { border-left-color: #f87171; }

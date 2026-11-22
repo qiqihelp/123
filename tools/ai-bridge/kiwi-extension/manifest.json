@@ -1,0 +1,47 @@
+{
+  "manifest_version": 3,
+  "name": "AI Agent Bridge — 本机工具桥",
+  "version": "1.0.0",
+  "description": "让 MiMo Studio 等 AI 对话页里的 AI 直接调用你手机上的本机工具（终端/文件/计算/时间/搜索）。AI 输出 <tool_call> 后自动解析、按需确认、执行，并把结果填回输入框。",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.xiaomimimo.com/*",
+        "https://*.mimo.mi.com/*",
+        "https://aistudio.xiaomimimo.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "action": {
+    "default_title": "AI Agent Bridge",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
