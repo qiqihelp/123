@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>我的世界 · C++17 VoxelCraft 3D</title>
+  <style>
+    * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      overflow: hidden; background: #0c121e;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: #f0f4fa;
+    }
+    canvas#glCanvas {
+      display: block; width: 100vw; height: 100vh; cursor: crosshair;
+    }
+
+    /* 准星 */
+    #crosshair {
+      position: fixed; left: 50%; top: 50%;
+      width: 18px; height: 18px; transform: translate(-50%, -50%);
+      pointer-events: none; z-index: 10;
+    }
+    #crosshair::before, #crosshair::after {
+      content: ""; position: absolute; background: rgba(255,255,255,0.88);
+      box-shadow: 0 0 2px rgba(0,0,0,0.8);
+    }
+    #crosshair::before { left: 8px; top: 0; width: 2px; height: 18px; }
+    #crosshair::after  { left: 0; top: 8px; width: 18px; height: 2px; }
+
+    /* 水下蓝雾遮罩 */
+    #waterOverlay {
+      position: fixed; inset: 0; pointer-events: none; z-index: 5;
+      background: rgba(20, 95, 190, 0.36); display: none;
+    }
+
+    /* 顶部 HUD 与工具条 */
+    #topHud {
+      position: fixed; top: 10px; left: 10px; right: 10px;
+      display: flex; justify-content: space-between; align-items: flex-start;
+      pointer-events: none; z-index: 20; gap: 8px; flex-wrap: wrap;
+    }
+    .hud-box {
+      pointer-events: auto;
+      background: rgba(12, 18, 30, 0.72);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .hud-title { font-weight: 700; color: #7ef279; font-size: 13px; }
+    .hud-actions {
+      pointer-events: auto;
+      display: flex; gap: 6px; flex-wrap: wrap;
+    }
+    .hud-btn {
+      background: rgba(16, 24, 38, 0.82);
+      color: #f0f4fa;
+      border: 1px solid rgba(255,255,255,0.22);
+      border-radius: 7px;
+      padding: 6px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .hud-btn:hover { border-color: #7ef279; color: #7ef279; }
+    .hud-btn.active { background: #1e4228; border-color: #7ef279; color: #7ef279; }
+
+    /* 底部物品快捷栏 */
+    #hotbar {
+      position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 4px; padding: 5px;
+      background: rgba(12, 16, 26, 0.84);
+      border: 2px solid #48546a;
+      border-radius: 8px;
+      z-index: 20;
+      max-width: 96vw;
+      overflow-x: auto;
+    }
+    .slot {
+      width: 46px; height: 48px;
+      background: rgba(35, 43, 58, 0.85);
+      border: 2px solid #596780;
+      border-radius: 5px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      cursor: pointer; position: relative; flex-shrink: 0;
+    }
+    .slot.selected {
+      border-color: #ffe066;
+      background: rgba(70, 84, 110, 0.95);
+      box-shadow: 0 0 10px rgba(255, 224, 102, 0.45);
+      transform: translateY(-2px);
+    }
+    .slot canvas { width: 24px; height: 24px; image-rendering: pixelated; }
+    .slot span { font-size: 9px; margin-top: 2px; color: #dce4f2; white-space: nowrap; }
+    .slot .key {
+      position: absolute; top: 1px; left: 3px;
+      font-size: 9px; color: #9fb0cc; font-family: monospace;
+    }
+
+    /* 提示浮层 */
+    #lockPrompt {
+      position: fixed; top: 56px; left: 50%; transform: translateX(-50%);
+      background: rgba(10, 15, 26, 0.85);
+      border: 1px solid #7ef279;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 12px;
+      color: #dff7df;
+      z-index: 25;
+      pointer-events: none;
+      text-align: center;
+    }
+
+    /* 移动端虚拟按键（仅触屏或手动开启显示） */
+    #touchControls {
+      position: fixed; bottom: 76px; left: 12px; right: 12px;
+      display: none; justify-content: space-between; align-items: flex-end;
+      pointer-events: none; z-index: 22;
+    }
+    #touchControls.show { display: flex; }
+    .touch-pad {
+      pointer-events: auto;
+      display: grid; grid-template-columns: repeat(3, 46px); grid-template-rows: repeat(3, 46px); gap: 4px;
+    }
+    .touch-actions {
+      pointer-events: auto;
+      display: grid; grid-template-columns: repeat(2, 62px); gap: 6px;
+    }
+    .tbtn {
+      background: rgba(16, 24, 38, 0.72);
+      color: #fff; border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 10px; font-size: 13px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      height: 46px; touch-action: none;
+    }
+    .tbtn:active { background: rgba(126, 242, 121, 0.35); border-color: #7ef279; }
+  </style>
+</head>
+<body>
+  <canvas id="glCanvas"></canvas>
+  <div id="waterOverlay"></div>
+  <div id="crosshair"></div>
+
+  <div id="topHud">
+    <div class="hud-box">
+      <div class="hud-title">⛏ VoxelCraft C++17 · 我的世界</div>
+      <div id="hudStats">连接 C++ 世界引擎中...</div>
+      <div style="color:#9eb0cc;font-size:11px;">
+        WASD移动 · 空格跳/升 · F飞行 · 左键破坏 · 右键放置/引爆TNT · 方向键/鼠标转视角
+      </div>
+    </div>
+    <div class="hud-actions">
+      <button class="hud-btn" id="btnFly">🕊 飞行: 关 (F)</button>
+      <button class="hud-btn" id="btnTime">☀ 时间: 白天 (T)</button>
+      <button class="hud-btn" id="btnTouch">🎮 触屏键</button>
+      <button class="hud-btn" id="btnNewWorld">🌍 新世界种子</button>
+    </div>
+  </div>
+
+  <div id="lockPrompt">点击画面进入视角锁定（或按住左键拖拽/用方向键转动视角）· Esc 释放鼠标</div>
+
+  <div id="touchControls">
+    <div class="touch-pad">
+      <div></div><button class="tbtn" data-mv="fwd">▲</button><div></div>
+      <button class="tbtn" data-mv="left">◀</button><button class="tbtn" data-mv="jump">跳</button><button class="tbtn" data-mv="right">▶</button>
+      <div></div><button class="tbtn" data-mv="back">▼</button><div></div>
+    </div>
+    <div class="touch-actions">
+      <button class="tbtn" id="tBreak" style="background:rgba(210,60,60,0.72);">挖掘</button>
+      <button class="tbtn" id="tPlace" style="background:rgba(50,150,90,0.72);">放置</button>
+    </div>
+  </div>
+
+  <div id="hotbar"></div>
+
+  <script>
+    (() => {
+      const WORLD_X = 64, WORLD_Y = 40, WORLD_Z = 64;
+      const CHUNK_SZ = 16;
+      const CHUNKS_X = WORLD_X / CHUNK_SZ;
+      const CHUNKS_Z = WORLD_Z / CHUNK_SZ;
+
+      const BLK = {
+        AIR: 0, GRASS: 1, DIRT: 2, STONE: 3, COBBLE: 4,
+        LOG: 5, LEAVES: 6, PLANKS: 7, SAND: 8, WATER: 9,
+        GLASS: 10, BRICK: 11, GLOWSTONE: 12, TNT: 13,
+        DIAMOND: 14, GOLD: 15, BEDROCK: 16
+      };
+
+      const HOTBAR_ITEMS = [
+        { id: BLK.GRASS,     name: "草方块" },
+        { id: BLK.DIRT,      name: "泥土" },
+        { id: BLK.STONE,     name: "石头" },
+        { id: BLK.COBBLE,    name: "圆石" },
+        { id: BLK.PLANKS,    name: "木板" },
+        { id: BLK.LOG,       name: "原木" },
+        { id: BLK.GLASS,     name: "玻璃" },
+        { id: BLK.BRICK,     name: "红砖" },
+        { id: BLK.GLOWSTONE, name: "萤石" },
+        { id: BLK.TNT,       name: "TNT" }
+      ];
+
+      // 纹理图集槽位 (16x16 个格子，每个格子 16x16 像素 -> 256x256 图集)
+      // 返回 [top, side, bottom]
+      const BLOCK_TILES = {
+        [BLK.GRASS]:     [0, 1, 2],
+        [BLK.DIRT]:      [2, 2, 2],
+        [BLK.STONE]:     [3, 3, 3],
+        [BLK.COBBLE]:    [4, 4, 4],
+        [BLK.LOG]:       [6, 5, 6],
+        [BLK.LEAVES]:    [7, 7, 7],
+        [BLK.PLANKS]:    [8, 8, 8],
+        [BLK.SAND]:      [9, 9, 9],
+        [BLK.WATER]:     [10, 10, 10],
+        [BLK.GLASS]:     [11, 11, 11],
+        [BLK.BRICK]:     [12, 12, 12],
+        [BLK.GLOWSTONE]: [13, 13, 13],
+        [BLK.TNT]:       [15, 14, 15],
+        [BLK.DIAMOND]:   [16, 16, 16],
+        [BLK.GOLD]:      [17, 17, 17],
+        [BLK.BEDROCK]:   [18, 18, 18]
+      };
+
+      const BLOCK_COLORS = {
+        [BLK.GRASS]: "#5fb342", [BLK.DIRT]: "#866043", [BLK.STONE]: "#8b8d91",
+        [BLK.COBBLE]: "#75787d", [BLK.LOG]: "#6c5233", [BLK.LEAVES]: "#3b872e",
+        [BLK.PLANKS]: "#b78e52", [BLK.SAND]: "#dfd097", [BLK.WATER]: "#2d78d6",
+        [BLK.GLASS]: "#a8eeff", [BLK.BRICK]: "#a44b39", [BLK.GLOWSTONE]: "#f7cf60",
+        [BLK.TNT]: "#dc3b2f", [BLK.DIAMOND]: "#45e8e8", [BLK.GOLD]: "#f5c438", [BLK.BEDROCK]: "#333336"
+      };
+
+      // 音效合成
+      let audioCtx = null;
+      function playSfx(type) {
+        try {
+          if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          if (audioCtx.state === "suspended") audioCtx.resume();
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          const t = audioCtx.currentTime;
+          if (type === "break") {
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(190, t);
+            osc.frequency.exponentialRampToValueAtTime(75, t + 0.08);
+            gain.gain.setValueAtTime(0.12, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.09);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(t); osc.stop(t + 0.09);
+          } else if (type === "place") {
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(280, t);
+            osc.frequency.exponentialRampToValueAtTime(140, t + 0.06);
+            gain.gain.setValueAtTime(0.1, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.07);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(t); osc.stop(t + 0.07);
+          } else if (type === "boom") {
+            osc.type = "sawtooth";
+            osc.frequency.setValueAtTime(110, t);
+            osc.frequency.exponentialRampToValueAtTime(26, t + 0.45);
+            gain.gain.setValueAtTime(0.22, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.46);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(t); osc.stop(t + 0.46);
+          }
+        } catch (_) {}
+      }
+
+      // 生成 256x256 像素风方块图集
+      function buildAtlasCanvas() {
+        const c = document.createElement("canvas");
+        c.width = 256; c.height = 256;
+        const g = c.getContext("2d");
+
+        function fillNoise(tileId, baseRGB, jitter, alpha = 255) {
+          const tx = (tileId % 16) * 16, ty = Math.floor(tileId / 16) * 16;
+          for (let y = 0; y < 16; y++) {
+            for (let x = 0; x < 16; x++) {
+              const n = ((Math.sin((x + tileId * 17) * 12.9898 + (y + tileId * 31) * 78.233) * 43758.5453) % 1 + 1) % 1;
+              const d = Math.floor((n - 0.5) * jitter);
+              const r = Math.max(0, Math.min(255, baseRGB[0] + d));
+              const gr = Math.max(0, Math.min(255, baseRGB[1] + d));
+              const b = Math.max(0, Math.min(255, baseRGB[2] + d));
+              g.fillStyle = `rgba(${r},${gr},${b},${alpha / 255})`;
+              g.fillRect(tx + x, ty + y, 1, 1);
+            }
+          }
+          return [tx, ty];
+        }
+
+        // 0: 草顶
+        fillNoise(0, [98, 178, 65], 38);
+        // 1: 草侧
+        {
+          const [tx, ty] = fillNoise(1, [134, 96, 67], 34);
+          for (let x = 0; x < 16; x++) {
+            const h = 3 + ((x * 7) % 3);
+            for (let y = 0; y < h; y++) {
+              g.fillStyle = y === h - 1 ? "#4b9635" : "#62b546";
+              g.fillRect(tx + x, ty + y, 1, 1);
+            }
+          }
+        }
+        // 2: 泥土
+        fillNoise(2, [134, 96, 67], 36);
+        // 3: 石头
+        fillNoise(3, [138, 141, 145], 32);
+        // 4: 圆石
+        {
+          const [tx, ty] = fillNoise(4, [118, 121, 126], 34);
+          g.fillStyle = "rgba(45,48,54,0.65)";
+          g.fillRect(tx, ty + 4, 16, 1); g.fillRect(tx, ty + 10, 16, 1);
+          g.fillRect(tx + 5, ty, 1, 5); g.fillRect(tx + 11, ty + 5, 1, 5); g.fillRect(tx + 7, ty + 11, 1, 5);
+        }
+        // 5: 橡木原木侧面
+        {
+          const [tx, ty] = fillNoise(5, [104, 78, 48], 26);
+          g.fillStyle = "rgba(58,40,22,0.7)";
+          for (let x = 2; x < 16; x += 4) g.fillRect(tx + x, ty, 1, 16);
+        }
+        // 6: 原木顶面年轮
+        {
+          const [tx, ty] = fillNoise(6, [178, 142, 92], 24);
+          g.strokeStyle = "#684e30"; g.lineWidth = 2;
+          g.strokeRect(tx + 1, ty + 1, 14, 14);
+          g.strokeStyle = "#967448"; g.lineWidth = 1;
+          g.strokeRect(tx + 4.5, ty + 4.5, 7, 7);
+        }
+        // 7: 树叶
+        {
+          const [tx, ty] = fillNoise(7, [58, 138, 46], 45);
+          g.fillStyle = "rgba(25,70,22,0.45)";
+          for (let i = 0; i < 18; i++) g.fillRect(tx + ((i * 5) % 14), ty + ((i * 9) % 14), 2, 2);
+        }
+        // 8: 木板
+        {
+          const [tx, ty] = fillNoise(8, [186, 144, 86], 24);
+          g.fillStyle = "rgba(110,78,42,0.75)";
+          for (let y = 0; y < 16; y += 4) g.fillRect(tx, ty + y, 16, 1);
+          g.fillRect(tx + 7, ty, 1, 4); g.fillRect(tx + 12, ty + 4, 1, 4);
+          g.fillRect(tx + 4, ty + 8, 1, 4); g.fillRect(tx + 10, ty + 12, 1, 4);
+        }
+        // 9: 沙子
+        fillNoise(9, [224, 209, 152], 28);
+        // 10: 水
+        {
+          const [tx, ty] = fillNoise(10, [48, 126, 224], 24, 210);
+          g.fillStyle = "rgba(180,230,255,0.35)";
+          g.fillRect(tx + 2, ty + 4, 5, 1); g.fillRect(tx + 9, ty + 11, 5, 1);
+        }
+        // 11: 玻璃
+        {
+          const tx = (11 % 16) * 16, ty = Math.floor(11 / 16) * 16;
+          g.fillStyle = "rgba(165, 235, 255, 0.30)";
+          g.fillRect(tx, ty, 16, 16);
+          g.strokeStyle = "rgba(220, 250, 255, 0.95)";
+          g.lineWidth = 1;
+          g.strokeRect(tx + 0.5, ty + 0.5, 15, 15);
+          g.fillStyle = "rgba(255,255,255,0.85)";
+          g.fillRect(tx + 3, ty + 3, 3, 1); g.fillRect(tx + 3, ty + 4, 1, 2);
+          g.fillRect(tx + 10, ty + 11, 2, 1);
+        }
+        // 12: 红砖
+        {
+          const [tx, ty] = fillNoise(12, [164, 76, 58], 26);
+          g.fillStyle = "#b8b4ad";
+          for (let y = 0; y < 16; y += 4) g.fillRect(tx, ty + y, 16, 1);
+          g.fillRect(tx + 7, ty, 1, 4); g.fillRect(tx + 3, ty + 4, 1, 4);
+          g.fillRect(tx + 11, ty + 4, 1, 4); g.fillRect(tx + 7, ty + 8, 1, 4);
+          g.fillRect(tx + 3, ty + 12, 1, 4); g.fillRect(tx + 11, ty + 12, 1, 4);
+        }
+        // 13: 萤石
+        {
+          const [tx, ty] = fillNoise(13, [238, 194, 86], 45);
+          g.fillStyle = "#fff4b8";
+          g.fillRect(tx + 4, ty + 4, 3, 3); g.fillRect(tx + 10, ty + 9, 3, 3);
+          g.fillStyle = "#8a5a1e";
+          g.fillRect(tx, ty + 7, 16, 1); g.fillRect(tx + 7, ty, 1, 16);
+        }
+        // 14: TNT 侧面
+        {
+          const tx = (14 % 16) * 16, ty = Math.floor(14 / 16) * 16;
+          g.fillStyle = "#d93b2e"; g.fillRect(tx, ty, 16, 16);
+          g.fillStyle = "#9c2219";
+          for (let x = 0; x < 16; x += 3) g.fillRect(tx + x, ty, 1, 16);
+          g.fillStyle = "#f2f4f8"; g.fillRect(tx, ty + 5, 16, 6);
+          g.fillStyle = "#141820";
+          // 像素 "TNT"
+          g.fillRect(tx + 2, ty + 6, 3, 1); g.fillRect(tx + 3, ty + 7, 1, 3);
+          g.fillRect(tx + 6, ty + 6, 1, 4); g.fillRect(tx + 7, ty + 7, 1, 1); g.fillRect(tx + 8, ty + 6, 1, 4);
+          g.fillRect(tx + 10, ty + 6, 3, 1); g.fillRect(tx + 11, ty + 7, 1, 3);
+        }
+        // 15: TNT 顶部
+        {
+          const tx = (15 % 16) * 16, ty = Math.floor(15 / 16) * 16;
+          g.fillStyle = "#c93528"; g.fillRect(tx, ty, 16, 16);
+          g.fillStyle = "#222"; g.fillRect(tx + 7, ty + 7, 2, 2);
+        }
+        // 16: 钻石矿
+        {
+          const [tx, ty] = fillNoise(16, [138, 141, 145], 32);
+          g.fillStyle = "#48f0f0";
+          g.fillRect(tx + 3, ty + 4, 3, 2); g.fillRect(tx + 10, ty + 3, 2, 3);
+          g.fillRect(tx + 6, ty + 10, 3, 3); g.fillRect(tx + 12, ty + 11, 2, 2);
+        }
+        // 17: 金矿
+        {
+          const [tx, ty] = fillNoise(17, [138, 141, 145], 32);
+          g.fillStyle = "#ffd633";
+          g.fillRect(tx + 4, ty + 3, 3, 2); g.fillRect(tx + 11, ty + 6, 2, 3);
+          g.fillRect(tx + 5, ty + 11, 3, 2);
+        }
+        // 18: 基岩
+        fillNoise(18, [52, 54, 58], 48);
+
+        return c;
+      }
+
+      const atlasCanvas = buildAtlasCanvas();
+
+      // 构建底部物品栏图标
+      let selectedSlot = 0;
+      const hotbarEl = document.getElementById("hotbar");
+      HOTBAR_ITEMS.forEach((item, idx) => {
+        const div = document.createElement("div");
+        div.className = "slot" + (idx === 0 ? " selected" : "");
+        const keySpan = document.createElement("span");
+        keySpan.className = "key";
+        keySpan.textContent = idx === 9 ? "0" : String(idx + 1);
+        const icon = document.createElement("canvas");
+        icon.width = 16; icon.height = 16;
+        const ic = icon.getContext("2d");
+        const tileIdx = BLOCK_TILES[item.id][1];
+        ic.drawImage(atlasCanvas, (tileIdx % 16) * 16, Math.floor(tileIdx / 16) * 16, 16, 16, 0, 0, 16, 16);
+        const lbl = document.createElement("span");
+        lbl.textContent = item.name;
+        div.appendChild(keySpan);
+        div.appendChild(icon);
+        div.appendChild(lbl);
+        div.addEventListener("click", () => selectSlot(idx));
+        hotbarEl.appendChild(div);
+      });
+
+      function selectSlot(idx) {
+        selectedSlot = ((idx % HOTBAR_ITEMS.length) + HOTBAR_ITEMS.length) % HOTBAR_ITEMS.length;
+        document.querySelectorAll(".slot").forEach((el, i) => el.classList.toggle("selected", i === selectedSlot));
+      }
+
+      // WebGL 初始化
+      const canvas = document.getElementById("glCanvas");
+      const gl = canvas.getContext("webgl", { antialias: false, alpha: false });
+      if (!gl) {
+        alert("当前浏览器不支持 WebGL！");
+        return;
+      }
+
+      function compileShader(type, src) {
+        const s = gl.createShader(type);
+        gl.shaderSource(s, src);
+        gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+          throw new Error(gl.getShaderInfoLog(s));
+        }
+        return s;
+      }
+
+      const worldVS = `
+        attribute vec3 aPos;
+        attribute vec2 aUV;
+        attribute float aLight;
+        uniform mat4 uMVP;
+        varying vec2 vUV;
+        varying float vLight;
+        varying float vDist;
+        void main() {
+          gl_Position = uMVP * vec4(aPos, 1.0);
+          vUV = aUV;
+          vLight = aLight;
+          vDist = gl_Position.w;
+        }
+      `;
+      const worldFS = `
+        precision mediump float;
+        uniform sampler2D uTex;
+        uniform vec3 uFogColor;
+        uniform float uFogStart;
+        uniform float uFogEnd;
+        uniform float uAmbient;
+        varying vec2 vUV;
+        varying float vLight;
+        varying float vDist;
+        void main() {
+          vec4 tex = texture2D(uTex, vUV);
+          if (tex.a < 0.08) discard;
+          float lit = min(1.25, vLight * uAmbient);
+          vec3 col = tex.rgb * lit;
+          float fog = clamp((vDist - uFogStart) / (uFogEnd - uFogStart), 0.0, 1.0);
+          col = mix(col, uFogColor, fog);
+          gl_FragColor = vec4(col, tex.a);
+        }
+      `;
+
+      const lineVS = `
+        attribute vec3 aPos;
+        uniform mat4 uMVP;
+        void main() { gl_Position = uMVP * vec4(aPos, 1.0); }
+      `;
+      const lineFS = `
+        precision mediump float;
+        uniform vec4 uColor;
+        void main() { gl_FragColor = uColor; }
+      `;
+
+      const progWorld = gl.createProgram();
+      gl.attachShader(progWorld, compileShader(gl.VERTEX_SHADER, worldVS));
+      gl.attachShader(progWorld, compileShader(gl.FRAGMENT_SHADER, worldFS));
+      gl.linkProgram(progWorld);
+
+      const progLine = gl.createProgram();
+      gl.attachShader(progLine, compileShader(gl.VERTEX_SHADER, lineVS));
+      gl.attachShader(progLine, compileShader(gl.FRAGMENT_SHADER, lineFS));
+      gl.linkProgram(progLine);
+
+      const tex = gl.createTexture();
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, atlasCanvas);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+      // 简单矩阵数学
+      function mat4Perspective(fovRad, aspect, near, far) {
+        const f = 1.0 / Math.tan(fovRad / 2);
+        const nf = 1 / (near - far);
+        return new Float32Array([
+          f / aspect, 0, 0, 0,
+          0, f, 0, 0,
+          0, 0, (far + near) * nf, -1,
+          0, 0, 2 * far * near * nf, 0
+        ]);
+      }
+      function mat4Mul(a, b) {
+        const out = new Float32Array(16);
+        for (let r = 0; r < 4; r++) {
+          for (let c = 0; c < 4; c++) {
+            out[c * 4 + r] =
+              a[0 * 4 + r] * b[c * 4 + 0] +
+              a[1 * 4 + r] * b[c * 4 + 1] +
+              a[2 * 4 + r] * b[c * 4 + 2] +
+              a[3 * 4 + r] * b[c * 4 + 3];
+          }
+        }
+        return out;
+      }
+      function mat4View(px, py, pz, yaw, pitch) {
+        const cy = Math.cos(yaw), sy = Math.sin(yaw);
+        const cp = Math.cos(pitch), sp = Math.sin(pitch);
+        // 摄像机朝向 (-sin(yaw)*cos(pitch), sin(pitch), -cos(yaw)*cos(pitch))
+        const rx = cy, ry = 0, rz = -sy;
+        const fx = -sy * cp, fy = sp, fz = -cy * cp;
+        const ux = ry * (-fz) - rz * (-fy);
+        const uy = rz * (-fx) - rx * (-fz);
+        const uz = rx * (-fy) - ry * (-fx);
+        const bx = -fx, by = -fy, bz = -fz;
+        return new Float32Array([
+          rx, ux, bx, 0,
+          ry, uy, by, 0,
+          rz, uz, bz, 0,
+          -(rx * px + ry * py + rz * pz),
+          -(ux * px + uy * py + uz * pz),
+          -(bx * px + by * py + bz * pz),
+          1
+        ]);
+      }
+
+      // 世界体素状态
+      let blocks = new Uint8Array(WORLD_X * WORLD_Y * WORLD_Z);
+      let worldSeed = 0;
+      const chunks = new Array(CHUNKS_X * CHUNKS_Z).fill(null).map(() => ({
+        solidBuf: gl.createBuffer(), solidCount: 0,
+        transBuf: gl.createBuffer(), transCount: 0,
+        dirty: true
+      }));
+
+      function idx(x, y, z) { return (y * WORLD_Z + z) * WORLD_X + x; }
+      function inBounds(x, y, z) { return x >= 0 && x < WORLD_X && y >= 0 && y < WORLD_Y && z >= 0 && z < WORLD_Z; }
+      function getBlock(x, y, z) { return inBounds(x, y, z) ? blocks[idx(x, y, z)] : BLK.AIR; }
+      function isOpaque(b) { return b !== BLK.AIR && b !== BLK.WATER && b !== BLK.GLASS && b !== BLK.LEAVES; }
+      function isSolidPhys(x, y, z) {
+        if (!inBounds(x, y, z)) return x < 0 || x >= WORLD_X || z < 0 || z >= WORLD_Z || y < 0;
+        const b = blocks[idx(x, y, z)];
+        return b !== BLK.AIR && b !== BLK.WATER;
+      }
+
+      function markChunkDirty(x, z) {
+        const cx = Math.floor(x / CHUNK_SZ), cz = Math.floor(z / CHUNK_SZ);
+        const mark = (ccx, ccz) => {
+          if (ccx >= 0 && ccx < CHUNKS_X && ccz >= 0 && ccz < CHUNKS_Z) {
+            chunks[ccz * CHUNKS_X + ccx].dirty = true;
+          }
+        };
+        mark(cx, cz);
+        if (x % CHUNK_SZ === 0) mark(cx - 1, cz);
+        if (x % CHUNK_SZ === CHUNK_SZ - 1) mark(cx + 1, cz);
+        if (z % CHUNK_SZ === 0) mark(cx, cz - 1);
+        if (z % CHUNK_SZ === CHUNK_SZ - 1) mark(cx, cz + 1);
+      }
+
+      function setBlockLocal(x, y, z, id) {
+        if (!inBounds(x, y, z)) return false;
+        if (y === 0 && id === BLK.AIR) return false;
+        blocks[idx(x, y, z)] = id;
+        markChunkDirty(x, z);
+        return true;
+      }
+
+      const FACES = [
+        // +Y (top)
+        { dir: [0, 1, 0], shade: 1.00, faceIdx: 0,
+          verts: [[0,1,1],[1,1,1],[1,1,0],[0,1,0]],
+          aoDirs: [[-1,1,0],[0,1,1],[-1,1,1], [1,1,0],[0,1,1],[1,1,1], [1,1,0],[0,1,-1],[1,1,-1], [-1,1,0],[0,1,-1],[-1,1,-1]] },
+        // -Y (bottom)
+        { dir: [0, -1, 0], shade: 0.55, faceIdx: 2,
+          verts: [[0,0,0],[1,0,0],[1,0,1],[0,0,1]],
+          aoDirs: null },
+        // +X
+        { dir: [1, 0, 0], shade: 0.78, faceIdx: 1,
+          verts: [[1,0,1],[1,0,0],[1,1,0],[1,1,1]],
+          aoDirs: null },
+        // -X
+        { dir: [-1, 0, 0], shade: 0.74, faceIdx: 1,
+          verts: [[0,0,0],[0,0,1],[0,1,1],[0,1,0]],
+          aoDirs: null },
+        // +Z
+        { dir: [0, 0, 1], shade: 0.88, faceIdx: 1,
+          verts: [[0,0,1],[1,0,1],[1,1,1],[0,1,1]],
+          aoDirs: null },
+        // -Z
+        { dir: [0, 0, -1], shade: 0.84, faceIdx: 1,
+          verts: [[1,0,0],[0,0,0],[0,1,0],[1,1,0]],
+          aoDirs: null }
+      ];
+
+      function buildChunkMesh(cx, cz) {
+        const ch = chunks[cz * CHUNKS_X + cx];
+        const solid = [], trans = [];
+        const x0 = cx * CHUNK_SZ, z0 = cz * CHUNK_SZ;
+        const eps = 0.0015;
+
+        for (let y = 0; y < WORLD_Y; y++) {
+          for (let z = z0; z < z0 + CHUNK_SZ; z++) {
+            for (let x = x0; x < x0 + CHUNK_SZ; x++) {
+              const b = blocks[idx(x, y, z)];
+              if (b === BLK.AIR) continue;
+              const isTrans = (b === BLK.WATER || b === BLK.GLASS);
+              const target = isTrans ? trans : solid;
+              const tiles = BLOCK_TILES[b] || [3, 3, 3];
+              const glowBoost = (b === BLK.GLOWSTONE) ? 1.45 : 1.0;
+
+              for (let f = 0; f < 6; f++) {
+                const face = FACES[f];
+                const nx = x + face.dir[0], ny = y + face.dir[1], nz = z + face.dir[2];
+                const nb = getBlock(nx, ny, nz);
+                if (isTrans) {
+                  if (nb === b || isOpaque(nb)) continue;
+                } else {
+                  if (isOpaque(nb)) continue;
+                }
+
+                const tid = tiles[face.faceIdx];
+                const u0 = (tid % 16) / 16 + eps, v0 = Math.floor(tid / 16) / 16 + eps;
+                const u1 = u0 + 1 / 16 - eps * 2, v1 = v0 + 1 / 16 - eps * 2;
+                const uvs = [[u0, v1], [u1, v1], [u1, v0], [u0, v0]];
+
+                // 计算顶点环境光遮蔽 (AO)
+                const vLights = [1, 1, 1, 1];
+                for (let vi = 0; vi < 4; vi++) {
+                  const v = face.verts[vi];
+                  let occ = 0;
+                  if (face.aoDirs) {
+                    const base = vi * 3;
+                    for (let k = 0; k < 3; k++) {
+                      const d = face.aoDirs[base + k];
+                      if (isOpaque(getBlock(x + d[0], y + d[1], z + d[2]))) occ++;
+                    }
+                  } else if (f >= 2) {
+                    // 侧面简易遮蔽检查
+                    const oy = v[1] === 1 ? 1 : -1;
+                    if (isOpaque(getBlock(nx, y + oy, nz))) occ += 1;
+                  }
+                  vLights[vi] = face.shade * (1.0 - occ * 0.14) * glowBoost;
+                }
+
+                const yDrop = (b === BLK.WATER && getBlock(x, y + 1, z) === BLK.AIR) ? 0.12 : 0.0;
+                const pushVert = (vi) => {
+                  const v = face.verts[vi];
+                  target.push(
+                    x + v[0],
+                    y + v[1] - (v[1] === 1 ? yDrop : 0),
+                    z + v[2],
+                    uvs[vi][0], uvs[vi][1],
+                    vLights[vi]
+                  );
+                };
+                pushVert(0); pushVert(1); pushVert(2);
+                pushVert(0); pushVert(2); pushVert(3);
+              }
+            }
+          }
+        }
+
+        const sArr = new Float32Array(solid);
+        gl.bindBuffer(gl.ARRAY_BUFFER, ch.solidBuf);
+        gl.bufferData(gl.ARRAY_BUFFER, sArr, gl.STATIC_DRAW);
+        ch.solidCount = solid.length / 6;
+
+        const tArr = new Float32Array(trans);
+        gl.bindBuffer(gl.ARRAY_BUFFER, ch.transBuf);
+        gl.bufferData(gl.ARRAY_BUFFER, tArr, gl.STATIC_DRAW);
+        ch.transCount = trans.length / 6;
+
+        ch.dirty = false;
+      }
+
+      // 玩家状态与物理
+      const player = { x: 32.5, y: 20.0, z: 32.5, vx: 0, vy: 0, vz: 0, yaw: 0.4, pitch: -0.25, onGround: false, flying: false };
+      const keys = {};
+      const particles = [];
+      const activeTNTs = []; // { x, y, z, fuse }
+
+      function playerCollides(px, py, pz) {
+        const hw = 0.28, hh = 1.72;
+        const x0 = Math.floor(px - hw), x1 = Math.floor(px + hw);
+        const y0 = Math.floor(py), y1 = Math.floor(py + hh);
+        const z0 = Math.floor(pz - hw), z1 = Math.floor(pz + hw);
+        for (let y = y0; y <= y1; y++) {
+          for (let z = z0; z <= z1; z++) {
+            for (let x = x0; x <= x1; x++) {
+              if (isSolidPhys(x, y, z)) return true;
+            }
+          }
+        }
+        return false;
+      }
+
+      function raycast(maxDist = 6.5) {
+        const ox = player.x, oy = player.y + 1.56, oz = player.z;
+        const cp = Math.cos(player.pitch), sp = Math.sin(player.pitch);
+        const sy = Math.sin(player.yaw), cy = Math.cos(player.yaw);
+        const dx = -sy * cp, dy = sp, dz = -cy * cp;
+
+        let x = Math.floor(ox), y = Math.floor(oy), z = Math.floor(oz);
+        const stepX = dx > 0 ? 1 : -1, stepY = dy > 0 ? 1 : -1, stepZ = dz > 0 ? 1 : -1;
+        const initT = (o, d, c) => Math.abs(d) < 1e-6 ? 1e30 : ((c + (d > 0 ? 1 : 0)) - o) / d;
+        let tMaxX = initT(ox, dx, x), tMaxY = initT(oy, dy, y), tMaxZ = initT(oz, dz, z);
+        const tDeltaX = Math.abs(dx) < 1e-6 ? 1e30 : Math.abs(1 / dx);
+        const tDeltaY = Math.abs(dy) < 1e-6 ? 1e30 : Math.abs(1 / dy);
+        const tDeltaZ = Math.abs(dz) < 1e-6 ? 1e30 : Math.abs(1 / dz);
+
+        let dist = 0, nx = 0, ny = 0, nz = 0;
+        while (dist <= maxDist) {
+          if (inBounds(x, y, z)) {
+            const b = getBlock(x, y, z);
+            if (b !== BLK.AIR && b !== BLK.WATER) {
+              return { hit: true, bx: x, by: y, bz: z, nx, ny, nz, block: b };
+            }
+          }
+          if (tMaxX < tMaxY) {
+            if (tMaxX < tMaxZ) { dist = tMaxX; tMaxX += tDeltaX; x += stepX; nx = -stepX; ny = 0; nz = 0; }
+            else { dist = tMaxZ; tMaxZ += tDeltaZ; z += stepZ; nx = 0; ny = 0; nz = -stepZ; }
+          } else {
+            if (tMaxY < tMaxZ) { dist = tMaxY; tMaxY += tDeltaY; y += stepY; nx = 0; ny = -stepY; nz = 0; }
+            else { dist = tMaxZ; tMaxZ += tDeltaZ; z += stepZ; nx = 0; ny = 0; nz = -stepZ; }
+          }
+        }
+        return { hit: false };
+      }
+
+      function spawnBlockParticles(x, y, z, color, count = 10) {
+        for (let i = 0; i < count; i++) {
+          particles.push({
+            x: x + 0.5 + (Math.random() - 0.5) * 0.6,
+            y: y + 0.5 + (Math.random() - 0.5) * 0.6,
+            z: z + 0.5 + (Math.random() - 0.5) * 0.6,
+            vx: (Math.random() - 0.5) * 4.5,
+            vy: 1.5 + Math.random() * 4.0,
+            vz: (Math.random() - 0.5) * 4.5,
+            life: 0.45 + Math.random() * 0.4,
+            color
+          });
+        }
+      }
+
+      async function syncBlockToServer(x, y, z, id) {
+        try {
+          await fetch("/api/block", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ x, y, z, id })
+          });
+        } catch (_) {}
+      }
+
+      async function triggerExplosion(x, y, z) {
+        playSfx("boom");
+        spawnBlockParticles(x, y, z, "#ff8833", 28);
+        spawnBlockParticles(x, y, z, "#ffffff", 14);
+        try {
+          const res = await fetch("/api/explode", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ x, y, z })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            for (const [bx, by, bz] of (data.destroyed || [])) {
+              const old = getBlock(bx, by, bz);
+              setBlockLocal(bx, by, bz, BLK.AIR);
+              if (old === BLK.TNT && (bx !== x || by !== y || bz !== z)) {
+                activeTNTs.push({ x: bx, y: by, z: bz, fuse: 0.25 });
+              }
+            }
+            return;
+          }
+        } catch (_) {}
+        // 离线兜底
+        for (let dy = -3; dy <= 3; dy++) {
+          for (let dz = -3; dz <= 3; dz++) {
+            for (let dx = -3; dx <= 3; dx++) {
+              if (dx * dx + dy * dy + dz * dz <= 12) setBlockLocal(x + dx, y + dy, z + dz, BLK.AIR);
+            }
+          }
+        }
+      }
+
+      function breakTargetedBlock() {
+        const hit = raycast();
+        if (!hit.hit) return;
+        if (hit.block === BLK.BEDROCK) return;
+        const col = BLOCK_COLORS[hit.block] || "#aaaaaa";
+        if (setBlockLocal(hit.bx, hit.by, hit.bz, BLK.AIR)) {
+          playSfx("break");
+          spawnBlockParticles(hit.bx, hit.by, hit.bz, col, 12);
+          syncBlockToServer(hit.bx, hit.by, hit.bz, BLK.AIR);
+        }
+      }
+
+      function placeOrInteract() {
+        const hit = raycast();
+        if (!hit.hit) return;
+        // 右键点 TNT 直接点燃引信！
+        if (hit.block === BLK.TNT) {
+          if (!activeTNTs.some(t => t.x === hit.bx && t.y === hit.by && t.z === hit.bz)) {
+            activeTNTs.push({ x: hit.bx, y: hit.by, z: hit.bz, fuse: 1.4 });
+            playSfx("place");
+          }
+          return;
+        }
+        const px = hit.bx + hit.nx, py = hit.by + hit.ny, pz = hit.bz + hit.nz;
+        if (!inBounds(px, py, pz)) return;
+        const item = HOTBAR_ITEMS[selectedSlot];
+        // 防止放到自己身体里面（除非非固体）
+        if (px >= Math.floor(player.x - 0.28) && px <= Math.floor(player.x + 0.28) &&
+            pz >= Math.floor(player.z - 0.28) && pz <= Math.floor(player.z + 0.28) &&
+            py >= Math.floor(player.y) && py <= Math.floor(player.y + 1.72)) {
+          return;
+        }
+        if (setBlockLocal(px, py, pz, item.id)) {
+          playSfx("place");
+          syncBlockToServer(px, py, pz, item.id);
+        }
+      }
+
+      // 从 C++17 服务端加载世界
+      async function loadWorldFromCpp() {
+        const res = await fetch("/api/world");
+        if (!res.ok) throw new Error("Failed to load /api/world");
+        const buf = await res.arrayBuffer();
+        blocks = new Uint8Array(buf);
+        const sp = (res.headers.get("X-Spawn") || "32.5,20,32.5").split(",").map(Number);
+        worldSeed = res.headers.get("X-Seed") || "2026";
+        player.x = sp[0]; player.y = sp[1]; player.z = sp[2];
+        player.vx = player.vy = player.vz = 0;
+        chunks.forEach(c => c.dirty = true);
+      }
+
+      // 输入控制（支持 PointerLock + 按住拖拽 + 方向键 + 触屏）
+      let draggingLook = false;
+      const lockPrompt = document.getElementById("lockPrompt");
+
+      canvas.addEventListener("contextmenu", e => e.preventDefault());
+      canvas.addEventListener("mousedown", (e) => {
+        if (document.pointerLockElement === canvas) {
+          if (e.button === 0) breakTargetedBlock();
+          else if (e.button === 2) placeOrInteract();
+        } else {
+          if (e.button === 0) {
+            draggingLook = true;
+            canvas.requestPointerLock?.();
+          } else if (e.button === 2) {
+            placeOrInteract();
+          }
+        }
+      });
+      window.addEventListener("mouseup", () => { draggingLook = false; });
+      window.addEventListener("mousemove", (e) => {
+        if (document.pointerLockElement === canvas || (draggingLook && e.buttons === 1)) {
+          player.yaw -= e.movementX * 0.0028;
+          player.pitch = Math.max(-1.52, Math.min(1.52, player.pitch - e.movementY * 0.0028));
+        }
+      });
+      document.addEventListener("pointerlockchange", () => {
+        lockPrompt.style.display = (document.pointerLockElement === canvas) ? "none" : "block";
+      });
+
+      window.addEventListener("wheel", (e) => {
+        if (e.deltaY > 0) selectSlot(selectedSlot + 1);
+        else if (e.deltaY < 0) selectSlot(selectedSlot - 1);
+      });
+
+      let timeMode = 0; // 0=自动, 1=白天, 2=黄昏, 3=夜晚
+      let worldTime = 0.25; // 0..1
+      const timeNames = ["自动流逝", "白天", "黄昏", "夜晚"];
+      const btnFly = document.getElementById("btnFly");
+      const btnTime = document.getElementById("btnTime");
+
+      function toggleFly() {
+        player.flying = !player.flying;
+        player.vy = 0;
+        btnFly.textContent = player.flying ? "🕊 飞行: 开 (F)" : "🕊 飞行: 关 (F)";
+        btnFly.classList.toggle("active", player.flying);
+      }
+      function cycleTime() {
+        timeMode = (timeMode + 1) % 4;
+        if (timeMode === 1) worldTime = 0.25;
+        else if (timeMode === 2) worldTime = 0.52;
+        else if (timeMode === 3) worldTime = 0.80;
+        btnTime.textContent = `☀ 时间: ${timeNames[timeMode]} (T)`;
+      }
+
+      btnFly.addEventListener("click", toggleFly);
+      btnTime.addEventListener("click", cycleTime);
+      document.getElementById("btnTouch").addEventListener("click", () => {
+        document.getElementById("touchControls").classList.toggle("show");
+      });
+      document.getElementById("btnNewWorld").addEventListener("click", async () => {
+        await fetch("/api/reset", { method: "POST" });
+        await loadWorldFromCpp();
+      });
+
+      window.addEventListener("keydown", (e) => {
+        const k = e.key.toLowerCase();
+        keys[k] = true;
+        if ([" ", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(k)) e.preventDefault();
+        if (k >= "1" && k <= "9") selectSlot(Number(k) - 1);
+        if (k === "0") selectSlot(9);
+        if (k === "f") toggleFly();
+        if (k === "t") cycleTime();
+        if (k === "g") breakTargetedBlock();
+        if (k === "e") placeOrInteract();
+      });
+      window.addEventListener("keyup", (e) => { keys[e.key.toLowerCase()] = false; });
+
+      // 触屏控制绑定
+      const touchState = { fwd: false, back: false, left: false, right: false, jump: false };
+      document.querySelectorAll("[data-mv]").forEach(b => {
+        const m = b.getAttribute("data-mv");
+        b.addEventListener("pointerdown", e => { e.preventDefault(); touchState[m] = true; });
+        b.addEventListener("pointerup", () => { touchState[m] = false; });
+        b.addEventListener("pointercancel", () => { touchState[m] = false; });
+      });
+      document.getElementById("tBreak").addEventListener("pointerdown", e => { e.preventDefault(); breakTargetedBlock(); });
+      document.getElementById("tPlace").addEventListener("pointerdown", e => { e.preventDefault(); placeOrInteract(); });
+
+      if ("ontouchstart" in window) {
+        document.getElementById("touchControls").classList.add("show");
+      }
+
+      // 线框/粒子缓冲
+      const wireBuf = gl.createBuffer();
+      const boxEdges = new Float32Array([
+        0,0,0, 1,0,0,  1,0,0, 1,0,1,  1,0,1, 0,0,1,  0,0,1, 0,0,0,
+        0,1,0, 1,1,0,  1,1,0, 1,1,1,  1,1,1, 0,1,1,  0,1,1, 0,1,0,
+        0,0,0, 0,1,0,  1,0,0, 1,1,0,  1,0,1, 1,1,1,  0,0,1, 0,1,1
+      ]);
+      gl.bindBuffer(gl.ARRAY_BUFFER, wireBuf);
+      gl.bufferData(gl.ARRAY_BUFFER, boxEdges, gl.STATIC_DRAW);
+
+      // 主循环
+      const hudStats = document.getElementById("hudStats");
+      const waterOverlay = document.getElementById("waterOverlay");
+      let lastTime = performance.now();
+      let fpsFrames = 0, fpsTimer = 0, curFps = 60;
+
+      function resize() {
+        if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+          gl.viewport(0, 0, canvas.width, canvas.height);
+        }
+      }
+
+      function step(now) {
+        const dt = Math.min(0.05, Math.max(0.001, (now - lastTime) / 1000));
+        lastTime = now;
+        resize();
+
+        fpsFrames++; fpsTimer += dt;
+        if (fpsTimer >= 0.5) {
+          curFps = Math.round(fpsFrames / fpsTimer);
+          fpsFrames = 0; fpsTimer = 0;
+        }
+
+        // 方向键辅助转视角
+        if (keys["arrowleft"])  player.yaw += 1.9 * dt;
+        if (keys["arrowright"]) player.yaw -= 1.9 * dt;
+        if (keys["arrowup"])    player.pitch = Math.min(1.52, player.pitch + 1.5 * dt);
+        if (keys["arrowdown"])  player.pitch = Math.max(-1.52, player.pitch - 1.5 * dt);
+
+        // 物理移动
+        const fwd = (keys["w"] || touchState.fwd ? 1 : 0) - (keys["s"] || touchState.back ? 1 : 0);
+        const rgt = (keys["d"] || touchState.right ? 1 : 0) - (keys["a"] || touchState.left ? 1 : 0);
+        const jump = !!(keys[" "] || touchState.jump);
+        const sprint = !!keys["shift"];
+        const descend = !!keys["c"];
+
+        const sinY = Math.sin(player.yaw), cosY = Math.cos(player.yaw);
+        let wx = fwd * (-sinY) + rgt * cosY;
+        let wz = fwd * (-cosY) + rgt * (-sinY);
+        const wl = Math.hypot(wx, wz);
+        if (wl > 1) { wx /= wl; wz /= wl; }
+
+        const spd = player.flying ? (sprint ? 15 : 9) : (sprint ? 7.6 : 4.8);
+        player.vx = wx * spd;
+        player.vz = wz * spd;
+
+        const feetB = getBlock(Math.floor(player.x), Math.floor(player.y + 0.2), Math.floor(player.z));
+        const headB = getBlock(Math.floor(player.x), Math.floor(player.y + 1.55), Math.floor(player.z));
+        waterOverlay.style.display = (headB === BLK.WATER) ? "block" : "none";
+
+        if (player.flying) {
+          player.vy = (jump ? spd * 0.85 : 0) - (descend ? spd * 0.85 : 0);
+        } else if (feetB === BLK.WATER) {
+          player.vy = Math.max(-3.5, Math.min(4.5, player.vy - 9.5 * dt + (jump ? 16 * dt : 0)));
+          if (jump && player.vy < 3.5) player.vy = 3.8;
+        } else {
+          player.vy -= 22 * dt;
+          if (jump && player.onGround) { player.vy = 7.9; player.onGround = false; }
+          player.vy = Math.max(-28, player.vy);
+        }
+
+        if (!playerCollides(player.x + player.vx * dt, player.y, player.z)) player.x += player.vx * dt;
+        if (!playerCollides(player.x, player.y, player.z + player.vz * dt)) player.z += player.vz * dt;
+        const ny = player.y + player.vy * dt;
+        if (!playerCollides(player.x, ny, player.z)) {
+          player.y = ny;
+          player.onGround = false;
+        } else {
+          if (player.vy < 0) player.onGround = true;
+          player.vy = 0;
+        }
+
+        // 更新 TNT 引信
+        for (let i = activeTNTs.length - 1; i >= 0; i--) {
+          activeTNTs[i].fuse -= dt;
+          if (activeTNTs[i].fuse <= 0) {
+            const t = activeTNTs.splice(i, 1)[0];
+            triggerExplosion(t.x, t.y, t.z);
+          }
+        }
+
+        // 更新粒子
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.vy -= 14 * dt;
+          p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt;
+          p.life -= dt;
+          if (p.life <= 0) particles.splice(i, 1);
+        }
+
+        // 昼夜交替光照
+        if (timeMode === 0) worldTime = (worldTime + dt * 0.008) % 1.0;
+        const sunAng = worldTime * Math.PI * 2;
+        const dayFactor = Math.max(0, Math.sin(sunAng)); // 0=夜, 1=正午
+        const skyR = 0.05 + dayFactor * 0.42;
+        const skyG = 0.08 + dayFactor * 0.64;
+        const skyB = 0.16 + dayFactor * 0.80;
+        const ambient = 0.32 + dayFactor * 0.72;
+
+        // 重建脏区块网格（每帧最多重建 4 个防止卡顿）
+        let rebuilt = 0;
+        for (let cz = 0; cz < CHUNKS_Z && rebuilt < 4; cz++) {
+          for (let cx = 0; cx < CHUNKS_X && rebuilt < 4; cx++) {
+            const ch = chunks[cz * CHUNKS_X + cx];
+            if (ch.dirty) { buildChunkMesh(cx, cz); rebuilt++; }
+          }
+        }
+
+        // 渲染
+        gl.clearColor(skyR, skyG, skyB, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        gl.enable(gl.DEPTH_TEST);
+        gl.enable(gl.CULL_FACE);
+
+        const proj = mat4Perspective(Math.PI / 2.6, canvas.width / canvas.height, 0.1, 160.0);
+        const view = mat4View(player.x, player.y + 1.56, player.z, player.yaw, player.pitch);
+        const mvp = mat4Mul(proj, view);
+
+        gl.useProgram(progWorld);
+        const aPos = gl.getAttribLocation(progWorld, "aPos");
+        const aUV = gl.getAttribLocation(progWorld, "aUV");
+        const aLight = gl.getAttribLocation(progWorld, "aLight");
+        gl.enableVertexAttribArray(aPos);
+        gl.enableVertexAttribArray(aUV);
+        gl.enableVertexAttribArray(aLight);
+
+        gl.uniformMatrix4fv(gl.getUniformLocation(progWorld, "uMVP"), false, mvp);
+        gl.uniform3f(gl.getUniformLocation(progWorld, "uFogColor"), skyR, skyG, skyB);
+        gl.uniform1f(gl.getUniformLocation(progWorld, "uFogStart"), headB === BLK.WATER ? 4.0 : 32.0);
+        gl.uniform1f(gl.getUniformLocation(progWorld, "uFogEnd"), headB === BLK.WATER ? 22.0 : 68.0);
+        gl.uniform1f(gl.getUniformLocation(progWorld, "uAmbient"), ambient);
+
+        gl.activeTexture(gl.TEXTURE0);
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.uniform1i(gl.getUniformLocation(progWorld, "uTex"), 0);
+
+        const drawPass = (isTrans) => {
+          for (const ch of chunks) {
+            const count = isTrans ? ch.transCount : ch.solidCount;
+            if (count === 0) continue;
+            gl.bindBuffer(gl.ARRAY_BUFFER, isTrans ? ch.transBuf : ch.solidBuf);
+            gl.vertexAttribPointer(aPos, 3, gl.FLOAT, false, 24, 0);
+            gl.vertexAttribPointer(aUV, 2, gl.FLOAT, false, 24, 12);
+            gl.vertexAttribPointer(aLight, 1, gl.FLOAT, false, 24, 20);
+            gl.drawArrays(gl.TRIANGLES, 0, count);
+          }
+        };
+
+        // 1. 不透明方块
+        gl.disable(gl.BLEND);
+        drawPass(false);
+
+        // 2. 半透明水与玻璃
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+        gl.depthMask(false);
+        drawPass(true);
+        gl.depthMask(true);
+        gl.disable(gl.BLEND);
+
+        // 3. 选中方块线框 + TNT 引信闪烁提示
+        const hit = raycast();
+        gl.useProgram(progLine);
+        const lPos = gl.getAttribLocation(progLine, "aPos");
+        gl.enableVertexAttribArray(lPos);
+        gl.bindBuffer(gl.ARRAY_BUFFER, wireBuf);
+        gl.vertexAttribPointer(lPos, 3, gl.FLOAT, false, 0, 0);
+
+        if (hit.hit) {
+          const translate = new Float32Array([
+            1.004,0,0,0, 0,1.004,0,0, 0,0,1.004,0,
+            hit.bx - 0.002, hit.by - 0.002, hit.bz - 0.002, 1
+          ]);
+          gl.uniformMatrix4fv(gl.getUniformLocation(progLine, "uMVP"), false, mat4Mul(mvp, translate));
+          gl.uniform4f(gl.getUniformLocation(progLine, "uColor"), 0.05, 0.05, 0.05, 1.0);
+          gl.drawArrays(gl.LINES, 0, 24);
+        }
+
+        for (const t of activeTNTs) {
+          const pulse = Math.floor(t.fuse * 12) % 2 === 0;
+          const tr = new Float32Array([
+            1.04,0,0,0, 0,1.04,0,0, 0,0,1.04,0,
+            t.x - 0.02, t.y - 0.02, t.z - 0.02, 1
+          ]);
+          gl.uniformMatrix4fv(gl.getUniformLocation(progLine, "uMVP"), false, mat4Mul(mvp, tr));
+          gl.uniform4f(gl.getUniformLocation(progLine, "uColor"), 1.0, pulse ? 1.0 : 0.2, pulse ? 1.0 : 0.1, 1.0);
+          gl.drawArrays(gl.LINES, 0, 24);
+        }
+
+        // 4. 简单 3D 方块碎片粒子
+        for (const p of particles) {
+          const sz = 0.14;
+          const tr = new Float32Array([
+            sz,0,0,0, 0,sz,0,0, 0,0,sz,0,
+            p.x - sz * 0.5, p.y - sz * 0.5, p.z - sz * 0.5, 1
+          ]);
+          gl.uniformMatrix4fv(gl.getUniformLocation(progLine, "uMVP"), false, mat4Mul(mvp, tr));
+          gl.uniform4f(gl.getUniformLocation(progLine, "uColor"), 1.0, 0.78, 0.25, 1.0);
+          gl.drawArrays(gl.LINES, 0, 24);
+        }
+
+        hudStats.textContent = `FPS: ${curFps} | 坐标: (${player.x.toFixed(1)}, ${player.y.toFixed(1)}, ${player.z.toFixed(1)}) | 种子: ${worldSeed}`;
+        requestAnimationFrame(step);
+      }
+
+      loadWorldFromCpp().then(() => {
+        requestAnimationFrame(step);
+      }).catch(err => {
+        hudStats.textContent = "加载失败: " + err.message;
+      });
+    })();
+  </script>
+</body>
+</html>

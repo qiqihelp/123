@@ -20,3 +20,5 @@ cmake-build-*/
 dist/
 tank-battle/tank_server
 tank-battle/tank_scores.tsv
+minecraft-cpp/voxel_server
+minecraft-cpp/world_save.bin
