@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         🤖 AI Agent Tool Bridge V3 (Via版)
 // @namespace    ai-agent-bridge-v3
-// @version      3.1
+// @version      3.2
 // @description  Via浏览器专用：完整 MCP 适配 + Skill 注入 + 安全护栏 + 纯内联样式面板（兼容严格 CSP / 老 WebView）
 // @author       You
 // @match        https://chatgpt.com/*
@@ -77,11 +77,20 @@
     }
     async function api(path, options) {
         options = options || {};
-        const resp = await fetch(CONFIG.backendUrl + path, {
-            method: options.method || 'GET',
-            headers: authHeaders(options.body ? { 'Content-Type': 'application/json' } : {}),
-            body: options.body ? JSON.stringify(options.body) : undefined
-        });
+        let resp = null;
+        try {
+            resp = await fetch(CONFIG.backendUrl + path, {
+                method: options.method || 'GET',
+                headers: authHeaders(options.body ? { 'Content-Type': 'application/json' } : {}),
+                body: options.body ? JSON.stringify(options.body) : undefined
+            });
+        } catch (err) {
+            const raw = (err && err.message) || String(err);
+            throw new Error(
+                '连接被浏览器拦截（' + raw + '）。可能：① https 页面→本机 http 被 PNA/CORS 挡（换 Kiwi/Firefox+Tampermonkey，或更新 Android System WebView）' +
+                '② 后端没在跑 / 端口不对 ③ 后端在电脑上却填了 127.0.0.1，要改 --host 0.0.0.0 + 电脑 IP；或局域网模式需路由器同网段'
+            );
+        }
         let data = null;
         try { data = await resp.json(); } catch (e) {}
         if (!resp.ok) {
@@ -665,7 +674,7 @@
         } else {
             ui.dot.style.background = '#f87171';
             ui.dot.style.boxShadow = '0 0 10px rgba(248,113,113,.7)';
-            ui.status.textContent = '❌ 未连接 · ' + truncate(h.message || '无法访问后端', 80);
+            ui.status.textContent = '❌ ' + truncate(h.message || '无法访问后端', 220);
         }
     }
 
@@ -785,7 +794,7 @@
         // ---- 标题栏 ----
         const head = el('div', 'display:flex;align-items:center;gap:8px;padding:12px 14px 10px;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0', panel);
         el('div', 'font-size:14px;font-weight:700;flex:1;white-space:nowrap', head, '🤖 AI Bridge');
-        el('span', 'font-size:10px;color:#8ab4f8;background:rgba(138,180,248,.14);border-radius:6px;padding:2px 6px', head, 'V3.1 · Via');
+        el('span', 'font-size:10px;color:#8ab4f8;background:rgba(138,180,248,.14);border-radius:6px;padding:2px 6px', head, 'V3.2 · Via');
         ui.dot = el('div', 'width:10px;height:10px;border-radius:50%;background:#fbbc04;box-shadow:0 0 8px rgba(251,188,4,.6);flex-shrink:0', head);
         const closeBtn = el('button', 'background:transparent;border:none;color:#9aa0a6;font-size:16px;cursor:pointer;padding:2px 6px', head, '✕');
         closeBtn.addEventListener('click', () => { panel.style.display = 'none'; });
@@ -1075,7 +1084,7 @@
             console.error('[🤖 AI Bridge V3] 面板加载失败，点🤖将使用简易菜单:', err);
         }
         try { startWatching(); } catch (err) { console.error('[🤖 AI Bridge V3] 监听启动失败:', err); }
-        window.__AI_BRIDGE_V3__ = { CONFIG, parseToolCalls, getAdapter, checkHealth, version: '3.1' };
+        window.__AI_BRIDGE_V3__ = { CONFIG, parseToolCalls, getAdapter, checkHealth, version: '3.2' };
     }
 
     if (document.readyState === 'loading') {
