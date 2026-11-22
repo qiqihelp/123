@@ -9,7 +9,6 @@ namespace tank {
 namespace {
 
 // 颜色定义 (0xRRGGBBAA)
-constexpr uint32_t COL_BG        = 0x0B0E14FFu;
 constexpr uint32_t COL_BORDER    = 0x3A4150FFu;
 constexpr uint32_t COL_FIELD_BG  = 0x050608FFu;
 constexpr uint32_t COL_BRICK     = 0xC85A32FFu;

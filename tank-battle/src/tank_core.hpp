@@ -7,16 +7,16 @@
 
 namespace tank {
 
-constexpr int SCREEN_W = 320;
-constexpr int SCREEN_H = 240;
-constexpr int FIELD_X = 16;
-constexpr int FIELD_Y = 16;
-constexpr int TILE_SIZE = 16;
-constexpr int GRID_COLS = 13;
-constexpr int GRID_ROWS = 13;
-constexpr int FIELD_W = GRID_COLS * TILE_SIZE; // 208
-constexpr int FIELD_H = GRID_ROWS * TILE_SIZE; // 208
-constexpr int HUD_X = FIELD_X + FIELD_W;       // 224
+inline constexpr int SCREEN_W = 320;
+inline constexpr int SCREEN_H = 240;
+inline constexpr int FIELD_X = 16;
+inline constexpr int FIELD_Y = 16;
+inline constexpr int TILE_SIZE = 16;
+inline constexpr int GRID_COLS = 13;
+inline constexpr int GRID_ROWS = 13;
+inline constexpr int FIELD_W = GRID_COLS * TILE_SIZE; // 208
+inline constexpr int FIELD_H = GRID_ROWS * TILE_SIZE; // 208
+inline constexpr int HUD_X = FIELD_X + FIELD_W;       // 224
 
 enum class Direction : uint8_t {
     UP = 0,

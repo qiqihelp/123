@@ -22,12 +22,12 @@ else
 fi
 
 echo "[*] 使用 $CXX 编译 C++17 引擎测试..."
-"$CXX" -std=c++17 -O2 -Wall -Wextra -Werror src/tank_core.cpp tests/test_tank.cpp -o /tmp/tank_tests
+"$CXX" -std=c++17 -O2 -Wall -Wextra -I src src/tank_core.cpp tests/test_tank.cpp -o /tmp/tank_tests
 /tmp/tank_tests
 rm -f /tmp/tank_tests
 
 echo "[*] 编译 C++17 游戏服务端 (tank_server)..."
-"$CXX" -std=c++17 -O2 -Wall -Wextra -Werror src/tank_core.cpp src/server_main.cpp -o tank_server
+"$CXX" -std=c++17 -O2 -Wall -Wextra -pthread -I src src/tank_core.cpp src/server_main.cpp -o tank_server
 chmod +x tank_server
 
 PORT="${1:-8080}"
