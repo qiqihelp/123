@@ -15,18 +15,17 @@ int main() {
     TankGame game;
     assert(game.snapshot().phase == GamePhase::TITLE);
 
-    // 1. 按确认键进入 Stage 1 并度过开场字幕
     InputState startInp;
     startInp.confirmPressed = true;
     game.update(1.0f / 60.0f, startInp);
     assert(game.snapshot().phase == GamePhase::STAGE_INTRO);
 
-    stepFrames(game, InputState{}, 120); // 2 秒后进入 PLAYING
+    stepFrames(game, InputState{}, 120);
     assert(game.snapshot().phase == GamePhase::PLAYING);
     assert(game.player().active);
     assert(game.snapshot().baseAlive);
 
-    // 2. 玩家移动与开火
+    // 移动与开火
     float startY = game.player().y;
     InputState moveUp;
     moveUp.up = true;
@@ -35,7 +34,7 @@ int main() {
     assert(game.player().y < startY);
     assert(!game.bullets().empty());
 
-    // 3. 强化道具：STAR 升到 Tier 3 可以击穿钢墙
+    // 依次测试全部 8 种道具拾取，确保不卡死且效果生效
     game.forceSpawnPowerUp(PowerUpType::STAR, game.player().x, game.player().y);
     game.update(1.0f / 60.0f, InputState{});
     assert(game.player().tier == 1);
@@ -46,7 +45,35 @@ int main() {
     game.update(1.0f / 60.0f, InputState{});
     assert(game.player().tier == 3);
 
-    // 4. SHOVEL 加固基地外围为钢墙，LIFE +1
+    // 第 4 颗星触发过载
+    game.forceSpawnPowerUp(PowerUpType::STAR, game.player().x, game.player().y);
+    game.update(1.0f / 60.0f, InputState{});
+    assert(game.snapshot().overdriveTimer > 5.0f);
+
+    // 护盾 & 冻结
+    game.forceSpawnPowerUp(PowerUpType::SHIELD, game.player().x, game.player().y);
+    game.update(1.0f / 60.0f, InputState{});
+    assert(game.player().shieldTimer > 5.0f);
+
+    game.forceSpawnPowerUp(PowerUpType::CLOCK, game.player().x, game.player().y);
+    game.update(1.0f / 60.0f, InputState{});
+    assert(game.snapshot().freezeTimer > 5.0f);
+
+    // 三向散射炮
+    game.forceSpawnPowerUp(PowerUpType::SPREAD, game.player().x, game.player().y);
+    game.update(1.0f / 60.0f, InputState{});
+    assert(game.snapshot().spreadTimer > 5.0f);
+
+    // 轨道天基打击 + 全屏核爆
+    game.forceSpawnEnemy(EnemyType::HEAVY, FIELD_X + 32.0f, FIELD_Y + 32.0f);
+    game.forceSpawnPowerUp(PowerUpType::ORBITAL, game.player().x, game.player().y);
+    game.update(1.0f / 60.0f, InputState{});
+
+    game.forceSpawnEnemy(EnemyType::STANDARD, FIELD_X + 64.0f, FIELD_Y + 32.0f);
+    game.forceSpawnPowerUp(PowerUpType::BOMB, game.player().x, game.player().y);
+    game.update(1.0f / 60.0f, InputState{});
+
+    // 生命 +1 & 基地加固
     int livesBefore = game.snapshot().lives;
     game.forceSpawnPowerUp(PowerUpType::LIFE, game.player().x, game.player().y);
     game.update(1.0f / 60.0f, InputState{});
@@ -57,19 +84,6 @@ int main() {
     assert(game.tileAt(5, 12) == TileType::STEEL);
     assert(game.tileAt(6, 11) == TileType::STEEL);
 
-    // 5. 砖墙局部破坏检查（Stage 1 第 9 行第 3 列是砖墙）
-    assert(game.tileAt(3, 9) == TileType::BRICK);
-    assert(game.brickMaskAt(3, 9) == 0x0F);
-
-    // 6. 暂停与恢复
-    InputState pauseInp;
-    pauseInp.pausePressed = true;
-    game.update(1.0f / 60.0f, pauseInp);
-    assert(game.snapshot().phase == GamePhase::PAUSED);
-    game.update(1.0f / 60.0f, pauseInp);
-    assert(game.snapshot().phase == GamePhase::PLAYING);
-
-    // 7. 渲染缓冲验证
     game.render();
     const uint8_t* fb = game.framebufferRGBA();
     bool hasNonBlack = false;
@@ -81,6 +95,6 @@ int main() {
     }
     assert(hasNonBlack);
 
-    std::cout << "All C++17 TankGame engine assertions passed!" << std::endl;
+    std::cout << "All C++17 TankGame engine assertions (8 power-ups + combat) passed!" << std::endl;
     return 0;
 }

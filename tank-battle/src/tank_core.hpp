@@ -43,12 +43,14 @@ enum class EnemyType : uint8_t {
 };
 
 enum class PowerUpType : uint8_t {
-    STAR = 0,   // 火力升级
-    SHIELD = 1, // 无敌护盾
-    BOMB = 2,   // 全屏炸毁当前敌军
-    CLOCK = 3,  // 冻结敌军
-    SHOVEL = 4, // 基地钢墙加固
-    LIFE = 5    // 额外生命 +1
+    STAR = 0,    // 火力升级 / 过载
+    SHIELD = 1,  // 无敌护盾
+    BOMB = 2,    // 全屏核爆
+    CLOCK = 3,   // 时空冻结
+    SHOVEL = 4,  // 基地钢墙加固
+    LIFE = 5,    // 额外生命 +1
+    SPREAD = 6,  // 三向散射炮
+    ORBITAL = 7  // 轨道天基打击
 };
 
 enum class GamePhase : uint8_t {
@@ -84,9 +86,12 @@ struct TankEntity {
     float speed = 60.0f;
     float fireCooldown = 0.0f;
     float shieldTimer = 0.0f;
+    float spreadTimer = 0.0f;
+    float overdriveTimer = 0.0f;
     float aiTurnTimer = 0.0f;
     float aiFireTimer = 0.0f;
     float animDist = 0.0f;
+    float recoilTimer = 0.0f;
     bool isBonus = false;
 };
 
@@ -96,6 +101,8 @@ struct Bullet {
     bool armorPiercing = false;
     float x = 0.0f;
     float y = 0.0f;
+    float vx = 0.0f;
+    float vy = 0.0f;
     Direction dir = Direction::UP;
     float speed = 175.0f;
 };
@@ -120,6 +127,16 @@ struct Particle {
     int size = 2;
 };
 
+struct Shockwave {
+    float x = 0.0f;
+    float y = 0.0f;
+    float radius = 2.0f;
+    float maxRadius = 24.0f;
+    float life = 0.3f;
+    float maxLife = 0.3f;
+    uint32_t color = 0xFFFFFFFFu;
+};
+
 struct GameSnapshot {
     GamePhase phase = GamePhase::TITLE;
     int stage = 1;
@@ -130,9 +147,12 @@ struct GameSnapshot {
     int enemiesRemaining = 0;
     int enemiesAlive = 0;
     int killsThisStage = 0;
+    int combo = 0;
     bool baseAlive = true;
     float freezeTimer = 0.0f;
     float shovelTimer = 0.0f;
+    float spreadTimer = 0.0f;
+    float overdriveTimer = 0.0f;
 };
 
 class TankGame {
@@ -162,6 +182,7 @@ public:
 
     // 测试/调试辅助
     void forceSpawnPowerUp(PowerUpType type, float x, float y);
+    void forceSpawnEnemy(EnemyType type, float x, float y);
     void setEnemyFreeze(float seconds) { freezeTimer_ = seconds; }
 
 private:
@@ -174,6 +195,7 @@ private:
     std::vector<TankEntity> enemies_;
     std::vector<Bullet> bullets_;
     std::vector<Particle> particles_;
+    std::vector<Shockwave> shockwaves_;
     PowerUp powerUp_{};
 
     GamePhase phase_ = GamePhase::TITLE;
@@ -182,6 +204,8 @@ private:
     int highScore_ = 0;
     int lives_ = 3;
     int killsThisStage_ = 0;
+    int combo_ = 0;
+    float comboTimer_ = 0.0f;
     bool baseAlive_ = true;
 
     std::vector<EnemyType> spawnQueue_;
@@ -206,7 +230,8 @@ private:
     bool tankCollidesWorld(float x, float y, const TankEntity* self) const;
     void fireBullet(TankEntity& tank);
     void spawnExplosion(float cx, float cy, uint32_t baseColor, int count);
-    void collectPowerUp(PowerUpType type);
+    void spawnShockwave(float cx, float cy, float maxRadius, uint32_t color);
+    void collectPowerUp(PowerUpType type, float px, float py);
     int activeBulletsFor(bool fromPlayer) const;
 
     // 像素光栅绘制
@@ -214,6 +239,7 @@ private:
     void putPixel(int x, int y, uint32_t rgba);
     void fillRect(int x, int y, int w, int h, uint32_t rgba);
     void drawRectOutline(int x, int y, int w, int h, uint32_t rgba);
+    void drawCircleOutline(int cx, int cy, int r, uint32_t rgba);
     void drawChar5x7(int x, int y, char c, uint32_t rgba, int scale = 1);
     void drawText(int x, int y, const std::string& text, uint32_t rgba, int scale = 1);
     void drawTile(int col, int row, bool bushLayer);

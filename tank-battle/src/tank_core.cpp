@@ -12,6 +12,7 @@ namespace {
 constexpr uint32_t COL_BORDER    = 0x3A4150FFu;
 constexpr uint32_t COL_FIELD_BG  = 0x050608FFu;
 constexpr uint32_t COL_BRICK     = 0xC85A32FFu;
+constexpr uint32_t COL_BRICK_HI  = 0xE67E50FFu;
 constexpr uint32_t COL_BRICK_MORT= 0x6E2C18FFu;
 constexpr uint32_t COL_STEEL     = 0xBCC6D4FFu;
 constexpr uint32_t COL_STEEL_DK  = 0x677282FFu;
@@ -29,12 +30,10 @@ constexpr uint32_t COL_RED       = 0xE64545FFu;
 constexpr uint32_t COL_CYAN      = 0x38D9E6FFu;
 constexpr uint32_t COL_GREEN     = 0x52D168FFu;
 constexpr uint32_t COL_PURPLE    = 0xB85CE6FFu;
+constexpr uint32_t COL_ORANGE    = 0xFF8833FFu;
 constexpr uint32_t COL_MUTED     = 0x8C96A8FFu;
 
-// 5 个经典关卡 (13x13):
-// '.' 空地, '#' 砖墙, '@' 钢墙, '~' 水域, '%' 草丛, '=' 冰面, 'E' 基地(第12行第6列)
 const char* STAGE_MAPS[5][13] = {
-    // Stage 1: 新手防线
     {
         ".............",
         ".#.#.#.#.#.#.",
@@ -50,7 +49,6 @@ const char* STAGE_MAPS[5][13] = {
         ".....###.....",
         ".....#E#....."
     },
-    // Stage 2: 钢雨桥头
     {
         ".............",
         ".#..@...@..#.",
@@ -66,7 +64,6 @@ const char* STAGE_MAPS[5][13] = {
         ".....###.....",
         ".....#E#....."
     },
-    // Stage 3: 森林伏击
     {
         ".............",
         ".%%.#...#.%%.",
@@ -82,7 +79,6 @@ const char* STAGE_MAPS[5][13] = {
         "....#####....",
         ".....#E#....."
     },
-    // Stage 4: 钢铁要塞
     {
         ".............",
         ".@.#.@.@.#.@.",
@@ -98,7 +94,6 @@ const char* STAGE_MAPS[5][13] = {
         ".....###.....",
         ".....#E#....."
     },
-    // Stage 5: 终极决战
     {
         ".............",
         ".@.%..@..%.@.",
@@ -116,7 +111,6 @@ const char* STAGE_MAPS[5][13] = {
     }
 };
 
-// 5x7 简化位图字库 (ASCII 32..95)
 struct Glyph5x7 {
     char ch;
     uint8_t rows[7];
@@ -204,6 +198,8 @@ void TankGame::resetAll() {
     score_ = 0;
     lives_ = 3;
     killsThisStage_ = 0;
+    combo_ = 0;
+    comboTimer_ = 0.0f;
     baseAlive_ = true;
     freezeTimer_ = 0.0f;
     shovelTimer_ = 0.0f;
@@ -212,6 +208,7 @@ void TankGame::resetAll() {
     enemies_.clear();
     bullets_.clear();
     particles_.clear();
+    shockwaves_.clear();
     powerUp_ = PowerUp{};
     loadStage(1);
     phase_ = GamePhase::TITLE;
@@ -220,6 +217,8 @@ void TankGame::resetAll() {
 void TankGame::startNewGame() {
     score_ = 0;
     lives_ = 3;
+    combo_ = 0;
+    comboTimer_ = 0.0f;
     player_.tier = 0;
     loadStage(1);
     phase_ = GamePhase::STAGE_INTRO;
@@ -248,7 +247,6 @@ void TankGame::loadStage(int stageNum) {
         }
     }
 
-    // 清理玩家和敌方出生点确保不被堵死
     auto clearCell = [&](int col, int row) {
         tiles_[row * GRID_COLS + col] = TileType::EMPTY;
         brickMasks_[row * GRID_COLS + col] = 0;
@@ -258,11 +256,9 @@ void TankGame::loadStage(int stageNum) {
     clearCell(6, 0);
     clearCell(12, 0);
 
-    // 基地位置确保为 BASE
     tiles_[12 * GRID_COLS + 6] = TileType::BASE;
     baseAlive_ = true;
 
-    // 初始化玩家坦克
     int savedTier = player_.tier;
     player_ = TankEntity{};
     player_.active = true;
@@ -279,12 +275,12 @@ void TankGame::loadStage(int stageNum) {
     enemies_.clear();
     bullets_.clear();
     particles_.clear();
+    shockwaves_.clear();
     powerUp_ = PowerUp{};
     freezeTimer_ = 0.0f;
     shovelTimer_ = 0.0f;
     killsThisStage_ = 0;
 
-    // 配置本关敌方队列 (10 + stage*2 台坦克)
     spawnQueue_.clear();
     int total = 10 + stage_ * 2;
     for (int i = 0; i < total; ++i) {
@@ -332,6 +328,19 @@ void TankGame::forceSpawnPowerUp(PowerUpType type, float x, float y) {
     powerUp_.timer = 14.0f;
 }
 
+void TankGame::forceSpawnEnemy(EnemyType type, float x, float y) {
+    TankEntity e;
+    e.active = true;
+    e.isPlayer = false;
+    e.enemyType = type;
+    e.x = x;
+    e.y = y;
+    e.dir = Direction::DOWN;
+    e.hp = e.maxHp = (type == EnemyType::HEAVY) ? 3 : (type == EnemyType::ASSAULT ? 2 : 1);
+    e.speed = 56.0f;
+    enemies_.push_back(e);
+}
+
 GameSnapshot TankGame::snapshot() const {
     GameSnapshot s;
     s.phase = phase_;
@@ -347,9 +356,12 @@ GameSnapshot TankGame::snapshot() const {
     s.enemiesAlive = alive;
     s.enemiesRemaining = static_cast<int>(spawnQueue_.size()) - spawnedCount_ + alive;
     s.killsThisStage = killsThisStage_;
+    s.combo = combo_;
     s.baseAlive = baseAlive_;
     s.freezeTimer = freezeTimer_;
     s.shovelTimer = shovelTimer_;
+    s.spreadTimer = player_.spreadTimer;
+    s.overdriveTimer = player_.overdriveTimer;
     return s;
 }
 
@@ -401,13 +413,16 @@ void TankGame::update(float dt, const InputState& input) {
         return;
     }
 
-    // GamePhase::PLAYING
     if (input.pausePressed) {
         phase_ = GamePhase::PAUSED;
         return;
     }
 
     if (freezeTimer_ > 0.0f) freezeTimer_ = std::max(0.0f, freezeTimer_ - dt);
+    if (comboTimer_ > 0.0f) {
+        comboTimer_ = std::max(0.0f, comboTimer_ - dt);
+        if (comboTimer_ <= 0.0f) combo_ = 0;
+    }
     if (shovelTimer_ > 0.0f) {
         shovelTimer_ = std::max(0.0f, shovelTimer_ - dt);
         if (shovelTimer_ <= 0.0f) {
@@ -422,7 +437,6 @@ void TankGame::update(float dt, const InputState& input) {
         }
     }
 
-    // 刷怪逻辑 (同时最多 4 台敌方坦克)
     int aliveEnemies = 0;
     for (const auto& e : enemies_) {
         if (e.active) ++aliveEnemies;
@@ -439,7 +453,6 @@ void TankGame::update(float dt, const InputState& input) {
     updateEnemies(dt);
     updateBullets(dt);
 
-    // 清理已销毁实体
     enemies_.erase(std::remove_if(enemies_.begin(), enemies_.end(),
                                   [](const TankEntity& e) { return !e.active; }),
                    enemies_.end());
@@ -447,7 +460,6 @@ void TankGame::update(float dt, const InputState& input) {
                                   [](const Bullet& b) { return !b.active; }),
                    bullets_.end());
 
-    // 检查胜负条件
     if (!baseAlive_ || lives_ <= 0) {
         phase_ = GamePhase::GAME_OVER;
         if (score_ > highScore_) highScore_ = score_;
@@ -482,27 +494,16 @@ void TankGame::spawnEnemy() {
             e.aiFireTimer = 0.6f + static_cast<float>(nextRand() % 10) * 0.12f;
 
             switch (e.enemyType) {
-                case EnemyType::SCOUT:
-                    e.hp = e.maxHp = 1;
-                    e.speed = 84.0f;
-                    break;
-                case EnemyType::STANDARD:
-                    e.hp = e.maxHp = 1;
-                    e.speed = 56.0f;
-                    break;
-                case EnemyType::HEAVY:
-                    e.hp = e.maxHp = 3;
-                    e.speed = 42.0f;
-                    break;
-                case EnemyType::ASSAULT:
-                    e.hp = e.maxHp = 2;
-                    e.speed = 66.0f;
-                    break;
+                case EnemyType::SCOUT:    e.hp = e.maxHp = 1; e.speed = 84.0f; break;
+                case EnemyType::STANDARD: e.hp = e.maxHp = 1; e.speed = 56.0f; break;
+                case EnemyType::HEAVY:    e.hp = e.maxHp = 3; e.speed = 42.0f; break;
+                case EnemyType::ASSAULT:  e.hp = e.maxHp = 2; e.speed = 66.0f; break;
             }
             enemies_.push_back(e);
             ++spawnedCount_;
             nextSpawnSlot_ = (slot + 1) % 3;
             spawnExplosion(sx + 7.0f, sy + 7.0f, COL_WHITE, 6);
+            spawnShockwave(sx + 7.0f, sy + 7.0f, 14.0f, COL_CYAN);
             return;
         }
     }
@@ -541,21 +542,16 @@ bool TankGame::tankCollidesWorld(float x, float y, const TankEntity* self) const
     }
 
     if (self != &player_ && player_.active) {
-        if (rectOverlap(x, y, size, size, player_.x, player_.y, size, size)) {
-            return true;
-        }
+        if (rectOverlap(x, y, size, size, player_.x, player_.y, size, size)) return true;
     }
     for (const auto& e : enemies_) {
         if (!e.active || self == &e) continue;
-        if (rectOverlap(x, y, size, size, e.x, e.y, size, size)) {
-            return true;
-        }
+        if (rectOverlap(x, y, size, size, e.x, e.y, size, size)) return true;
     }
     return false;
 }
 
 bool TankGame::moveTank(TankEntity& tank, Direction dir, float dist) {
-    // 转向时做轻微格子对齐辅助，让过窄通道更顺滑
     if (tank.dir != dir) {
         if (dir == Direction::UP || dir == Direction::DOWN) {
             float rel = tank.x - FIELD_X;
@@ -575,7 +571,6 @@ bool TankGame::moveTank(TankEntity& tank, Direction dir, float dist) {
         tank.dir = dir;
     }
 
-    // 冰面加速
     int cc = std::clamp(static_cast<int>((tank.x + 7.0f - FIELD_X) / TILE_SIZE), 0, GRID_COLS - 1);
     int rr = std::clamp(static_cast<int>((tank.y + 7.0f - FIELD_Y) / TILE_SIZE), 0, GRID_ROWS - 1);
     if (tileAt(cc, rr) == TileType::ICE) {
@@ -611,40 +606,63 @@ void TankGame::fireBullet(TankEntity& tank) {
     if (tank.fireCooldown > 0.0f) return;
 
     if (tank.isPlayer) {
-        int maxBullets = (tank.tier >= 2) ? 2 : 1;
+        bool overdrive = tank.overdriveTimer > 0.0f;
+        bool spread = tank.spreadTimer > 0.0f;
+        int maxBullets = spread ? 9 : (overdrive ? 4 : ((tank.tier >= 2) ? 2 : 1));
         if (activeBulletsFor(true) >= maxBullets) return;
-        tank.fireCooldown = (tank.tier >= 1) ? 0.18f : 0.30f;
+        tank.fireCooldown = overdrive ? 0.11f : ((tank.tier >= 1) ? 0.18f : 0.30f);
     } else {
         tank.fireCooldown = (tank.enemyType == EnemyType::ASSAULT) ? 0.9f : 1.3f;
     }
 
-    Bullet b;
-    b.active = true;
-    b.fromPlayer = tank.isPlayer;
-    b.armorPiercing = tank.isPlayer && (tank.tier >= 3);
-    b.dir = tank.dir;
+    tank.recoilTimer = 0.12f;
 
+    float baseSpeed = 175.0f;
     if (tank.isPlayer) {
-        b.speed = (tank.tier >= 1) ? 215.0f : 175.0f;
+        baseSpeed = (tank.tier >= 1) ? 215.0f : 175.0f;
     } else {
-        b.speed = (tank.enemyType == EnemyType::ASSAULT) ? 185.0f : 145.0f;
+        baseSpeed = (tank.enemyType == EnemyType::ASSAULT) ? 185.0f : 145.0f;
     }
 
     float cx = tank.x + 7.0f;
     float cy = tank.y + 7.0f;
+    float bx = cx - 2.0f, by = cy - 2.0f;
+    float baseAngle = 0.0f;
     switch (tank.dir) {
-        case Direction::UP:    b.x = cx - 2.0f; b.y = tank.y - 3.0f; break;
-        case Direction::DOWN:  b.x = cx - 2.0f; b.y = tank.y + 13.0f; break;
-        case Direction::LEFT:  b.x = tank.x - 3.0f; b.y = cy - 2.0f; break;
-        case Direction::RIGHT: b.x = tank.x + 13.0f; b.y = cy - 2.0f; break;
+        case Direction::UP:    bx = cx - 2.0f; by = tank.y - 3.0f;  baseAngle = -1.570796f; break;
+        case Direction::DOWN:  bx = cx - 2.0f; by = tank.y + 13.0f; baseAngle =  1.570796f; break;
+        case Direction::LEFT:  bx = tank.x - 3.0f; by = cy - 2.0f;  baseAngle =  3.141592f; break;
+        case Direction::RIGHT: bx = tank.x + 13.0f; by = cy - 2.0f; baseAngle =  0.0f;      break;
     }
-    bullets_.push_back(b);
+
+    auto spawnShot = [&](float angleOffset) {
+        Bullet b;
+        b.active = true;
+        b.fromPlayer = tank.isPlayer;
+        b.armorPiercing = tank.isPlayer && (tank.tier >= 3 || tank.overdriveTimer > 0.0f);
+        b.dir = tank.dir;
+        b.x = bx;
+        b.y = by;
+        b.speed = baseSpeed;
+        b.vx = std::cos(baseAngle + angleOffset) * baseSpeed;
+        b.vy = std::sin(baseAngle + angleOffset) * baseSpeed;
+        bullets_.push_back(b);
+    };
+
+    spawnShot(0.0f);
+    if (tank.isPlayer && tank.spreadTimer > 0.0f) {
+        spawnShot(-0.24f);
+        spawnShot(0.24f);
+    }
 }
 
 void TankGame::updatePlayer(float dt, const InputState& input) {
     if (!player_.active) return;
     if (player_.fireCooldown > 0.0f) player_.fireCooldown = std::max(0.0f, player_.fireCooldown - dt);
     if (player_.shieldTimer > 0.0f) player_.shieldTimer = std::max(0.0f, player_.shieldTimer - dt);
+    if (player_.spreadTimer > 0.0f) player_.spreadTimer = std::max(0.0f, player_.spreadTimer - dt);
+    if (player_.overdriveTimer > 0.0f) player_.overdriveTimer = std::max(0.0f, player_.overdriveTimer - dt);
+    if (player_.recoilTimer > 0.0f) player_.recoilTimer = std::max(0.0f, player_.recoilTimer - dt);
 
     if (input.up)         moveTank(player_, Direction::UP, player_.speed * dt);
     else if (input.down)  moveTank(player_, Direction::DOWN, player_.speed * dt);
@@ -658,22 +676,29 @@ void TankGame::updatePlayer(float dt, const InputState& input) {
     if (powerUp_.active && rectOverlap(player_.x, player_.y, 14.0f, 14.0f,
                                        powerUp_.x, powerUp_.y, 14.0f, 14.0f)) {
         PowerUpType t = powerUp_.type;
+        float px = powerUp_.x;
+        float py = powerUp_.y;
         powerUp_.active = false;
-        collectPowerUp(t);
+        collectPowerUp(t, px, py);
     }
 }
 
-void TankGame::collectPowerUp(PowerUpType type) {
+void TankGame::collectPowerUp(PowerUpType type, float px, float py) {
     score_ += 500;
     if (score_ > highScore_) highScore_ = score_;
-    spawnExplosion(powerUp_.x + 7.0f, powerUp_.y + 7.0f, COL_GOLD, 10);
+    spawnExplosion(px + 7.0f, py + 7.0f, COL_GOLD, 14);
+    spawnShockwave(px + 7.0f, py + 7.0f, 28.0f, COL_GOLD);
 
     switch (type) {
         case PowerUpType::STAR:
-            player_.tier = std::min(3, player_.tier + 1);
+            if (player_.tier < 3) {
+                player_.tier += 1;
+            } else {
+                player_.overdriveTimer = 10.0f;
+            }
             break;
         case PowerUpType::SHIELD:
-            player_.shieldTimer = 8.0f;
+            player_.shieldTimer = 9.0f;
             break;
         case PowerUpType::CLOCK:
             freezeTimer_ = 8.0f;
@@ -685,16 +710,35 @@ void TankGame::collectPowerUp(PowerUpType type) {
         case PowerUpType::LIFE:
             lives_ = std::min(9, lives_ + 1);
             break;
+        case PowerUpType::SPREAD:
+            player_.spreadTimer = 10.0f;
+            break;
+        case PowerUpType::ORBITAL: {
+            int strikes = 0;
+            for (auto& e : enemies_) {
+                if (!e.active) continue;
+                e.hp = 0;
+                e.active = false;
+                ++killsThisStage_;
+                score_ += 300;
+                spawnExplosion(e.x + 7.0f, e.y + 7.0f, COL_CYAN, 16);
+                spawnShockwave(e.x + 7.0f, e.y + 7.0f, 26.0f, COL_CYAN);
+                if (++strikes >= 4) break;
+            }
+            break;
+        }
         case PowerUpType::BOMB:
+            spawnShockwave(px + 7.0f, py + 7.0f, 96.0f, COL_RED);
             for (auto& e : enemies_) {
                 if (!e.active) continue;
                 e.active = false;
                 ++killsThisStage_;
                 score_ += 200;
-                spawnExplosion(e.x + 7.0f, e.y + 7.0f, COL_GOLD, 12);
+                spawnExplosion(e.x + 7.0f, e.y + 7.0f, COL_GOLD, 14);
             }
             break;
     }
+    if (score_ > highScore_) highScore_ = score_;
 }
 
 void TankGame::updateEnemies(float dt) {
@@ -703,6 +747,7 @@ void TankGame::updateEnemies(float dt) {
     for (auto& e : enemies_) {
         if (!e.active) continue;
         if (e.fireCooldown > 0.0f) e.fireCooldown = std::max(0.0f, e.fireCooldown - dt);
+        if (e.recoilTimer > 0.0f) e.recoilTimer = std::max(0.0f, e.recoilTimer - dt);
 
         e.aiTurnTimer -= dt;
         e.aiFireTimer -= dt;
@@ -710,7 +755,6 @@ void TankGame::updateEnemies(float dt) {
         bool moved = moveTank(e, e.dir, e.speed * dt);
         if (!moved || e.aiTurnTimer <= 0.0f) {
             e.aiTurnTimer = 0.8f + static_cast<float>(nextRand() % 14) * 0.15f;
-            // 精英与普通 AI 有一定概率朝玩家或基地方向转向
             uint32_t roll = nextRand() % 100;
             if ((e.enemyType == EnemyType::ASSAULT && roll < 65) || roll < 35) {
                 float targetX = (nextRand() % 2 == 0) ? player_.x : (FIELD_X + 6 * TILE_SIZE);
@@ -741,15 +785,9 @@ void TankGame::updateBullets(float dt) {
         Bullet& b = bullets_[i];
         if (!b.active) continue;
 
-        float step = b.speed * dt;
-        switch (b.dir) {
-            case Direction::UP:    b.y -= step; break;
-            case Direction::DOWN:  b.y += step; break;
-            case Direction::LEFT:  b.x -= step; break;
-            case Direction::RIGHT: b.x += step; break;
-        }
+        b.x += b.vx * dt;
+        b.y += b.vy * dt;
 
-        // 出界判定
         if (b.x < FIELD_X || b.y < FIELD_Y ||
             b.x + 4.0f > FIELD_X + FIELD_W || b.y + 4.0f > FIELD_Y + FIELD_H) {
             b.active = false;
@@ -757,7 +795,6 @@ void TankGame::updateBullets(float dt) {
             continue;
         }
 
-        // 子弹互相抵消
         bool hitBullet = false;
         for (size_t j = i + 1; j < bullets_.size(); ++j) {
             Bullet& o = bullets_[j];
@@ -772,7 +809,6 @@ void TankGame::updateBullets(float dt) {
         }
         if (hitBullet) continue;
 
-        // 地形碰撞
         int c0 = std::max(0, static_cast<int>((b.x - FIELD_X) / TILE_SIZE));
         int c1 = std::min(GRID_COLS - 1, static_cast<int>((b.x + 3.99f - FIELD_X) / TILE_SIZE));
         int r0 = std::max(0, static_cast<int>((b.y - FIELD_Y) / TILE_SIZE));
@@ -790,6 +826,8 @@ void TankGame::updateBullets(float dt) {
                         hitWall = true;
                         spawnExplosion(FIELD_X + c * TILE_SIZE + 8.0f,
                                        FIELD_Y + r * TILE_SIZE + 8.0f, COL_RED, 20);
+                        spawnShockwave(FIELD_X + c * TILE_SIZE + 8.0f,
+                                       FIELD_Y + r * TILE_SIZE + 8.0f, 34.0f, COL_RED);
                     }
                 } else if (t == TileType::STEEL) {
                     b.active = false;
@@ -812,7 +850,6 @@ void TankGame::updateBullets(float dt) {
                         }
                     }
                     if (hitQuads != 0) {
-                        // 水平子弹打掉同一行被命中的砖面，垂直子弹打掉同一列砖面
                         if (b.dir == Direction::UP || b.dir == Direction::DOWN) {
                             if (hitQuads & 0b0011) hitQuads |= 0b0011;
                             if (hitQuads & 0b1100) hitQuads |= 0b1100;
@@ -831,7 +868,6 @@ void TankGame::updateBullets(float dt) {
         }
         if (hitWall) continue;
 
-        // 坦克命中判定
         if (b.fromPlayer) {
             for (auto& e : enemies_) {
                 if (!e.active) continue;
@@ -839,7 +875,7 @@ void TankGame::updateBullets(float dt) {
                     b.active = false;
                     if (e.isBonus) {
                         e.isBonus = false;
-                        PowerUpType pt = static_cast<PowerUpType>(nextRand() % 6);
+                        PowerUpType pt = static_cast<PowerUpType>(nextRand() % 8);
                         float px = FIELD_X + (1 + nextRand() % (GRID_COLS - 2)) * TILE_SIZE + 1.0f;
                         float py = FIELD_Y + (2 + nextRand() % (GRID_ROWS - 4)) * TILE_SIZE + 1.0f;
                         forceSpawnPowerUp(pt, px, py);
@@ -848,6 +884,8 @@ void TankGame::updateBullets(float dt) {
                     if (e.hp <= 0) {
                         e.active = false;
                         ++killsThisStage_;
+                        ++combo_;
+                        comboTimer_ = 3.0f;
                         int pts = 200;
                         switch (e.enemyType) {
                             case EnemyType::SCOUT:    pts = 100; break;
@@ -855,9 +893,10 @@ void TankGame::updateBullets(float dt) {
                             case EnemyType::ASSAULT:  pts = 350; break;
                             case EnemyType::HEAVY:    pts = 400; break;
                         }
-                        score_ += pts;
+                        score_ += pts + std::min(5, combo_ - 1) * 50;
                         if (score_ > highScore_) highScore_ = score_;
                         spawnExplosion(e.x + 7.0f, e.y + 7.0f, COL_GOLD, 16);
+                        spawnShockwave(e.x + 7.0f, e.y + 7.0f, 20.0f, COL_ORANGE);
                     } else {
                         spawnExplosion(b.x + 2.0f, b.y + 2.0f, COL_WHITE, 5);
                     }
@@ -870,7 +909,9 @@ void TankGame::updateBullets(float dt) {
                 b.active = false;
                 if (player_.shieldTimer <= 0.0f) {
                     spawnExplosion(player_.x + 7.0f, player_.y + 7.0f, COL_RED, 18);
+                    spawnShockwave(player_.x + 7.0f, player_.y + 7.0f, 24.0f, COL_RED);
                     --lives_;
+                    combo_ = 0;
                     if (lives_ > 0) {
                         player_.x = FIELD_X + 4 * TILE_SIZE + 1.0f;
                         player_.y = FIELD_Y + 12 * TILE_SIZE + 1.0f;
@@ -906,6 +947,18 @@ void TankGame::spawnExplosion(float cx, float cy, uint32_t baseColor, int count)
     }
 }
 
+void TankGame::spawnShockwave(float cx, float cy, float maxRadius, uint32_t color) {
+    Shockwave s;
+    s.x = cx;
+    s.y = cy;
+    s.radius = 2.0f;
+    s.maxRadius = maxRadius;
+    s.life = 0.35f;
+    s.maxLife = 0.35f;
+    s.color = color;
+    shockwaves_.push_back(s);
+}
+
 void TankGame::updateParticles(float dt) {
     for (auto& p : particles_) {
         if (!p.active) continue;
@@ -917,6 +970,15 @@ void TankGame::updateParticles(float dt) {
     particles_.erase(std::remove_if(particles_.begin(), particles_.end(),
                                     [](const Particle& p) { return !p.active; }),
                      particles_.end());
+
+    for (auto& s : shockwaves_) {
+        s.life -= dt;
+        float t = 1.0f - std::max(0.0f, s.life) / s.maxLife;
+        s.radius = 2.0f + t * (s.maxRadius - 2.0f);
+    }
+    shockwaves_.erase(std::remove_if(shockwaves_.begin(), shockwaves_.end(),
+                                     [](const Shockwave& s) { return s.life <= 0.0f; }),
+                      shockwaves_.end());
 }
 
 // ==================== 软件像素光栅渲染 ====================
@@ -959,6 +1021,15 @@ void TankGame::drawRectOutline(int x, int y, int w, int h, uint32_t rgba) {
     fillRect(x, y + h - 1, w, 1, rgba);
     fillRect(x, y, 1, h, rgba);
     fillRect(x + w - 1, y, 1, h, rgba);
+}
+
+void TankGame::drawCircleOutline(int cx, int cy, int r, uint32_t rgba) {
+    for (int a = 0; a < 36; ++a) {
+        float rad = static_cast<float>(a) * 6.28318f / 36.0f;
+        int px = cx + static_cast<int>(std::round(std::cos(rad) * r));
+        int py = cy + static_cast<int>(std::round(std::sin(rad) * r));
+        putPixel(px, py, rgba);
+    }
 }
 
 void TankGame::drawChar5x7(int x, int y, char c, uint32_t rgba, int scale) {
@@ -1008,6 +1079,7 @@ void TankGame::drawTile(int col, int row, bool bushLayer) {
                 int qx = sx + (q % 2) * 8;
                 int qy = sy + (q / 2) * 8;
                 fillRect(qx, qy, 8, 8, COL_BRICK);
+                fillRect(qx, qy, 8, 1, COL_BRICK_HI);
                 fillRect(qx, qy + 3, 8, 1, COL_BRICK_MORT);
                 fillRect(qx, qy + 7, 8, 1, COL_BRICK_MORT);
                 fillRect(qx + 3, qy, 1, 4, COL_BRICK_MORT);
@@ -1032,7 +1104,6 @@ void TankGame::drawTile(int col, int row, bool bushLayer) {
             fillRect(sx, sy, 16, 16, COL_ICE_1);
             fillRect(sx + 2, sy + 2, 4, 1, COL_ICE_2);
             fillRect(sx + 9, sy + 7, 5, 1, COL_ICE_2);
-            fillRect(sx + 3, sy + 12, 4, 1, COL_ICE_2);
             break;
         }
         case TileType::BASE: {
@@ -1081,7 +1152,6 @@ void TankGame::drawTankSprite(const TankEntity& t) {
 
     int trackShift = (static_cast<int>(t.animDist / 3.0f) % 2);
 
-    // 履带与车体
     if (t.dir == Direction::UP || t.dir == Direction::DOWN) {
         fillRect(x, y + 1, 3, 12, darkCol);
         fillRect(x + 11, y + 1, 3, 12, darkCol);
@@ -1091,12 +1161,8 @@ void TankGame::drawTankSprite(const TankEntity& t) {
         }
         fillRect(x + 3, y + 2, 8, 10, bodyCol);
         fillRect(x + 5, y + 4, 4, 6, darkCol);
-        // 炮管
-        if (t.dir == Direction::UP) {
-            fillRect(x + 6, y - 1, 2, 6, COL_WHITE);
-        } else {
-            fillRect(x + 6, y + 9, 2, 6, COL_WHITE);
-        }
+        if (t.dir == Direction::UP) fillRect(x + 6, y - 1, 2, 6, COL_WHITE);
+        else fillRect(x + 6, y + 9, 2, 6, COL_WHITE);
     } else {
         fillRect(x + 1, y, 12, 3, darkCol);
         fillRect(x + 1, y + 11, 12, 3, darkCol);
@@ -1106,14 +1172,10 @@ void TankGame::drawTankSprite(const TankEntity& t) {
         }
         fillRect(x + 2, y + 3, 10, 8, bodyCol);
         fillRect(x + 4, y + 5, 6, 4, darkCol);
-        if (t.dir == Direction::LEFT) {
-            fillRect(x - 1, y + 6, 6, 2, COL_WHITE);
-        } else {
-            fillRect(x + 9, y + 6, 6, 2, COL_WHITE);
-        }
+        if (t.dir == Direction::LEFT) fillRect(x - 1, y + 6, 6, 2, COL_WHITE);
+        else fillRect(x + 9, y + 6, 6, 2, COL_WHITE);
     }
 
-    // 护盾闪烁环
     if (t.isPlayer && t.shieldTimer > 0.0f) {
         uint32_t sCol = (static_cast<int>(elapsed_ * 12.0f) % 2 == 0) ? COL_CYAN : COL_WHITE;
         drawRectOutline(x - 1, y - 1, 16, 16, sCol);
@@ -1132,12 +1194,14 @@ void TankGame::drawPowerUpSprite(const PowerUp& p) {
     char sym = '*';
     uint32_t col = COL_GOLD;
     switch (p.type) {
-        case PowerUpType::STAR:   sym = '*'; col = COL_GOLD; break;
-        case PowerUpType::SHIELD: sym = 'S'; col = COL_CYAN; break;
-        case PowerUpType::BOMB:   sym = 'B'; col = COL_RED; break;
-        case PowerUpType::CLOCK:  sym = 'T'; col = COL_WHITE; break;
-        case PowerUpType::SHOVEL: sym = 'H'; col = COL_GREEN; break;
-        case PowerUpType::LIFE:   sym = '+'; col = COL_GREEN; break;
+        case PowerUpType::STAR:    sym = '*'; col = COL_GOLD; break;
+        case PowerUpType::SHIELD:  sym = 'S'; col = COL_CYAN; break;
+        case PowerUpType::BOMB:    sym = 'B'; col = COL_RED; break;
+        case PowerUpType::CLOCK:   sym = 'T'; col = COL_WHITE; break;
+        case PowerUpType::SHOVEL:  sym = 'H'; col = COL_GREEN; break;
+        case PowerUpType::LIFE:    sym = '+'; col = COL_GREEN; break;
+        case PowerUpType::SPREAD:  sym = 'W'; col = COL_ORANGE; break;
+        case PowerUpType::ORBITAL: sym = 'R'; col = COL_CYAN; break;
     }
     drawChar5x7(x + 5, y + 4, sym, col, 1);
 }
@@ -1173,11 +1237,9 @@ void TankGame::drawHUD() {
         drawChar5x7(x + t * 10, 190, '*', COL_GOLD, 1);
     }
 
-    if (freezeTimer_ > 0.0f) {
-        drawText(x, 210, "FREEZE", COL_CYAN, 1);
-    } else if (shovelTimer_ > 0.0f) {
-        drawText(x, 210, "FORT", COL_GREEN, 1);
-    }
+    if (freezeTimer_ > 0.0f) drawText(x, 210, "FREEZE", COL_CYAN, 1);
+    else if (player_.spreadTimer > 0.0f) drawText(x, 210, "SPREAD", COL_ORANGE, 1);
+    else if (shovelTimer_ > 0.0f) drawText(x, 210, "FORT", COL_GREEN, 1);
 }
 
 void TankGame::render() {
@@ -1201,7 +1263,6 @@ void TankGame::render() {
                  b.fromPlayer ? (b.armorPiercing ? COL_CYAN : COL_GOLD) : COL_WHITE);
     }
 
-    // 草丛绘制在坦克和子弹上方
     for (int r = 0; r < GRID_ROWS; ++r) {
         for (int c = 0; c < GRID_COLS; ++c) {
             drawTile(c, r, true);
@@ -1210,6 +1271,10 @@ void TankGame::render() {
 
     drawPowerUpSprite(powerUp_);
 
+    for (const auto& s : shockwaves_) {
+        drawCircleOutline(static_cast<int>(s.x), static_cast<int>(s.y),
+                          static_cast<int>(s.radius), s.color);
+    }
     for (const auto& p : particles_) {
         if (!p.active) continue;
         fillRect(static_cast<int>(p.x), static_cast<int>(p.y), p.size, p.size, p.color);
@@ -1217,7 +1282,6 @@ void TankGame::render() {
 
     drawHUD();
 
-    // 阶段浮层文字
     if (phase_ == GamePhase::TITLE) {
         fillRect(32, 68, 176, 96, 0x101622E8u);
         drawRectOutline(32, 68, 176, 96, COL_GOLD);
