@@ -1378,6 +1378,274 @@ def start_server_menu():
     start_server(host, port)
 
 
+# ========== 本地控制面板（http 顶层导航，绕过 PNA/跨域限制）==========
+
+PANEL_HTML = r'''<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Bridge · 本地控制面板</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{background:#14161b;color:#e8eaed;padding:12px;max-width:860px;margin:0 auto}
+h1{font-size:19px;margin:4px 2px 12px}
+h1 small{font-size:11px;color:#8ab4f8;font-weight:500;margin-left:6px}
+.card{background:#1c1f26;border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:12px;margin-bottom:12px}
+.label{font-size:11px;color:#bdc1c6;margin:8px 2px 4px;display:block}
+input,textarea,select{width:100%;background:#101218;border:1px solid rgba(255,255,255,.12);border-radius:10px;color:#e8eaed;font-size:13px;padding:9px 10px;outline:none}
+input:focus,textarea:focus{border-color:#10a37f}
+textarea{min-height:130px;resize:vertical;font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.5}
+.btn{display:inline-block;background:#10a37f;border:1px solid #10a37f;color:#fff;font-size:13px;font-weight:600;border-radius:10px;padding:9px 16px;cursor:pointer}
+.btn:active{transform:scale(.98)}
+.btn.secondary{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.13);color:#e8eaed;font-weight:400}
+.btn.block{width:100%;margin-top:10px}
+.btn:disabled{opacity:.5}
+.row{display:flex;gap:8px;align-items:center}
+.row>.btn{flex:1}
+.status{font-size:12px;color:#9aa0a6;line-height:1.6}
+.status b{color:#e8eaed}
+.ok{color:#34d399}.bad{color:#f87171}
+.result{background:#101218;border-radius:12px;padding:10px;margin-bottom:8px;border-left:4px solid #34d399}
+.result.fail{border-left-color:#f87171}
+.rtool{font-family:ui-monospace,monospace;font-weight:700;font-size:12px;color:#e8eaed}
+.rsame{color:#6b7280;font-size:11px;margin:4px 0;word-break:break-all}
+.rtext{white-space:pre-wrap;word-break:break-all;font-size:12px;color:#c7cdd5;max-height:280px;overflow:auto;background:#0c0e12;border-radius:8px;padding:8px;margin-top:6px}
+.hint{font-size:11px;color:#8a8f98;margin:6px 2px;line-height:1.6}
+.big{font-size:14px;font-weight:700;color:#e8eaed}
+.history-item{background:#101218;border-radius:10px;padding:8px 10px;margin-bottom:6px;font-size:11px;display:flex;gap:8px;align-items:center}
+.history-item pre{flex:1;white-space:pre-wrap;word-break:break-all;color:#9aa0a6;max-height:80px;overflow:auto}
+details summary{cursor:pointer;color:#8ab4f8;font-size:12px;padding:4px 2px}
+details pre{font-size:11px;color:#9aa0a6;white-space:pre-wrap;word-break:break-all;max-height:220px;overflow:auto;margin-top:6px}
+code{background:#0c0e12;border-radius:4px;padding:1px 5px;font-size:11px;color:#8ab4f8}
+</style></head><body>
+
+<h1>🤖 AI Bridge<small>本地控制面板 · http 同源，永不跨域</small></h1>
+
+<div class="card status" id="status">⏳ 正在检查后端…</div>
+
+<div class="card">
+  <label class="label" for="token">Token（启动后端时终端打印的那串）</label>
+  <div class="row">
+    <input id="token" type="password" placeholder="例如 88947bb5b886f7734cf22f7a32b111fb" autocomplete="off" spellcheck="false">
+    <button class="btn secondary" id="saveToken" style="flex:0 0 auto">💾 保存</button>
+  </div>
+  <div class="row" style="margin-top:8px">
+    <button class="btn secondary" id="testBtn">🔌 测试连接</button>
+    <button class="btn secondary" id="showTools">🛠️ 查看工具列表</button>
+  </div>
+  <p class="hint">💡 用法：把 AI 的<strong>完整回复</strong>（含 <code>&lt;tool_call&gt;</code> 块）整段粘进下面，点执行，再把输出<strong>整段复制回对话</strong>。危险工具（execute_terminal / write_file）执行前会二次确认。</p>
+</div>
+
+<div class="card">
+  <label class="label" for="input">AI 的回复</label>
+  <textarea id="input" placeholder="粘贴 AI 输出，例如：&#10;&#10;&lt;tool_call&gt;&#10;&lt;tool_name&gt;execute_terminal&lt;/tool_name&gt;&#10;&lt;arguments&gt;{&quot;command&quot;:&quot;ls -la&quot;}&lt;/arguments&gt;&#10;&lt;/tool_call&gt;"></textarea>
+  <button class="btn block" id="run">🔍 解析并执行</button>
+  <div id="results" style="margin-top:12px"></div>
+  <button class="btn block" id="copyAll" style="display:none;background:#0d8a6a">📋 复制全部结果（粘贴回 AI 对话）</button>
+</div>
+
+<div class="card">
+  <details id="toolsBox"><summary>🛠️ 工具清单（本地 + MCP）</summary><pre id="toolsList">点击上方「查看工具列表」加载…</pre></details>
+</div>
+
+<div class="card">
+  <div class="big" style="margin-bottom:8px">📜 本机执行历史 <button class="btn secondary" id="clearHistory" style="float:right;padding:4px 10px;font-size:11px">清空</button></div>
+  <div id="history"><div class="hint">暂无记录</div></div>
+</div>
+
+<script>
+var LS_TOKEN = 'ai_bridge_panel_token';
+var LS_HISTORY = 'ai_bridge_panel_history';
+var tokenInput = document.getElementById('token');
+var statusEl = document.getElementById('status');
+var inputEl = document.getElementById('input');
+var resultsEl = document.getElementById('results');
+var copyAllBtn = document.getElementById('copyAll');
+var lastResultsText = '';
+
+tokenInput.value = localStorage.getItem(LS_TOKEN) || '';
+document.getElementById('saveToken').onclick = function(){
+  localStorage.setItem(LS_TOKEN, tokenInput.value.trim());
+  flash('✅ Token 已保存', true);
+  checkHealth();
+};
+
+function getToken(){ return tokenInput.value.trim(); }
+function apiFetch(path, opts){
+  opts = opts || {};
+  var headers = { 'X-Bridge-Token': getToken() };
+  if (opts.body) headers['Content-Type'] = 'application/json';
+  return fetch(path, { method: opts.method || 'GET', headers: headers, body: opts.body ? JSON.stringify(opts.body) : undefined })
+    .then(function(r){ return r.json().then(function(d){ return { ok: r.ok, status: r.status, data: d }; }); });
+}
+function flash(msg, good){
+  statusEl.innerHTML = (good ? '<span class="ok">' : '<span class="bad">') + escapeHtml(msg) + '</span>';
+}
+function escapeHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function checkHealth(){
+  statusEl.textContent = '⏳ 正在检查后端…';
+  return apiFetch('/').then(function(r){
+    if (!r.ok) { flash((r.data && (r.data.error || r.data.message)) || ('HTTP ' + r.status), false); return false; }
+    var d = r.data;
+    statusEl.innerHTML = '<span class="ok">✅ 已连接</span> · <b>V' + escapeHtml(d.version) + '</b> · 本地工具 ' + d.local_tools.length + ' 个 · MCP ' + d.mcp_tools_count + ' 个 · 认证: ' + (d.auth ? '开启' : '关闭');
+    return true;
+  }).catch(function(e){ flash('无法连接（' + e.message + '）——后端没跑？', false); return false; });
+}
+document.getElementById('testBtn').onclick = function(){ checkHealth(); };
+
+document.getElementById('showTools').onclick = function(){
+  var box = document.getElementById('toolsBox');
+  box.open = true;
+  var pre = document.getElementById('toolsList');
+  pre.textContent = '加载中…';
+  Promise.all([apiFetch('/tools'), apiFetch('/mcp')]).then(function(rs){
+    var local = rs[0].ok ? rs[0].data.tools.map(function(t){ return '【本地】' + t.name + '\n       ' + t.description; }).join('\n') : '(加载失败)';
+    var mcp = rs[1].ok ? (rs[1].data.result && rs[1].data.result.tools || []).map(function(t){ return '【MCP】' + t.name + '\n       ' + t.description; }).join('\n') || '（暂无缓存的 MCP 工具）' : '(加载失败)';
+    pre.textContent = local + '\n\n' + mcp;
+  });
+};
+
+// ---- 解析 tool_call（与 userscript 同款逻辑）----
+function parseToolCalls(text){
+  var matches = [], m;
+  var mcpRe = /<tool_call>[\s\S]*?<tool_name>\s*mcp\s*<\/tool_name>[\s\S]*?<arguments>\s*([\s\S]*?)\s*<\/arguments>[\s\S]*?<\/tool_call>/gim;
+  while ((m = mcpRe.exec(text)) !== null) {
+    try { var d = JSON.parse(m[1].trim()); var p = d.params || {};
+      matches.push({ toolName: p.name || d.tool_name || '', arguments: p.arguments || {} });
+    } catch (e) {}
+  }
+  var rawRe = /<tool_call>[\s\S]*?<tool_name>\s*(.*?)\s*<\/tool_name>[\s\S]*?<file_path>\s*([\s\S]*?)\s*<\/file_path>[\s\S]*?<content>\s*([\s\S]*?)\s*<\/content>[\s\S]*?<\/tool_call>/gim;
+  while ((m = rawRe.exec(text)) !== null) {
+    matches.push({ toolName: m[1].trim(), arguments: { file_path: m[2].trim(), content: m[3] } });
+  }
+  var fixed = text.replace(/<\/tool_name>\s*(\{[\s\S]*?\})\s*<\/tool_call>/g, '</tool_name>\n<arguments>$1</arguments>\n</tool_call>');
+  var re = /<tool_call>[\s\S]*?<tool_name>\s*(.*?)\s*<\/tool_name>[\s\S]*?<arguments>\s*([\s\S]*?)\s*<\/arguments>[\s\S]*?<\/tool_call>/gim;
+  while ((m = re.exec(fixed)) !== null) {
+    var name = m[1].trim(); if (name.toLowerCase() === 'mcp') continue;
+    var argsText = m[2].trim(), args = {};
+    try { args = JSON.parse(argsText); }
+    catch (e) { try { args = JSON.parse(argsText.replace(/[\x00-\x1f]+/g, ' ')); }
+                catch (e1) { try { args = JSON.parse(argsText.replace(/'/g, '"')); } catch (e2) { args = { _raw: argsText, _error: 'JSON解析失败' }; } } }
+    matches.push({ toolName: name, arguments: args });
+  }
+  var blocks = text.match(/<tool_call>[\s\S]*?<\/tool_call>/gi) || [];
+  for (var i = 0; i < blocks.length; i++) {
+    var b = blocks[i];
+    if (/<tool_name>\s*mcp\s*<\/tool_name>/i.test(b) || /<file_path>/i.test(b) || /<arguments>/i.test(b)) continue;
+    var nm = b.match(/<tool_name>\s*([\s\S]*?)\s*<\/tool_name>/i); if (!nm) continue;
+    matches.push({ toolName: nm[1].trim(), arguments: {} });
+  }
+  return matches;
+}
+
+function isDangerous(n){ n = String(n).toLowerCase(); return n === 'execute_terminal' || n === 'write_file'; }
+function renderResult(idx, tc, res, ok){
+  var div = document.createElement('div');
+  div.className = 'result' + (ok ? '' : ' fail');
+  div.innerHTML = '<div class="rtool">' + (ok ? '✅' : '❌') + ' ' + escapeHtml(tc.toolName) + '</div>' +
+                  '<div class="rsame">参数: ' + escapeHtml(JSON.stringify(tc.arguments)).slice(0, 300) + '</div>' +
+                  '<div class="rtext">' + escapeHtml(res) + '</div>';
+  resultsEl.appendChild(div);
+  try { div.scrollIntoView({ block: 'nearest' }); } catch (e) {}
+}
+
+document.getElementById('run').onclick = function(){
+  var text = inputEl.value;
+  var calls = parseToolCalls(text);
+  resultsEl.innerHTML = '';
+  copyAllBtn.style.display = 'none';
+  if (calls.length === 0) { resultsEl.innerHTML = '<div class="result fail"><div class="rtool">⚠️ 没有找到 &lt;tool_call&gt; 块</div></div>'; return; }
+  var results = [];
+  var chain = Promise.resolve();
+  calls.forEach(function(tc, i){
+    chain = chain.then(function(){
+      if (isDangerous(tc.toolName)) {
+        var preview = JSON.stringify(tc.arguments, null, 1).slice(0, 400);
+        if (!confirm('⚠️ 危险操作确认\n工具: ' + tc.toolName + '\n参数:\n' + preview + '\n\n允许执行？')) {
+          results.push({ tool: tc.toolName, args: tc.arguments, result: '用户拒绝了执行该操作。', success: false });
+          renderResult(i, tc, '用户拒绝了执行该操作。', false);
+          return;
+        }
+      }
+      return apiFetch('/execute', { method: 'POST', body: { tool_name: tc.toolName, arguments: tc.arguments } })
+        .then(function(r){
+          var res = r.ok ? (r.data.result !== undefined ? String(r.data.result) : JSON.stringify(r.data))
+                         : ((r.data && (r.data.error || r.data.message)) || ('HTTP ' + r.status));
+          var ok = r.ok && r.data.success !== false;
+          results.push({ tool: tc.toolName, args: tc.arguments, result: res, success: ok });
+          renderResult(i, tc, res, ok);
+        })
+        .catch(function(e){
+          results.push({ tool: tc.toolName, args: tc.arguments, result: '请求失败: ' + e.message, success: false });
+          renderResult(i, tc, '请求失败: ' + e.message, false);
+        });
+    });
+  });
+  chain.then(function(){
+    var out = '[工具执行结果]\n\n';
+    results.forEach(function(r){
+      out += '工具: ' + r.tool + '\n参数: ' + JSON.stringify(r.args) + '\n结果:\n' + r.result + '\n---\n';
+    });
+    out += '\n请基于以上结果继续回复。';
+    lastResultsText = out;
+    copyAllBtn.style.display = 'block';
+    saveHistory(out);
+  });
+};
+
+copyAllBtn.onclick = function(){ copyText(lastResultsText); };
+function copyText(text){
+  function ok(){ flash('📋 已复制到剪贴板，去粘贴给 AI 吧', true); }
+  function fail(){ flash('复制失败——请手动选中结果复制', false); }
+  if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(text).then(ok, fail); return; }
+  var ta = document.createElement('textarea');
+  ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); ok(); } catch (e) { fail(); }
+  document.body.removeChild(ta);
+}
+
+// ---- 本机历史 ----
+function getHistory(){
+  try { return JSON.parse(localStorage.getItem(LS_HISTORY) || '[]'); } catch (e) { return []; }
+}
+function saveHistory(text){
+  var h = getHistory();
+  h.push({ t: Date.now(), preview: text.split('\n').filter(function(x){ return x.indexOf('工具:') === 0; }).join('，'), full: text });
+  if (h.length > 30) h = h.slice(-30);
+  localStorage.setItem(LS_HISTORY, JSON.stringify(h));
+  renderHistory();
+}
+function renderHistory(){
+  var box = document.getElementById('history');
+  var h = getHistory();
+  if (!h.length) { box.innerHTML = '<div class="hint">暂无记录</div>'; return; }
+  box.innerHTML = '';
+  h.slice().reverse().forEach(function(item){
+    var div = document.createElement('div');
+    div.className = 'history-item';
+    var time = new Date(item.t).toLocaleString();
+    var btn = document.createElement('button');
+    btn.className = 'btn secondary';
+    btn.style.flex = '0 0 auto'; btn.style.padding = '6px 10px'; btn.style.fontSize = '11px';
+    btn.textContent = '📋 复制';
+    btn.onclick = function(){ copyText(item.full); };
+    var pre = document.createElement('pre');
+    pre.textContent = '[' + time + '] ' + (item.preview || '(工具结果)');
+    div.appendChild(pre); div.appendChild(btn);
+    box.appendChild(div);
+  });
+}
+document.getElementById('clearHistory').onclick = function(){ localStorage.removeItem(LS_HISTORY); renderHistory(); };
+
+renderHistory();
+checkHealth();
+</script>
+</body></html>
+'''
+
+
+
 # ========== HTTP 处理器 ==========
 
 class BridgeHandler(BaseHTTPRequestHandler):
@@ -1442,10 +1710,15 @@ class BridgeHandler(BaseHTTPRequestHandler):
     # ----- GET -----
 
     def do_GET(self):
-        if not self._auth_ok():
-            return self._unauthorized()
         parsed = urlparse(self.path)
         path = parsed.path
+        if path == "/panel":
+            html = PANEL_HTML.encode('utf-8')
+            self._set_headers(200, "text/html; charset=utf-8")
+            self.wfile.write(html)
+            return
+        if not self._auth_ok():
+            return self._unauthorized()
         query = parse_qs(parsed.query)
 
         if path == "/" or path == "/health":
@@ -1811,3 +2084,4 @@ if __name__ == "__main__":
         start_server(args.host, args.port)
     else:
         main_menu()
+

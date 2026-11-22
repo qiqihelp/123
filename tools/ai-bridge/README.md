@@ -49,6 +49,22 @@ python bridge_server_v2.py -p 8080    # 指定端口
 - **Token**：粘贴启动后端时终端打印的那串（以后不用再输，保存在本机）
 - 点 **🔌 测试连接** → 状态灯变绿 → 完成
 
+### 4-bis. 📱 Via 连不上桥？用本地控制面板（万能后路）
+
+部分手机浏览器（如 Via）**拒绝公网 https 页面 fetch 本机 127.0.0.1**（Private Network Access，且不弹权限框）。
+最稳的解决方式是不和它对抗，而是绕过：
+
+1. Via 地址栏直接打开 **`http://127.0.0.1:8000/panel`**（顶层导航不受限制）
+2. 粘贴 Token → 💾 保存 → 🔌 测试连接（应显示 ✅ 已连接）
+3. 工作流：
+   - AI 回复里带 `<tool_call>` → **整段复制** AI 的回复
+   - 切到 `127.0.0.1:8000/panel` → **粘贴** → 点 **🔍 解析并执行**
+   - （危险工具会再弹一次确认）
+   - 点 **📋 复制全部结果** → 切回 MiMo → **粘贴发送**
+4. 面板还支持：工具清单查看、本机执行历史（最近 30 条，刷新不丢）、危险操作二次确认
+
+缺点是要手动复制粘贴（不是全自动），但**任何浏览器都能用**。想全自动仍然建议换 Kiwi/Firefox + Tampermonkey。
+
 ### 4. 注入提示词（让 AI 知道怎么用工具）
 
 面板 → **Skill 注入** → 选择 `default` → 预览 → **💉 注入到输入框** → 发送。
@@ -88,6 +104,7 @@ python bridge_server_v2.py -p 8080    # 指定端口
 - 🆕 本地工具参数错误返回"该工具参数有：xxx"而非干巴巴的 TypeError
 - 🆕 工具结果以 ❌ 开头自动标记失败（JSON-RPC `isError` / REST `success:false`），AI 能感知成败
 - 🆕 `GET /health`；`POST /mcp` 支持 `initialize`/`ping`/`tools/list`（JSON-RPC 客户端可以直接接）
+- 🆕 **`/panel` 本地控制面板**（`http://127.0.0.1:8000/panel`）：Via 上 https 页面连不上本机桥时的万能后路 —— 顶层导航不受 PNA/跨域限制，粘贴 AI 输出 → 一键解析执行 → 复制结果粘回对话
 - 🆕 `DELETE /skills?name=`；配置目录 `~/.ai_bridge/logs/`；`ThreadingHTTPServer` 不再被 30s 工具调用卡住
 
 前端（userscript）：
@@ -147,6 +164,9 @@ A: 不能。V3 支持 stdio 和 Streamable HTTP（2024-11-05 协议）。旧 SSE
 
 **Q: 想彻底关闭认证？**
 A: `--no-auth` 或 `BRIDGE_NO_AUTH=1`。仅限纯本机调试，开了之后同机任何程序都能执行命令。
+
+**Q: Via 里一直 Failed to fetch？**
+A: 这是 https 页面请求本机 http 被 Via 的 WebView 直接拒绝（不弹框、不提示）。面板已升级会显示原因。根治两条路：① 换 Firefox/Kiwi + Tampermonkey（全自动）② 不换浏览器就用内置的 `http://127.0.0.1:8000/panel` 本地控制面板（粘贴-执行-复制，手动但绝对能用）。
 
 **Q: AI 不停重复同一个调用？**
 A: 护栏会自动在第 3 次跳过并告诉 AI。看面板「执行记录」就知道它到底想干嘛。
