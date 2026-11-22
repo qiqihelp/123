@@ -105,7 +105,7 @@ python bridge_server_v2.py -p 8080    # 指定端口
 - 🆕 工具结果以 ❌ 开头自动标记失败（JSON-RPC `isError` / REST `success:false`），AI 能感知成败
 - 🆕 `GET /health`；`POST /mcp` 支持 `initialize`/`ping`/`tools/list`（JSON-RPC 客户端可以直接接）
 - 🆕 **`/panel` 本地控制面板**（`http://127.0.0.1:8000/panel`）：Via 上 https 页面连不上本机桥时的万能后路 —— 顶层导航不受 PNA/跨域限制，粘贴 AI 输出 → 一键解析执行 → 复制结果粘回对话
-- 🆕 **Kiwi 浏览器插件（Manifest V3 扩展）**：后台进程直连本机桥，绕过 https→127.0.0.1 的一切限制 —— 装上后 MiMo 页面里 **全自动** 解析执行并填入/发送。安装：见 `kiwi-extension/README-Kiwi.md`，插件包 `AI-Agent-Bridge-Kiwi-v1.0.0.zip`
+- 🆕 **Kiwi 浏览器插件（Manifest V3 扩展）**：后台进程直连本机桥，绕过 https→127.0.0.1 的一切限制 —— MiMo 页面里 **全自动** 解析执行并填入/发送；v1.1.0 内置**提示词预设库**（一键复制/填入）、**Skill 注入**、快捷工具、超长结果自动截断、玻璃拟态 UI。安装：见 `kiwi-extension/README-Kiwi.md`，插件包 `AI-Agent-Bridge-Kiwi-v1.1.0.zip`
 - 🆕 `DELETE /skills?name=`；配置目录 `~/.ai_bridge/logs/`；`ThreadingHTTPServer` 不再被 30s 工具调用卡住
 
 前端（userscript）：

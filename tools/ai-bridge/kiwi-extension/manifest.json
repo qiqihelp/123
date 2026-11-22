@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "AI Agent Bridge — 本机工具桥",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "让 MiMo Studio 等 AI 对话页里的 AI 直接调用你手机上的本机工具（终端/文件/计算/时间/搜索）。AI 输出 <tool_call> 后自动解析、按需确认、执行，并把结果填回输入框。",
   "permissions": [
     "storage",

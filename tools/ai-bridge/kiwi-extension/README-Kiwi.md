@@ -1,96 +1,113 @@
-# 🌉 AI Agent Bridge — Kiwi 浏览器插件包
+# 🌉 AI Agent Bridge — Kiwi 浏览器插件包（v1.1.0）
 
-**这是 userscript 的"正式版"升级**：一个标准的 Chrome Manifest V3 扩展，装在 Kiwi Browser 里用。
+**这是 userscript 的"正式版"**：标准 Chrome Manifest V3 扩展，装在 Kiwi Browser 里用。
 
 和 userscript 的本质区别：**扩展的后台进程直连你手机上的本机桥（`127.0.0.1:8000`）**，
-不走页面的 `fetch`，因此 **https 的 MiMo 页面 → http 本机桥 这条路在 Kiwi 里也能打通** ——
-不需要 Tampermonkey，也不受页面 CORS / Private Network Access 限制。
+不走页面的 `fetch`，因此 **https 的 MiMo 页面 → http 本机桥 在 Kiwi 里也能打通**，
+不受页面 CORS / Private Network Access 限制。
+
+## 🆕 v1.1.0 新特性
+
+- 🧠 **提示词预设库**：内置 3 个中文预设，一键复制 / 一键填入 MiMo
+  - 🌉 **完整预设 · 本机工具助手 Pro（推荐）**：角色 + 8 个工具签名与示例 + 行为规范 + 懂失败重试、不重复调用、闲聊不乱用工具 —— 治"AI 有点蠢"
+  - ⚡ **极简预设**：几行搞定，上下文紧张时用
+  - 🛡️ **安全优先**：写入/高危操作必须先说再做、明确确认
+- 💉 **Skill 注入功能回归**：拉取后端 `/skills` 列表 → 预览 → 一键注入输入框（default Skill 含全部本地工具说明，首次使用必做）
+- ⚡ **快捷工具**：📅 时间 / 🧮 计算 / 🔍 搜索 / 📱 系统状态 —— 不惊动 AI，直接执行
+- ✂️ **超长结果自动截断**：单个工具结果超过 3000 字符自动头尾截断并标注 —— 防止撑爆 MiMo 上下文（AI 变蠢的头号原因）
+- ✨ **全新 UI**：玻璃拟态面板、渐变气泡、弹出动画、卡片分区
+- 🎯 **体验优化**：气泡可自由拖动（位置记住）、Esc 关闭面板、后端地址/单页上限可配置、执行记录一键复制、Token 未保存时顶部引导条
 
 ## 功能一览
 
-- 🌉 MiMo Studio 页面右下角悬浮按钮，点开控制面板
-- 🔑 Token 保存（本机持久化）+ 一键测试连接（显示版本 / 工具数 / 延迟）
-- ⚡ **自动模式**：AI 输出 `<tool_call>` 且内容稳定 1.5 秒后，自动解析 → 执行 → 填入输入框 → 自动发送
-- 🖱️ **半自动（默认）**：自动执行，但只把结果填入输入框，你确认后再发送
-- 📋 **仅复制**：执行后把 `[工具执行结果]…请基于以上结果继续回复。` 复制到剪贴板
-- 🔍 **手动模式**：把 AI 的完整回复粘贴进来，一键解析执行（任何时候都能用的兜底）
-- 🛡️ 安全护栏：`execute_terminal` / `write_file` 执行前二次确认；相同调用连续 3 次自动跳过；单页执行次数上限
-- 📜 执行历史（最近 30 条，保存在本机），可一键清空
-- 📍 同时支持：MCP 拆包格式、`write_file` 原始格式、缺 `<arguments>` 容错、JSON 控制字符/单引号容错
+- 🔑 Token 保存（本机持久化）+ 一键测试连接（版本 / 工具数 / 延迟）
+- 🤖 **全自动**：AI 输出 `<tool_call>` 且稳定 1.5s 后自动解析 → 执行 → 填入并发送
+- 🖱️ **半自动（默认）**：执行后把结果填入输入框，你确认再发送
+- 📋 **仅复制**：执行后复制 `[工具执行结果]…请基于以上结果继续回复。`
+- 🔍 **粘贴执行**：把 AI 完整回复粘进去，一键解析（任何时候都能用的兜底）
+- 🛡️ 护栏：`execute_terminal` / `write_file` 二次确认；相同调用 3 次跳过；单页上限（默认 20，可调）
+- 📜 执行记录（最近 30 条，本机保存），可复制全部、可清空
 
 ## 前置条件
 
-手机上后端必须在跑（跟之前一样）：
+手机上后端在跑（跟之前一样）：
 
 ```bash
 python bridge_server_v2.py --server
 ```
 
-启动后终端会打印 Token，先记下来。
+启动后终端会打印 Token，记下来。
 
-## 安装步骤（Kiwi Browser）
+## 安装 / 更新步骤（Kiwi Browser）
 
-1. 下载插件包（zip）：<https://github.com/qiqihelp/123/raw/arena/878d9052-123/tools/ai-bridge/AI-Agent-Bridge-Kiwi-v1.0.0.zip>
-2. 用手机的**文件管理器**找到下载的 zip → **解压**到一个文件夹（比如 `Download/AI-Agent-Bridge/`）
-3. Kiwi 地址栏输入 **`kiwi://extensions`**（或菜单 ⋮ → 扩展程序）
-4. 打开右上角 **「开发者模式」**
-5. 点 **「加载已解压的扩展程序」** → 选中刚解压的文件夹（里面直接有 `manifest.json`）
-6. 完成！打开 MiMo Studio，页面右下角出现 🌉 按钮
+1. 下载插件包：<https://github.com/qiqihelp/123/raw/arena/878d9052-123/tools/ai-bridge/AI-Agent-Bridge-Kiwi-v1.1.0.zip>
+2. 手机**文件管理器**解压（比如 `Download/AI-Agent-Bridge/`）
+3. Kiwi 地址栏输入 **`kiwi://extensions`** → 打开右上角 **「开发者模式」**
+4. **首次安装**：点 **「加载已解压的扩展程序」** → 选中**直接包含 `manifest.json` 的那一层**
+5. **更新**：用新 zip 覆盖旧文件夹 → `kiwi://extensions` 里点该卡片的 **⟳ 重新加载** → MiMo 页面刷新
 
-> 如果 Kiwi 拒绝加载，检查解压出来是不是"双层文件夹"（`AI-Agent-Bridge-Kiwi-v1.0.0/AI-Agent-Bridge-Kiwi-v1.0.0/manifest.json`），
-> 选**直接包含 `manifest.json` 的那一层**。
+> 解压出双层文件夹时（`AI-Agent-Bridge-Kiwi-v1.1.0/AI-Agent-Bridge-Kiwi-v1.1.0/`），选内层那一层。
 
-## 首次使用
+## 首次使用（重要：让 AI 变聪明）
 
-1. 打开 <https://aistudio.xiaomimimo.com/apps/s/p0KDrz7a6e3> （你的 MiMo Studio）
-2. 点右下角 🌉 → 在「本机桥 Token」框粘贴 Token → 点 **💾 保存**
-3. 状态行应显示 **✅ 已连接 V3.0 · 本地 8 工具 · xx ms**
-4. 模式选 **🖱️ 半自动**（推荐）
+1. 用 **Kiwi** 打开 MiMo Studio
+2. 点右下角 🌉 → 粘贴 Token → **💾 保存** → 状态显示 **✅ 已连接 V3.0**
+3. 在 **🧠 提示词预设** 里选「🌉 完整预设」→ 点 **💉 填入 MiMo** → 发送这条消息
+   - （或者改用 **💉 Skill 注入**：选 `default` → 「注入到输入框」→ 发送。两者选一个即可；Skill 里还带了 MCP 工具说明，更全）
+4. 之后 AI 就知道怎么调工具了：你让它"查一下我手机还剩多少内存"，它会自己调 `get_system_info`，扩展自动执行并把结果填回对话
+5. 模式选 **🖱️ 半自动**（推荐）。想全托管就切 🤖 全自动
 
-之后只要 AI 回复里出现工具调用，扩展会自动执行并把结果填进输入框；
-你瞄一眼命令没问题，点发送即可。想全托管就切 🤖 全自动。
+## 😤 "AI 有点蠢" 专治方案
 
-## 注入提示词（让 AI 知道它能用工具）
+| 原因 | 对策 |
+|---|---|
+| MiMo 不知道它能用工具 | 首次注入 **Skill(default)** 或「完整预设」——只需注入一次 |
+| 工具结果太长撑爆上下文 | 已内置：单条结果超 3000 字符自动头尾截断 |
+| AI 乱调工具 / 重复调用 | 完整预设里有明确规则；相同调用 3 次护栏自动跳过 |
+| AI 凭记忆编造实时数据 | 预设要求：最新信息必须先 `search_web` |
+| 任务一句话说不清楚 | 先给 AI 一个 3 步计划再执行（预设内置节奏） |
 
-跟 userscript 场景完全一样，把这段注入给 MiMo（详见主 README「注入提示词」一节）：
+## 三种模式
 
-```text
-你可以使用如下本机工具（通过 <tool_call> 调用）：
-execute_terminal / get_system_info / get_datetime / calc / list_files / read_file / write_file / search_web
-调用格式：
-<tool_call>
-<tool_name>工具名</tool_name>
-<arguments>{"参数名":"参数值"}</arguments>
-</tool_call>
-```
+| 模式 | 行为 | 适合 |
+|---|---|---|
+| 🤖 全自动 | 执行 → 填入 → **自动发送** | 信任 AI 连续干活（注意右下角计数，上限可调） |
+| 🖱️ 半自动 | 执行 → 填入输入框，不发送 | 推荐：每次发送前瞄一眼命令 |
+| 📋 仅复制 | 执行 → 复制到剪贴板 | 手动掌控 |
 
 ## 常见问题
 
-**Q: 页面没有出现 🌉 按钮？**
-Kiwi 菜单里确认扩展已启用（`kiwi://extensions` 里开关是绿的），然后刷新 MiMo 页面。
+**Q: 页面没有 🌉 按钮？**
+确认 `kiwi://extensions` 里扩展开关是绿的 → F5 刷新 MiMo 页面。
 
-**Q: 点保存后显示 ❌ 连接不上本机桥？**
-① Termux 里后端没在跑 → `python bridge_server_v2.py --server`；
-② 端口不是 8000 → 后端 `-p 端口`，扩展里 `chrome.storage` 的 `backendUrl` 默认 8000，
-   改后端端口后需要同步（目前请保持 8000）；
-③ Token 填错 → 后端重启会换 Token 吗？——不会（Token 存在 `~/.ai_bridge/token`），但后端重启日志里会再打印一次。
+**Q: ❌ 连接不上本机桥？**
+① Termux 里后端没跑 → `python bridge_server_v2.py --server`；
+② 改了后端端口（`-p 端口`）→ 面板「连接设置」里的地址也要同步改；
+③ Token 没保存 → 面板里粘贴后点 💾 保存。
 
-**Q: 全自动模式 AI 一直调工具停不下来？**
-护栏会兜底：单页累计 20 次（可在执行记录里看计数）/ 相同调用 3 次自动跳过。
-想手动喊停，就切回 🖱️ 半自动。
+**Q: Skill 列表是空的？**
+后端首次启动会自动生成 `default` Skill。如果没有：Termux 终端菜单 → Skill 管理 → 重新生成。
 
-**Q: 工具执行了但 MiMo 页面没反应？**
-点 ⚡「执行页面最新一条…」按钮手动跑一次；或切到手动模式把 AI 回复粘贴进「或者：把 AI 的完整回复粘贴进来」再点解析并执行。
+**Q: 半自动模式结果填进去了 AI 没继续？**
+结果在输入框里，你点发送即可。
 
-## 更新方式
-
-1. 下载新版 zip → 解压覆盖旧文件夹
-2. `kiwi://extensions` → 该扩展卡片上点 **⟳ 重新加载**
-3. MiMo 页面里刷新即可
+**Q: 全自动模式 AI 停不下来？**
+护栏兜底：单页 20 次上限 / 相同调用 3 次跳过。随时可切回半自动。
 
 ## 权限说明
 
-- `storage`：保存 Token、模式、执行历史（都在本机，不上传任何服务器）
-- `activeTab`：点击工具栏图标时开关面板
-- `host_permissions: http://127.0.0.1/*`、`http://localhost/*`：仅允许后台连接**本机**桥（任意端口），不访问任何外网服务器
-- 内容脚本仅运行在 `*.xiaomimimo.com` / `*.mimo.mi.com` 页面
+- `storage`：Token、模式、执行历史、气泡位置（都在本机，不上传）
+- `activeTab`：点击工具栏图标开关面板
+- `host_permissions: http://127.0.0.1/*`、`http://localhost/*`：仅用于后台连接**本机**桥
+- 内容脚本仅运行在 `*.xiaomimimo.com` / `*.mimo.mi.com`
+
+## 源码结构
+
+```
+kiwi-extension/
+├── manifest.json    # MV3 清单（host_permissions 指向本机桥）
+├── background.js    # Service Worker：health / execute / tools / skills / skill
+├── content.js       # 面板 UI、自动检测、解析、执行、注入（约 900 行）
+├── content.css      # 玻璃拟态样式（aib- 前缀）
+└── icons/           # 🌉 闪电图标
+```

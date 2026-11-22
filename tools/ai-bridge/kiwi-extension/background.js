@@ -85,6 +85,23 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         return;
       }
 
+      if (msg.type === 'bridge:skills') {
+        const d = await bridgeFetch('/skills');
+        sendResponse({ ok: true, skills: (d && d.skills) || [] });
+        return;
+      }
+
+      if (msg.type === 'bridge:skill') {
+        const name = String(msg.name || '');
+        const d = await bridgeFetch('/skill?name=' + encodeURIComponent(name));
+        if (d && typeof d.skill === 'string') {
+          sendResponse({ ok: true, content: d.skill });
+        } else {
+          sendResponse({ ok: false, error: (d && d.error) || 'Skill 内容为空' });
+        }
+        return;
+      }
+
       sendResponse({ ok: false, error: '未知消息类型: ' + String(msg.type) });
     } catch (e) {
       sendResponse({ ok: false, error: (e && e.message) || String(e) });
