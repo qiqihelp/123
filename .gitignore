@@ -18,3 +18,5 @@ cmake-build-*/
 
 # Local build artefacts (playable copies of the CI output)
 dist/
+tank-battle/tank_server
+tank-battle/tank_scores.tsv
