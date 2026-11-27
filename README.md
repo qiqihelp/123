@@ -1,8 +1,8 @@
 # ECHOFALL · 回声之谷
 
-> 🧮 想看另一个游戏？本仓库还带了一个零依赖的塔防小游戏 **《数学之战》**（植物大战僵尸 × 数学运算）：
-> 源码在 [`mathwar/`](mathwar/)，直接打开 `mathwar/index.html` 即可游玩，共 10 关。
-> 详见 [mathwar/README.md](mathwar/README.md)。
+> 🎮 本仓库还收录了两款零依赖浏览器小游戏：
+> - **《数学之战》**：数字植物塔防，共 10 关。源码在 [`mathwar/`](mathwar/)，[玩法说明](mathwar/README.md)。
+> - **《火柴人：遗迹之战》**：采矿、征兵与即时攻防，源码在 [`stickwar/`](stickwar/)，直接打开 `stickwar/index.html` 即可游玩。
 
 一款用 **C++17** 编写、编译成 **WebAssembly** 的《传说之下》(Undertale) 风格 RPG 小游戏。
 整个项目只有几十 KB 代码，运行在浏览器里，不需要安装任何东西。

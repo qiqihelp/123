@@ -81,10 +81,11 @@ jobs:
           cmake --build build-web-single -j2 --target echofall_web_single
           ls -la build-web-single
 
-      - name: Add 数学之战 mini game
+      - name: Add browser mini games
         run: |
-          mkdir -p build-web/mathwar
+          mkdir -p build-web/mathwar build-web/stickwar
           cp -r mathwar/. build-web/mathwar/
+          cp -r stickwar/. build-web/stickwar/
 
       # 两个 Pages action 都升到 node24 版本：旧版本（v3 / v4）声明的是 node20，
       # 在 runner 上被强制用 Node 24 运行，deploy-pages 因此读不到 artifact，
