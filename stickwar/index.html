@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b1220">
+  <meta name="description" content="一款原创的火柴人即时战略小游戏：采集黄金、训练军团，攻破敌方遗迹。">
+  <title>火柴人：遗迹之战</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="火柴人：遗迹之战">
+        <span class="brand-mark" aria-hidden="true">⚔</span>
+        <span class="brand-copy"><strong>遗迹之战</strong><small>STICK FIGURE SKIRMISH</small></span>
+      </a>
+      <div class="topbar-center">
+        <span class="season-tag"><i></i> 单人战役 · 第一章</span>
+        <span id="statePill" class="state-pill">等待指挥</span>
+      </div>
+      <div class="topbar-actions">
+        <button id="soundBtn" class="icon-button" type="button" aria-label="切换音效" title="音效开关">🔊</button>
+        <button id="homeBtn" class="icon-button" type="button" aria-label="返回主菜单" title="返回主菜单">⌂</button>
+      </div>
+    </header>
+
+    <section class="dashboard" aria-label="游戏战场">
+      <div class="battle-column">
+        <section class="arena-card">
+          <div class="arena-heading">
+            <div class="arena-title">
+              <span class="eyebrow">边境前线 / 任务 01</span>
+              <h1>夺回日落遗迹</h1>
+            </div>
+            <div class="wave-indicator">
+              <span class="wave-icon">✦</span>
+              <span><small>敌军波次</small><strong id="waveValue">尚未开战</strong></span>
+            </div>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="arena" width="1280" height="620" aria-label="火柴人战争战场画面"></canvas>
+            <div id="toast" class="battle-toast" role="status" aria-live="polite"></div>
+            <div class="canvas-vignette" aria-hidden="true"></div>
+          </div>
+          <div class="arena-footer">
+            <div class="objective-line"><span class="objective-dot"></span><span id="statusText">召集军队，摧毁右侧敌方遗迹。</span></div>
+            <div class="battle-clock"><span>战场时间</span><strong id="timeValue">00:00</strong></div>
+          </div>
+        </section>
+
+        <div class="quick-controls" aria-label="战场控制">
+          <button id="commandBtn" class="control-button command-button" type="button">
+            <span class="control-symbol">⚑</span><span class="control-copy"><small>军团指令</small><strong id="commandLabel">坚守阵线</strong></span><span class="keycap">A</span>
+          </button>
+          <button id="hornBtn" class="control-button horn-button" type="button">
+            <span class="control-symbol">◉</span><span class="control-copy"><small>战术技能</small><strong id="hornLabel">冲锋号角</strong></span><span id="hornCooldown" class="keycap">就绪</span>
+          </button>
+          <div class="quick-spacer"></div>
+          <button id="speedBtn" class="small-control" type="button" title="切换游戏速度">▶ 1×</button>
+          <button id="pauseBtn" class="small-control" type="button" title="暂停游戏">Ⅱ</button>
+          <button id="restartBtn" class="small-control" type="button" title="重开本关">↻</button>
+        </div>
+
+        <div class="field-legend">
+          <span><i class="legend-dot ally-dot"></i>己方军团</span>
+          <span><i class="legend-dot enemy-dot"></i>敌方军团</span>
+          <span><i class="legend-line"></i>防守阵线</span>
+          <span class="legend-hint">提示：点击右侧兵种卡片，或按 <b>1–5</b> 快速征募</span>
+        </div>
+      </div>
+
+      <aside class="command-panel" aria-label="军团管理">
+        <div class="resource-panel">
+          <div class="resource-main">
+            <span class="resource-icon">◈</span>
+            <span class="resource-label">黄金储备<small>矿工持续采集</small></span>
+            <strong id="goldValue">260</strong>
+          </div>
+          <div class="population-row">
+            <span>军团人数</span><strong id="populationValue">2 <small>/ 20</small></strong>
+          </div>
+          <div class="population-track"><i id="populationBar"></i></div>
+        </div>
+
+        <section class="panel-section recruitment-section">
+          <div class="section-heading">
+            <div><span class="eyebrow">召集军队</span><h2>兵种训练</h2></div>
+            <span class="section-mark">01</span>
+          </div>
+          <div id="recruitList" class="recruit-list"></div>
+        </section>
+
+        <section class="panel-section upgrade-section">
+          <div class="section-heading compact-heading">
+            <div><span class="eyebrow">军需与工艺</span><h2>营地升级</h2></div>
+            <span class="section-mark">02</span>
+          </div>
+          <div class="upgrade-list">
+            <button id="weaponUpgradeBtn" class="upgrade-card" type="button">
+              <span class="upgrade-icon blade-icon">✦</span>
+              <span class="upgrade-copy"><strong>精炼武器</strong><small id="weaponUpgradeText">全军伤害提升</small></span>
+              <span class="upgrade-cost" id="weaponUpgradeCost">◈ 220</span>
+            </button>
+            <button id="mineUpgradeBtn" class="upgrade-card" type="button">
+              <span class="upgrade-icon mine-icon">⌁</span>
+              <span class="upgrade-copy"><strong>改良矿镐</strong><small id="mineUpgradeText">每次交金 +25%</small></span>
+              <span class="upgrade-cost" id="mineUpgradeCost">◈ 180</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="mission-card">
+          <div class="mission-top"><span class="mission-icon">✧</span><span>本局目标</span><span class="mission-status" id="missionStatus">进行中</span></div>
+          <p>守住左侧要塞，击溃来袭军团，最后摧毁右侧的<b>赤曜遗迹</b>。</p>
+          <div class="base-health-row"><span><i class="base-swatch friendly-swatch"></i>我方要塞</span><b id="friendlyBaseText">100%</b></div>
+          <div class="base-track"><i id="friendlyBaseBar" class="friendly-bar"></i></div>
+          <div class="base-health-row enemy-health-row"><span><i class="base-swatch enemy-swatch"></i>赤曜遗迹</span><b id="enemyBaseText">100%</b></div>
+          <div class="base-track"><i id="enemyBaseBar" class="enemy-bar"></i></div>
+        </section>
+      </aside>
+    </section>
+
+    <footer class="footer-note"><span>原创轻量级即时战略小游戏</span><span>无需下载 · 浏览器即玩</span></footer>
+  </main>
+
+  <div id="welcomeOverlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
+    <div class="welcome-panel">
+      <div class="welcome-art" aria-hidden="true">
+        <div class="art-sun"></div><div class="art-mountain mountain-one"></div><div class="art-mountain mountain-two"></div>
+        <div class="art-fort fort-left"><i></i></div><div class="art-fort fort-right"><i></i></div>
+        <div class="art-figure figure-one"><i></i></div><div class="art-figure figure-two"><i></i></div>
+        <span class="art-spark spark-one">✦</span><span class="art-spark spark-two">✧</span>
+        <span class="art-caption">边境 · 日落遗迹</span>
+      </div>
+      <div class="welcome-copy">
+        <div class="welcome-kicker"><span></span> 一场属于你的火柴人战争</div>
+        <h2 id="welcomeTitle">集结军团，<br><em>夺回遗迹。</em></h2>
+        <p>派出矿工积攒黄金，训练不同兵种，指挥战线推进。<br>敌军正在集结，你的战旗将决定这片土地的归属。</p>
+        <div class="welcome-features"><span>⌁ 采矿经营</span><span>⚔ 即时战斗</span><span>⚑ 阵线指挥</span></div>
+        <button id="playBtn" class="primary-button" type="button"><span>进入战场</span><b>→</b></button>
+        <button id="helpBtn" class="text-button" type="button">查看作战简报 <span>↗</span></button>
+        <div class="welcome-foot"><span>第 01 章 / 01</span><span>键盘快捷键 1–5 · A · 空格</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="helpOverlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden>
+    <div class="dialog-panel briefing-panel">
+      <button class="dialog-close" type="button" data-close="helpOverlay" aria-label="关闭">×</button>
+      <span class="eyebrow">战场简报 / 侦察报告 07</span>
+      <h2 id="helpTitle">先稳住阵线，再发起总攻。</h2>
+      <div class="briefing-grid">
+        <article><span>01</span><h3>黄金是命脉</h3><p>矿工会在金矿与要塞之间往返。初始有两名矿工；黄金到账后即可继续征募。</p></article>
+        <article><span>02</span><h3>兵种各有职责</h3><p>剑士便宜可靠，弓手远程压制，枪卫耐打，巨人能承受伤害并重击敌阵。</p></article>
+        <article><span>03</span><h3>指挥战场节奏</h3><p>按 A 切换坚守 / 突进。冲锋号角会短暂提升全军速度与伤害；敌军会逐波来袭。</p></article>
+        <article><span>04</span><h3>摧毁赤曜遗迹</h3><p>敌方大军会向左推进。守住己方要塞并清出道路，让士兵抵达右侧遗迹发起攻击。</p></article>
+      </div>
+      <div class="briefing-actions"><button id="briefingBackBtn" class="secondary-button" type="button">返回</button><button id="briefingPlayBtn" class="primary-button" type="button"><span>开始战斗</span><b>→</b></button></div>
+    </div>
+  </div>
+
+  <div id="pauseOverlay" class="modal-overlay compact-overlay" role="dialog" aria-modal="true" aria-labelledby="pauseTitle" hidden>
+    <div class="dialog-panel compact-panel">
+      <span class="pause-glyph">Ⅱ</span><span class="eyebrow">战场时间已冻结</span>
+      <h2 id="pauseTitle">暂停整军</h2><p>深呼吸，想好下一步部署。</p>
+      <button id="resumeBtn" class="primary-button" type="button"><span>继续战斗</span><b>→</b></button>
+      <button id="pauseRestartBtn" class="secondary-button full-button" type="button">重新开始本局</button>
+    </div>
+  </div>
+
+  <div id="endOverlay" class="modal-overlay compact-overlay" role="dialog" aria-modal="true" aria-labelledby="endTitle" hidden>
+    <div class="dialog-panel compact-panel end-panel">
+      <span id="endEmblem" class="end-emblem">✦</span><span class="eyebrow" id="endEyebrow">战报 / 已更新</span>
+      <h2 id="endTitle">战斗结束</h2><p id="endDescription">...</p>
+      <div class="end-stats"><span>击溃敌军 <b id="endKills">0</b></span><span>战场时间 <b id="endTime">00:00</b></span></div>
+      <button id="endRestartBtn" class="primary-button" type="button"><span>再战一次</span><b>↻</b></button>
+      <button id="endHomeBtn" class="secondary-button full-button" type="button">返回主菜单</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
