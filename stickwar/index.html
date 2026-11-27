@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0b1220">
-  <meta name="description" content="一款原创的火柴人即时战略小游戏：采集黄金、训练军团，攻破敌方遗迹。">
+  <meta name="description" content="原创 2.5D 火柴人战争战役：亲自操控剑士、训练军团、逐关解锁新角色。">
   <title>火柴人：遗迹之战</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -13,15 +13,15 @@
     <header class="topbar">
       <a class="brand" href="#" aria-label="火柴人：遗迹之战">
         <span class="brand-mark" aria-hidden="true">⚔</span>
-        <span class="brand-copy"><strong>遗迹之战</strong><small>STICK FIGURE SKIRMISH</small></span>
+        <span class="brand-copy"><strong>遗迹之战</strong><small>STICK FIGURE CAMPAIGN</small></span>
       </a>
       <div class="topbar-center">
-        <span class="season-tag"><i></i> 单人战役 · 第一章</span>
+        <span class="season-tag"><i></i> 单人战役 · 逐关解锁</span>
         <span id="statePill" class="state-pill">等待指挥</span>
       </div>
       <div class="topbar-actions">
         <button id="soundBtn" class="icon-button" type="button" aria-label="切换音效" title="音效开关">🔊</button>
-        <button id="homeBtn" class="icon-button" type="button" aria-label="返回主菜单" title="返回主菜单">⌂</button>
+        <button id="homeBtn" class="icon-button" type="button" aria-label="返回战役地图" title="返回战役地图">⌂</button>
       </div>
     </header>
 
@@ -30,8 +30,8 @@
         <section class="arena-card">
           <div class="arena-heading">
             <div class="arena-title">
-              <span class="eyebrow">边境前线 / 任务 01</span>
-              <h1>夺回日落遗迹</h1>
+              <span id="levelEyebrow" class="eyebrow">边境前线 / 任务 01</span>
+              <h1 id="levelTitle">风蚀峡谷</h1>
             </div>
             <div class="wave-indicator">
               <span class="wave-icon">✦</span>
@@ -39,19 +39,28 @@
             </div>
           </div>
           <div class="canvas-wrap">
-            <canvas id="arena" width="1280" height="620" aria-label="火柴人战争战场画面"></canvas>
+            <canvas id="arena" width="1280" height="620" aria-label="可手动操控的 2.5D 火柴人战场"></canvas>
             <div id="toast" class="battle-toast" role="status" aria-live="polite"></div>
             <div class="canvas-vignette" aria-hidden="true"></div>
+            <div class="touch-controls" aria-label="触屏操作">
+              <div class="touch-pad">
+                <button type="button" data-move="up" aria-label="向上移动">↑</button>
+                <button type="button" data-move="left" aria-label="向左移动">←</button>
+                <button type="button" data-move="down" aria-label="向下移动">↓</button>
+                <button type="button" data-move="right" aria-label="向右移动">→</button>
+              </div>
+              <button id="touchAttack" class="touch-attack" type="button" aria-label="持续挥剑">挥剑</button>
+            </div>
           </div>
           <div class="arena-footer">
-            <div class="objective-line"><span class="objective-dot"></span><span id="statusText">召集军队，摧毁右侧敌方遗迹。</span></div>
+            <div class="objective-line"><span class="objective-dot"></span><span id="statusText">亲自操控青岚，击退敌军并摧毁敌方雕像。</span></div>
             <div class="battle-clock"><span>战场时间</span><strong id="timeValue">00:00</strong></div>
           </div>
         </section>
 
         <div class="quick-controls" aria-label="战场控制">
           <button id="commandBtn" class="control-button command-button" type="button">
-            <span class="control-symbol">⚑</span><span class="control-copy"><small>军团指令</small><strong id="commandLabel">坚守阵线</strong></span><span class="keycap">A</span>
+            <span class="control-symbol">⚑</span><span class="control-copy"><small>军团指令</small><strong id="commandLabel">坚守阵线</strong></span><span class="keycap">C</span>
           </button>
           <button id="hornBtn" class="control-button horn-button" type="button">
             <span class="control-symbol">◉</span><span class="control-copy"><small>战术技能</small><strong id="hornLabel">冲锋号角</strong></span><span id="hornCooldown" class="keycap">就绪</span>
@@ -66,7 +75,7 @@
           <span><i class="legend-dot ally-dot"></i>己方军团</span>
           <span><i class="legend-dot enemy-dot"></i>敌方军团</span>
           <span><i class="legend-line"></i>防守阵线</span>
-          <span class="legend-hint">提示：点击右侧兵种卡片，或按 <b>1–5</b> 快速征募</span>
+          <span class="legend-hint"><b>WASD / 方向键</b>移动青岚 · <b>J / 空格</b>挥剑 · <b>C</b>军团指令</span>
         </div>
       </div>
 
@@ -77,16 +86,21 @@
             <span class="resource-label">黄金储备<small>矿工持续采集</small></span>
             <strong id="goldValue">260</strong>
           </div>
+          <div class="hero-health-panel">
+            <div class="hero-health-heading"><span><i class="hero-status-dot"></i>手动角色 · 青岚</span><strong id="heroHpText">100%</strong></div>
+            <div class="hero-health-track"><i id="heroHealthBar"></i></div>
+            <small id="heroStateText">WASD 移动 · J / 空格攻击</small>
+          </div>
           <div class="population-row">
-            <span>军团人数</span><strong id="populationValue">2 <small>/ 20</small></strong>
+            <span>军团人数</span><strong id="populationValue">3 <small>/ 20</small></strong>
           </div>
           <div class="population-track"><i id="populationBar"></i></div>
         </div>
 
         <section class="panel-section recruitment-section">
           <div class="section-heading">
-            <div><span class="eyebrow">召集军队</span><h2>兵种训练</h2></div>
-            <span class="section-mark">01</span>
+            <div><span class="eyebrow">逐关扩充阵容</span><h2>兵种与新角色</h2></div>
+            <span class="section-mark" id="rosterProgress">01/09</span>
           </div>
           <div id="recruitList" class="recruit-list"></div>
         </section>
@@ -94,7 +108,7 @@
         <section class="panel-section upgrade-section">
           <div class="section-heading compact-heading">
             <div><span class="eyebrow">军需与工艺</span><h2>营地升级</h2></div>
-            <span class="section-mark">02</span>
+            <span class="section-mark">—</span>
           </div>
           <div class="upgrade-list">
             <button id="weaponUpgradeBtn" class="upgrade-card" type="button">
@@ -111,21 +125,22 @@
         </section>
 
         <section class="mission-card">
-          <div class="mission-top"><span class="mission-icon">✧</span><span>本局目标</span><span class="mission-status" id="missionStatus">进行中</span></div>
-          <p>守住左侧要塞，击溃来袭军团，最后摧毁右侧的<b>赤曜遗迹</b>。</p>
+          <div class="mission-top"><span class="mission-icon">✧</span><span>本关目标</span><span class="mission-status" id="missionStatus">进行中</span></div>
+          <p id="missionDescription">守住青岚要塞，清除敌军并摧毁敌方雕像。</p>
           <div class="base-health-row"><span><i class="base-swatch friendly-swatch"></i>我方要塞</span><b id="friendlyBaseText">100%</b></div>
           <div class="base-track"><i id="friendlyBaseBar" class="friendly-bar"></i></div>
-          <div class="base-health-row enemy-health-row"><span><i class="base-swatch enemy-swatch"></i>赤曜遗迹</span><b id="enemyBaseText">100%</b></div>
+          <div class="base-health-row enemy-health-row"><span><i class="base-swatch enemy-swatch"></i>敌方雕像</span><b id="enemyBaseText">100%</b></div>
           <div class="base-track"><i id="enemyBaseBar" class="enemy-bar"></i></div>
+          <div class="campaign-mini"><span>战役进度</span><strong id="campaignMini">0 / 8 关</strong></div>
         </section>
       </aside>
     </section>
 
-    <footer class="footer-note"><span>原创轻量级即时战略小游戏</span><span>无需下载 · 浏览器即玩</span></footer>
+    <footer class="footer-note"><span>原创 2.5D 火柴人战役 · 逐关解锁可招募角色</span><span>浏览器即玩 · 自动保存战役进度</span></footer>
   </main>
 
   <div id="welcomeOverlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle">
-    <div class="welcome-panel">
+    <div class="welcome-panel campaign-welcome">
       <div class="welcome-art" aria-hidden="true">
         <div class="art-sun"></div><div class="art-mountain mountain-one"></div><div class="art-mountain mountain-two"></div>
         <div class="art-fort fort-left"><i></i></div><div class="art-fort fort-right"><i></i></div>
@@ -134,13 +149,18 @@
         <span class="art-caption">边境 · 日落遗迹</span>
       </div>
       <div class="welcome-copy">
-        <div class="welcome-kicker"><span></span> 一场属于你的火柴人战争</div>
-        <h2 id="welcomeTitle">集结军团，<br><em>夺回遗迹。</em></h2>
-        <p>派出矿工积攒黄金，训练不同兵种，指挥战线推进。<br>敌军正在集结，你的战旗将决定这片土地的归属。</p>
-        <div class="welcome-features"><span>⌁ 采矿经营</span><span>⚔ 即时战斗</span><span>⚑ 阵线指挥</span></div>
-        <button id="playBtn" class="primary-button" type="button"><span>进入战场</span><b>→</b></button>
-        <button id="helpBtn" class="text-button" type="button">查看作战简报 <span>↗</span></button>
-        <div class="welcome-foot"><span>第 01 章 / 01</span><span>键盘快捷键 1–5 · A · 空格</span></div>
+        <div class="welcome-kicker"><span></span> 2.5D 即时战斗 · 亲自上阵</div>
+        <h2 id="welcomeTitle">亲自挥剑，<br><em>逐关夺回遗迹。</em></h2>
+        <p>操控青岚在战场前后穿梭、挥剑迎敌；招募军团守护要塞。<br>完成战役即可解锁全新角色与兵种。</p>
+        <div class="welcome-features"><span>↕ 前后纵深移动</span><span>⚔ 手动攻击动作</span><span>✦ 8 关角色解锁</span></div>
+        <div class="campaign-select">
+          <div class="campaign-heading"><span>选择战役关卡</span><small id="campaignProgress">已解锁 1 / 8</small></div>
+          <div id="campaignGrid" class="campaign-grid"></div>
+          <p id="selectedLevelNote" class="selected-level-note">第一关 · 完成后解锁轻剑士</p>
+        </div>
+        <button id="playBtn" class="primary-button" type="button"><span>开始第一关</span><b>→</b></button>
+        <button id="helpBtn" class="text-button" type="button">查看操作简报 <span>↗</span></button>
+        <div class="welcome-foot"><span>WASD / 方向键移动</span><span>J 或空格挥剑 · C 切换军令</span></div>
       </div>
     </div>
   </div>
@@ -148,24 +168,24 @@
   <div id="helpOverlay" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="helpTitle" hidden>
     <div class="dialog-panel briefing-panel">
       <button class="dialog-close" type="button" data-close="helpOverlay" aria-label="关闭">×</button>
-      <span class="eyebrow">战场简报 / 侦察报告 07</span>
-      <h2 id="helpTitle">先稳住阵线，再发起总攻。</h2>
+      <span class="eyebrow">青岚的战场手册 / 逐关推进</span>
+      <h2 id="helpTitle">这次，亲自冲进战场。</h2>
       <div class="briefing-grid">
-        <article><span>01</span><h3>黄金是命脉</h3><p>矿工会在金矿与要塞之间往返。初始有两名矿工；黄金到账后即可继续征募。</p></article>
-        <article><span>02</span><h3>兵种各有职责</h3><p>剑士便宜可靠，弓手远程压制，枪卫耐打，巨人能承受伤害并重击敌阵。</p></article>
-        <article><span>03</span><h3>指挥战场节奏</h3><p>按 A 切换坚守 / 突进。冲锋号角会短暂提升全军速度与伤害；敌军会逐波来袭。</p></article>
-        <article><span>04</span><h3>摧毁赤曜遗迹</h3><p>敌方大军会向左推进。守住己方要塞并清出道路，让士兵抵达右侧遗迹发起攻击。</p></article>
+        <article><span>01</span><h3>亲自操控青岚</h3><p>WASD 或方向键在地面前后、左右移动。用 J 或空格挥剑；靠近敌人并面向它，挥击才会命中。</p></article>
+        <article><span>02</span><h3>战场有纵深</h3><p>战士会随远近改变位置与大小。前后错位可以绕开敌人，也能接近弓手和雕像。</p></article>
+        <article><span>03</span><h3>经营你的军团</h3><p>矿工带回黄金；点击兵种卡或按数字键征兵。C 切换坚守 / 突进，冲锋号角可短暂强化全军。</p></article>
+        <article><span>04</span><h3>每关解锁一名新角色</h3><p>战役共 8 关。每次胜利都会开放下一关，并解锁新的可招募角色；进度自动保存在本机。</p></article>
       </div>
-      <div class="briefing-actions"><button id="briefingBackBtn" class="secondary-button" type="button">返回</button><button id="briefingPlayBtn" class="primary-button" type="button"><span>开始战斗</span><b>→</b></button></div>
+      <div class="briefing-actions"><button id="briefingBackBtn" class="secondary-button" type="button">返回地图</button><button id="briefingPlayBtn" class="primary-button" type="button"><span>开始当前关</span><b>→</b></button></div>
     </div>
   </div>
 
   <div id="pauseOverlay" class="modal-overlay compact-overlay" role="dialog" aria-modal="true" aria-labelledby="pauseTitle" hidden>
     <div class="dialog-panel compact-panel">
       <span class="pause-glyph">Ⅱ</span><span class="eyebrow">战场时间已冻结</span>
-      <h2 id="pauseTitle">暂停整军</h2><p>深呼吸，想好下一步部署。</p>
+      <h2 id="pauseTitle">暂停整军</h2><p>青岚已停下脚步，想好下一步部署。</p>
       <button id="resumeBtn" class="primary-button" type="button"><span>继续战斗</span><b>→</b></button>
-      <button id="pauseRestartBtn" class="secondary-button full-button" type="button">重新开始本局</button>
+      <button id="pauseRestartBtn" class="secondary-button full-button" type="button">重新开始本关</button>
     </div>
   </div>
 
@@ -173,9 +193,11 @@
     <div class="dialog-panel compact-panel end-panel">
       <span id="endEmblem" class="end-emblem">✦</span><span class="eyebrow" id="endEyebrow">战报 / 已更新</span>
       <h2 id="endTitle">战斗结束</h2><p id="endDescription">...</p>
+      <div id="unlockReward" class="unlock-reward" hidden><span id="unlockIcon">✦</span><span><small>新角色加入</small><strong id="unlockName">轻剑士</strong></span></div>
       <div class="end-stats"><span>击溃敌军 <b id="endKills">0</b></span><span>战场时间 <b id="endTime">00:00</b></span></div>
-      <button id="endRestartBtn" class="primary-button" type="button"><span>再战一次</span><b>↻</b></button>
-      <button id="endHomeBtn" class="secondary-button full-button" type="button">返回主菜单</button>
+      <button id="endNextBtn" class="primary-button" type="button"><span>下一关</span><b>→</b></button>
+      <button id="endRestartBtn" class="secondary-button full-button" type="button">重玩本关</button>
+      <button id="endHomeBtn" class="text-button end-home-button" type="button">返回战役地图</button>
     </div>
   </div>
 

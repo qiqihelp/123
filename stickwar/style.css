@@ -303,3 +303,81 @@ button:focus-visible,a:focus-visible{outline:3px solid var(--gold-bright);outlin
   .briefing-grid{grid-template-columns:1fr}
   .briefing-grid article{min-height:0}
 }
+
+/* Campaign progression, depth controls and unlock feedback. */
+.campaign-welcome{width:min(980px,100%);max-height:min(760px,calc(100dvh - 36px));overflow:auto;grid-template-columns:minmax(250px,.82fr) minmax(420px,1.18fr)}
+.campaign-welcome .welcome-art{min-height:100%;height:100%}
+.campaign-welcome .welcome-copy{padding:27px 31px 18px}
+.campaign-welcome .welcome-copy h2{margin:12px 0 8px;font-size:31px}
+.campaign-welcome .welcome-copy>p{font-size:10px}
+.campaign-welcome .welcome-features{margin:12px 0 10px}
+.campaign-select{width:100%;margin:5px 0 11px;padding:10px;border:1px solid rgba(211,225,237,.1);border-radius:11px;background:rgba(255,255,255,.025)}
+.campaign-heading{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;color:#dbe4e8;font-size:9px;font-weight:800;letter-spacing:.09em}
+.campaign-heading small{color:#8091a3;font-size:8px;font-weight:600;letter-spacing:.04em}
+.campaign-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+.level-card{position:relative;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;min-width:0;min-height:42px;padding:5px 7px;border:1px solid rgba(213,226,238,.1);border-radius:8px;background:rgba(255,255,255,.025);text-align:left;cursor:pointer;transition:.15s ease}
+.level-card:hover:not(:disabled){border-color:rgba(241,195,118,.42);background:rgba(242,189,99,.07)}
+.level-card.selected{border-color:rgba(242,189,99,.7);background:rgba(242,189,99,.11);box-shadow:inset 0 0 0 1px rgba(242,189,99,.12)}
+.level-card:disabled{cursor:not-allowed;opacity:.42}
+.level-card strong{font-size:8px;color:#e0e5e5;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.level-card small{margin-top:3px;color:#8897a6;font-size:7px;white-space:nowrap}
+.level-card .level-check{position:absolute;right:5px;top:4px;color:#7ad3b7;font-size:8px}
+.selected-level-note{min-height:12px;margin:6px 0 0;color:#8e9faf;font-size:8px;line-height:1.4}
+.campaign-welcome .primary-button{min-height:39px}
+.campaign-welcome .text-button{margin-top:8px}
+.campaign-welcome .welcome-foot{margin-top:13px;padding-top:10px}
+.hero-health-panel{margin:13px 0 2px;padding:9px 10px;border:1px solid rgba(115,194,199,.15);border-radius:10px;background:rgba(94,176,173,.055)}
+.hero-health-heading{display:flex;justify-content:space-between;align-items:center;color:#b9d7d4;font-size:9px;font-weight:750}
+.hero-health-heading>span{display:flex;align-items:center;gap:6px}
+.hero-status-dot{width:6px;height:6px;border-radius:50%;background:#74cfc3;box-shadow:0 0 9px rgba(116,207,195,.5)}
+.hero-health-heading strong{color:#a8ddd1;font-size:9px;font-variant-numeric:tabular-nums}
+.hero-health-track{height:4px;margin-top:7px;overflow:hidden;border-radius:999px;background:rgba(5,12,18,.65)}
+.hero-health-track i{display:block;width:100%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#4baea9,#a0dfbe);transition:width .2s ease}
+.hero-health-panel>small{display:block;margin-top:6px;color:#829d9e;font-size:8px}
+.campaign-mini{display:flex;justify-content:space-between;margin-top:12px;padding-top:9px;border-top:1px solid rgba(207,223,237,.08);color:#8595a5;font-size:8px}
+.campaign-mini strong{color:#d1c194;font-size:8px}
+.recruit-card.is-locked{border-style:dashed;filter:saturate(.45)}
+.recruit-card.is-locked .unit-copy small{color:#d4ad72}
+.recruit-card:disabled{cursor:not-allowed}
+.control-button:disabled{cursor:not-allowed;opacity:.55;transform:none}
+.unlock-reward{display:flex;align-items:center;gap:10px;margin:5px 0 12px;padding:10px 12px;border:1px solid rgba(242,189,99,.24);border-radius:11px;background:rgba(242,189,99,.08);text-align:left}
+.unlock-reward>span:first-child{display:grid;place-items:center;width:35px;height:35px;border-radius:10px;background:rgba(242,189,99,.16);color:#f5cf86;font-size:18px}
+.unlock-reward>span:last-child{display:flex;flex-direction:column;gap:3px}
+.unlock-reward small{color:#c9a66e;font-size:8px;letter-spacing:.1em}
+.unlock-reward strong{color:#f1e2bd;font-size:12px}
+.end-home-button{width:100%;justify-content:center}
+.touch-controls{display:none;position:absolute;z-index:4;inset:auto 12px 12px;align-items:flex-end;justify-content:space-between;pointer-events:none;line-height:1}
+.touch-pad{display:grid;grid-template-columns:repeat(3,37px);grid-template-rows:repeat(3,34px);gap:3px;pointer-events:auto}
+.touch-pad button,.touch-attack{border:1px solid rgba(255,246,222,.48);background:rgba(23,32,38,.58);color:#fff1d3;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);font-weight:800;touch-action:none;user-select:none;-webkit-user-select:none}
+.touch-pad button{border-radius:9px;font-size:14px}
+.touch-pad button[data-move="up"]{grid-column:2;grid-row:1}
+.touch-pad button[data-move="left"]{grid-column:1;grid-row:2}
+.touch-pad button[data-move="right"]{grid-column:3;grid-row:2}
+.touch-pad button[data-move="down"]{grid-column:2;grid-row:3}
+.touch-pad button:active,.touch-attack:active{background:rgba(214,157,80,.8)}
+.touch-attack{display:grid;place-items:center;width:64px;height:64px;margin:0 4px 2px 0;border-radius:50%;background:rgba(160,76,63,.76);font-size:12px;box-shadow:0 4px 12px rgba(0,0,0,.3);pointer-events:auto}
+@media(max-width:930px){
+  .campaign-welcome{grid-template-columns:minmax(210px,.72fr) minmax(400px,1.28fr)}
+  .campaign-welcome .welcome-art{min-height:100%}
+}
+@media(max-width:760px),(pointer:coarse){
+  .touch-controls{display:flex}
+}
+@media(max-width:640px){
+  .campaign-welcome{grid-template-columns:1fr;max-width:470px;max-height:calc(100dvh - 18px)}
+  .campaign-welcome .welcome-art{height:112px;min-height:112px}
+  .campaign-welcome .welcome-copy{padding:14px 18px 13px}
+  .campaign-welcome .welcome-copy h2{font-size:25px;margin:8px 0 6px}
+  .campaign-welcome .welcome-copy>p{font-size:9px}
+  .campaign-welcome .welcome-features{margin:8px 0}
+  .campaign-select{margin:3px 0 8px;padding:8px}
+  .campaign-grid{gap:4px}
+  .level-card{min-height:38px;padding:4px 5px}
+  .level-card strong{font-size:7px}
+  .level-card small{font-size:6px}
+  .hero-health-panel{margin:10px 0 1px}
+  .touch-controls{inset:auto 6px 6px}
+  .touch-pad{grid-template-columns:repeat(3,31px);grid-template-rows:repeat(3,29px);gap:2px}
+  .touch-pad button{font-size:12px;border-radius:7px}
+  .touch-attack{width:54px;height:54px;font-size:10px}
+}
