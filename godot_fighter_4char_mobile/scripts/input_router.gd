@@ -6,10 +6,9 @@ var ai_enabled := true
 
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventScreenTouch:
-		if event.pressed:
-			touches[event.index] = event.position
-		else:
+	if event is InputEventScreenTouch and event.pressed:
+		touches[event.index] = event.position
+	elif event is InputEventScreenTouch:
 		touches.erase(event.index)
 	elif event is InputEventScreenDrag:
 		touches[event.index] = event.position
